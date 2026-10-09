@@ -1,0 +1,190 @@
+{
+  "brand": "良哥看未来",
+  "site": "良友资源中心",
+  "version": "1.0",
+  "updated": "2026-10-09",
+  "projects": [
+    {
+      "id": "badges",
+      "title": "良友媒体徽章库",
+      "en": "MEDIA BADGE COLLECTION",
+      "category": "player",
+      "categoryLabel": "播放器 · 影视",
+      "stage": "live",
+      "tag": "播放识别",
+      "description": "把分辨率、片源、杜比与音轨信息变成直观的高质感徽章。为不同播放器准备相应版本，一条链接即可导入。",
+      "short": "让每一种片源，都有清晰的身份。",
+      "stats": "多版本适配",
+      "apps": [
+        "EplayerX",
+        "OopsPlayer",
+        "支持相应格式的播放器"
+      ],
+      "repo": "https://github.com/MaddestAlistar/liangyou-appletv-badges",
+      "previewType": "badges",
+      "images": [
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-25-v9/all/png/4k.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-26-v12/all/png/combo-1080p-web-dl.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-26-v12/all/png/combo-4k-web-dl.png"
+      ],
+      "imports": [
+        {
+          "name": "复杂版 · 主推荐",
+          "detail": "适合支持该完整规则格式的客户端",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all12.json"
+        },
+        {
+          "name": "EplayerX · 精简版",
+          "detail": "SVG 简洁徽章",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.EPX12.json"
+        },
+        {
+          "name": "OopsPlayer · 专用版 BF3",
+          "detail": "针对 WEB-DL / SDR 重复显示优化",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.OopsPlayer.BF3.json"
+        }
+      ],
+      "steps": [
+        "进入播放器的徽章规则或自定义徽章配置入口。",
+        "选择与你使用的播放器对应的版本，并复制其订阅链接。",
+        "粘贴链接导入、启用规则；不要同时开启多个重复的徽章包。",
+        "重新加载媒体信息后检查显示效果，具体兼容性以客户端版本为准。"
+      ],
+      "updated": "2026-10-08"
+    },
+    {
+      "id": "icons",
+      "title": "良友媒体图标库",
+      "en": "ICON LIBRARY",
+      "category": "icon",
+      "categoryLabel": "图标 · 视觉",
+      "stage": "live",
+      "tag": "图标订阅",
+      "description": "收录原创与精选的媒体图标，涵盖 Emby 服务器、播放器和常用影视应用。支持名称搜索与统一订阅。",
+      "short": "给常用媒体服务，换一套好看的图标。",
+      "stats": "7,337 枚图标",
+      "apps": [
+        "支持自定义图标库的播放器",
+        "Emby 相关客户端"
+      ],
+      "repo": "https://github.com/MaddestAlistar/LiangYou-IconLibrary",
+      "previewType": "icons",
+      "images": [
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-player.jpeg",
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-carplay.jpeg",
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-panda.jpeg"
+      ],
+      "imports": [
+        {
+          "name": "完整图标库 · 7,337 枚",
+          "detail": "原创 + 精选扩展图标",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Emby-Icons.json"
+        },
+        {
+          "name": "原创专属库 · 62 枚",
+          "detail": "仅良哥看未来原创与专属图标",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Original-Icons.json"
+        }
+      ],
+      "steps": [
+        "打开支持该 JSON 订阅格式的 App，找到图标库或图标订阅入口。",
+        "复制完整版或原创版地址，新增远程订阅。",
+        "刷新图标库，按照应用或服务器名称搜索并应用喜欢的样式。",
+        "图片素材可能来自不同作者，复用前请查看原仓库的授权和使用说明。"
+      ],
+      "updated": "2026-10-09"
+    },
+    {
+      "id": "channels",
+      "title": "良友直播频道库",
+      "en": "LIVE CHANNEL DIRECTORY",
+      "category": "live",
+      "categoryLabel": "直播 · 频道",
+      "stage": "live",
+      "tag": "频道订阅",
+      "description": "按兴趣整理主播与频道，涵盖游戏、音乐、聊天、赛事等分区。面向汇流直播提供可直接使用的远程主播单。",
+      "short": "喜欢的主播，集中在一个订阅里。",
+      "stats": "2,081 个频道",
+      "apps": [
+        "汇流直播（Conflux）",
+        "支持对应格式的图标库客户端"
+      ],
+      "repo": "https://github.com/MaddestAlistar/LiangyouChannels",
+      "previewType": "channels",
+      "images": [
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/icons/douyin/9896719-dot.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/icons/douyin/46595453118.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/icons/douyin/1729665057.png"
+      ],
+      "imports": [
+        {
+          "name": "汇流直播 · 主播单",
+          "detail": "在汇流的「订阅网址」中导入",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels-conflux.json"
+        },
+        {
+          "name": "主播头像 · 图标库格式",
+          "detail": "适用于支持该图标 JSON 格式的客户端",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels.json"
+        }
+      ],
+      "steps": [
+        "打开汇流直播，进入主播单管理界面。",
+        "选择「订阅网址」，复制并粘贴「汇流直播 · 主播单」地址。",
+        "确认订阅后刷新列表，按平台或内容分区寻找主播。",
+        "收录不代表正在开播，个别账号和房间状态以平台实际显示为准。"
+      ],
+      "updated": "2026-10-06"
+    }
+  ],
+  "future": [
+    {
+      "id": "iptv",
+      "title": "IPTV 台标与 EPG",
+      "en": "TV & EPG",
+      "category": "media",
+      "icon": "tv",
+      "description": "统一电视台标、频道分组和节目指南，面向支持 M3U / XMLTV 的 App。"
+    },
+    {
+      "id": "jellyfin",
+      "title": "Jellyfin 主题库",
+      "en": "JELLYFIN THEMES",
+      "category": "media",
+      "icon": "palette",
+      "description": "黑金影院、紫色科技、极简风格等可复用的服务端网页主题。"
+    },
+    {
+      "id": "poster",
+      "title": "影视海报角标库",
+      "en": "POSTER OVERLAYS",
+      "category": "media",
+      "icon": "layers",
+      "description": "为兼容工具提供 4K、HDR、音频格式等视觉角标与配置模板。"
+    },
+    {
+      "id": "profiles",
+      "title": "影视质量优选规则",
+      "en": "QUALITY PROFILES",
+      "category": "tools",
+      "icon": "sliders",
+      "description": "面向 Radarr / Sonarr 的格式优选参考规则，减少版本选择成本。"
+    },
+    {
+      "id": "network",
+      "title": "影音网络规则库",
+      "en": "NETWORK RULESETS",
+      "category": "tools",
+      "icon": "network",
+      "description": "针对兼容客户端维护经过验证的分流策略和家庭影音配置。"
+    },
+    {
+      "id": "rss",
+      "title": "科技资讯订阅库",
+      "en": "RSS COLLECTION",
+      "category": "reading",
+      "icon": "rss",
+      "description": "精选苹果生态、科技博客、NAS 与独立 App 更新的信息源。"
+    }
+  ]
+}
