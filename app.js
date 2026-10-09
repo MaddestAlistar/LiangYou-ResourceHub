@@ -1,167 +1,162 @@
 "use strict";
 (() => {
-  const grid = document.getElementById("projectGrid");
-  const roadmap = document.getElementById("roadmapGrid");
-  const search = document.getElementById("projectSearch");
-  const count = document.getElementById("libraryCount");
-  const empty = document.getElementById("emptyState");
-  const dialog = document.getElementById("projectDialog");
-  const dialogBody = document.getElementById("dialogBody");
-  const toast = document.getElementById("toast");
-  let projects = [];
-  let filter = "all";
-  let timer;
+  const $ = id => document.getElementById(id);
+  const grid = $("projectGrid"), search = $("projectSearch"), filters = $("filters");
+  const dialog = $("projectDialog"), body = $("dialogBody");
+  let projects = [], filter = "all", toastTimer, opener, activeProject, copyBusy = false;
+  const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeURL = value => { try { const u = new URL(value); return u.protocol === "https:" ? u.href : "#"; } catch { return "#"; } };
+  const number = value => Number(value).toLocaleString("en-US");
+  const link = (url, label, className = "text-link") => `<a class="${className}" href="${escapeHTML(safeURL(url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)} <span aria-hidden="true">↗</span></a>`;
 
-  const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, character => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[character]));
-  const safeURL = (value) => { try {
-    const url = new URL(value);
-    return url.protocol === "https:" ? url.href : "#";
-  } catch { return "#"; } };
-
-  function showToast(message) {
-    toast.textContent = message;
-    toast.classList.add("show");
-    clearTimeout(timer);
-    timer = setTimeout(() => toast.classList.remove("show"), 2600);
-  }
-
-  async function copyText(value) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        const field = document.createElement("textarea");
-        field.value = value;
-        field.style.position = "fixed";
-        field.style.opacity = "0";
-        document.body.appendChild(field);
-        field.focus(); field.select();
-        const copied = document.execCommand("copy");
-        field.remove();
-        if (!copied) throw new Error("copy unsupported");
-      }
-      showToast("订阅链接已复制，可以粘贴到 App 中");
-    } catch {
-      window.prompt("复制以下订阅链接：", value);
-      showToast("请手动复制上方链接");
+  function notify(message) {
+    if (dialog.open) $("dialogStatus").textContent = message;
+    else {
+      $("toast").textContent = message;
+      $("toast").classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3200);
     }
   }
 
-  function projectArt(project, idx) {
-    const images = project.images.map((url, i) => `<img src="${escapeHTML(safeURL(url))}" alt="${escapeHTML(project.title)}预览 ${i + 1}" loading="lazy" referrerpolicy="no-referrer">`).join("");
-    return `<div class="card-art art-${escapeHTML(project.previewType)}"><span class="art-label">LIANGYOU / ${escapeHTML(project.en)}</span><span class="art-index">0${idx + 1}</span><div class="art-images">${images}</div></div>`;
+  async function copyText(value, button) {
+    if (copyBusy) return;
+    copyBusy = true;
+    const previousFocus = document.activeElement;
+    button.disabled = true;
+    const label = button.textContent;
+    let copied = false;
+    $("manualCopy").hidden = true;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        try { await navigator.clipboard.writeText(value); copied = true; } catch { /* Try selection-based copy below. */ }
+      }
+      if (!copied) {
+        const field = document.createElement("textarea");
+        field.value = value;
+        field.setAttribute("readonly", "");
+        // Keep the fallback inside the modal: the rest of the page is inert.
+        field.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px";
+        dialog.append(field);
+        try { field.focus({ preventScroll: true }); field.select(); field.setSelectionRange(0, value.length); copied = document.execCommand("copy"); }
+        finally { field.remove(); }
+      }
+      if (!copied) throw new Error("Clipboard unavailable");
+      button.textContent = "已复制 ✓";
+      notify("已复制完整订阅链接，回到 App 粘贴即可。");
+      setTimeout(() => { if (button.isConnected) button.textContent = label; }, 2200);
+    } catch {
+      $("manualCopy").hidden = false;
+      $("manualCopyValue").value = value;
+      $("manualCopyValue").focus();
+      $("manualCopyValue").select();
+      $("manualCopyStatus").textContent = "链接已全选，请使用系统的复制操作。";
+      notify("浏览器未允许自动复制，请手动复制下方完整链接。");
+    } finally { button.disabled = false; copyBusy = false; if (copied) previousFocus?.focus({ preventScroll: true }); }
   }
 
-  function projectCard(project, idx) {
-    return `<article class="project-card">
-      ${projectArt(project, idx)}
-      <div class="card-content">
-        <div class="card-meta"><span class="card-type">${escapeHTML(project.categoryLabel)}</span><span class="live-status">已上线</span></div>
-        <h3>${escapeHTML(project.title)}</h3><div class="card-en">${escapeHTML(project.en)}</div>
-        <p class="card-desc">${escapeHTML(project.description)}</p>
-        <div class="app-chips">${project.apps.slice(0, 2).map(a => `<span title="${escapeHTML(a)}">${escapeHTML(a)}</span>`).join("")}</div>
-        <div class="card-bottom"><span class="card-stat">${escapeHTML(project.stats)}</span><button class="detail-button" type="button" data-open="${escapeHTML(project.id)}" aria-label="查看${escapeHTML(project.title)}的订阅和使用指南">查看详情 <span aria-hidden="true">↗</span></button></div>
-      </div>
-    </article>`;
-  }
-
-  function render() {
-    const term = search.value.trim().toLocaleLowerCase();
-    const visible = projects.filter(project => {
-      const categoryMatch = filter === "all" || project.category === filter;
-      const haystack = [project.title, project.en, project.categoryLabel, project.description, ...project.apps].join(" ").toLocaleLowerCase();
-      return categoryMatch && (!term || haystack.includes(term));
+  function renderCards() {
+    const terms = search.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    const visible = projects.filter(p => {
+      const text = [p.title, p.en, p.description, p.categoryLabel, ...p.apps, ...(p.keywords || []), ...p.imports.flatMap(i => [i.name, i.detail])].join(" ").toLocaleLowerCase();
+      return (filter === "all" || p.category === filter) && terms.every(t => text.includes(t));
     });
-    grid.innerHTML = visible.map(project => projectCard(project, projects.indexOf(project))).join("");
-    empty.hidden = visible.length !== 0;
-    count.textContent = String(visible.length).padStart(2, "0") + " PROJECTS";
+    grid.innerHTML = visible.map(p => {
+      const i = projects.indexOf(p) + 1;
+      return `<article class="project-card" id="resource-${escapeHTML(p.id)}">
+        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">0${i}</span></div><div class="art-images">${p.images.map((url, index) => `<img class="preview-image" src="${escapeHTML(safeURL(url))}" alt="${escapeHTML(p.title)}预览 ${index + 1}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`).join("")}</div></div>
+        <div class="card-content"><div class="card-meta"><span class="card-type">${escapeHTML(p.categoryLabel)}</span><span class="live-status"><span class="status-dot"></span>已上线</span></div>
+        <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
+        <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.slice(0, 2).map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
+        <div class="highlights">${(p.highlights || []).map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
+        <div class="card-actions"><button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button><div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">资源更新 ${escapeHTML(p.updated)}</time></div></div></div>
+      </article>`;
+    }).join("");
+    $("emptyState").hidden = visible.length > 0;
+    $("libraryCount").textContent = visible.length === projects.length ? `${projects.length} 个已上线项目` : `找到 ${visible.length} / ${projects.length} 个项目`;
+    grid.setAttribute("aria-busy", "false");
   }
 
-  const paths = {
-    tv: '<rect x="3" y="5" width="18" height="13" rx="2"/><path d="M8 22h8m-4-4v4"/>',
-    palette: '<path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1.7-3c-.7-1.3.1-2 1.3-2h2a4 4 0 0 0 4-4c0-5-4.5-9-10-9z"/><circle cx="7.5" cy="11" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/>',
-    layers: '<path d="m12 3 9 5-9 5-9-5 9-5zm-9 10 9 5 9-5M3 18l9 5 9-5"/>',
-    sliders: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#191b1f"/><circle cx="16" cy="12" r="2" fill="#191b1f"/><circle cx="8" cy="18" r="2" fill="#191b1f"/>',
-    network: '<rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4m0 0H5v4m7-4h7v4"/>',
-    rss: '<circle cx="5" cy="19" r="2"/><path d="M3 10a11 11 0 0 1 11 11M3 3a18 18 0 0 1 18 18"/>'
-  };
-  function renderRoadmap(items) {
-    roadmap.innerHTML = items.map(item => `<article class="roadmap-card">
-      <div class="roadmap-card-top"><span class="roadmap-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[item.icon] || paths.layers}</svg></span><span class="roadmap-status">筹备方向</span></div>
-      <h3>${escapeHTML(item.title)}</h3><div class="roadmap-en">${escapeHTML(item.en)}</div>
-      <p>${escapeHTML(item.description)}</p>
-    </article>`).join("");
+  function renderFilters() {
+    const names = { player: "媒体徽章", icon: "媒体图标", live: "频道主播" };
+    const categories = [...new Map(projects.map(p => [p.category, p.categoryLabel])).entries()];
+    filters.innerHTML = `<button class="filter is-active" type="button" data-filter="all" aria-pressed="true">全部资源</button>` + categories.map(([id, label]) => `<button class="filter" type="button" data-filter="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(names[id] || label)}</button>`).join("");
+  }
+
+  function renderCatalog(data) {
+    projects = data.projects.filter(p => p.stage === "live");
+    renderFilters(); renderCards();
+    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">0${i + 1}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
+    const metrics = [["已上线资源库", projects.length], ["媒体图标", data.metrics.icons], ["原创与专属", data.metrics.originalIcons], ["频道与作者", data.metrics.channels]];
+    $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
+    $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
+    $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card" data-phase="${escapeHTML(p.phase)}"><div class="roadmap-meta"><span class="roadmap-number">0${i + 1}</span><span class="roadmap-phase">${escapeHTML(p.phaseLabel)}</span></div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p><div><div class="roadmap-format">${escapeHTML(p.format)}</div><div class="roadmap-audience">面向 ${escapeHTML(p.audience)}</div></div><div class="roadmap-next">下一步：${escapeHTML(p.next)}</div></article>`).join("");
+    $("updateList").innerHTML = (data.updates || []).map(item => `<button class="update-item" type="button" data-open="${escapeHTML(item.project)}"><time datetime="${escapeHTML(item.date)}">${escapeHTML(item.date)}</time><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
+    if (location.hash.startsWith("#resource-")) openProject(location.hash.slice(10));
   }
 
   function openProject(id) {
-    const p = projects.find(project => project.id === id);
+    const p = projects.find(p => p.id === id);
     if (!p) return;
-    const imports = p.imports.map((item, index) => `<div class="import-item">
-      <div class="import-text"><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)}</small><span class="import-url" title="${escapeHTML(item.url)}">${escapeHTML(item.url)}</span></div>
-      <button class="copy-btn" type="button" data-copy="${index}" aria-label="复制${escapeHTML(item.name)}的订阅链接">复制链接</button>
-    </div>`).join("");
-    dialogBody.innerHTML = `<div class="dialog-content">
-      <div class="dialog-overline">● 已上线 / ${escapeHTML(p.categoryLabel)} · 更新 ${escapeHTML(p.updated)}</div>
-      <h2 id="dialogTitle">${escapeHTML(p.title)}</h2>
-      <p class="dialog-description">${escapeHTML(p.description)}</p>
-      <div class="dialog-chips">${p.apps.map(app => `<span>${escapeHTML(app)}</span>`).join("")}</div>
-      <div class="dialog-section-head"><h3>订阅地址</h3><span>${p.imports.length} 个可选版本</span></div>
-      <div class="import-list">${imports}</div>
-      <div class="dialog-section-head"><h3>导入方法</h3><span>HOW TO USE</span></div>
-      <ol class="howto-list">${p.steps.map(step => `<li>${escapeHTML(step)}</li>`).join("")}</ol>
-      <div class="dialog-notice">提示：不同 App 的导入入口和支持格式可能不同，请优先使用对应版本。无法导入时，可前往原仓库查看最新说明。</div>
-      <a class="dialog-link" href="${escapeHTML(safeURL(p.repo))}" target="_blank" rel="noopener noreferrer">查看 GitHub 原仓库及完整文档 <span aria-hidden="true">↗</span></a>
-    </div>`;
-    dialogBody.querySelectorAll("[data-copy]").forEach(button => {
-      button.addEventListener("click", () => copyText(p.imports[Number(button.dataset.copy)].url));
-    });
-    if (typeof dialog.showModal === "function") dialog.showModal();
-    else dialog.setAttribute("open", "");
+    opener = document.activeElement;
+    activeProject = p;
+    $("manualCopy").hidden = true;
+    $("dialogStatus").textContent = "";
+    body.innerHTML = `<div class="dialog-content"><div class="dialog-overline"><span>● 已上线 · ${escapeHTML(p.categoryLabel)}</span><span>资源更新 ${escapeHTML(p.updated)}</span></div><h2 id="dialogTitle">${escapeHTML(p.title)}</h2><p class="dialog-description">${escapeHTML(p.description)}</p><div class="app-chips dialog-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
+      <div class="dialog-section-head"><h3>选择适合的版本</h3><span>${p.imports.length} 个导入入口</span></div>
+      <div class="import-list">${p.imports.map((item, i) => `<div class="import-item"><div class="import-main"><div class="import-text"><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)}</small></div><button type="button" class="button button-primary copy-btn" data-copy="${i}" aria-label="复制${escapeHTML(item.name)}链接">复制链接</button></div><details class="url-disclosure"><summary>查看完整链接 / 手动复制</summary><a class="import-url" href="${escapeHTML(safeURL(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.url)}</a></details></div>`).join("")}</div>
+      <div class="dialog-section-head"><h3>如何导入</h3></div><ol class="howto-list">${p.steps.map(s => `<li>${escapeHTML(s)}</li>`).join("")}</ol>
+      ${p.sections ? `<div class="dialog-section-head"><h3>内容分区</h3></div><div class="app-chips">${p.sections.map(s => `<span>${escapeHTML(s)}</span>`).join("")}</div>` : ""}
+      <p class="dialog-notice">${escapeHTML(p.note || "具体适配与使用方法，以原项目说明为准。")}</p><div class="dialog-links">${link(p.repo, "查看原仓库与说明")}${link("https://t.me/liangyouuniversity", "前往 TG 交流")}</div></div>`;
+    if (typeof dialog.showModal === "function") {
+      if (!dialog.open) dialog.showModal();
+    } else dialog.setAttribute("open", "");
+    dialog.scrollTop = 0;
     document.body.classList.add("modal-open");
+    $("closeDialog").focus({ preventScroll: true });
   }
 
-  function closeDialog() {
-    if (dialog.open && typeof dialog.close === "function") dialog.close();
-    else dialog.removeAttribute("open");
+  function cleanupDialog() {
     document.body.classList.remove("modal-open");
+    if (opener?.isConnected) opener.focus({ preventScroll: true });
+  }
+  function closeDialog() {
+    if (typeof dialog.close === "function") dialog.close();
+    else { dialog.removeAttribute("open"); cleanupDialog(); }
   }
 
-  document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
+  filters.addEventListener("click", event => {
+    const button = event.target.closest("[data-filter]");
+    if (!button) return;
     filter = button.dataset.filter;
-    document.querySelectorAll("[data-filter]").forEach(b => {
-      const selected = b === button;
-      b.classList.toggle("is-active", selected);
-      b.setAttribute("aria-pressed", String(selected));
-    });
-    render();
-  }));
-  search.addEventListener("input", render);
-  grid.addEventListener("click", event => {
-    const button = event.target.closest("[data-open]");
-    if (button) openProject(button.dataset.open);
+    filters.querySelectorAll("[data-filter]").forEach(b => { const selected = b === button; b.classList.toggle("is-active", selected); b.setAttribute("aria-pressed", String(selected)); });
+    renderCards();
   });
-  document.getElementById("resetSearch").addEventListener("click", () => {
-    search.value = "";
-    document.querySelector('[data-filter="all"]').click();
-    search.focus();
-  });
-  document.getElementById("closeDialog").addEventListener("click", closeDialog);
-  dialog.addEventListener("click", event => { if (event.target === dialog) closeDialog(); });
-  dialog.addEventListener("close", () => document.body.classList.remove("modal-open"));
+  search.addEventListener("input", renderCards);
+  $("resetSearch").addEventListener("click", () => { search.value = ""; filter = "all"; renderFilters(); renderCards(); search.focus(); });
+  document.addEventListener("click", event => { const button = event.target.closest("[data-open]"); if (button) openProject(button.dataset.open); });
+  body.addEventListener("click", event => { const button = event.target.closest("[data-copy]"); if (button && activeProject) copyText(activeProject.imports[Number(button.dataset.copy)].url, button); });
+  // A failed remote image keeps the surrounding layout and gives a useful label.
+  grid.addEventListener("error", event => { if (event.target.tagName === "IMG") { const label = document.createElement("span"); label.className = "image-fallback"; label.textContent = "预览图片暂不可用"; event.target.replaceWith(label); } }, true);
+  $("closeDialog").addEventListener("click", closeDialog);
+  dialog.addEventListener("close", cleanupDialog);
+  let backdropDown = false;
+  const outside = event => { const rect = dialog.getBoundingClientRect(); return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom; };
+  dialog.addEventListener("pointerdown", event => { backdropDown = event.target === dialog && outside(event); });
+  dialog.addEventListener("click", event => { if (event.target === dialog && backdropDown && outside(event)) closeDialog(); backdropDown = false; });
+  $("selectCopyValue").addEventListener("click", () => { const field = $("manualCopyValue"); field.focus(); field.select(); field.setSelectionRange(0, field.value.length); $("manualCopyStatus").textContent = "已全选，请使用系统的复制操作。"; });
 
   fetch("./data/projects.json", { cache: "no-cache" })
-    .then(response => { if (!response.ok) throw new Error("catalog load failed"); return response.json(); })
-    .then(data => {
-      if (!Array.isArray(data.projects) || !Array.isArray(data.future)) throw new Error("invalid catalog");
-      projects = data.projects.filter(p => p.stage === "live");
-      render();
-      renderRoadmap(data.future);
-    })
+    .then(response => { if (!response.ok) throw new Error("catalog unavailable"); return response.json(); })
+    .then(data => { if (!Array.isArray(data.projects) || !Array.isArray(data.future) || !data.metrics) throw new Error("invalid catalog"); renderCatalog(data); })
     .catch(error => {
       console.warn("Resource catalog could not be loaded", error);
-      grid.innerHTML = '<div class="empty-state" style="display:block;grid-column:1/-1">资源目录暂时无法加载，请打开 <a href="https://github.com/MaddestAlistar/LiangYou-ResourceHub" target="_blank" rel="noopener noreferrer" style="color:#e2bf86;text-decoration:underline">GitHub 仓库</a> 查看订阅地址。</div>';
-      roadmap.innerHTML = '<p style="color:#999">计划目录暂时无法加载。</p>';
+      grid.setAttribute("aria-busy", "false");
+      grid.innerHTML = `<div class="notice"><p>资源目录暂时无法加载。刷新页面，或直接打开原仓库：</p><ul><li>${link("https://github.com/MaddestAlistar/liangyou-appletv-badges", "媒体徽章库")}</li><li>${link("https://github.com/MaddestAlistar/LiangYou-IconLibrary", "媒体图标库")}</li><li>${link("https://github.com/MaddestAlistar/LiangyouChannels", "频道库")}</li></ul></div>`;
+      $("libraryCount").textContent = "目录加载失败";
+      search.disabled = true;
+      filters.querySelectorAll("button").forEach(button => { button.disabled = true; });
+      $("roadmapGrid").innerHTML = `<p class="subtle">计划目录暂时无法加载，可前往 GitHub 查看。</p>`;
+      $("updateList").innerHTML = `<p class="subtle">更新记录暂不可用，请查看原仓库。</p>`;
     });
 })();

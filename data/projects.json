@@ -1,7 +1,7 @@
 {
   "brand": "良哥看未来",
   "site": "良友资源中心",
-  "version": "1.0",
+  "version": "2.0",
   "updated": "2026-10-09",
   "projects": [
     {
@@ -12,9 +12,9 @@
       "categoryLabel": "播放器 · 影视",
       "stage": "live",
       "tag": "播放识别",
-      "description": "把分辨率、片源、杜比与音轨信息变成直观的高质感徽章。为不同播放器准备相应版本，一条链接即可导入。",
-      "short": "让每一种片源，都有清晰的身份。",
-      "stats": "多版本适配",
+      "description": "把分辨率、片源、杜比和音轨信息整理成直观徽章。按播放器选择复杂版、EplayerX 或 OopsPlayer 专用版。",
+      "short": "一眼看懂片源规格",
+      "stats": "5 个导入版本",
       "apps": [
         "EplayerX",
         "OopsPlayer",
@@ -29,19 +29,29 @@
       ],
       "imports": [
         {
-          "name": "复杂版 · 主推荐",
-          "detail": "适合支持该完整规则格式的客户端",
+          "name": "复杂版 · V12",
+          "detail": "适合支持完整规则格式的客户端，包含组合徽章。",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all12.json"
         },
         {
           "name": "EplayerX · 精简版",
-          "detail": "SVG 简洁徽章",
+          "detail": "EplayerX 首选；SVG 简洁样式。",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.EPX12.json"
         },
         {
           "name": "OopsPlayer · 专用版 BF3",
-          "detail": "针对 WEB-DL / SDR 重复显示优化",
+          "detail": "OopsPlayer 专用；含 WEB-DL 与 SDR 重复显示修复。",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.OopsPlayer.BF3.json"
+        },
+        {
+          "name": "EplayerX · PNG 备用",
+          "detail": "与精简版规则相同；SVG 显示异常时可尝试。",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.EPX.PNG.json"
+        },
+        {
+          "name": "复杂版 · 单项备用",
+          "detail": "多数规格独立显示，保留 DV + Atmos 组合。",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all.Single.json"
         }
       ],
       "steps": [
@@ -50,7 +60,25 @@
         "粘贴链接导入、启用规则；不要同时开启多个重复的徽章包。",
         "重新加载媒体信息后检查显示效果，具体兼容性以客户端版本为准。"
       ],
-      "updated": "2026-10-08"
+      "updated": "2026-10-08",
+      "keywords": [
+        "badge",
+        "徽标",
+        "4K",
+        "HDR",
+        "Dolby",
+        "杜比",
+        "音轨",
+        "PNG",
+        "SVG",
+        "BF3"
+      ],
+      "highlights": [
+        "组合徽章",
+        "独立播放器版本",
+        "简洁 / 完整样式"
+      ],
+      "note": "只启用一个合适的徽章包。显示结果取决于播放器提供的媒体信息，不代表设备实际输出格式。"
     },
     {
       "id": "icons",
@@ -60,8 +88,8 @@
       "categoryLabel": "图标 · 视觉",
       "stage": "live",
       "tag": "图标订阅",
-      "description": "收录原创与精选的媒体图标，涵盖 Emby 服务器、播放器和常用影视应用。支持名称搜索与统一订阅。",
-      "short": "给常用媒体服务，换一套好看的图标。",
+      "description": "为播放器和媒体服务器整理的图标集合。完整版覆盖常用服务，原创专属版收录良哥提供的 62 枚图标，含动态款。",
+      "short": "给常用服务换个图标",
       "stats": "7,337 枚图标",
       "apps": [
         "支持自定义图标库的播放器",
@@ -92,19 +120,34 @@
         "刷新图标库，按照应用或服务器名称搜索并应用喜欢的样式。",
         "图片素材可能来自不同作者，复用前请查看原仓库的授权和使用说明。"
       ],
-      "updated": "2026-10-09"
+      "updated": "2026-10-09",
+      "highlights": [
+        "62 枚原创与专属",
+        "含动态 GIF",
+        "5 枚专属置顶"
+      ],
+      "keywords": [
+        "icon",
+        "Emby",
+        "播放器",
+        "动态图标",
+        "GIF",
+        "原创",
+        "logo"
+      ],
+      "note": "动态 GIF 是否播放取决于客户端支持。图标与素材的复用方式请查看原仓库说明。"
     },
     {
       "id": "channels",
-      "title": "良友直播频道库",
+      "title": "良友频道库",
       "en": "LIVE CHANNEL DIRECTORY",
       "category": "live",
       "categoryLabel": "直播 · 频道",
       "stage": "live",
       "tag": "频道订阅",
-      "description": "按兴趣整理主播与频道，涵盖游戏、音乐、聊天、赛事等分区。面向汇流直播提供可直接使用的远程主播单。",
-      "short": "喜欢的主播，集中在一个订阅里。",
-      "stats": "2,081 个频道",
+      "description": "汇集抖音、斗鱼、虎牙、B站与 YY 的频道和作者，按 10 个内容分区整理，提供汇流直播主播单和头像订阅。",
+      "short": "集中管理喜欢的主播",
+      "stats": "2,081 个频道与作者",
       "apps": [
         "汇流直播（Conflux）",
         "支持对应格式的图标库客户端"
@@ -134,49 +177,66 @@
         "确认订阅后刷新列表，按平台或内容分区寻找主播。",
         "收录不代表正在开播，个别账号和房间状态以平台实际显示为准。"
       ],
-      "updated": "2026-10-06"
+      "updated": "2026-10-06",
+      "highlights": [
+        "5 个平台",
+        "10 个内容分区",
+        "每条附简介"
+      ],
+      "keywords": [
+        "Conflux",
+        "汇流",
+        "主播单",
+        "抖音",
+        "斗鱼",
+        "虎牙",
+        "B站",
+        "bilibili",
+        "YY",
+        "游戏",
+        "音乐"
+      ],
+      "note": "主播单与头像库是两种不同格式，请按 App 入口选择。收录包含短视频作者，是否开播以平台显示为准。",
+      "sections": [
+        "英雄联盟",
+        "王者荣耀",
+        "吃鸡与射击",
+        "其他游戏",
+        "聊天与户外",
+        "唱歌与音乐",
+        "舞蹈",
+        "知识与读书",
+        "赛事与官方频道",
+        "带货直播间"
+      ]
     }
   ],
   "future": [
-    {
-      "id": "iptv",
-      "title": "IPTV 台标与 EPG",
-      "en": "TV & EPG",
-      "category": "media",
-      "icon": "tv",
-      "description": "统一电视台标、频道分组和节目指南，面向支持 M3U / XMLTV 的 App。"
-    },
-    {
-      "id": "jellyfin",
-      "title": "Jellyfin 主题库",
-      "en": "JELLYFIN THEMES",
-      "category": "media",
-      "icon": "palette",
-      "description": "黑金影院、紫色科技、极简风格等可复用的服务端网页主题。"
-    },
     {
       "id": "poster",
       "title": "影视海报角标库",
       "en": "POSTER OVERLAYS",
       "category": "media",
       "icon": "layers",
-      "description": "为兼容工具提供 4K、HDR、音频格式等视觉角标与配置模板。"
+      "description": "从现有徽章延伸，整理适合影视海报使用的 4K、HDR、音频格式角标。",
+      "phase": "priority",
+      "phaseLabel": "优先探索",
+      "format": "透明 PNG · 配置模板",
+      "audience": "海报工具 / 媒体库",
+      "next": "先做常用角标和深浅两套样式。"
     },
     {
-      "id": "profiles",
-      "title": "影视质量优选规则",
-      "en": "QUALITY PROFILES",
-      "category": "tools",
-      "icon": "sliders",
-      "description": "面向 Radarr / Sonarr 的格式优选参考规则，减少版本选择成本。"
-    },
-    {
-      "id": "network",
-      "title": "影音网络规则库",
-      "en": "NETWORK RULESETS",
-      "category": "tools",
-      "icon": "network",
-      "description": "针对兼容客户端维护经过验证的分流策略和家庭影音配置。"
+      "id": "iptv",
+      "title": "IPTV 台标与 EPG",
+      "en": "TV & EPG",
+      "category": "media",
+      "icon": "tv",
+      "description": "将电视台标、频道别名和节目指南对应起来，让不同 App 使用一致的频道信息。",
+      "phase": "priority",
+      "phaseLabel": "优先探索",
+      "format": "台标目录 · M3U · XMLTV",
+      "audience": "支持相应格式的电视 App",
+      "next": "先整理台标与频道命名，再核对 EPG 来源。"
     },
     {
       "id": "rss",
@@ -184,7 +244,85 @@
       "en": "RSS COLLECTION",
       "category": "reading",
       "icon": "rss",
-      "description": "精选苹果生态、科技博客、NAS 与独立 App 更新的信息源。"
+      "description": "按苹果生态、NAS、播放器和独立 App 分类整理公开资讯源。",
+      "phase": "priority",
+      "phaseLabel": "优先探索",
+      "format": "OPML · RSS 清单",
+      "audience": "RSS 阅读器",
+      "next": "先制作可导入的订阅清单，再补更新频率说明。"
+    },
+    {
+      "id": "jellyfin",
+      "title": "Jellyfin 主题库",
+      "en": "JELLYFIN THEMES",
+      "category": "media",
+      "icon": "palette",
+      "description": "延伸黑金、紫色科技与简约风格，整理可复用的媒体库界面主题。",
+      "phase": "research",
+      "phaseLabel": "后续研究",
+      "format": "CSS · 主题预览",
+      "audience": "Jellyfin Web",
+      "next": "先核对不同版本的界面兼容性。"
+    },
+    {
+      "id": "profiles",
+      "title": "影视质量优选规则",
+      "en": "QUALITY PROFILES",
+      "category": "tools",
+      "icon": "sliders",
+      "description": "把片源格式经验整理成清晰的质量偏好与版本选择参考。",
+      "phase": "research",
+      "phaseLabel": "后续研究",
+      "format": "JSON · 格式优选规则",
+      "audience": "Radarr / Sonarr",
+      "next": "先定义偏好层级，再验证导入与实际选择结果。"
+    },
+    {
+      "id": "network",
+      "title": "影音网络规则库",
+      "en": "NETWORK RULESETS",
+      "category": "tools",
+      "icon": "network",
+      "description": "围绕家庭影音场景整理域名规则、连接排查与配置示例。",
+      "phase": "research",
+      "phaseLabel": "后续研究",
+      "format": "规则文件 · 配置示例",
+      "audience": "兼容的网络客户端",
+      "next": "先明确适用客户端与维护边界，再逐项验证。"
+    }
+  ],
+  "community": {
+    "name": "良友科技学院",
+    "url": "https://t.me/liangyouuniversity",
+    "handle": "@liangyouuniversity"
+  },
+  "checkedAt": "2026-10-09",
+  "metrics": {
+    "icons": 7337,
+    "originalIcons": 62,
+    "channels": 2081,
+    "platforms": 5,
+    "sections": 10
+  },
+  "updates": [
+    {
+      "date": "2026-10-09",
+      "project": "icons",
+      "title": "原创图标与动态款已补充",
+      "detail": "图标库现有 7,337 枚，原创与专属库 62 枚；5 枚专属图标继续置顶。"
+    },
+    {
+      "date": "2026-10-08",
+      "project": "badges",
+      "title": "OopsPlayer BF3 更新",
+      "detail": "针对 WEB-DL、SDR 在组合后又出现单项的情况调整回退规则。"
+    },
+    {
+      "date": "2026-10-06",
+      "project": "channels",
+      "title": "频道分区与简介整理",
+      "detail": "2,081 个频道与作者分为 10 个内容分区，汇流主播单可直接订阅。"
     }
   ]
 }
+

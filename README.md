@@ -1,73 +1,77 @@
 # 良友资源中心 · LiangYou Resource Hub
 
-由 **良哥看未来** 维护的 App 开放资源导航站。目标是：**把可复用的 App 资源变成可预览、可搜索、可复制的订阅入口。**
+由 **良哥看未来** 维护的 App 资源导航站，集中查看媒体徽章、原创图标和汇流频道订阅。
 
-> 本仓库是导航网站，不替换已有徽章、图标或频道项目。各 App 继续读取原仓库的订阅文件；已添加的用户地址不受影响。
+**[打开网站](https://maddestalistar.github.io/LiangYou-ResourceHub/)** · **[良友科技学院 / Telegram](https://t.me/liangyouuniversity)**
 
-## 网站地址
+## 已上线资源
 
-启用 GitHub Pages 后访问：
-
-**https://maddestalistar.github.io/LiangYou-ResourceHub/**
-
-网站为纯静态站点，不需要后端、数据库或额外服务器。支持桌面和移动端。
-
-## 已上线项目
-
-| 项目 | 原仓库 | 用途 |
+| 资源 | 内容 | 原仓库 |
 | --- | --- | --- |
-| 良友媒体徽章库 | [liangyou-appletv-badges](https://github.com/MaddestAlistar/liangyou-appletv-badges) | 复杂徽章 / EplayerX / OopsPlayer 专版 |
-| 良友媒体图标库 | [LiangYou-IconLibrary](https://github.com/MaddestAlistar/LiangYou-IconLibrary) | 完整图标订阅 / 良友原创图标 |
-| 良友直播频道库 | [LiangyouChannels](https://github.com/MaddestAlistar/LiangyouChannels) | 汇流直播主播单 / 主播头像图标库 |
+| 媒体徽章库 | 复杂版 V12、EplayerX、OopsPlayer BF3，以及两种备用版本 | [liangyou-appletv-badges](https://github.com/MaddestAlistar/liangyou-appletv-badges) |
+| 媒体图标库 | 7,337 枚图标；原创与专属版 62 枚，含动态 GIF | [LiangYou-IconLibrary](https://github.com/MaddestAlistar/LiangYou-IconLibrary) |
+| 频道库 | 2,081 个频道与作者，5 个平台、10 个内容分区 | [LiangyouChannels](https://github.com/MaddestAlistar/LiangyouChannels) |
 
-订阅链接、适配客户端、导入步骤统一配置在 **[data/projects.json](data/projects.json)**。当前数据来自上述项目的 README，具体兼容方式以原项目最新文档为准。
+数量核对日期：**2026-10-09**。资源链接及数量依据原仓库 README 和正式 JSON 核对；后续实际数量以原仓库为准。导航站不搬迁资源，也不改变用户已经添加的订阅地址。
 
-已规划但尚未上线：IPTV 台标与 EPG、Jellyfin 主题、影视海报角标、影视质量优选规则、影音网络规则和科技 RSS 订阅。规划卡片不会提供虚假的导入链接。
+## 本次整理
 
-## 开启 GitHub Pages（只需首次设置）
+- 取消首页互相遮挡的预览卡片，改为可点击的资源快捷入口。
+- 重整字体、行距、导航、卡片与详情弹窗；窄屏使用单列内容，长链接可以完整换行显示。
+- 搜索覆盖 App 名称、资源名称、版本和关键词；分类根据目录自动生成。
+- 每种版本都有用途说明、完整链接和复制按钮；浏览器禁止复制时提供手动复制框。
+- 加入资源更新速览、导入步骤、常见问题和「良友科技学院」TG 入口。
+- 将未来方向分为「优先探索」和「后续研究」，补充资源格式、适用对象与下一步。
+- 提供 PNG 分享封面、无 JavaScript 的仓库入口、加载失败提示及键盘焦点处理。
 
-1. 进入仓库 [Settings → Pages](https://github.com/MaddestAlistar/LiangYou-ResourceHub/settings/pages)。
-2. 在 **Build and deployment → Source** 选择 **Deploy from a branch**。
-3. 选择分支 **main**、目录 **/(root)**，点击 **Save**。
-4. 等待 GitHub 自动构建，再打开网站地址。后续更新 `main` 会按 GitHub Pages 的机制自动部署。
+## 未来方向
 
-注意：这个仓库以 **分支直接发布静态 HTML**，不需要 Actions 构建工作流。仓库创建者需要首次在 Settings 中开启 Pages；仅上传 `index.html` 不等于站点已经公开发布。
+优先探索：影视海报角标、IPTV 台标与 EPG、科技资讯订阅。
 
-## 项目结构
+后续研究：Jellyfin 主题、影视质量优选规则、影音网络规则。
 
-```text
-LiangYou-ResourceHub/
-├── index.html          # 网站首页、导航与资源详情弹窗容器
-├── style.css           # 黑金风格 / 手机平板桌面自适应
-├── app.js              # 搜索、筛选、资源详情、复制订阅链接
-├── data/
-│   └── projects.json   # 已上线项目与未来规划的唯一维护入口
-├── favicon.svg         # 网站图标
-├── og-cover.svg        # 分享时的品牌封面素材
-├── robots.txt
-├── sitemap.xml
-└── .nojekyll
+这些是探索方向，**尚未上线，不设发布日期**。目前没有对应的正式订阅链接。各方向在 `data/projects.json` 中记录其预期格式和准备工作。
+
+## 日常维护
+
+目录的统一入口是 **[data/projects.json](data/projects.json)**：
+
+- `projects`：已上线资源，含原仓库、订阅地址、适用 App、预览、导入步骤与资源更新时间。
+- `metrics`：核对过的图标、原创图标、频道等数量。`checkedAt` 是目录核对日期，不是所有项目的更新日期。
+- `updates`：资源更新速览；`project` 必须指向真实的项目 ID。
+- `future`：探索方向；`phase` 为 `priority` 或 `research`，不填写导入地址。
+- `community`：TG 信息；调整地址时同步首页静态入口，运行校验。
+
+新增资源时先确认正式导入地址和 App 支持的格式，再加入 `projects`。分类按钮、快捷入口和版本数量会自动生成。`images` 应使用真实预览，`updated` 使用实际资源更新时间，避免只改日期制造更新记录。
+
+## 验证与发布
+
+这是直接发布到 GitHub Pages 的静态站点，不需要构建依赖、服务器或数据库。
+
+```sh
+node --check app.js
+node scripts/validate.mjs
 ```
 
-## 后续如何添加项目
+保留 `.nojekyll`；GitHub Pages 使用 **Deploy from a branch → main → /(root)**。提交 `main` 后会自动发布。仓库现有校验工作流继续检查 JavaScript、目录数据、HTML 锚点与资源链接映射。
 
-**已经可以使用的资源**，新增到 `data/projects.json` 的 `projects` 数组，填写：
+界面改动后建议检查 320 / 390 / 768 / 1440 像素宽度、放大文字、搜索无结果、长订阅链接、复制失败与弹窗关闭后的焦点返回。资源图片在原仓库加载，不把全部图标或频道文件加载到导航首页。
 
-- `id`：英文唯一标识；`title` 和 `description`：项目中文名称与说明。
-- `category`：`player`、`icon`、`live` 等分类（新增分类时同步前端筛选按钮）。
-- `stage: "live"`：已上线；`repo`：**真实** GitHub 原仓库地址。
-- `apps`：已确认兼容的 App；`imports`：已验证的正式导入 URL 和用途描述。
-- `images`：可公开访问的 HTTPS 预览图片；`steps`：按 App 实际入口填写导入步骤。
-- `updated`：本次核对的日期。更新内容时不要仅修改日期而不核验链接。
+## 文件结构
 
-**还在计划中的项目**，只加入 `future` 数组，不提供“复制订阅”入口。正式发布前再迁移到 `projects`。
-
-修改 JSON 并提交即可更新首页，**原项目仓库不需要搬迁**。建议每次更新检查 JSON 语法、原仓库链接、订阅文件内容与目标 App 的导入格式。
+```text
+index.html             首页、使用指南、社区入口和详情容器
+style.css              黑金界面和自适应布局
+app.js                 搜索、筛选、版本详情和复制操作
+data/projects.json     资源目录、统计、更新与探索方向
+scripts/validate.mjs   目录和网站结构检查
+favicon.svg            网站图标
+og-cover.svg           分享封面源文件
+og-cover.png           社交分享封面
+```
 
 ## 使用与署名
 
-本站旨在方便使用真实的公开资源，**不代表任何第三方 App 官方**；具体数据、外部头像、图标和商标归各自权利人所有。请尊重各项目许可及素材授权，转载或二次使用时保留相应署名。
+本站为独立资源导航，不代表第三方 App 官方。图标、商标及第三方素材归各自权利人所有；转载或复用请查看各资源仓库的授权及署名要求。本仓库没有授予第三方素材通用商用或再授权许可。
 
-维护：**小红书 · 良哥看未来** · GitHub [@MaddestAlistar](https://github.com/MaddestAlistar)
-
-没有添加通用开源许可证；请不要推定所有内容或第三方素材可任意商用、改名或再授权。
+维护：**小红书 · 良哥看未来** · [GitHub @MaddestAlistar](https://github.com/MaddestAlistar) · [Telegram 良友科技学院](https://t.me/liangyouuniversity)
