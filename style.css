@@ -98,7 +98,7 @@ svg { display: block; flex-shrink: 0; }
 .art-caption { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #bfaa86; font-size: 10px; letter-spacing: .08em; }
 .art-caption > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .art-index { color: #a09887; font-variant-numeric: tabular-nums; }
-.art-images { min-height: 102px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.art-images { min-height: 111px; display: flex; align-items: center; justify-content: center; gap: 12px; }
 .art-images .preview-image { width: min(28%, 80px); aspect-ratio: 1; border: 1px solid #665f51; border-radius: 16px; object-fit: cover; background: #202125; }
 .art-badges .art-images { flex-direction: column; gap: 6px; }
 .art-badges .preview-image { width: min(74%, 198px); height: 33px; aspect-ratio: auto; border: 0; border-radius: 0; object-fit: contain; background: transparent; }
@@ -257,7 +257,7 @@ svg { display: block; flex-shrink: 0; }
   .project-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .card-content, .card-art { padding: 24px; }
   .card-content h3 { font-size: 23px; }
-  .art-images { min-height: 102px; }
+  .art-images { min-height: 111px; }
   .updates-section { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 28px; }
   .guide-steps { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .guide-steps li { padding-top: 16px; }
