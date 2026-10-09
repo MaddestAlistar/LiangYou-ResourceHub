@@ -97,11 +97,14 @@ svg { display: block; flex-shrink: 0; }
 .card-art { padding: 22px; background: #141517; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; display: grid; gap: 16px; }
 .art-caption { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #bfaa86; font-size: 10px; letter-spacing: .08em; }
 .art-caption > span:first-child { min-width: 0; overflow-wrap: anywhere; }
-.art-index { color: #a09887; font-variant-numeric: tabular-nums; }
-.art-images { min-height: 111px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-.art-images .preview-image { width: min(28%, 80px); aspect-ratio: 1; border: 1px solid #665f51; border-radius: 16px; object-fit: cover; background: #202125; }
-.art-badges .art-images { flex-direction: column; gap: 6px; }
-.art-badges .preview-image { width: min(74%, 198px); height: 33px; aspect-ratio: auto; border: 0; border-radius: 0; object-fit: contain; background: transparent; }
+.art-index { color: #b7ab96; font-size: 15px; letter-spacing: 0; }
+.art-images { min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.preview-gallery { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.art-images .preview-image { min-width: 0; width: min(28%, 80px); aspect-ratio: 1; border: 1px solid #665f51; border-radius: 14px; object-fit: cover; background: #202125; }
+.art-badges .preview-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; max-width: 420px; }
+.art-badges .preview-image { width: 100%; height: auto; aspect-ratio: 10 / 3; border: 0; border-radius: 0; object-fit: contain; background: transparent; }
+.art-icons .preview-image { width: calc((100% - 30px) / 4); max-width: 80px; }
+.preview-caption { color: #bcb19e; text-align: center; font-size: 10px; line-height: 1.7; }
 .art-channels .preview-image { border-radius: 50%; }
 .image-fallback { color: var(--gold); font-size: 13px; text-align: center; }
 .card-content { display: flex; flex-direction: column; flex: 1; padding: 24px; gap: 16px; }
@@ -257,7 +260,7 @@ svg { display: block; flex-shrink: 0; }
   .project-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .card-content, .card-art { padding: 24px; }
   .card-content h3 { font-size: 23px; }
-  .art-images { min-height: 111px; }
+  .art-images { min-height: 140px; }
   .updates-section { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 28px; }
   .guide-steps { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .guide-steps li { padding-top: 16px; }

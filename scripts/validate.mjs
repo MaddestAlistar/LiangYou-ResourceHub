@@ -26,7 +26,12 @@ for (const p of data.projects) {
     assert(!seenImports.has(i.url), 'Duplicate import'); seenImports.add(i.url);
     assert(i.name && i.detail, 'Import purpose is required');
   }
-  p.images.forEach(secureURL);
+  for (const src of p.images) {
+    if (src.startsWith('./assets/previews/')) {
+      assert(!src.includes('..') && existsSync(src.slice(2)), 'Missing or unsafe local preview');
+    } else secureURL(src);
+  }
+  if (p.imageLabels) assert.equal(p.imageLabels.length, p.images.length, 'Preview labels do not match images');
 }
 for (const p of data.future) {
   assert(p.title && p.description && p.format && p.audience && p.next, 'Incomplete roadmap');
@@ -38,6 +43,9 @@ for (const key of ['icons', 'originalIcons', 'channels', 'platforms', 'sections'
 assert(data.metrics.originalIcons <= data.metrics.icons, 'Invalid original icon count');
 assert.equal(data.community.url, 'https://t.me/liangyouuniversity');
 assert(html.includes(data.community.url), 'Missing Telegram destination');
+assert.equal(data.social.url, 'https://xhslink.cn/o/9jFC2Fv0osJ');
+assert(html.includes(data.social.url), 'Missing Xiaohongshu destination');
+assert.deepEqual(data.projects.find(p => p.id === 'badges').imports.map(i => i.name), ['简易版', '合成徽章版', '复杂版'], 'Badge entry points must use the three official versions');
 for (const marker of ['projectGrid', 'projectDialog', 'roadmapGrid', 'projectSearch', 'libraryCount', 'manualCopyValue', 'dialogStatus', 'quickLinks', 'filters']) assert(ids.includes(marker), 'Missing UI target: ' + marker);
 for (const [, id] of js.matchAll(/\$\("([^"]+)"\)/g)) assert(ids.includes(id), 'JavaScript target missing: ' + id);
 assert(js.includes('fetch("./data/projects.json"'), 'Catalog not loaded');

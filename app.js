@@ -5,8 +5,9 @@
   const dialog = $("projectDialog"), body = $("dialogBody");
   let projects = [], filter = "all", toastTimer, opener, activeProject, copyBusy = false;
   const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const safeURL = value => { try { const u = new URL(value); return u.protocol === "https:" ? u.href : "#"; } catch { return "#"; } };
+  const safeURL = (value, local = false) => { try { const u = new URL(value, local ? document.baseURI : undefined); return u.protocol === "https:" ? u.href : "#"; } catch { return "#"; } };
   const number = value => Number(value).toLocaleString("en-US");
+  const circled = value => String.fromCodePoint(0x2460 + value - 1);
   const link = (url, label, className = "text-link") => `<a class="${className}" href="${escapeHTML(safeURL(url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)} <span aria-hidden="true">↗</span></a>`;
 
   function notify(message) {
@@ -64,10 +65,10 @@
     grid.innerHTML = visible.map(p => {
       const i = projects.indexOf(p) + 1;
       return `<article class="project-card" id="resource-${escapeHTML(p.id)}">
-        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">0${i}</span></div><div class="art-images">${p.images.map((url, index) => `<img class="preview-image" src="${escapeHTML(safeURL(url))}" alt="${escapeHTML(p.title)}预览 ${index + 1}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`).join("")}</div></div>
+        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">${circled(i)}</span></div><div class="art-images"><div class="preview-gallery">${p.images.map((url, index) => `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
         <div class="card-content"><div class="card-meta"><span class="card-type">${escapeHTML(p.categoryLabel)}</span><span class="live-status"><span class="status-dot"></span>已上线</span></div>
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
-        <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.slice(0, 2).map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
+        <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
         <div class="highlights">${(p.highlights || []).map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
         <div class="card-actions"><button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button><div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">资源更新 ${escapeHTML(p.updated)}</time></div></div></div>
       </article>`;
@@ -86,11 +87,11 @@
   function renderCatalog(data) {
     projects = data.projects.filter(p => p.stage === "live");
     renderFilters(); renderCards();
-    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">0${i + 1}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
+    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
     const metrics = [["已上线资源库", projects.length], ["媒体图标", data.metrics.icons], ["原创与专属", data.metrics.originalIcons], ["频道与作者", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
-    $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card" data-phase="${escapeHTML(p.phase)}"><div class="roadmap-meta"><span class="roadmap-number">0${i + 1}</span><span class="roadmap-phase">${escapeHTML(p.phaseLabel)}</span></div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p><div><div class="roadmap-format">${escapeHTML(p.format)}</div><div class="roadmap-audience">面向 ${escapeHTML(p.audience)}</div></div><div class="roadmap-next">下一步：${escapeHTML(p.next)}</div></article>`).join("");
+    $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card" data-phase="${escapeHTML(p.phase)}"><div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)}</span><span class="roadmap-phase">${escapeHTML(p.phaseLabel)}</span></div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p><div><div class="roadmap-format">${escapeHTML(p.format)}</div><div class="roadmap-audience">面向 ${escapeHTML(p.audience)}</div></div><div class="roadmap-next">下一步：${escapeHTML(p.next)}</div></article>`).join("");
     $("updateList").innerHTML = (data.updates || []).map(item => `<button class="update-item" type="button" data-open="${escapeHTML(item.project)}"><time datetime="${escapeHTML(item.date)}">${escapeHTML(item.date)}</time><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
     if (location.hash.startsWith("#resource-")) openProject(location.hash.slice(10));
   }

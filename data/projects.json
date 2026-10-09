@@ -1,8 +1,8 @@
 {
   "brand": "良哥看未来",
   "site": "良友资源中心",
-  "version": "2.0",
-  "updated": "2026-10-09",
+  "version": "2.1",
+  "updated": "2026-10-10",
   "projects": [
     {
       "id": "badges",
@@ -12,46 +12,40 @@
       "categoryLabel": "播放器 · 影视",
       "stage": "live",
       "tag": "播放识别",
-      "description": "把分辨率、片源、杜比和音轨信息整理成直观徽章。按播放器选择复杂版、EplayerX 或 OopsPlayer 专用版。",
+      "description": "把分辨率、片源、杜比和音轨信息整理成直观徽章。提供简易版、合成徽章版与复杂版，按播放器和显示偏好选择。",
       "short": "一眼看懂片源规格",
-      "stats": "5 个导入版本",
+      "stats": "3 个正式版本",
       "apps": [
         "EplayerX",
         "OopsPlayer",
-        "支持相应格式的播放器"
+        "Rex（Forward）",
+        "Roveplayer",
+        "Vidora",
+        "Capyplayer"
       ],
       "repo": "https://github.com/MaddestAlistar/liangyou-appletv-badges",
       "previewType": "badges",
       "images": [
         "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-25-v9/all/png/4k.png",
-        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-26-v12/all/png/combo-1080p-web-dl.png",
-        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-26-v12/all/png/combo-4k-web-dl.png"
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-25-compact-v10/all/png/combo-uhd-remux-truehd.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-25-v9/all/png/combo-dv-atmos.png",
+        "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/assets/2026-09-25-v9/all/png/71.png"
       ],
       "imports": [
         {
-          "name": "复杂版 · V12",
-          "detail": "适合支持完整规则格式的客户端，包含组合徽章。",
-          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all12.json"
-        },
-        {
-          "name": "EplayerX · 精简版",
-          "detail": "EplayerX 首选；SVG 简洁样式。",
+          "name": "简易版",
+          "detail": "原 EplayerX 版；SVG 简洁样式，EplayerX 首选。",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.EPX12.json"
         },
         {
-          "name": "OopsPlayer · 专用版 BF3",
-          "detail": "OopsPlayer 专用；含 WEB-DL 与 SDR 重复显示修复。",
+          "name": "合成徽章版",
+          "detail": "原 OopsPlayer BF3 版；组合展示片源、杜比与音轨，保留 WEB-DL / SDR 重复显示修复。",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.OopsPlayer.BF3.json"
         },
         {
-          "name": "EplayerX · PNG 备用",
-          "detail": "与精简版规则相同；SVG 显示异常时可尝试。",
-          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.EPX.PNG.json"
-        },
-        {
-          "name": "复杂版 · 单项备用",
-          "detail": "多数规格独立显示，保留 DV + Atmos 组合。",
-          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all.Single.json"
+          "name": "复杂版",
+          "detail": "保留原 V12 完整配置，适合支持完整规则格式的客户端。",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/liangyou-appletv-badges/main/Badge%20LiangYou%20Ver.all12.json"
         }
       ],
       "steps": [
@@ -74,11 +68,18 @@
         "BF3"
       ],
       "highlights": [
-        "组合徽章",
-        "独立播放器版本",
-        "简洁 / 完整样式"
+        "简易版",
+        "合成徽章版",
+        "复杂版"
       ],
-      "note": "只启用一个合适的徽章包。显示结果取决于播放器提供的媒体信息，不代表设备实际输出格式。"
+      "note": "以上播放器均支持徽章；不同 App 的规则格式与显示方式可能不同，请按版本说明导入，并只启用一个合适的徽章包。徽章依据媒体信息显示，不代表设备实际输出格式。",
+      "imageLabels": [
+        "良友4K · ULTRA HD",
+        "UHD REMUX · TrueHD 蓝光",
+        "DV + ATMOS · 杜比视界与全景声",
+        "7.1 环绕声道"
+      ],
+      "previewCaption": "合成示例 · 4K 原盘 / 杜比视界 / 全景声"
     },
     {
       "id": "icons",
@@ -88,19 +89,21 @@
       "categoryLabel": "图标 · 视觉",
       "stage": "live",
       "tag": "图标订阅",
-      "description": "为播放器和媒体服务器整理的图标集合。完整版覆盖常用服务，原创专属版收录良哥提供的 62 枚图标，含动态款。",
+      "description": "适用于影视播放器与音乐服务的图标集合。除 Emby 相关客户端外，流云音乐也可更换音乐服图标；原创专属库收录 62 枚图标，含动态款。",
       "short": "给常用服务换个图标",
       "stats": "7,337 枚图标",
       "apps": [
-        "支持自定义图标库的播放器",
-        "Emby 相关客户端"
+        "流云音乐",
+        "Emby 相关客户端",
+        "支持自定义图标的 App"
       ],
       "repo": "https://github.com/MaddestAlistar/LiangYou-IconLibrary",
       "previewType": "icons",
       "images": [
         "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-player.jpeg",
         "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-carplay.jpeg",
-        "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-panda.jpeg"
+        "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/liangyou-panda.jpeg",
+        "./assets/previews/liangyou-cloudflow.jpeg"
       ],
       "imports": [
         {
@@ -115,8 +118,8 @@
         }
       ],
       "steps": [
-        "打开支持该 JSON 订阅格式的 App，找到图标库或图标订阅入口。",
-        "复制完整版或原创版地址，新增远程订阅。",
+        "支持 JSON 图标库的客户端：找到图标库或图标订阅入口，复制完整版或原创版地址导入。",
+        "流云音乐：在音乐服务的连接设置中找到图标更换入口，选择想用的图标；具体入口以 App 版本为准。",
         "刷新图标库，按照应用或服务器名称搜索并应用喜欢的样式。",
         "图片素材可能来自不同作者，复用前请查看原仓库的授权和使用说明。"
       ],
@@ -133,9 +136,21 @@
         "动态图标",
         "GIF",
         "原创",
-        "logo"
+        "logo",
+        "流云音乐",
+        "CloudFlow",
+        "音乐服",
+        "Navidrome",
+        "飞牛音乐"
       ],
-      "note": "动态 GIF 是否播放取决于客户端支持。图标与素材的复用方式请查看原仓库说明。"
+      "note": "流云音乐支持更换音乐服图标；远程 JSON 订阅及动态 GIF 的支持情况以各 App 为准。图标与素材的复用方式请查看原仓库说明。",
+      "imageLabels": [
+        "良友 Player 专属图标",
+        "良哥看未来 CarPlay 图标",
+        "良哥看未来熊猫图标",
+        "流云音乐 · 良哥看未来联名图标"
+      ],
+      "previewCaption": "影视与音乐服务 · 都能换个喜欢的图标"
     },
     {
       "id": "channels",
@@ -306,6 +321,12 @@
   },
   "updates": [
     {
+      "date": "2026-10-10",
+      "project": "badges",
+      "title": "徽章入口统一为三个版本",
+      "detail": "简易版、合成徽章版与复杂版；原有配置和订阅地址继续可用。"
+    },
+    {
       "date": "2026-10-09",
       "project": "icons",
       "title": "原创图标与动态款已补充",
@@ -323,6 +344,10 @@
       "title": "频道分区与简介整理",
       "detail": "2,081 个频道与作者分为 10 个内容分区，汇流主播单可直接订阅。"
     }
-  ]
+  ],
+  "social": {
+    "name": "良哥看未来",
+    "platform": "小红书",
+    "url": "https://xhslink.cn/o/9jFC2Fv0osJ"
+  }
 }
-
