@@ -400,3 +400,24 @@ svg { display: block; flex-shrink: 0; }
  .offer-logo{width:50px;height:50px;flex-basis:50px}
 }
 @media(max-width:420px){.hero-logo-space{height:clamp(292px,88vw,375px)}.hero-shortcuts .quick-item{gap:9px;padding:12px 11px}.offer-copy strong{font-size:15px}}
+
+/* v2.5: co-branded application gallery and lighter hero layout */
+.hero-copy .hero-byline{display:none}
+.hero-copy{padding-bottom:4px}
+.offer-7 .offer-logo{background:linear-gradient(145deg,#3b3759,#24203a);border-color:#615b90;color:#e5dcff}
+.collab-section{padding-top:40px;border-top:1px solid var(--line)}
+.collab-heading{margin-bottom:26px}
+.collab-heading .eyebrow{color:#d9bc92}
+.collab-count{padding:7px 12px;border:1px solid #4d453d;border-radius:999px;background:#242120;color:#d6bd96;font-size:11px}
+.collab-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.collab-card{min-width:0;border:1px solid #3a393f;border-radius:19px;padding:12px;background:linear-gradient(160deg,#222329,#16171b);box-shadow:0 10px 26px #0003;transition:transform .2s,border-color .2s,box-shadow .2s}
+.collab-card:hover{transform:translateY(-4px);border-color:#937c62;box-shadow:0 12px 34px #0006}
+.collab-card.collab-featured{border-color:#6b5b43;background:linear-gradient(160deg,#29261f,#17191c 80%)}
+.collab-image-wrap{aspect-ratio:1;width:100%;overflow:hidden;display:grid;place-items:center;border-radius:12px;background:#101116}
+.collab-image-wrap img{display:block;width:100%;height:100%;object-fit:contain}
+.collab-copy{padding:15px 5px 5px}
+.collab-copy h3{font-size:16px;font-weight:660;line-height:1.5;margin:0 0 5px;overflow-wrap:anywhere}
+.collab-copy p{font-size:11px;color:var(--muted);line-height:1.65;margin:0}
+.collab-note{font-size:11px;color:#9f9b97;line-height:1.75;margin-top:22px}
+@media(max-width:1000px){.collab-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}}
+@media(max-width:700px){.collab-section{padding-block:50px}.collab-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collab-card{padding:9px;border-radius:15px}.collab-image-wrap{border-radius:10px}.collab-copy{padding:11px 4px 5px}.collab-copy h3{font-size:14px}.collab-copy p{font-size:10px}}

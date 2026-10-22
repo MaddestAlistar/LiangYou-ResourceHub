@@ -112,3 +112,11 @@ og-cover.png           社交分享封面
   - 万能扫：https://tubo.pw/r/creator-2de6a726/wannengsao
   - 车联投屏：https://tubo.pw/r/creator-2de6a726/carlink
   - M3UHub：https://tubo.pw/r/creator-2de6a726/m3uhub
+
+## 2026-10-23 · 联名展示与良友福利更新
+
+- 首页移除「由良哥看未来整理维护／独立资源 · 持续更新」署名行，保留简洁主视觉。
+- App 优惠区的标识改为 **APP OFFERS · 良友福利**，新增 **应用集** App Store 兑换入口（共 8 个）。
+- 在优惠区下方新增 **良友联名软件** 展示区，使用用户提供的联名原图优化后的 WebP 资源，按 APTV、SenPlayer、RovePlayer、OopsPlayer、汇流直播、流云音乐、途播、Komic 排列。图片存放于 `assets/collabs/`，无外部图床依赖。
+- 7 张指定联名图之外还收录一张用户提供的「途播」联名图。
+- 活动实际有效期及优惠以页面说明为准。

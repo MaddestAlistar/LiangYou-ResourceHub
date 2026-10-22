@@ -68,11 +68,22 @@ const threeD=text('interactive/logo/index.html');
 assert(threeD.includes('data:image/png;base64,'), 'Self hosted 3D texture missing');
 assert(threeD.includes(data.social.url) && threeD.includes(data.community.url), '3D social links mismatch');
 assert(html.includes('id="offers"'), 'App offers section missing');
-assert.equal((html.match(/class="offer-card /g) || []).length, 7, 'Expected seven App discount cards');
-assert(Array.isArray(data.offers?.items) && data.offers.items.length === 7, 'Offer link data missing');
+assert.equal((html.match(/class="offer-card /g) || []).length, 8, 'Expected eight App discount cards');
+assert(Array.isArray(data.offers?.items) && data.offers.items.length === 8, 'Eight offer links expected');
 for(const item of data.offers.items) assert(html.includes(item.url.replaceAll('&','&amp;')), 'Offer link missing for ' + item.name);
 assert(html.includes('hero-fullscreen') && html.includes('hero-logo-space'), '3D fullscreen link missing below logo');
 assert(html.includes('quick-symbol'), 'Resource shortcut visual refresh missing');
+assert(!html.includes('class="hero-byline"'), 'Old author byline remains in hero');
+assert(html.includes('APP OFFERS · 良友福利'), 'Benefits label was not updated');
+assert(html.includes('id="collabs"'), 'Collaboration showcase missing');
+assert(Array.isArray(data.collabs) && data.collabs.length === 8, 'Expected eight collaborations');
+assert.equal((html.match(/class="collab-card/g) || []).length, 8, 'Eight collaboration cards expected');
+assert.equal(data.collabs[0].id, 'aptv');
+assert.equal(data.collabs[1].id, 'senplayer');
+for (const entry of data.collabs) {
+  assert(existsSync(entry.image.slice(2)), 'Missing collaboration image: ' + entry.id);
+  assert(html.includes(entry.image), 'Collaboration gallery reference missing: ' + entry.id);
+}
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);
