@@ -1,8 +1,8 @@
 {
   "brand": "良哥看未来",
   "site": "良友资源中心",
-  "version": "2.1",
-  "updated": "2026-10-10",
+  "version": "2.2",
+  "updated": "2026-10-23",
   "projects": [
     {
       "id": "badges",
@@ -89,9 +89,9 @@
       "categoryLabel": "图标 · 视觉",
       "stage": "live",
       "tag": "图标订阅",
-      "description": "适用于影视播放器与音乐服务的图标集合。除 Emby 相关客户端外，流云音乐也可更换音乐服图标；原创专属库收录 62 枚图标，含动态款。",
+      "description": "影视播放器与音乐服务的图标集合，完整版现收录 7,388 枚；精选与专属库共 113 枚，包含 720×720 原始动态素材转换的兼容 GIF 款。",
       "short": "给常用服务换个图标",
-      "stats": "7,337 枚图标",
+      "stats": "7,388 枚图标",
       "apps": [
         "流云音乐",
         "Emby 相关客户端",
@@ -107,13 +107,13 @@
       ],
       "imports": [
         {
-          "name": "完整图标库 · 7,337 枚",
+          "name": "完整图标库 · 7,388 枚",
           "detail": "原创 + 精选扩展图标",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Emby-Icons.json"
         },
         {
-          "name": "原创专属库 · 62 枚",
-          "detail": "仅良哥看未来原创与专属图标",
+          "name": "精选与专属图标 · 113 枚",
+          "detail": "良哥看未来提供的精选与专属图标，包含静态与 GIF 动态款",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Original-Icons.json"
         }
       ],
@@ -123,10 +123,10 @@
         "刷新图标库，按照应用或服务器名称搜索并应用喜欢的样式。",
         "图片素材可能来自不同作者，复用前请查看原仓库的授权和使用说明。"
       ],
-      "updated": "2026-10-09",
+      "updated": "2026-10-22",
       "highlights": [
-        "62 枚原创与专属",
-        "含动态 GIF",
+        "113 枚精选与专属",
+        "20 枚新静态/动态款",
         "5 枚专属置顶"
       ],
       "keywords": [
@@ -143,7 +143,7 @@
         "Navidrome",
         "飞牛音乐"
       ],
-      "note": "流云音乐支持更换音乐服图标；远程 JSON 订阅及动态 GIF 的支持情况以各 App 为准。图标与素材的复用方式请查看原仓库说明。",
+      "note": "2026-10-22 源仓库核对：完整版 7,388 枚，精选与专属 113 枚，其中新一批静态 JPG 与循环 GIF 各 10 枚。GIF 是否播放取决于客户端支持，订阅链接保持不变。",
       "imageLabels": [
         "良友 Player 专属图标",
         "良哥看未来 CarPlay 图标",
@@ -160,12 +160,12 @@
       "categoryLabel": "直播 · 频道",
       "stage": "live",
       "tag": "频道订阅",
-      "description": "汇集抖音、斗鱼、虎牙、B站与 YY 的频道和作者，按 10 个内容分区整理，提供汇流直播主播单和头像订阅。",
+      "description": "良友主播单现收录 3,480 个直播间，横跨 16 个国内外平台、24 个内容分区。汇流可导入完整主播单或单独订阅指定分区；原 2,081 条头像数据继续保留。",
       "short": "集中管理喜欢的主播",
-      "stats": "2,081 个频道与作者",
+      "stats": "3,480 个直播间",
       "apps": [
         "汇流直播（Conflux）",
-        "支持对应格式的图标库客户端"
+        "支持对应 JSON 图标库的客户端"
       ],
       "repo": "https://github.com/MaddestAlistar/LiangyouChannels",
       "previewType": "channels",
@@ -176,27 +176,27 @@
       ],
       "imports": [
         {
-          "name": "汇流直播 · 主播单",
-          "detail": "在汇流的「订阅网址」中导入",
+          "name": "良友主播单 · 完整版（3,480）",
+          "detail": "汇流「订阅网址」导入；16 平台、24 分区，原链接不变",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels-conflux.json"
         },
         {
-          "name": "主播头像 · 图标库格式",
-          "detail": "适用于支持该图标 JSON 格式的客户端",
+          "name": "主播头像图标库 · 2,081 条",
+          "detail": "历史头像图标订阅，和汇流主播单不是同一种 JSON 格式",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels.json"
         }
       ],
       "steps": [
-        "打开汇流直播，进入主播单管理界面。",
-        "选择「订阅网址」，复制并粘贴「汇流直播 · 主播单」地址。",
-        "确认订阅后刷新列表，按平台或内容分区寻找主播。",
-        "收录不代表正在开播，个别账号和房间状态以平台实际显示为准。"
+        "打开汇流，进入主播单管理，选择「订阅网址」。",
+        "复制良友主播单完整版地址，粘贴后刷新，可按 24 个分区查看 3,480 个直播间。",
+        "只想订阅某个分类，可到原仓库的 lists/ 目录选择相应分区 JSON。",
+        "直播间是否开播、不同平台房间是否仍有效，以平台和汇流实际显示为准。"
       ],
-      "updated": "2026-10-06",
+      "updated": "2026-10-11",
       "highlights": [
-        "5 个平台",
-        "10 个内容分区",
-        "每条附简介"
+        "16 个直播平台",
+        "24 个内容分区",
+        "支持分区独立订阅"
       ],
       "keywords": [
         "Conflux",
@@ -209,20 +209,42 @@
         "bilibili",
         "YY",
         "游戏",
-        "音乐"
+        "音乐",
+        "Twitch",
+        "YouTube",
+        "快手",
+        "SOOP",
+        "CHZZK",
+        "分区订阅",
+        "3480",
+        "24分区"
       ],
-      "note": "主播单与头像库是两种不同格式，请按 App 入口选择。收录包含短视频作者，是否开播以平台显示为准。",
+      "note": "源仓库 2026-10-11 版本将汇流主播单扩展至 3,480 个直播间、16 平台、24 分区。头像库仍是 2,081 条的独立图标 JSON，请勿与汇流主播单混用。",
       "sections": [
         "英雄联盟",
+        "聊天颜值",
+        "唱歌",
+        "三角洲行动",
+        "ASMR 助眠",
+        "带货",
         "王者荣耀",
-        "吃鸡与射击",
-        "其他游戏",
-        "聊天与户外",
-        "唱歌与音乐",
-        "舞蹈",
-        "知识与读书",
-        "赛事与官方频道",
-        "带货直播间"
+        "和平精英",
+        "户外",
+        "虚拟主播",
+        "跳舞",
+        "魔兽·炉石",
+        "无畏契约",
+        "主机·单机",
+        "DOTA2",
+        "我的世界",
+        "CS2",
+        "金铲铲·云顶之弈",
+        "体育",
+        "绝地求生",
+        "穿越火线",
+        "棋牌",
+        "地下城与勇士",
+        "美食"
       ]
     }
   ],
@@ -311,43 +333,43 @@
     "url": "https://t.me/liangyouuniversity",
     "handle": "@liangyouuniversity"
   },
-  "checkedAt": "2026-10-09",
+  "checkedAt": "2026-10-23",
   "metrics": {
-    "icons": 7337,
-    "originalIcons": 62,
-    "channels": 2081,
-    "platforms": 5,
-    "sections": 10
+    "icons": 7388,
+    "originalIcons": 113,
+    "channels": 3480,
+    "platforms": 16,
+    "sections": 24
   },
   "updates": [
     {
-      "date": "2026-10-10",
-      "project": "badges",
-      "title": "徽章入口统一为三个版本",
-      "detail": "简易版、合成徽章版与复杂版；原有配置和订阅地址继续可用。"
+      "date": "2026-10-22",
+      "project": "icons",
+      "title": "图标库扩充至 7,388 枚",
+      "detail": "精选与专属版 113 枚；新增 10 张静态图标和对应 10 张动态 GIF，原订阅地址不变。"
     },
     {
-      "date": "2026-10-09",
-      "project": "icons",
-      "title": "原创图标与动态款已补充",
-      "detail": "图标库现有 7,337 枚，原创与专属库 62 枚；5 枚专属图标继续置顶。"
+      "date": "2026-10-11",
+      "project": "channels",
+      "title": "良友主播单扩充至 3,480 个直播间",
+      "detail": "覆盖国内外 16 个平台、24 个分区；支持完整订阅和分区单独订阅。"
+    },
+    {
+      "date": "2026-10-10",
+      "project": "badges",
+      "title": "徽章库保留三个正式版本",
+      "detail": "简易版、合成徽章版和复杂版继续可用；不同播放器按格式选择。"
     },
     {
       "date": "2026-10-08",
       "project": "badges",
-      "title": "OopsPlayer BF3 更新",
-      "detail": "针对 WEB-DL、SDR 在组合后又出现单项的情况调整回退规则。"
-    },
-    {
-      "date": "2026-10-06",
-      "project": "channels",
-      "title": "频道分区与简介整理",
-      "detail": "2,081 个频道与作者分为 10 个内容分区，汇流主播单可直接订阅。"
+      "title": "OopsPlayer BF3 兼容更新",
+      "detail": "调整 WEB-DL、SDR 合成显示逻辑，具体适配请参阅徽章原仓库。"
     }
   ],
   "social": {
     "name": "良哥看未来",
     "platform": "小红书",
-    "url": "https://xhslink.cn/o/9jFC2Fv0osJ"
+    "url": "https://xhslink.cn/o/8SW6tCkrHad"
   }
 }

@@ -43,7 +43,7 @@ for (const key of ['icons', 'originalIcons', 'channels', 'platforms', 'sections'
 assert(data.metrics.originalIcons <= data.metrics.icons, 'Invalid original icon count');
 assert.equal(data.community.url, 'https://t.me/liangyouuniversity');
 assert(html.includes(data.community.url), 'Missing Telegram destination');
-assert.equal(data.social.url, 'https://xhslink.cn/o/9jFC2Fv0osJ');
+assert.equal(data.social.url, 'https://xhslink.cn/o/8SW6tCkrHad');
 assert(html.includes(data.social.url), 'Missing Xiaohongshu destination');
 assert.deepEqual(data.projects.find(p => p.id === 'badges').imports.map(i => i.name), ['简易版', '合成徽章版', '复杂版'], 'Badge entry points must use the three official versions');
 for (const marker of ['projectGrid', 'projectDialog', 'roadmapGrid', 'projectSearch', 'libraryCount', 'manualCopyValue', 'dialogStatus', 'quickLinks', 'filters']) assert(ids.includes(marker), 'Missing UI target: ' + marker);
@@ -53,5 +53,9 @@ assert(css.includes('minmax(0, 1fr)') && css.includes('@media (max-width: 420px)
 assert(css.includes('overflow-wrap: anywhere') && css.includes('100dvh'), 'Long URL or small-screen modal protections missing');
 for (const [, file] of html.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:\?[^"#]*)?"/g)) assert(existsSync(file), 'Missing local asset: ' + file);
 assert(existsSync('og-cover.png'), 'Missing social preview PNG');
+assert(html.includes('id="identity"') && html.includes('src="./interactive/logo/index.html"'), '3D Logo embedded section missing');
+const threeD=text('interactive/logo/index.html');
+assert(threeD.includes('data:image/png;base64,'), 'Self hosted 3D texture missing');
+assert(threeD.includes(data.social.url) && threeD.includes(data.community.url), '3D social links mismatch');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);
