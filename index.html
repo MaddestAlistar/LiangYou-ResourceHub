@@ -19,8 +19,8 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
   <title>良友资源中心 · LiangYou Resource Hub</title>
-  <link rel="stylesheet" href="./style.css?v=2.2">
-  <script src="./app.js?v=2.2" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.3">
+  <script src="./app.js?v=2.3" defer></script>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
@@ -32,42 +32,28 @@
     </div>
   </header>
   <main>
-    <section class="hero container" aria-labelledby="hero-title">
+    <section class="hero container" id="interactive-logo" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow"><span class="status-dot"></span> 良哥看未来的 App 资源集合</p>
         <h1 id="hero-title"><span>好资源，</span><span class="gold">一处找到。</span></h1>
-        <p class="hero-sub">从 3D 互动 Logo、媒体徽章、精选图标，到国内外主播单。<br>把日常用得上的好资源，整理成一个入口。</p>
-        <div class="hero-actions"><a class="button button-primary" href="#interactive-logo">体验 3D Logo <span aria-hidden="true">✦</span></a><a class="button button-secondary" href="#library">浏览资源库 <span aria-hidden="true">↓</span></a></div>
+        <p class="hero-sub">从媒体徽章、精选图标，到国内外良友主播单。<br>把日常用得上的好资源，整理成一个入口。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="./interactive/logo/" target="_blank" rel="noopener noreferrer">全屏体验 3D <span aria-hidden="true">↗</span></a>
+          <a class="button button-secondary" href="#library">浏览资源库 <span aria-hidden="true">↓</span></a>
+        </div>
         <p class="hero-byline"><span class="small-mark" aria-hidden="true">良</span><span>由 <strong>良哥看未来</strong> 整理维护<span class="byline-note">独立资源 · 持续更新</span></span></p>
       </div>
-      <aside class="quick-panel" aria-labelledby="quick-title">
-        <div class="panel-top"><p class="eyebrow">QUICK START</p><span class="subtle">从这里开始</span></div>
-        <h2 id="quick-title">你想给 App 添点什么？</h2>
-        <div id="quickLinks" class="quick-links">
-          <a class="quick-item" href="#library"><span class="quick-number">①</span><span class="quick-copy"><strong>媒体徽章</strong><small>看清片源与音轨规格</small></span><span aria-hidden="true">↗</span></a>
-          <a class="quick-item" href="#library"><span class="quick-number">②</span><span class="quick-copy"><strong>媒体图标</strong><small>为常用服务换个图标</small></span><span aria-hidden="true">↗</span></a>
-          <a class="quick-item" href="#library"><span class="quick-number">③</span><span class="quick-copy"><strong>频道与主播</strong><small>在汇流集中管理订阅</small></span><span aria-hidden="true">↗</span></a>
+      <div class="hero-visual" aria-label="良哥看未来 3D 互动 Logo">
+        <iframe class="hero-logo-iframe" id="lianggeLogoFrame" src="./interactive/logo/embed.html" title="良哥看未来互动式 3D Logo：拖动旋转、点击发光" loading="eager"></iframe>
+        <p class="hero-logo-hint">拖动旋转 · 点击发光</p>
+      </div>
+      <nav class="hero-shortcuts" aria-label="快速打开资源详情">
+        <div class="quick-links" id="quickLinks">
+          <a class="quick-item" href="#library"><span class="quick-number">①</span><span class="quick-copy"><strong>媒体徽章</strong><small>片源和音轨规格</small></span><span aria-hidden="true">↗</span></a>
+          <a class="quick-item" href="#library"><span class="quick-number">②</span><span class="quick-copy"><strong>媒体图标</strong><small>影视与音乐服务图标</small></span><span aria-hidden="true">↗</span></a>
+          <a class="quick-item" href="#library"><span class="quick-number">③</span><span class="quick-copy"><strong>频道与主播</strong><small>汇流主播单订阅</small></span><span aria-hidden="true">↗</span></a>
         </div>
-        <div class="panel-bottom"><span class="status-dot"></span><span>选好版本，复制链接，回到 App 导入。</span></div>
-      </aside>
-    </section>
-
-    <section class="logo-showcase-section container" id="interactive-logo" aria-labelledby="logo-showcase-title">
-      <div class="logo-showcase-head">
-        <div><p class="eyebrow">INTERACTIVE · BRAND IDENTITY</p><h2 id="logo-showcase-title">良哥看未来 · 3D 互动标识</h2><p class="section-description">拖动旋转，点击 Logo 唤醒红色能量光效。一个更有参与感的品牌入口。</p></div>
-        <a class="button button-secondary logo-standalone" href="./interactive/logo/" target="_blank" rel="noopener noreferrer">全屏体验 <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="logo-embed" id="logoEmbed">
-        <iframe class="logo-iframe" id="lianggeLogoFrame" src="./interactive/logo/" title="良哥看未来：支持拖动旋转与点击发光的 3D Logo 交互场景" loading="lazy" allow="fullscreen"></iframe>
-      </div>
-      <div class="logo-showcase-footer">
-        <p class="logo-tip">✦ 拖动旋转 · 点击发光 · 可关闭自动旋转 <span class="logo-mobile-tip">· 手机端先点击「开启交互」</span></p>
-        <div class="logo-showcase-actions">
-          <button class="button button-secondary logo-touch-toggle" id="logoInteractionToggle" type="button" aria-controls="lianggeLogoFrame" aria-pressed="false">开启交互</button>
-          <a class="logo-social-link" href="https://xhslink.cn/o/8SW6tCkrHad" target="_blank" rel="noopener noreferrer">小红书 · 良哥看未来 ↗</a>
-          <a class="logo-social-link" href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer">Telegram · 良友科技学院 ↗</a>
-        </div>
-      </div>
+      </nav>
     </section>
     <section class="container overview" aria-label="资源概况">
       <dl class="metrics" id="metrics"><div><dt>已上线项目</dt><dd>—</dd></div><div><dt>媒体图标</dt><dd>—</dd></div><div><dt>精选与专属</dt><dd>—</dd></div><div><dt>主播单直播间</dt><dd>—</dd></div></dl>

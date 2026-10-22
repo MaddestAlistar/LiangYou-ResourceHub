@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07090f">
+<title>良哥看未来 · 3D Logo 嵌入版</title>
+<meta name="description" content="良哥看未来 3D Logo 主视觉，拖动旋转，点击发光。">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="良哥看未来 · 交互式 3D Logo">
+<meta property="og:description" content="拖动旋转 3D Logo，点击唤醒发光效果，访问小红书主页及 TG 频道。">
+<meta property="og:url" content="https://maddestalistar.github.io/3D-Logo/">
+<meta property="og:image" content="https://maddestalistar.github.io/3D-Logo/assets/logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="../../favicon.svg">
+<style>
+:root{--bg:#07090e;--white:#f5f6fa;--red:#ff5264;--gold:#ffcf7b;--ease:cubic-bezier(.2,.85,.15,1);--pitch:-6deg;--yaw:-13deg;--zoom:1;--light:1}
+*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans CJK SC",Segoe UI,sans-serif}
+body{overscroll-behavior:none}.app{width:100vw;height:100dvh;min-height:560px;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse 46% 54% at 50% 46%,#292039 0%,#111521 44%,transparent 78%),radial-gradient(ellipse 50% 60% at 52% 112%,#3a131c 0%,transparent 70%),#07090f}
+.app:before{content:'';position:absolute;inset:0;opacity:.16;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.095) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.095) 1px,transparent 1px);background-size:68px 68px;mask-image:radial-gradient(ellipse at 50% 52%,black 1%,transparent 75%)}
+.app:after{content:'';position:absolute;inset:-30%;pointer-events:none;background:radial-gradient(ellipse 25% 23% at 50% 52%,rgba(255,66,83,.11),transparent 80%);filter:blur(18px);animation:breath 5s ease-in-out infinite alternate}
+@keyframes breath{to{opacity:.45;transform:scale(1.1)}}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:30px clamp(24px,4.7vw,76px);z-index:10;pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;pointer-events:auto}.brandmark{font-weight:1000;font-size:22px;color:#fff;background:linear-gradient(145deg,#ff6971,#91232d);border:1px solid #ffb0a5;box-shadow:0 0 26px #f4505166;border-radius:12px;width:43px;height:43px;display:grid;place-items:center}
+.brand-name{font-size:13px;letter-spacing:3px;font-weight:750}.brand-caption{font-size:10px;letter-spacing:2.5px;color:#9b9dad;margin-top:5px}
+.status{font-size:10px;letter-spacing:2px;color:#f0c5b3;border:1px solid #8a4f527d;background:#3318216b;border-radius:99px;padding:10px 15px;display:flex;gap:9px;align-items:center}
+.status i{display:block;width:6px;height:6px;border-radius:50%;background:#ff7580;box-shadow:0 0 10px #ff566e;animation:blink 1.8s infinite}@keyframes blink{50%{opacity:.3}}
+.heading{position:absolute;left:clamp(24px,5vw,80px);top:27%;z-index:5;pointer-events:none;max-width:255px}.eyebrow{font-size:10px;letter-spacing:5px;color:#ef9196;font-weight:800}.heading h1{font-size:clamp(29px,3.4vw,54px);font-weight:900;line-height:1.15;margin:18px 0;letter-spacing:2px}.heading .descr{font-size:12px;color:#9998a7;line-height:2;letter-spacing:1px}
+.stage{position:absolute;inset:0;perspective:1500px;perspective-origin:50% 50%;touch-action:none;cursor:grab;z-index:3}.stage:active{cursor:grabbing}
+.halo-back{position:absolute;left:50%;top:49%;width:min(71vmin,800px);height:min(71vmin,800px);border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#ff52631a 0%,#ff4f5e0d 36%,transparent 69%);box-shadow:0 0 90px 12px #d43e4840;filter:blur(15px);transition:filter .4s,box-shadow .4s;pointer-events:none}
+.floor{position:absolute;left:50%;top:81%;width:min(67vw,710px);height:100px;transform:translate(-50%,-50%) rotateX(72deg);border-radius:50%;background:radial-gradient(ellipse,#dd3d5466 0%,#e4465e19 40%,transparent 73%);filter:blur(17px);opacity:.72;pointer-events:none}
+.circles{position:absolute;left:50%;top:49%;width:min(77vmin,730px);height:min(77vmin,730px);transform:translate(-50%,-50%);pointer-events:none;transform-style:preserve-3d}
+.ring{position:absolute;inset:0;border-radius:50%;border:1px solid #ff9eaa6c;box-shadow:inset 0 0 24px #f5586433,0 0 18px #eb566327;transform-style:preserve-3d}
+.ring.r1{transform:rotateX(68deg) rotateZ(13deg) scale(1.11);border-top:3px solid #ff9eae;animation:ring-a 18s linear infinite}
+.ring.r2{transform:rotateY(68deg) rotateZ(-16deg) scale(1.07);border-right:2px solid #ffe3b1a8;border-bottom:1px solid #ff777b;animation:ring-b 26s linear infinite reverse}
+.ring.r3{inset:9%;border:1px dashed #ff858742;transform:rotateZ(10deg);animation:spin 80s linear infinite}
+@keyframes ring-a{to{transform:rotateX(68deg) rotateZ(373deg) scale(1.11)}}@keyframes ring-b{to{transform:rotateY(68deg) rotateZ(344deg) scale(1.07)}}@keyframes spin{to{transform:rotate(360deg)}}
+.scanner{position:absolute;left:50%;top:49%;width:min(65vmin,650px);height:min(65vmin,650px);border-radius:50%;transform:translate(-50%,-50%);border:1px solid #ffffff0e;box-shadow:0 0 0 26px #ffffff03,0 0 0 52px #ffffff02;pointer-events:none}
+.logo-holder{position:absolute;left:50%;top:49%;width:min(67vmin,660px);height:min(67vmin,660px);min-width:285px;min-height:285px;transform:translate(-50%,-50%) scale(var(--zoom));transform-style:preserve-3d;will-change:transform}
+.logo{position:absolute;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(var(--pitch)) rotateY(var(--yaw));will-change:transform;filter:drop-shadow(0 32px 26px #000a) drop-shadow(0 0 19px #ff58634f);transition:filter .3s}
+.logo .face{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;backface-visibility:hidden;user-select:none;pointer-events:none}
+.logo .face.front{transform:translateZ(35px);filter:drop-shadow(0 0 9px #f65b5b44)}
+.logo .face.depth{filter:brightness(0) saturate(1);opacity:.95}
+.logo .face.rim{filter:brightness(.26) sepia(1) hue-rotate(320deg) saturate(4) drop-shadow(0 0 4px #ff606e);opacity:.96}
+.logo .face.back{transform:rotateY(180deg) translateZ(36px);filter:brightness(.38) drop-shadow(0 0 12px #fd4d4d);backface-visibility:hidden}
+.logo.shadow-glow{filter:drop-shadow(0 38px 35px #000d) drop-shadow(0 0 23px #ff536570) drop-shadow(0 0 60px #ff526a44)}
+.app.active .logo{filter:drop-shadow(0 36px 34px #000c) drop-shadow(0 0 29px #ff576fdb) drop-shadow(0 0 74px #ff5564a8)}.app.active .halo-back{box-shadow:0 0 125px 24px #f151627a;filter:blur(7px)}.app.active .ring{border-color:#ffd4d4aa;box-shadow:0 0 29px #ff52657a}
+.stars{position:absolute;inset:0;pointer-events:none}.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 14px #ff9d9e;animation:twinkle var(--time) ease-in-out infinite alternate;opacity:var(--alpha)}@keyframes twinkle{to{opacity:.15;transform:scale(.4)}}
+.burst{position:absolute;left:50%;top:49%;pointer-events:none;z-index:9;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#fff 0,#ffcbb2 35%,#fa4c65 72%,transparent 80%);box-shadow:0 0 15px 3px #f55a65;animation:explode .95s ease-out forwards;--angle:0deg;--distance:220px}
+@keyframes explode{0%{opacity:1;transform:rotate(var(--angle)) translateX(35px) scale(.55)}65%{opacity:.8}100%{opacity:0;transform:rotate(var(--angle)) translateX(var(--distance)) scale(.05)}}
+.bottom{position:absolute;bottom:0;left:0;right:0;z-index:12;padding:24px clamp(24px,4.7vw,76px) 29px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;pointer-events:none}
+.hint{font-size:11px;color:#9c9aa6;letter-spacing:1px;line-height:1.9;display:flex;gap:10px;align-items:center}.hint .gesture{font-size:22px;color:#ffe0d1}.hint strong{font-weight:650;color:#e1cad0}
+.buttons{pointer-events:auto;display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+button{cursor:pointer;border:1px solid #ffffff25;background:#1c1c27c9;color:#f8ecef;border-radius:999px;min-height:41px;padding:0 16px;font:600 11px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;letter-spacing:1px;backdrop-filter:blur(12px);transition:transform .2s,background .25s,border-color .25s}button:hover{transform:translateY(-2px);border-color:#ff859180;background:#3e222c}button:focus-visible{outline:2px solid #ff6c79;outline-offset:3px}button.on{background:#54232e;border-color:#ff879a85;color:#ffe1e5}
+.sideinfo{position:absolute;right:clamp(24px,5vw,80px);top:30%;text-align:right;pointer-events:none;z-index:3}.tiny{font-size:10px;letter-spacing:3px;color:#9f8290}.big{font-size:14px;font-weight:800;letter-spacing:4px;margin:10px 0 23px;color:#f9ece7}.coord{color:#7b7581;font-size:10px;letter-spacing:1.5px;line-height:2.3}
+@media(max-width:1040px){.heading{top:16%;left:25px}.heading h1{font-size:29px}.heading .descr{font-size:11px}.sideinfo{display:none}.logo-holder{width:min(72vmin,650px);height:min(72vmin,650px)}.circles{width:min(83vmin,720px);height:min(83vmin,720px)}}
+@media(max-width:700px){.app{min-height:100dvh}.topbar{padding:18px 20px}.brandmark{width:39px;height:39px;font-size:20px}.brand-name{font-size:11px;letter-spacing:2px}.brand-caption{font-size:9px}.status{font-size:9px;padding:8px 9px;letter-spacing:1px}.heading{top:100px;left:24px}.heading .eyebrow{font-size:9px}.heading h1{font-size:24px;margin:8px 0}.heading .descr{font-size:10px;line-height:1.5}.logo-holder{width:min(88vw,480px);height:min(88vw,480px)}.circles{width:min(98vw,520px);height:min(98vw,520px)}.bottom{display:flex;flex-direction:column;align-items:flex-start;padding:18px 20px 24px}.hint{font-size:10px}.buttons{width:100%;justify-content:flex-start;gap:6px}.buttons button{font-size:10px;min-height:38px;padding:0 12px}.floor{top:71%;width:80vw}.logo-holder,.circles,.scanner,.halo-back{top:51%}.stage .burst{top:51%}}
+@media(max-height:650px) and (min-width:700px){.heading{top:23%}.logo-holder{width:min(76vh,560px);height:min(76vh,560px)}.circles{width:min(87vh,600px);height:min(87vh,600px)}}
+@media(prefers-reduced-motion:reduce){.ring,.star,.app:after{animation:none !important}}
+
+/* Official contact entry — designed to sit clear of the central 3D emblem */
+.social-panel{position:absolute;right:clamp(24px,4.7vw,76px);top:31%;z-index:15;width:clamp(215px,17.2vw,268px);pointer-events:auto;animation:socialReveal .75s .12s both}
+@keyframes socialReveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.social-kicker{display:flex;align-items:center;gap:9px;color:#fc9298;font-size:10px;font-weight:700;letter-spacing:2.4px;margin-bottom:14px;white-space:nowrap}
+.social-kicker:before{content:'';width:23px;height:1px;background:linear-gradient(90deg,#ff6771,#8d384a)}
+.social-title{font-size:18px;letter-spacing:1.8px;font-weight:790;margin:0 0 17px;color:#f6f0f0}
+.social-links{display:grid;gap:11px}
+.social-card{display:flex;align-items:center;gap:10px;width:100%;min-height:70px;padding:11px 12px;border:1px solid rgba(255,129,142,.23);border-radius:15px;color:#f9f5f6;background:linear-gradient(120deg,rgba(38,29,39,.86),rgba(20,20,31,.81));box-shadow:0 12px 33px rgba(0,0,0,.2),inset 0 1px 0 #ffffff0e;backdrop-filter:blur(15px);text-decoration:none;transition:transform .25s,background .25s,border-color .25s,box-shadow .25s}
+.social-card:hover,.social-card:focus-within,.social-card:focus-visible{transform:translateY(-3px);border-color:#ff8695a4;background:linear-gradient(125deg,rgba(65,32,45,.92),rgba(24,26,38,.94));box-shadow:0 10px 25px rgba(221,67,86,.15),inset 0 1px 0 #ffffff1a}
+.social-card:focus-visible{outline:2px solid #ff99a6;outline-offset:3px}
+.social-icon{width:35px;height:35px;flex-shrink:0;border-radius:11px;display:grid;place-items:center;font-size:18px;font-weight:850}
+.social-icon.xhs{color:#fff;background:linear-gradient(150deg,#fb5a70,#9d2b45);border:1px solid #ff9ca16b;box-shadow:0 0 18px #e5485850}
+.social-icon.tg{color:#daf8ff;background:linear-gradient(145deg,#218ed0,#214b88);border:1px solid #85d7ff5e;box-shadow:0 0 18px #2e93cb2f}
+.social-meta{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.social-label{font-size:10px;color:#ab9ba8;font-weight:650;letter-spacing:1px}
+.social-value{font-size:13px;font-weight:780;letter-spacing:.5px;color:#fff;white-space:nowrap}
+.social-value.tg-value{font-size:10px;letter-spacing:0;color:#d7e8f4}
+.social-action{flex-shrink:0;display:grid;place-items:center;color:#f7c5c8;background:#ffffff0a;border:1px solid #ffffff1d;border-radius:9px;font-size:11px;min-height:32px;padding:0 8px;white-space:nowrap}
+button.social-action{font-family:inherit;cursor:pointer;letter-spacing:0;min-height:32px;line-height:1}
+button.social-action:hover{background:#6a273a}
+.social-foot{color:#6e6473;font-size:9px;letter-spacing:1.15px;margin-top:13px;text-align:right}
+.contact-toast{position:absolute;bottom:104px;left:50%;transform:translateX(-50%) translateY(6px);z-index:50;padding:11px 20px;background:#342330;border:1px solid #fa81917b;border-radius:99px;box-shadow:0 0 23px #da506144;font-size:12px;color:#fff;opacity:0;pointer-events:none;transition:opacity .23s,transform .23s;white-space:nowrap}
+.contact-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:701px) and (max-width:1199px){.social-panel{right:24px;top:19%;width:214px}.social-title{font-size:15px}.social-value.tg-value{font-size:9px}.heading{max-width:215px}}
+@media(max-width:700px){
+ .heading{top:95px}
+ .brand-caption{font-size:8px;letter-spacing:1px;white-space:nowrap}
+ .status{font-size:8px;letter-spacing:.5px;white-space:nowrap;padding:8px 10px}
+ .heading .descr{display:none}
+ .logo-holder{width:min(81vw,420px);height:min(81vw,420px);min-width:0;min-height:0;top:48%}
+ .circles{width:min(91vw,480px);height:min(91vw,480px);top:48%}
+ .scanner,.halo-back{top:48%}
+ .social-panel{left:20px;right:20px;top:auto;bottom:113px;width:auto;animation:none}
+ .social-kicker,.social-title,.social-foot{display:none}
+ .social-links{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+ .social-card{padding:9px;gap:8px;min-height:64px;border-radius:13px}
+ .social-icon{width:32px;height:32px;border-radius:9px;font-size:17px}
+ .social-label{font-size:9px;letter-spacing:0}
+ .social-value{font-size:12px;letter-spacing:0}
+ .social-value.tg-value{font-size:9px;letter-spacing:-.25px}
+ .tg-card .social-action{display:none}
+ .social-action{min-height:26px;padding:0 6px;border-radius:7px;font-size:10px}
+ .bottom{align-items:center;padding:14px 18px 25px}
+ .bottom .hint{display:none}
+ .buttons{justify-content:center;gap:7px}
+ .buttons button{flex:0 0 auto;padding:0 10px;min-height:37px;white-space:nowrap}
+ .contact-toast{bottom:200px;max-width:calc(100vw - 36px);font-size:11px}
+}
+@media(max-width:365px){.social-panel{left:12px;right:12px}.social-card{padding:7px;gap:6px}.social-icon{width:27px;height:29px;font-size:15px}.social-value.tg-value{font-size:8px}.social-value{font-size:11px}.buttons{gap:4px}.buttons button{font-size:9px;padding:0 9px}}
+@media(max-width:700px) and (max-height:740px){.heading{top:72px}.heading h1{font-size:21px}.logo-holder,.circles,.scanner,.halo-back{top:47%}.logo-holder{width:min(72vw,335px);height:min(72vw,335px)}.circles{width:min(84vw,370px);height:min(84vw,370px)}.social-panel{bottom:89px}.bottom{padding-bottom:14px}.buttons button{min-height:34px}.social-card{min-height:55px}.contact-toast{bottom:170px}}
+@media(max-width:700px) and (max-height:590px){.heading{display:none}.logo-holder{width:min(61vw,295px);height:min(61vw,295px);top:37%}.circles,.scanner,.halo-back{top:37%}.social-panel{bottom:78px}}
+@media(prefers-reduced-motion:reduce){.social-panel{animation:none}.social-card,.contact-toast{transition:none}}
+
+/* EMBED ONLY: no navigation, promotional copy, socials, lower controls or touch overlay. */
+html,body{height:100%;overflow:hidden!important;background:transparent!important}
+body{margin:0!important}
+.app{width:100%;height:100%;min-height:0!important;background:radial-gradient(ellipse 42% 48% at 50% 49%,rgba(125,31,51,.12),rgba(13,14,19,.26) 72%,transparent 95%);border:0}
+.app:before{opacity:.05}
+.app:after{opacity:.18}
+.topbar,.heading,.social-panel,.bottom,.sideinfo,.contact-toast{display:none!important}
+.stage{inset:0;cursor:grab;touch-action:none}
+.halo-back,.circles,.scanner,.logo-holder{top:50%!important}
+.logo-holder{width:min(78vmin,500px)!important;height:min(78vmin,500px)!important;min-width:0!important;min-height:0!important}
+.circles{width:min(89vmin,580px)!important;height:min(89vmin,580px)!important}
+.scanner{width:min(80vmin,520px)!important;height:min(80vmin,520px)!important}
+.halo-back{width:min(80vmin,520px)!important;height:min(80vmin,520px)!important}
+.floor{top:82%}
+@media(max-width:700px){.app{min-height:0!important}.logo-holder{width:min(87vmin,400px)!important;height:min(87vmin,400px)!important}.circles{width:min(97vmin,480px)!important;height:min(97vmin,480px)!important}.scanner,.halo-back{width:min(93vmin,440px)!important;height:min(93vmin,440px)!important}.floor{top:84%}}
+@media(prefers-reduced-motion:reduce){.ring,.star,.app:after{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app" aria-label="良哥看未来交互式3D徽章">
+ <header class="topbar">
+  <div class="brand"><div class="brandmark">良</div><div><div class="brand-name">良哥看未来</div><div class="brand-caption">LIANG GE · FUTURE LAB</div></div></div>
+  <div class="status"><i></i> INTERACTIVE 3D / LIVE</div>
+ </header>
+ <div class="heading"><div class="eyebrow">THE FUTURE IS NOW</div><h1>触碰未来<br>唤醒灵感</h1><div class="descr">探索 · 旋转 · 点击激活<br>一个可以亲手互动的品牌标识</div></div>
+ <aside class="social-panel" aria-label="良哥看未来官方社交入口">
+   <div class="social-kicker">OFFICIAL CHANNELS</div>
+   <h2 class="social-title">和未来保持连接<span style="color:#fd647b">.</span></h2>
+   <div class="social-links">
+     <a class="social-card xhs-card" href="https://xhslink.cn/o/8SW6tCkrHad" target="_blank" rel="noopener noreferrer" aria-label="一键打开良哥看未来小红书主页" title="打开小红书：https://xhslink.cn/o/8SW6tCkrHad">
+       <span class="social-icon xhs" aria-hidden="true">♥</span>
+       <span class="social-meta"><span class="social-label">小红书主页</span><strong class="social-value" id="xhsHome">良哥看未来</strong></span>
+       <span class="social-action" aria-hidden="true">↗</span>
+     </a>
+     <a class="social-card tg-card" href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer" aria-label="打开 Telegram 频道 liangyouuniversity">
+       <span class="social-icon tg" aria-hidden="true">➤</span>
+       <span class="social-meta"><span class="social-label">TG 频道</span><strong class="social-value tg-value">t.me/liangyouuniversity</strong></span>
+       <span class="social-action" aria-hidden="true">↗</span>
+     </a>
+   </div>
+   <div class="social-foot">LIANG GE · FOLLOW THE FUTURE</div>
+ </aside>
+ <div class="stage" id="stage" aria-label="可拖动旋转、点击发光的立体良哥看未来Logo" role="application">
+  <div class="stars" id="stars"></div><div class="halo-back"></div><div class="floor"></div>
+  <div class="circles"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+  <div class="scanner"></div><div class="logo-holder" id="holder"><div class="logo" id="logo"></div></div>
+ </div>
+ <div class="bottom"><div class="hint"><span class="gesture">✧</span><div><strong>拖动旋转 · 点击激活</strong><div>触屏同样支持 · 滚轮缩放</div></div></div>
+  <div class="buttons"><button id="btnEnergy" type="button">✦ 能量模式</button><button id="btnSpin" type="button" class="on">⟳ 自动旋转 ON</button><button id="btnReset" type="button">↺ 重置视角</button></div></div>
+</div>
+<script>
+(()=>{
+'use strict';
+const data='https://raw.githubusercontent.com/MaddestAlistar/3D-Logo/main/assets/logo.png';
+const app=document.getElementById('app'),stage=document.getElementById('stage'),logo=document.getElementById('logo'),stars=document.getElementById('stars'),holder=document.getElementById('holder');
+const makeLayer=(cl,z)=>{const e=document.createElement('img');e.className='face '+cl;e.alt='';e.draggable=false;e.src=data;e.style.transform=`translateZ(${z}px)`;logo.appendChild(e);return e};
+for(let i=0;i<16;i++)makeLayer('depth',-31+i*4);
+makeLayer('rim',29);makeLayer('front',35);
+const back=makeLayer('back',0);back.style.transform='rotateY(180deg) translateZ(36px)';
+for(let i=0;i<65;i++){let e=document.createElement('i');e.className='star';let xx=(i*73.151+17.3)%100,yy=(i*41.73+13.5)%100;e.style.cssText=`left:${xx}%;top:${yy}%;--alpha:${(.2+(i%6)*.12).toFixed(2)};--time:${2.3+i%7*.6}s`;stars.appendChild(e)}
+let spin=true,energy=false,drag=false,moved=false,clickStartX=0,clickStartY=0,oldX=0,oldY=0,targetX=-6,targetY=-13,currentX=-6,currentY=-13,zoom=1,last=performance.now(),shock=0;
+const energyBtn=document.getElementById('btnEnergy'),spinBtn=document.getElementById('btnSpin'),resetBtn=document.getElementById('btnReset');
+function setEnergy(v){energy=v;app.classList.toggle('active',energy);energyBtn.classList.toggle('on',energy);energyBtn.textContent=energy?'✦ 能量模式 ON':'✦ 能量模式';shock=1.0;burst()}
+function burst(){for(let j=0;j<22;j++){const e=document.createElement('i');e.className='burst';e.style.setProperty('--angle',(j*360/22+(j%3)*6)+'deg');e.style.setProperty('--distance',(150+(j%6)*34)+'px');stage.appendChild(e);setTimeout(()=>e.remove(),1050)}}
+stage.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;drag=true;moved=false;clickStartX=oldX=e.clientX;clickStartY=oldY=e.clientY;stage.setPointerCapture(e.pointerId)});
+stage.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-oldX,dy=e.clientY-oldY;targetY+=dx*.43;targetX=Math.max(-78,Math.min(78,targetX-dy*.36));oldX=e.clientX;oldY=e.clientY;if(Math.hypot(e.clientX-clickStartX,e.clientY-clickStartY)>8)moved=true});
+function end(e){if(!drag)return;drag=false;if(!moved){setEnergy(!energy)}try{stage.releasePointerCapture(e.pointerId)}catch(_){}}
+stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',()=>{drag=false});
+stage.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(1.38,zoom-e.deltaY*.0007))},{passive:false});
+energyBtn.addEventListener('click',()=>setEnergy(!energy));spinBtn.addEventListener('click',()=>{spin=!spin;spinBtn.textContent=spin?'⟳ 自动旋转 ON':'⟳ 自动旋转 OFF';spinBtn.classList.toggle('on',spin)});
+resetBtn.addEventListener('click',()=>{targetX=-6;targetY=-13;zoom=1;energy=false;app.classList.remove('active');energyBtn.classList.remove('on');energyBtn.textContent='✦ 能量模式'});
+
+// Both official social cards are direct HTTPS links and work without JavaScript.
+function frame(now){const dt=Math.min(50,now-last);last=now;if(spin&&!drag)targetY+=dt*.0038;currentX+=(targetX-currentX)*Math.min(1,dt*.0075);currentY+=(targetY-currentY)*Math.min(1,dt*.0075);document.documentElement.style.setProperty('--pitch',currentX+'deg');document.documentElement.style.setProperty('--yaw',currentY+'deg');document.documentElement.style.setProperty('--zoom',zoom+(shock*.045));shock*=.92;if(shock<.001)shock=0;requestAnimationFrame(frame)}requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

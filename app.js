@@ -147,15 +147,6 @@
   dialog.addEventListener("click", event => { if (event.target === dialog && backdropDown && outside(event)) closeDialog(); backdropDown = false; });
   $("selectCopyValue").addEventListener("click", () => { const field = $("manualCopyValue"); field.focus(); field.select(); field.setSelectionRange(0, field.value.length); $("manualCopyStatus").textContent = "已全选，请使用系统的复制操作。"; });
 
-  const logoToggle = $("logoInteractionToggle"), logoSection = $("interactive-logo");
-  if (logoToggle && logoSection) {
-    logoToggle.addEventListener("click", () => {
-      const active = logoSection.classList.toggle("is-interacting");
-      logoToggle.setAttribute("aria-pressed", String(active));
-      logoToggle.textContent = active ? "结束交互" : "开启交互";
-    });
-  }
-
   fetch("./data/projects.json", { cache: "no-cache" })
     .then(response => { if (!response.ok) throw new Error("catalog unavailable"); return response.json(); })
     .then(data => { if (!Array.isArray(data.projects) || !Array.isArray(data.future) || !data.metrics) throw new Error("invalid catalog"); renderCatalog(data); })

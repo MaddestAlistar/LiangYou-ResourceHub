@@ -17,7 +17,7 @@
 
 ## 互动 3D Logo
 
-首页顶部新增可交互的 3D Logo 展示，**网站自己托管** `interactive/logo/index.html`，不依赖 3D-Logo 项目的 Pages 是否开启。拖动旋转、点击发光、自动转动、手机触屏均保留；手机为避免内嵌画面截获页面滚动，需要先点「轻触开启 3D 交互」，操作后可以结束互动继续浏览。
+3D Logo 已整合到首页首屏主视觉，不再另设独立展示区。主视觉使用 `interactive/logo/embed.html` 的纯 Logo 版本，去掉内嵌社交卡片、控制按钮和触摸提示遮挡；可拖动旋转、点击发光，并保留「全屏体验 3D」入口。全屏版本仍位于 `interactive/logo/index.html`。
 
 - **[3D 全屏体验](https://maddestalistar.github.io/LiangYou-ResourceHub/interactive/logo/)**
 - **[3D Logo 源仓库及 GLB 模型](https://github.com/MaddestAlistar/3D-Logo)**
@@ -27,7 +27,7 @@
 
 ## 2026-10-23 网站更新
 
-- 首页新增独立托管的 [3D Logo 互动体验](interactive/logo/)；可拖动旋转、点击发光、切换自动旋转，也可点击小红书和 Telegram。移动端有交互开关，避免页面滚动冲突。
+- 将 [3D Logo](interactive/logo/) 直接融入首页首屏，嵌入版仅展示 3D 效果；全屏版保留完整按钮及社交入口，首页社交链接仍在社区区块。
 - 原徽章、图标及主播单订阅 URL 均保持不变；原来的 3 个订阅资源卡片继续可用。
 - 图标库更新至 7,388 枚，其中良哥精选与专属 113 枚；主播单更新至 3,480 个直播间、16 平台和 24 分区，增加三个常用分区的直达订阅。
 - 小红书入口统一更新为新的主页直达链接。
@@ -86,7 +86,8 @@ data/projects.json     最新资源目录、统计、更新与探索方向
 interactive/logo/index.html  自托管 3D Logo 互动页面（含内嵌图片）
 scripts/validate.mjs   目录和网站结构检查
 favicon.svg            网站图标
-interactive/logo/     可交互 3D Logo 独立页面
+interactive/logo/embed.html  首页纯 3D Logo 嵌入效果
+interactive/logo/index.html 完整交互体验页面
 og-cover.svg           分享封面源文件
 og-cover.png           社交分享封面
 ```

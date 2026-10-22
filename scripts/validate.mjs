@@ -54,9 +54,14 @@ assert(css.includes('overflow-wrap: anywhere') && css.includes('100dvh'), 'Long 
 for (const [, file] of html.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:\?[^"#]*)?"/g)) assert(existsSync(file), 'Missing local asset: ' + file);
 assert(existsSync('og-cover.png'), 'Missing social preview PNG');
 assert(existsSync('interactive/logo/index.html'), 'Missing interactive Logo page');
-assert(html.includes('src="./interactive/logo/"'), 'Interactive Logo iframe missing');
+assert(html.includes('src="./interactive/logo/embed.html"'), 'Interactive Logo iframe missing');
 assert.equal(html.split('<iframe ').length - 1, 1, 'Only one interactive Logo iframe is allowed');
-assert(html.includes('id="logoInteractionToggle"'), 'Mobile Logo interaction toggle missing');
+assert(html.includes('id="interactive-logo"'), 'Hero 3D Logo anchor missing');
+assert(!html.includes('logoInteractionToggle') && !html.includes('logo-showcase-section'), 'Obsolete 3D overlay or special section remains');
+assert(existsSync('interactive/logo/embed.html'), 'Missing clean 3D embed page');
+const embed=text('interactive/logo/embed.html');
+assert(embed.includes('stage.addEventListener') && embed.includes('setEnergy(!energy)'), 'Embedded drag/click interactions missing');
+assert(embed.includes('.social-panel,.bottom') || embed.includes('.topbar,.heading,.social-panel,.bottom'), 'Embedded social cards not hidden');
 assert(data.metrics.icons >= 7388 && data.metrics.originalIcons >= 113, 'Stale icon counts');
 assert(data.metrics.channels >= 3480 && data.metrics.platforms >= 16 && data.metrics.sections >= 24, 'Stale channel counts');
 const threeD=text('interactive/logo/index.html');
