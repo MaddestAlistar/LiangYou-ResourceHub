@@ -17,7 +17,7 @@
 
 ## 互动 3D Logo
 
-3D Logo 已整合到首页首屏主视觉，不再另设独立展示区。主视觉使用 `interactive/logo/embed.html` 的纯 Logo 版本，去掉内嵌社交卡片、控制按钮和触摸提示遮挡；可拖动旋转、点击发光，并保留「全屏体验 3D」入口。全屏版本仍位于 `interactive/logo/index.html`。
+3D Logo 已整合到首页首屏主视觉，不再另设独立展示区。现改为深黑宇宙星空背景，去掉原先突兀的粉色光晕，「全屏体验 3D」按钮移到 Logo 正下方。主视觉使用 `interactive/logo/embed.html` 的纯 Logo 版本，去掉内嵌社交卡片、控制按钮和触摸提示遮挡；可拖动旋转、点击发光，并保留「全屏体验 3D」入口。全屏版本仍位于 `interactive/logo/index.html`。
 
 - **[3D 全屏体验](https://maddestalistar.github.io/LiangYou-ResourceHub/interactive/logo/)**
 - **[3D Logo 源仓库及 GLB 模型](https://github.com/MaddestAlistar/3D-Logo)**
@@ -27,7 +27,7 @@
 
 ## 2026-10-23 网站更新
 
-- 将 [3D Logo](interactive/logo/) 直接融入首页首屏，嵌入版仅展示 3D 效果；全屏版保留完整按钮及社交入口，首页社交链接仍在社区区块。
+- 将 [3D Logo](interactive/logo/) 直接融入首页首屏，嵌入版仅展示 3D 效果；全屏版保留完整按钮及社交入口，首页社交链接仍在社区区块。资源快捷入口改为独立卡片，小屏单列排布。
 - 原徽章、图标及主播单订阅 URL 均保持不变；原来的 3 个订阅资源卡片继续可用。
 - 图标库更新至 7,388 枚，其中良哥精选与专属 113 枚；主播单更新至 3,480 个直播间、16 平台和 24 分区，增加三个常用分区的直达订阅。
 - 小红书入口统一更新为新的主页直达链接。
@@ -97,3 +97,18 @@ og-cover.png           社交分享封面
 本站为独立资源导航，不代表第三方 App 官方。图标、商标及第三方素材归各自权利人所有；转载或复用请查看各资源仓库的授权及署名要求。本仓库没有授予第三方素材通用商用或再授权许可。
 
 维护：**[小红书 · 良哥看未来](https://xhslink.cn/o/8SW6tCkrHad)** · [GitHub @MaddestAlistar](https://github.com/MaddestAlistar) · [Telegram 良友科技学院](https://t.me/liangyouuniversity)
+
+## 2026-10-23 · 星空风格和 App 优惠入口
+
+- 3D 首页嵌入版更换为深黑宇宙星空底色，保留旋转和点击发光；全屏体验入口放在 Logo 下方。
+- 资源快捷入口改为三张舒展的卡片，小屏自动改为单列，避免文字拥挤。
+- 徽章的三个版本仅描述功能特征，移除「原 EplayerX」「原 OopsPlayer BF3」等历史版式描述，三个订阅地址不变。
+- 新增 7 个 App 限时优惠入口，是否仍有优惠及使用条件以活动页面为准：
+
+  - 汇流直播：https://conflux.kami.asia/i/VM3ZA
+  - 途播：https://tubo.pw/r/creator-2de6a726
+  - CarTV：https://apps.apple.com/redeem?ctx=offercodes&id=6800211040&code=FF3T6G
+  - Comink 漫画：https://apps.apple.com/redeem?ctx=offercodes&id=6803453450&code=COMINKYH
+  - 万能扫：https://tubo.pw/r/creator-2de6a726/wannengsao
+  - 车联投屏：https://tubo.pw/r/creator-2de6a726/carlink
+  - M3UHub：https://tubo.pw/r/creator-2de6a726/m3uhub

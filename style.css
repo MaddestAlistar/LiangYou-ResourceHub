@@ -348,3 +348,55 @@ svg { display: block; flex-shrink: 0; }
  .hero-actions .button{font-size:12px;padding-inline:13px;min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){.hero-logo-hint{animation:none}}
+
+/* v2.4: black-galaxy logo, relaxed resource shortcuts, new offers */
+.hero-visual{height:auto;min-height:0;overflow:visible;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:transparent}
+.hero-logo-space{width:100%;height:clamp(365px,43vw,500px);position:relative;overflow:hidden;isolation:isolate;border-radius:14px;background:radial-gradient(ellipse at center,#141c30,#080c15 69%,#05070b 100%)}
+.hero-logo-space:before{content:"";position:absolute;inset:0;z-index:0;opacity:.25;pointer-events:none;background-image:radial-gradient(1px 1px at 18px 26px,#fff 90%,transparent),radial-gradient(1px 1px at 96px 132px,#b7c5fb 90%,transparent),radial-gradient(1.5px 1.5px at 153px 48px,#d4eaff 85%,transparent);background-size:189px 167px,251px 211px,319px 271px}
+.hero-logo-iframe{position:relative;z-index:1;height:100%;width:100%;border:0;background:transparent}
+.hero-logo-hint{z-index:2;bottom:8px;color:#bec8d9;text-shadow:0 1px 10px #000}
+.hero-fullscreen{min-height:46px;max-width:100%;width:max-content;padding:9px 26px;margin-top:3px;font-size:13px}
+.hero-shortcuts{padding-top:18px;border-top:0}
+.hero-shortcuts .quick-links{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.hero-shortcuts .quick-item{grid-template-columns:22px 42px minmax(0,1fr) 16px;gap:9px;min-height:110px;padding:15px;align-items:center;border:1px solid #424046;background:linear-gradient(145deg,#212126,#17181c 80%);border-radius:15px;transition:transform .2s,border-color .2s}
+.hero-shortcuts .quick-item:hover{background:#252327;border-color:#987c5a;transform:translateY(-2px)}
+.hero-shortcuts .quick-number{display:block;align-self:center;color:#a79c8c;font-size:11px}
+.hero-shortcuts .quick-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#3d302b;color:#f8d7ac;border:1px solid #635246;font-size:23px}
+.hero-shortcuts .quick-item:nth-child(2) .quick-symbol{background:#25334c;color:#cbdcff;border-color:#3b516f}
+.hero-shortcuts .quick-item:nth-child(3) .quick-symbol{background:#253f36;color:#c5f2df;border-color:#3b6252}
+.hero-shortcuts .quick-copy strong{font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.hero-shortcuts .quick-copy small{display:block;font-size:11px;line-height:1.55;color:#b8b1a9}
+.hero-shortcuts .quick-arrow{justify-self:end;color:var(--gold)}
+.offers-section{padding-top:40px;border-top:1px solid var(--line)}
+.offers-count{padding:6px 12px;border:1px solid #55483d;border-radius:99px;background:#28231e;color:var(--gold);font-size:11px}
+.offers-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.offer-card{display:flex;align-items:center;gap:13px;min-height:122px;min-width:0;padding:18px;border:1px solid #494248;border-radius:15px;background:linear-gradient(150deg,#212125,#17181b);transition:transform .2s,border-color .2s}
+.offer-card:hover{transform:translateY(-3px);border-color:#ab896b;background:#29252b}
+.offer-logo{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:13px;border:1px solid #7a5c4e;color:#ffddbb;background:#46322b;font-size:12px;font-weight:800}
+.offer-1 .offer-logo,.offer-6 .offer-logo{background:#22344e;border-color:#45617e;color:#c9e7ff}
+.offer-2 .offer-logo,.offer-5 .offer-logo{background:#263e33;border-color:#486957;color:#d5f5dd}
+.offer-3 .offer-logo,.offer-4 .offer-logo{background:#3c2944;border-color:#66496b;color:#f0d1ff}
+.offer-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.offer-overline{font-size:10px;letter-spacing:.04em;color:#d4b790}
+.offer-copy strong{font-size:16px;line-height:1.45;overflow-wrap:anywhere}
+.offer-copy small{font-size:11px;color:var(--muted);line-height:1.5}
+.offer-arrow{color:var(--gold);flex:0 0 auto;font-size:17px}
+.offers-notice{margin-top:18px;color:#a8a19c;font-size:11px;line-height:1.8}
+@media(max-width:1050px){.hero-shortcuts .quick-item{grid-template-columns:17px 40px minmax(0,1fr) 14px;gap:7px;padding:12px}.hero-shortcuts .quick-copy strong{font-size:13px}}
+@media(max-width:900px){.hero-logo-space{height:400px}.offers-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .hero-visual{height:auto;min-height:0;margin:0 -8px 8px;gap:8px}
+ .hero-logo-space{height:clamp(310px,90vw,420px);border-radius:0}
+ .hero-fullscreen{width:min(290px,100%);margin:0 auto 12px}
+ .hero-shortcuts{padding-top:9px}
+ .hero-shortcuts .quick-links{grid-template-columns:1fr;gap:10px}
+ .hero-shortcuts .quick-item{grid-template-columns:24px 44px minmax(0,1fr) 18px;gap:11px;min-height:80px;padding:12px 15px}
+ .hero-shortcuts .quick-symbol{width:44px;height:44px}
+ .hero-shortcuts .quick-copy strong{font-size:15px}
+ .hero-shortcuts .quick-copy small{display:block;font-size:11px}
+ .offers-section{padding-block:52px}
+ .offers-grid{grid-template-columns:1fr;gap:11px}
+ .offer-card{min-height:93px;padding:14px}
+ .offer-logo{width:50px;height:50px;flex-basis:50px}
+}
+@media(max-width:420px){.hero-logo-space{height:clamp(292px,88vw,375px)}.hero-shortcuts .quick-item{gap:9px;padding:12px 11px}.offer-copy strong{font-size:15px}}

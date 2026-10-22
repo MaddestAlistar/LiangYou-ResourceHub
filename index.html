@@ -19,15 +19,15 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
   <title>良友资源中心 · LiangYou Resource Hub</title>
-  <link rel="stylesheet" href="./style.css?v=2.3">
-  <script src="./app.js?v=2.3" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2.4">
+  <script src="./app.js?v=2.4" defer></script>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
   <header class="site-header">
     <div class="container header-inner">
       <a href="#top" class="brand" aria-label="良友资源中心首页"><span class="brand-mark" aria-hidden="true">良</span><span class="brand-copy"><strong>良友资源中心</strong><small>LIANGYOU RESOURCE HUB</small></span></a>
-      <nav class="nav" aria-label="主导航"><a href="#interactive-logo">3D Logo</a><a href="#library">资源库</a><a href="#guide">使用指南</a><a href="#community">交流社区</a></nav>
+      <nav class="nav" aria-label="主导航"><a href="#library">资源库</a><a href="#offers">App 优惠</a><a href="#guide">使用指南</a><a href="#community">交流社区</a></nav>
       <a class="header-link" href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-4 18-6-5-3 3 1-6 8-7-10 6-5-2Z"/></svg><span>Telegram</span><span aria-hidden="true">↗</span></a>
     </div>
   </header>
@@ -38,20 +38,22 @@
         <h1 id="hero-title"><span>好资源，</span><span class="gold">一处找到。</span></h1>
         <p class="hero-sub">从媒体徽章、精选图标，到国内外良友主播单。<br>把日常用得上的好资源，整理成一个入口。</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="./interactive/logo/" target="_blank" rel="noopener noreferrer">全屏体验 3D <span aria-hidden="true">↗</span></a>
           <a class="button button-secondary" href="#library">浏览资源库 <span aria-hidden="true">↓</span></a>
         </div>
         <p class="hero-byline"><span class="small-mark" aria-hidden="true">良</span><span>由 <strong>良哥看未来</strong> 整理维护<span class="byline-note">独立资源 · 持续更新</span></span></p>
       </div>
       <div class="hero-visual" aria-label="良哥看未来 3D 互动 Logo">
-        <iframe class="hero-logo-iframe" id="lianggeLogoFrame" src="./interactive/logo/embed.html" title="良哥看未来互动式 3D Logo：拖动旋转、点击发光" loading="eager"></iframe>
-        <p class="hero-logo-hint">拖动旋转 · 点击发光</p>
+        <div class="hero-logo-space">
+          <iframe class="hero-logo-iframe" id="lianggeLogoFrame" src="./interactive/logo/embed.html?v=2.4" title="良哥看未来互动式 3D Logo：拖动旋转、点击发光" loading="eager"></iframe>
+          <p class="hero-logo-hint">拖动旋转 · 点击发光</p>
+        </div>
+        <a class="button button-primary hero-fullscreen" href="./interactive/logo/" target="_blank" rel="noopener noreferrer">全屏体验 3D <span aria-hidden="true">↗</span></a>
       </div>
       <nav class="hero-shortcuts" aria-label="快速打开资源详情">
         <div class="quick-links" id="quickLinks">
-          <a class="quick-item" href="#library"><span class="quick-number">①</span><span class="quick-copy"><strong>媒体徽章</strong><small>片源和音轨规格</small></span><span aria-hidden="true">↗</span></a>
-          <a class="quick-item" href="#library"><span class="quick-number">②</span><span class="quick-copy"><strong>媒体图标</strong><small>影视与音乐服务图标</small></span><span aria-hidden="true">↗</span></a>
-          <a class="quick-item" href="#library"><span class="quick-number">③</span><span class="quick-copy"><strong>频道与主播</strong><small>汇流主播单订阅</small></span><span aria-hidden="true">↗</span></a>
+          <a class="quick-item" href="#library"><span class="quick-number">①</span><span class="quick-symbol" aria-hidden="true">◈</span><span class="quick-copy"><strong>媒体徽章</strong><small>片源和音轨规格</small></span><span class="quick-arrow" aria-hidden="true">↗</span></a>
+          <a class="quick-item" href="#library"><span class="quick-number">②</span><span class="quick-symbol" aria-hidden="true">✦</span><span class="quick-copy"><strong>媒体图标</strong><small>影视与音乐服务图标</small></span><span class="quick-arrow" aria-hidden="true">↗</span></a>
+          <a class="quick-item" href="#library"><span class="quick-number">③</span><span class="quick-symbol" aria-hidden="true">◉</span><span class="quick-copy"><strong>频道与主播</strong><small>汇流主播单订阅</small></span><span class="quick-arrow" aria-hidden="true">↗</span></a>
         </div>
       </nav>
     </section>
@@ -65,6 +67,18 @@
       <div class="project-grid" id="projectGrid" aria-busy="true"><p class="loading-note">正在加载资源目录…</p></div>
       <div class="empty-state" id="emptyState" hidden><h3>没有找到匹配的资源</h3><p>试试「EplayerX」「精选」「汇流」等关键词，或清除当前筛选。</p><button id="resetSearch" class="button button-secondary" type="button">清除筛选</button></div>
       <noscript><div class="notice"><p>开启 JavaScript 后可搜索资源、选择版本并复制链接。也可以直接查看原仓库：</p><ul><li><a href="https://github.com/MaddestAlistar/liangyou-appletv-badges">良友媒体徽章库</a></li><li><a href="https://github.com/MaddestAlistar/LiangYou-IconLibrary">良友媒体图标库</a></li><li><a href="https://github.com/MaddestAlistar/LiangyouChannels">良友频道库</a></li></ul></div></noscript>
+    </section>
+    <section class="section offers-section container" id="offers" aria-labelledby="offers-title">
+      <div class="section-heading offers-heading"><div><p class="eyebrow">APP OFFERS · 良哥精选</p><h2 id="offers-title">App 限时优惠</h2><p class="section-description">常用 App 的优惠入口，点击卡片直达活动页面。</p></div><span class="offers-count">7 个活动入口</span></div>
+      <div class="offers-grid">
+        <a class="offer-card offer-0" href="https://conflux.kami.asia/i/VM3ZA" target="_blank" rel="noopener noreferrer" aria-label="汇流直播优惠入口"><span class="offer-logo" aria-hidden="true">LIVE</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>汇流直播</strong><small>直播聚合 · 主播订阅</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-1" href="https://tubo.pw/r/creator-2de6a726" target="_blank" rel="noopener noreferrer" aria-label="途播优惠入口"><span class="offer-logo" aria-hidden="true">TUBO</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>途播</strong><small>影音播放 · 多端体验</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-2" href="https://apps.apple.com/redeem?ctx=offercodes&amp;id=6800211040&amp;code=FF3T6G" target="_blank" rel="noopener noreferrer" aria-label="CarTV优惠入口"><span class="offer-logo" aria-hidden="true">CAR</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>CarTV</strong><small>车载影音 · CarPlay</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-3" href="https://apps.apple.com/redeem?ctx=offercodes&amp;id=6803453450&amp;code=COMINKYH" target="_blank" rel="noopener noreferrer" aria-label="Comink 漫画优惠入口"><span class="offer-logo" aria-hidden="true">COMI</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>Comink 漫画</strong><small>漫画阅读</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-4" href="https://tubo.pw/r/creator-2de6a726/wannengsao" target="_blank" rel="noopener noreferrer" aria-label="万能扫优惠入口"><span class="offer-logo" aria-hidden="true">SCAN</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>万能扫</strong><small>扫描识别工具</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-5" href="https://tubo.pw/r/creator-2de6a726/carlink" target="_blank" rel="noopener noreferrer" aria-label="车联投屏优惠入口"><span class="offer-logo" aria-hidden="true">LINK</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>车联投屏</strong><small>车机投屏</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+        <a class="offer-card offer-6" href="https://tubo.pw/r/creator-2de6a726/m3uhub" target="_blank" rel="noopener noreferrer" aria-label="M3UHub优惠入口"><span class="offer-logo" aria-hidden="true">M3U</span><span class="offer-copy"><span class="offer-overline">限时活动入口</span><strong>M3UHub</strong><small>M3U 影音播放</small></span><span class="offer-arrow" aria-hidden="true">↗</span></a>
+      </div><p class="offers-notice">实际优惠价格、资格、有效期及兑换码使用限制，以跳转后的页面为准；部分链接为 Apple 兑换入口。</p>
     </section>
     <section class="updates-section container" aria-labelledby="updates-title"><div class="updates-heading"><p class="eyebrow">WHAT'S NEW</p><h2 id="updates-title">资源更新速览</h2><p class="subtle">具体改动见各项目说明</p></div><div id="updateList" class="update-list"><p class="subtle">正在加载更新记录…</p></div></section>
     <section class="section container" id="guide" aria-labelledby="guide-title">

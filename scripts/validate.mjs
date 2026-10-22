@@ -54,7 +54,7 @@ assert(css.includes('overflow-wrap: anywhere') && css.includes('100dvh'), 'Long 
 for (const [, file] of html.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:\?[^"#]*)?"/g)) assert(existsSync(file), 'Missing local asset: ' + file);
 assert(existsSync('og-cover.png'), 'Missing social preview PNG');
 assert(existsSync('interactive/logo/index.html'), 'Missing interactive Logo page');
-assert(html.includes('src="./interactive/logo/embed.html"'), 'Interactive Logo iframe missing');
+assert(html.includes('src="./interactive/logo/embed.html?v=2.4"'), 'Interactive Logo iframe missing');
 assert.equal(html.split('<iframe ').length - 1, 1, 'Only one interactive Logo iframe is allowed');
 assert(html.includes('id="interactive-logo"'), 'Hero 3D Logo anchor missing');
 assert(!html.includes('logoInteractionToggle') && !html.includes('logo-showcase-section'), 'Obsolete 3D overlay or special section remains');
@@ -67,5 +67,12 @@ assert(data.metrics.channels >= 3480 && data.metrics.platforms >= 16 && data.met
 const threeD=text('interactive/logo/index.html');
 assert(threeD.includes('data:image/png;base64,'), 'Self hosted 3D texture missing');
 assert(threeD.includes(data.social.url) && threeD.includes(data.community.url), '3D social links mismatch');
+assert(html.includes('id="offers"'), 'App offers section missing');
+assert.equal((html.match(/class="offer-card /g) || []).length, 7, 'Expected seven App discount cards');
+assert(Array.isArray(data.offers?.items) && data.offers.items.length === 7, 'Offer link data missing');
+for(const item of data.offers.items) assert(html.includes(item.url.replaceAll('&','&amp;')), 'Offer link missing for ' + item.name);
+assert(html.includes('hero-fullscreen') && html.includes('hero-logo-space'), '3D fullscreen link missing below logo');
+assert(html.includes('quick-symbol'), 'Resource shortcut visual refresh missing');
+assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);
