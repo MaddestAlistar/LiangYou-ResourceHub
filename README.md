@@ -8,11 +8,12 @@
 
 | 资源 | 内容 | 原仓库 |
 | --- | --- | --- |
+| **3D 互动 Logo** | 拖动旋转、点击发光，可直接跳转小红书和 Telegram | [3D-Logo](https://github.com/MaddestAlistar/3D-Logo) |
 | 媒体徽章库 | 简易版（原 EplayerX）、合成徽章版（原 OopsPlayer BF3）、复杂版 V12 | [liangyou-appletv-badges](https://github.com/MaddestAlistar/liangyou-appletv-badges) |
 | 媒体图标库 | 影视与音乐服务图标；支持流云音乐换图标；7,388 枚图标，精选与专属版 113 枚 | [LiangYou-IconLibrary](https://github.com/MaddestAlistar/LiangYou-IconLibrary) |
 | 频道库 | 3,480 个直播间、16 个平台、24 个内容分区；原 2,081 条头像库保留 | [LiangyouChannels](https://github.com/MaddestAlistar/LiangyouChannels) |
 
-数量核对日期：**2026-10-23**。资源链接及数量依据原仓库 README 和正式 JSON 核对；后续实际数量以原仓库为准。导航站不搬迁资源，也不改变用户已经添加的订阅地址。
+数量核对日期：**2026-10-23**。资源链接及数量依据原仓库 README 和正式 JSON 核对；后续实际数量以原仓库为准。3D Logo 互动页自托管，其余订阅仍直接指向原资源库，原有用户的订阅地址不变。
 
 ## 互动 3D Logo
 
@@ -23,6 +24,13 @@
 - **[小红书主页](https://xhslink.cn/o/8SW6tCkrHad)** 与 **[TG 良友科技学院](https://t.me/liangyouuniversity)**
 
 本网页为带厚度视觉的 CSS 3D 徽章，并非 `.spline` 原生工程。可在 3D-Logo 仓库下载 GLB 后导入 Spline 单独配置交互。
+
+## 2026-10-23 网站更新
+
+- 首页新增独立托管的 [3D Logo 互动体验](interactive/logo/)；可拖动旋转、点击发光、切换自动旋转，也可点击小红书和 Telegram。移动端有交互开关，避免页面滚动冲突。
+- 原徽章、图标及主播单订阅 URL 均保持不变；原来的 3 个订阅资源卡片继续可用。
+- 图标库更新至 7,388 枚，其中良哥精选与专属 113 枚；主播单更新至 3,480 个直播间、16 平台和 24 分区，增加三个常用分区的直达订阅。
+- 小红书入口统一更新为新的主页直达链接。
 
 ## 本次整理
 
@@ -78,6 +86,7 @@ data/projects.json     最新资源目录、统计、更新与探索方向
 interactive/logo/index.html  自托管 3D Logo 互动页面（含内嵌图片）
 scripts/validate.mjs   目录和网站结构检查
 favicon.svg            网站图标
+interactive/logo/     可交互 3D Logo 独立页面
 og-cover.svg           分享封面源文件
 og-cover.png           社交分享封面
 ```

@@ -88,7 +88,7 @@
     projects = data.projects.filter(p => p.stage === "live");
     renderFilters(); renderCards();
     $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
-    const metrics = [["已上线资源库", projects.length], ["媒体图标", data.metrics.icons], ["原创与专属", data.metrics.originalIcons], ["频道与作者", data.metrics.channels]];
+    const metrics = [["已上线项目", projects.length + 1], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
     $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card" data-phase="${escapeHTML(p.phase)}"><div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)}</span><span class="roadmap-phase">${escapeHTML(p.phaseLabel)}</span></div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p><div><div class="roadmap-format">${escapeHTML(p.format)}</div><div class="roadmap-audience">面向 ${escapeHTML(p.audience)}</div></div><div class="roadmap-next">下一步：${escapeHTML(p.next)}</div></article>`).join("");
@@ -146,6 +146,15 @@
   dialog.addEventListener("pointerdown", event => { backdropDown = event.target === dialog && outside(event); });
   dialog.addEventListener("click", event => { if (event.target === dialog && backdropDown && outside(event)) closeDialog(); backdropDown = false; });
   $("selectCopyValue").addEventListener("click", () => { const field = $("manualCopyValue"); field.focus(); field.select(); field.setSelectionRange(0, field.value.length); $("manualCopyStatus").textContent = "已全选，请使用系统的复制操作。"; });
+
+  const logoToggle = $("logoInteractionToggle"), logoSection = $("interactive-logo");
+  if (logoToggle && logoSection) {
+    logoToggle.addEventListener("click", () => {
+      const active = logoSection.classList.toggle("is-interacting");
+      logoToggle.setAttribute("aria-pressed", String(active));
+      logoToggle.textContent = active ? "结束交互" : "开启交互";
+    });
+  }
 
   fetch("./data/projects.json", { cache: "no-cache" })
     .then(response => { if (!response.ok) throw new Error("catalog unavailable"); return response.json(); })

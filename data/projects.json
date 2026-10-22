@@ -89,7 +89,7 @@
       "categoryLabel": "图标 · 视觉",
       "stage": "live",
       "tag": "图标订阅",
-      "description": "影视播放器与音乐服务的图标集合，完整版现收录 7,388 枚；精选与专属库共 113 枚，包含 720×720 原始动态素材转换的兼容 GIF 款。",
+      "description": "影视与音乐服务适用的媒体图标集合，包含 7,388 枚图标及 113 枚良哥精选与专属图标；新增静态款与循环 GIF 动态款。",
       "short": "给常用服务换个图标",
       "stats": "7,388 枚图标",
       "apps": [
@@ -112,8 +112,8 @@
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Emby-Icons.json"
         },
         {
-          "name": "精选与专属图标 · 113 枚",
-          "detail": "良哥看未来提供的精选与专属图标，包含静态与 GIF 动态款",
+          "name": "良哥精选与专属 · 113 枚",
+          "detail": "精选与专属图标，包括静态及动态款",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/LiangYou-Original-Icons.json"
         }
       ],
@@ -126,7 +126,7 @@
       "updated": "2026-10-22",
       "highlights": [
         "113 枚精选与专属",
-        "20 枚新静态/动态款",
+        "含 GIF 动态款",
         "5 枚专属置顶"
       ],
       "keywords": [
@@ -143,7 +143,7 @@
         "Navidrome",
         "飞牛音乐"
       ],
-      "note": "2026-10-22 源仓库核对：完整版 7,388 枚，精选与专属 113 枚，其中新一批静态 JPG 与循环 GIF 各 10 枚。GIF 是否播放取决于客户端支持，订阅链接保持不变。",
+      "note": "2026-10-22 原仓库说明共有 7,388 枚图标，其中 113 枚为良哥看未来提供的精选与专属图标；动态 GIF 是否流畅播放取决于客户端，订阅地址保持不变。",
       "imageLabels": [
         "良友 Player 专属图标",
         "良哥看未来 CarPlay 图标",
@@ -160,12 +160,12 @@
       "categoryLabel": "直播 · 频道",
       "stage": "live",
       "tag": "频道订阅",
-      "description": "良友主播单现收录 3,480 个直播间，横跨 16 个国内外平台、24 个内容分区。汇流可导入完整主播单或单独订阅指定分区；原 2,081 条头像数据继续保留。",
+      "description": "良友主播单收录国内外 16 个平台的 3,480 个直播间，按 24 个内容分区整理。可在汇流 App 导入完整主播单，也可单独选择分区。",
       "short": "集中管理喜欢的主播",
       "stats": "3,480 个直播间",
       "apps": [
         "汇流直播（Conflux）",
-        "支持对应 JSON 图标库的客户端"
+        "支持头像库 JSON 的播放器"
       ],
       "repo": "https://github.com/MaddestAlistar/LiangyouChannels",
       "previewType": "channels",
@@ -176,27 +176,42 @@
       ],
       "imports": [
         {
-          "name": "良友主播单 · 完整版（3,480）",
-          "detail": "汇流「订阅网址」导入；16 平台、24 分区，原链接不变",
+          "name": "良友主播单 · 3,480 个直播间",
+          "detail": "汇流 App 的「订阅网址」入口，24 个内容分区",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels-conflux.json"
         },
         {
           "name": "主播头像图标库 · 2,081 条",
           "detail": "历史头像图标订阅，和汇流主播单不是同一种 JSON 格式",
           "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/liangyouchannels.json"
+        },
+        {
+          "name": "英雄联盟 · 独立分区",
+          "detail": "仅订阅英雄联盟分区",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/lists/league-of-legends.json"
+        },
+        {
+          "name": "王者荣耀 · 独立分区",
+          "detail": "仅订阅王者荣耀分区",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/lists/honor-of-kings.json"
+        },
+        {
+          "name": "ASMR 助眠 · 独立分区",
+          "detail": "仅订阅助眠分区",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangyouChannels/main/lists/asmr.json"
         }
       ],
       "steps": [
-        "打开汇流，进入主播单管理，选择「订阅网址」。",
-        "复制良友主播单完整版地址，粘贴后刷新，可按 24 个分区查看 3,480 个直播间。",
-        "只想订阅某个分类，可到原仓库的 lists/ 目录选择相应分区 JSON。",
-        "直播间是否开播、不同平台房间是否仍有效，以平台和汇流实际显示为准。"
+        "打开汇流直播，在主播单管理中选择「订阅网址」。",
+        "推荐导入完整版「良友主播单」，也可选择页面提供的单独分区订阅。",
+        "刷新后按 24 个内容分区筛选；完整 24 个分区见原仓库 lists 目录。",
+        "主播是否开播、播放支持情况以相应平台及 App 为准。"
       ],
       "updated": "2026-10-11",
       "highlights": [
         "16 个直播平台",
         "24 个内容分区",
-        "支持分区独立订阅"
+        "支持分区订阅"
       ],
       "keywords": [
         "Conflux",
@@ -217,9 +232,14 @@
         "CHZZK",
         "分区订阅",
         "3480",
-        "24分区"
+        "24分区",
+        "三角洲行动",
+        "ASMR",
+        "无畏契约",
+        "虚拟主播",
+        "体育"
       ],
-      "note": "源仓库 2026-10-11 版本将汇流主播单扩展至 3,480 个直播间、16 平台、24 分区。头像库仍是 2,081 条的独立图标 JSON，请勿与汇流主播单混用。",
+      "note": "最新版汇流主播单共有 3,480 个直播间、16 个平台、24 个分区；头像图标订阅沿用原有 2,081 条旧版素材数据，不等于最新版主播单直播间数量。订阅地址保持不变。",
       "sections": [
         "英雄联盟",
         "聊天颜值",
@@ -345,26 +365,20 @@
     {
       "date": "2026-10-22",
       "project": "icons",
-      "title": "图标库扩充至 7,388 枚",
-      "detail": "精选与专属版 113 枚；新增 10 张静态图标和对应 10 张动态 GIF，原订阅地址不变。"
+      "title": "图标库新增动态与精选款",
+      "detail": "完整版 7,388 枚，良哥精选与专属 113 枚；本批补充静态 JPG 与 GIF 动态款。"
     },
     {
       "date": "2026-10-11",
       "project": "channels",
-      "title": "良友主播单扩充至 3,480 个直播间",
-      "detail": "覆盖国内外 16 个平台、24 个分区；支持完整订阅和分区单独订阅。"
+      "title": "良友主播单更新至 3,480 个直播间",
+      "detail": "覆盖 16 个国内外平台、24 个分区，并支持按分区订阅。"
     },
     {
       "date": "2026-10-10",
       "project": "badges",
-      "title": "徽章库保留三个正式版本",
-      "detail": "简易版、合成徽章版和复杂版继续可用；不同播放器按格式选择。"
-    },
-    {
-      "date": "2026-10-08",
-      "project": "badges",
-      "title": "OopsPlayer BF3 兼容更新",
-      "detail": "调整 WEB-DL、SDR 合成显示逻辑，具体适配请参阅徽章原仓库。"
+      "title": "媒体徽章库统一三个正式版本",
+      "detail": "简易版、合成徽章版与复杂版；原地址保持不变。"
     }
   ],
   "social": {

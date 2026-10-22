@@ -53,6 +53,11 @@ assert(css.includes('minmax(0, 1fr)') && css.includes('@media (max-width: 420px)
 assert(css.includes('overflow-wrap: anywhere') && css.includes('100dvh'), 'Long URL or small-screen modal protections missing');
 for (const [, file] of html.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:\?[^"#]*)?"/g)) assert(existsSync(file), 'Missing local asset: ' + file);
 assert(existsSync('og-cover.png'), 'Missing social preview PNG');
+assert(existsSync('interactive/logo/index.html'), 'Missing interactive Logo page');
+assert(html.includes('src="./interactive/logo/"'), 'Interactive Logo iframe missing');
+assert(html.includes('id="logoInteractionToggle"'), 'Mobile Logo interaction toggle missing');
+assert(data.metrics.icons >= 7388 && data.metrics.originalIcons >= 113, 'Stale icon counts');
+assert(data.metrics.channels >= 3480 && data.metrics.platforms >= 16 && data.metrics.sections >= 24, 'Stale channel counts');
 assert(html.includes('id="identity"') && html.includes('src="./interactive/logo/index.html"'), '3D Logo embedded section missing');
 const threeD=text('interactive/logo/index.html');
 assert(threeD.includes('data:image/png;base64,'), 'Self hosted 3D texture missing');
