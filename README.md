@@ -129,3 +129,5 @@ og-cover.png           社交分享封面
 - 为开发者和用户分别说明测试项目展示、名额信息以及测试版应用的体验价值。
 - **[TF App 注册入口](https://tfapp.cn/?ref=6C3D977C)**。
 - TestFlight 是苹果的测试分发服务，第三方付费名额和商业使用是否符合相应协议，开发者与用户应自行核实；测试版本有到期和撤回风险。
+
+合规提示：Apple《App 审核指南》2.2 禁止以报酬交换方式向测试者分发 TestFlight 测试版。本站的 TestFlight Store 板块仅用于介绍第三方服务，不承诺相关名额销售模式符合 Apple 规则。参考：https://developer.apple.com/app-store/review/guidelines/ 。
