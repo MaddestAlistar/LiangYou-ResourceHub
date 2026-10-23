@@ -659,3 +659,40 @@ main { overflow: hidden; overflow: clip; }
 @media (prefers-reduced-motion: reduce) {
   .hero::before { animation: none; transform: none; }
 }
+
+/* v3.1 — floating cinema objects, independently paced and out of the input layer. */
+.cinema-field { position: absolute; inset: 0 0 145px; z-index: 0; pointer-events: none; user-select: none; }
+.cinema-field * { pointer-events: none; }
+.hero-visual, .hero-shortcuts { position: relative; z-index: 1; }
+.cinema-float {
+  position: absolute; display: block; width: var(--size, 54px); height: var(--size, 54px);
+  color: var(--tint, #e9c990); opacity: .65;
+  filter: drop-shadow(0 0 13px var(--glow, #d7b36b40));
+  animation: cinema-drift var(--duration, 13s) ease-in-out var(--delay, -4s) infinite alternate;
+}
+.cinema-float svg { width: 100%; height: 100%; }
+.cinema-clapper { left: 3%; top: 24px; --size: 64px; --duration: 12s; --delay: -3s; --tilt: -15deg; }
+.cinema-film { left: 43%; top: 70px; --size: 49px; --tint: #9fc9ff; --glow: #659eff50; --duration: 16s; --delay: -9s; --tilt: 14deg; }
+.cinema-reel { right: 0%; top: 30px; --size: 60px; --duration: 17s; --delay: -2s; --tilt: 8deg; }
+.cinema-play { left: 45%; top: 53%; --size: 43px; --tint: #bfaaff; --glow: #a286ff50; --duration: 11s; --delay: -7s; --tilt: -12deg; }
+.cinema-camera { left: 5%; bottom: 0; --size: 52px; --duration: 15s; --delay: -10s; --tilt: 10deg; }
+.cinema-ticket { right: 2%; bottom: 22px; --size: 59px; --tint: #a8cfff; --glow: #659eff50; --duration: 14s; --delay: -6s; --tilt: -20deg; }
+.cinema-spark { left: 35%; bottom: 30px; --size: 28px; --duration: 10s; --delay: -1s; --tilt: 0deg; }
+@keyframes cinema-drift {
+  0% { transform: translate3d(-8px, 12px, 0) rotate(var(--tilt, -10deg)); }
+  50% { transform: translate3d(6px, -7px, 0) rotate(calc(var(--tilt, -10deg) + 12deg)); }
+  100% { transform: translate3d(-3px, -24px, 0) rotate(calc(var(--tilt, -10deg) - 8deg)); }
+}
+.cinema-field.is-paused .cinema-float, .page-hidden .cinema-float { animation-play-state: paused; }
+@media (max-width: 700px) {
+  .cinema-field { inset: 0 -3px auto; height: 670px; }
+  .cinema-float { opacity: .6; filter: none; }
+  .cinema-clapper { left: auto; right: 5%; top: 14px; --size: 48px; }
+  .cinema-film { left: auto; right: 3%; top: 147px; --size: 38px; }
+  .cinema-play { left: auto; right: 18%; top: 284px; --size: 34px; }
+  .cinema-ticket { right: 0; bottom: 0; --size: 42px; }
+  .cinema-reel, .cinema-camera, .cinema-spark { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinema-float { animation: none; transform: rotate(var(--tilt, 0deg)); }
+}

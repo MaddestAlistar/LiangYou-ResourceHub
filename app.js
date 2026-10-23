@@ -213,3 +213,18 @@
       $("updateList").innerHTML = `<p class="subtle">更新记录暂不可用，请查看原仓库。</p>`;
     });
 })();
+
+// Only animate decorative cinema objects while the hero is visible.
+(() => {
+  const field = document.querySelector('.cinema-field');
+  if (!field) return;
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      field.classList.toggle('is-paused', !entries[0].isIntersecting);
+    });
+    observer.observe(field);
+  }
+  const syncVisibility = () => document.documentElement.classList.toggle('page-hidden', document.hidden);
+  document.addEventListener('visibilitychange', syncVisibility);
+  syncVisibility();
+})();
