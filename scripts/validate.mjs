@@ -95,4 +95,11 @@ assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store imag
 for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
+assert(html.includes('id="partners"') && html.includes('友情合作单位'), 'Partner section missing');
+assert(html.includes('https://t.me/Amazing_jlqz') && html.includes('https://t.me/Chat3ayne'), 'Partner URLs missing');
+for(const file of ['assets/partners/amzing.webp','assets/partners/3ayne.webp']){
+  assert(existsSync(file), 'Partner logo missing: ' + file);
+  assert(html.includes('./' + file), 'Partner logo not referenced: ' + file);
+}
+assert.equal((html.match(/class="partner-card /g) || []).length, 2, 'Expected exactly two partner cards');
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);

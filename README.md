@@ -135,3 +135,12 @@ og-cover.png           社交分享封面
 ## TestFlight Store 展示更新（2026-10-23）
 
 将 TF 图替换为深色「TestFlight Store」视觉，主宣传语调整为「换个方式获得用户」，并将页面说明统一为「通过 TestFlight Store 分发 TestFlight 内测名额，获取更多用户」。按页面需求去除专区下方的大段提醒说明，注册入口仍为 https://tfapp.cn/?ref=6C3D977C 。此处为第三方平台介绍，不构成 Apple 官方背书。
+
+## 友情合作单位（2026-10-23）
+
+网站页面最底部新增“友情合作单位”专区，展示基于原图优化的两张轻量化 WebP 图标，卡片可直接打开 TG 社群：
+
+- **[Amzing Group](https://t.me/Amazing_jlqz)** — `assets/partners/amzing.webp`
+- **[3ayne](https://t.me/Chat3ayne)** — `assets/partners/3ayne.webp`
+
+电脑端双列，手机端单列，图片文件跟随仓库托管、不依赖外部图床。
