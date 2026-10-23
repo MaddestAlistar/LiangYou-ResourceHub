@@ -515,3 +515,10 @@ svg { display: block; flex-shrink: 0; }
  .partner-copy small{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.partner-card{transition:none}}
+
+/* LiangYou starter repositories: six live v0.1 projects */
+.roadmap-card[data-phase="beta"]{border-top-color:#d7b879}
+.roadmap-card[data-phase="beta"] .roadmap-phase{color:#f0ca86}
+.roadmap-repo{display:inline-flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:43px;margin-top:1px;padding:10px 14px;border-radius:10px;border:1px solid #927a56;background:#34291e;color:#f5d8a7;font-size:12px;font-weight:650;transition:background .18s,border-color .18s}
+.roadmap-repo:hover{background:#473629;border-color:#d2b785;color:#fff1d3}
+.roadmap-repo:focus-visible{outline:2px solid #f1d19c;outline-offset:3px}

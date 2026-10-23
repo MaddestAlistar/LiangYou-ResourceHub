@@ -144,3 +144,16 @@ og-cover.png           社交分享封面
 - **[3ayne](https://t.me/Chat3ayne)** — `assets/partners/3ayne.webp`
 
 电脑端双列，手机端单列，图片文件跟随仓库托管、不依赖外部图床。
+
+## 六个新项目首版（2026-10-23）
+
+网站的原「未来计划」区已更新为「新资源仓库」，六个项目均已创建首版并提供 GitHub 入口：
+
+- [PosterBadges](https://github.com/MaddestAlistar/PosterBadges)
+- [IPTV](https://github.com/MaddestAlistar/IPTV)
+- [TechFeeds](https://github.com/MaddestAlistar/TechFeeds)
+- [JellyfinThemes](https://github.com/MaddestAlistar/JellyfinThemes)
+- [MediaProfiles](https://github.com/MaddestAlistar/MediaProfiles)
+- [MediaNetworkRules](https://github.com/MaddestAlistar/MediaNetworkRules)
+
+标记为首版的功能包含透明角标、EPG 映射演示、OPML、Jellyfin CSS、片源评分参考和网络规则示例。具体可导入性、兼容性、数据源有效性请见各仓库 README；不是所有模板都可直接用于实际客户端。

@@ -276,11 +276,12 @@
       "category": "media",
       "icon": "layers",
       "description": "从现有徽章延伸，整理适合影视海报使用的 4K、HDR、音频格式角标。",
-      "phase": "priority",
-      "phaseLabel": "优先探索",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "透明 PNG · 配置模板",
       "audience": "海报工具 / 媒体库",
-      "next": "先做常用角标和深浅两套样式。"
+      "next": "已发布 24 张透明 PNG 和 24 份 SVG；后续对接海报工具自动叠加。",
+      "repo": "https://github.com/MaddestAlistar/PosterBadges"
     },
     {
       "id": "iptv",
@@ -289,11 +290,12 @@
       "category": "media",
       "icon": "tv",
       "description": "将电视台标、频道别名和节目指南对应起来，让不同 App 使用一致的频道信息。",
-      "phase": "priority",
-      "phaseLabel": "优先探索",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "台标目录 · M3U · XMLTV",
       "audience": "支持相应格式的电视 App",
-      "next": "先整理台标与频道命名，再核对 EPG 来源。"
+      "next": "已整理 18 个频道名称别名及 M3U/XMLTV 映射模板；真实 EPG 源待核对。",
+      "repo": "https://github.com/MaddestAlistar/IPTV"
     },
     {
       "id": "rss",
@@ -302,11 +304,12 @@
       "category": "reading",
       "icon": "rss",
       "description": "按苹果生态、NAS、播放器和独立 App 分类整理公开资讯源。",
-      "phase": "priority",
-      "phaseLabel": "优先探索",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "OPML · RSS 清单",
       "audience": "RSS 阅读器",
-      "next": "先制作可导入的订阅清单，再补更新频率说明。"
+      "next": "已提供 11 个资讯源与 5 份 OPML；后续逐个维护连通性。",
+      "repo": "https://github.com/MaddestAlistar/TechFeeds"
     },
     {
       "id": "jellyfin",
@@ -315,11 +318,12 @@
       "category": "media",
       "icon": "palette",
       "description": "延伸黑金、紫色科技与简约风格，整理可复用的媒体库界面主题。",
-      "phase": "research",
-      "phaseLabel": "后续研究",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "CSS · 主题预览",
       "audience": "Jellyfin Web",
-      "next": "先核对不同版本的界面兼容性。"
+      "next": "已提供三套 CSS 主题与预览；客户端兼容仍需实机测试。",
+      "repo": "https://github.com/MaddestAlistar/JellyfinThemes"
     },
     {
       "id": "profiles",
@@ -328,11 +332,12 @@
       "category": "tools",
       "icon": "sliders",
       "description": "把片源格式经验整理成清晰的质量偏好与版本选择参考。",
-      "phase": "research",
-      "phaseLabel": "后续研究",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "JSON · 格式优选规则",
       "audience": "Radarr / Sonarr",
-      "next": "先定义偏好层级，再验证导入与实际选择结果。"
+      "next": "已提供三套参考评分和测试；尚不是 Radarr/Sonarr 直接导入格式。",
+      "repo": "https://github.com/MaddestAlistar/MediaProfiles"
     },
     {
       "id": "network",
@@ -341,11 +346,12 @@
       "category": "tools",
       "icon": "network",
       "description": "围绕家庭影音场景整理域名规则、连接排查与配置示例。",
-      "phase": "research",
-      "phaseLabel": "后续研究",
+      "phase": "beta",
+      "phaseLabel": "首版已发布",
       "format": "规则文件 · 配置示例",
       "audience": "兼容的网络客户端",
-      "next": "先明确适用客户端与维护边界，再逐项验证。"
+      "next": "已提供 Surge、Clash/Mihomo、Quantumult X 示例；演示域名需自行替换。",
+      "repo": "https://github.com/MaddestAlistar/MediaNetworkRules"
     }
   ],
   "community": {
