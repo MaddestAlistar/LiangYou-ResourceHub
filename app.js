@@ -127,7 +127,6 @@
         <a class="lab-repo-link" href="${escapeHTML(safeURL(p.repo))}" target="_blank" rel="noopener noreferrer">查看 GitHub ↗</a></div>
       <div class="lab-copy-fallback" hidden><label>请长按或全选 JSON 地址</label><input type="text" readonly value="${escapeHTML(safeURL(p.jsonUrl))}" aria-label="${escapeHTML(p.title)} JSON 资源地址"></div>
     </article>`).join("");
-    $("updateList").innerHTML = (data.updates || []).map(item => `<button class="update-item" type="button" data-open="${escapeHTML(item.project)}"><time datetime="${escapeHTML(item.date)}">${escapeHTML(item.date)}</time><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
     if (location.hash.startsWith("#resource-")) openProject(location.hash.slice(10));
     document.dispatchEvent(new Event("hub:render"));
   }
@@ -239,7 +238,6 @@
       search.disabled = true;
       filters.querySelectorAll("button").forEach(button => { button.disabled = true; });
       $("roadmapGrid").innerHTML = `<p class="subtle">计划目录暂时无法加载，可前往 GitHub 查看。</p>`;
-      $("updateList").innerHTML = `<p class="subtle">更新记录暂不可用，请查看原仓库。</p>`;
     });
 })();
 
