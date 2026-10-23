@@ -56,6 +56,13 @@
     } finally { button.disabled = false; copyBusy = false; if (copied) previousFocus?.focus({ preventScroll: true }); }
   }
 
+  // Only the three locally hosted channel portraits receive a live-style frame.
+  function previewThumb(p, url, index) {
+    const channels = p.previewType === "channels";
+    const img = `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"${channels ? ' data-clean-channel-badge="true"' : ""}>`;
+    return channels ? `<span class="channel-avatar-shell">${img}</span>` : img;
+  }
+
   function renderCards() {
     const terms = search.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
     const visible = projects.filter(p => {
@@ -65,7 +72,7 @@
     grid.innerHTML = visible.map(p => {
       const i = projects.indexOf(p) + 1;
       return `<article class="project-card" id="resource-${escapeHTML(p.id)}">
-        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">${circled(i)}</span></div><div class="art-images"><div class="preview-gallery">${p.images.map((url, index) => `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
+        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">${circled(i)}</span></div><div class="art-images"><div class="preview-gallery">${p.images.map((url,index) => previewThumb(p,url,index)).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
         <div class="card-content"><div class="card-meta"><span class="card-type">${escapeHTML(p.categoryLabel)}</span><span class="live-status"><span class="status-dot"></span>已上线</span></div>
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
         <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
