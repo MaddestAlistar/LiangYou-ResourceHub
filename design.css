@@ -623,3 +623,53 @@ img.is-fallback { object-fit: contain!important; transform: none!important; bord
   .art-channels .channel-avatar-shell::after {animation:none!important}
   .art-channels .channel-avatar-shell::after {opacity:.2;transform:scale(1)}
 }
+
+
+/* v4.7 — subtle staggered motion for the four Icon Library covers only */
+.art-icons .preview-gallery {
+  perspective: 740px;
+}
+.art-icons .preview-gallery > .preview-image {
+  --icon-tilt: -7deg;
+  --icon-lift: 4px;
+  transform-origin: center center;
+  transform: rotate(var(--icon-tilt)) translate3d(0,var(--icon-lift),0);
+  animation: liangyou-icon-breathe 5.8s ease-in-out infinite;
+  animation-delay: 0s;
+  border-color: rgba(190,217,255,.45);
+  box-shadow: 0 12px 20px rgba(0,0,0,.35), 0 0 18px rgba(118,165,245,.08);
+  transition: border-color .25s ease;
+}
+.art-icons .preview-gallery > .preview-image:nth-child(2) {
+  --icon-tilt: 6deg; --icon-lift: -6px; animation-delay: -1.45s;
+}
+.art-icons .preview-gallery > .preview-image:nth-child(3) {
+  --icon-tilt: -5deg; --icon-lift: 4px; animation-delay: -2.9s;
+}
+.art-icons .preview-gallery > .preview-image:nth-child(4) {
+  --icon-tilt: 6deg; --icon-lift: -5px; animation-delay: -4.35s;
+}
+@keyframes liangyou-icon-breathe {
+  0%,100% {
+    transform: rotate(var(--icon-tilt)) translate3d(0,var(--icon-lift),0) scale(1);
+    box-shadow: 0 12px 20px rgba(0,0,0,.35), 0 0 18px rgba(118,165,245,.08);
+  }
+  50% {
+    transform: rotate(var(--icon-tilt)) translate3d(0,calc(var(--icon-lift) - 6px),0) scale(1.025);
+    box-shadow: 0 18px 28px rgba(0,0,0,.40), 0 0 24px rgba(118,165,245,.19);
+  }
+}
+@media (hover:hover) and (pointer:fine) {
+  .art-icons .preview-gallery > .preview-image:hover {
+    animation-play-state:paused;
+    transform:rotate(var(--icon-tilt)) translateY(-11px) scale(1.06);
+    border-color:rgba(222,238,255,.72);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .art-icons .preview-gallery > .preview-image {
+    animation:none!important;
+    transform:rotate(var(--icon-tilt)) translateY(var(--icon-lift));
+    transition:none!important;
+  }
+}
