@@ -482,3 +482,8 @@ svg { display: block; flex-shrink: 0; }
 /* v2.6.1 narrow-header + third-party terms reference */
 .tf-disclaimer a{color:#a6c9ff;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:420px){.nav{gap:2px 6px;justify-content:space-between}.nav a{font-size:10px;min-height:35px;white-space:nowrap}}
+
+/* v2.7 — Native dark TestFlight Store artwork, without inversion. */
+.tf-image-pane img{aspect-ratio:1200 / 831;filter:none!important;object-fit:contain;max-height:370px;width:min(100%,540px);border-radius:16px;border-color:#64769c70}
+.tf-image-pane{background:radial-gradient(ellipse at 52% 48%,#1c2b49 0%,#0a111d 74%)}
+@media(max-width:700px){.tf-image-pane img{max-height:none;width:100%;max-width:490px}.tf-image-pane{padding:18px}}

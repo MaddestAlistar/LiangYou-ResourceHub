@@ -85,11 +85,13 @@ for (const entry of data.collabs) {
   assert(html.includes(entry.image), 'Collaboration gallery reference missing: ' + entry.id);
 }
 assert(!html.includes('图片按你提供的联名原稿整理'), 'Removed gallery note came back');
+assert(!html.includes('class="tf-disclaimer"'), 'Unrequested TF footer disclaimer remains');
+assert(html.includes('通过 TestFlight Store 分发 TestFlight 内测名额，获取更多用户'), 'Updated TF subtitle missing');
 assert(html.includes('12 款联名作品'), 'Collaboration gallery count not updated');
 assert(html.includes('id="tf-store"'), 'TestFlight Store section missing');
 assert(html.includes(data.tfstore.url), 'TestFlight Store registration URL mismatch');
-assert(existsSync('assets/collabs/tfapp.webp'), 'TestFlight Store image missing');
-assert(html.includes('assets/collabs/tfapp.webp'), 'TestFlight Store image reference missing');
+assert(existsSync('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store image missing');
+assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store image reference missing');
 for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
