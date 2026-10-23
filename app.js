@@ -5,7 +5,7 @@
   const dialog = $("projectDialog"), body = $("dialogBody");
   let projects = [], filter = "all", toastTimer, opener, activeProject, copyBusy = false;
   const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const safeURL = (value, local = false) => { try { const u = new URL(value, local ? document.baseURI : undefined); return u.protocol === "https:" ? u.href : "#"; } catch { return "#"; } };
+  const safeURL = (value, local = false) => { try { const u = new URL(value, local ? document.baseURI : undefined); return u.protocol === "https:" || (local && u.origin === location.origin && u.protocol === "http:") ? u.href : "#"; } catch { return "#"; } };
   const number = value => Number(value).toLocaleString("en-US");
   const circled = value => String.fromCodePoint(0x2460 + value - 1);
   const link = (url, label, className = "text-link") => `<a class="${className}" href="${escapeHTML(safeURL(url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)} <span aria-hidden="true">↗</span></a>`;
@@ -76,6 +76,7 @@
     $("emptyState").hidden = visible.length > 0;
     $("libraryCount").textContent = visible.length === projects.length ? `${projects.length} 个已上线项目` : `找到 ${visible.length} / ${projects.length} 个项目`;
     grid.setAttribute("aria-busy", "false");
+    document.dispatchEvent(new Event("hub:render"));
   }
 
   function renderFilters() {
@@ -102,6 +103,7 @@
     </article>`).join("");
     $("updateList").innerHTML = (data.updates || []).map(item => `<button class="update-item" type="button" data-open="${escapeHTML(item.project)}"><time datetime="${escapeHTML(item.date)}">${escapeHTML(item.date)}</time><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
     if (location.hash.startsWith("#resource-")) openProject(location.hash.slice(10));
+    document.dispatchEvent(new Event("hub:render"));
   }
 
   function openProject(id) {
@@ -170,6 +172,9 @@
     if (copied) {
       const previous = button.innerHTML;
       button.innerHTML = "已复制 JSON 地址 ✓";
+      const card = button.closest('.lab-card');
+      card?.classList.add('copy-feedback');
+      setTimeout(() => card?.classList.remove('copy-feedback'), 800);
       notify("JSON 地址已复制，可粘贴到支持该资源目录的工具中。");
       setTimeout(() => { if (button.isConnected) button.innerHTML = previous; }, 2200);
     } else {
@@ -189,8 +194,6 @@
   });
 
   body.addEventListener("click", event => { const button = event.target.closest("[data-copy]"); if (button && activeProject) copyText(activeProject.imports[Number(button.dataset.copy)].url, button); });
-  // A failed remote image keeps the surrounding layout and gives a useful label.
-  grid.addEventListener("error", event => { if (event.target.tagName === "IMG") { const label = document.createElement("span"); label.className = "image-fallback"; label.textContent = "预览图片暂不可用"; event.target.replaceWith(label); } }, true);
   $("closeDialog").addEventListener("click", closeDialog);
   dialog.addEventListener("close", cleanupDialog);
   let backdropDown = false;

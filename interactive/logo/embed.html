@@ -11,7 +11,7 @@
 <meta property="og:title" content="良哥看未来 · 交互式 3D Logo">
 <meta property="og:description" content="拖动旋转 3D Logo，点击唤醒发光效果，访问小红书主页及 TG 频道。">
 <meta property="og:url" content="https://maddestalistar.github.io/3D-Logo/">
-<meta property="og:image" content="https://maddestalistar.github.io/3D-Logo/assets/logo.png">
+<meta property="og:image" content="https://maddestalistar.github.io/LiangYou-ResourceHub/interactive/logo/logo.webp">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="../../favicon.svg">
 <style>
@@ -142,6 +142,7 @@ html,body{background:transparent!important}
 .app.active .halo-back{box-shadow:0 0 85px 8px rgba(174,67,117,.28)!important}
 .app.active .ring{border-color:rgba(244,177,206,.48)!important}
 </style>
+<link rel="preload" as="image" href="./logo.webp">
 </head>
 <body>
 <div class="app" id="app" aria-label="良哥看未来交互式3D徽章">
@@ -178,7 +179,7 @@ html,body{background:transparent!important}
 <script>
 (()=>{
 'use strict';
-const data='https://raw.githubusercontent.com/MaddestAlistar/3D-Logo/main/assets/logo.png';
+const data='./logo.webp';
 const app=document.getElementById('app'),stage=document.getElementById('stage'),logo=document.getElementById('logo'),stars=document.getElementById('stars'),holder=document.getElementById('holder');
 const makeLayer=(cl,z)=>{const e=document.createElement('img');e.className='face '+cl;e.alt='';e.draggable=false;e.src=data;e.style.transform=`translateZ(${z}px)`;logo.appendChild(e);return e};
 for(let i=0;i<16;i++)makeLayer('depth',-31+i*4);

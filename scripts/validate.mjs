@@ -29,7 +29,7 @@ for (const p of data.projects) {
   for (const src of p.images) {
     if (src.startsWith('./assets/previews/')) {
       assert(!src.includes('..') && existsSync(src.slice(2)), 'Missing or unsafe local preview');
-    } else secureURL(src);
+    } else assert.fail('Preview must be served locally: ' + src);
   }
   if (p.imageLabels) assert.equal(p.imageLabels.length, p.images.length, 'Preview labels do not match images');
 }
@@ -66,7 +66,10 @@ assert(embed.includes('.social-panel,.bottom') || embed.includes('.topbar,.headi
 assert(data.metrics.icons >= 7388 && data.metrics.originalIcons >= 113, 'Stale icon counts');
 assert(data.metrics.channels >= 3480 && data.metrics.platforms >= 16 && data.metrics.sections >= 24, 'Stale channel counts');
 const threeD=text('interactive/logo/index.html');
-assert(threeD.includes('data:image/png;base64,'), 'Self hosted 3D texture missing');
+assert(threeD.includes("const data='./logo.webp'") && embed.includes("const data='./logo.webp'"), '3D texture must be served locally in both views');
+assert(existsSync('interactive/logo/logo.webp'), 'Local 3D texture missing');
+assert(!embed.includes('raw.githubusercontent.com'), 'Embedded logo still depends on GitHub Raw');
+assert(existsSync('assets/image-fallback.svg'), 'Local image fallback missing');
 assert(threeD.includes(data.social.url) && threeD.includes(data.community.url), '3D social links mismatch');
 assert(html.includes('id="offers"'), 'App offers section missing');
 assert.equal((html.match(/class="offer-card /g) || []).length, 8, 'Expected eight App discount cards');
