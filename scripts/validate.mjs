@@ -55,7 +55,7 @@ assert(css.includes('overflow-wrap: anywhere') && css.includes('100dvh'), 'Long 
 for (const [, file] of html.matchAll(/(?:src|href)="\.\/([^"?#]+)(?:\?[^"#]*)?"/g)) assert(existsSync(file), 'Missing local asset: ' + file);
 assert(existsSync('og-cover.png'), 'Missing social preview PNG');
 assert(existsSync('interactive/logo/index.html'), 'Missing interactive Logo page');
-assert(html.includes('src="./interactive/logo/embed.html?v=2.4"'), 'Interactive Logo iframe missing');
+assert(/src="\.\/interactive\/logo\/embed\.html\?v=[\d.]+"/.test(html), 'Interactive Logo iframe missing');
 assert.equal(html.split('<iframe ').length - 1, 1, 'Only one interactive Logo iframe is allowed');
 assert(html.includes('id="interactive-logo"'), 'Hero 3D Logo anchor missing');
 assert(!html.includes('logoInteractionToggle') && !html.includes('logo-showcase-section'), 'Obsolete 3D overlay or special section remains');

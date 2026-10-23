@@ -547,3 +547,115 @@ svg { display: block; flex-shrink: 0; }
 .lab-copy-fallback[hidden]{display:none}
 @media(max-width:700px){#lab,#roadmap{scroll-margin-top:125px}.roadmap-section{padding-block:50px}.lab-card{padding:20px;gap:13px}.lab-info{padding:12px 0}.lab-actions{flex-wrap:wrap}.lab-copy-btn{min-width:180px}.lab-repo-link{flex:0 0 auto}}
 @media(max-width:380px){.lab-actions{flex-direction:column}.lab-repo-link{width:100%}}
+
+/* v3.0 — gold light, blue atmosphere. Decorative layers never intercept input. */
+:root {
+  --bg: #080c14; --surface: #121925; --raised: #1a2433;
+  --line: #ffffff1c; --muted: #b7becb; --gold: #e8c990;
+}
+body {
+  background:
+    radial-gradient(ellipse 65% 800px at 100% 900px, #23447921, transparent 80%),
+    radial-gradient(ellipse 55% 1400px at 0% 2300px, #5a3c7621, transparent 80%),
+    radial-gradient(ellipse 70% 1200px at 100% 4200px, #233f7324, transparent 80%),
+    var(--bg);
+}
+main { overflow: hidden; overflow: clip; }
+.site-header {
+  background: #090e18e8; border-bottom-color: #d7e5ff1c;
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+}
+.brand-mark { background: linear-gradient(145deg, #54402b80, #121927); box-shadow: inset 0 1px 0 #ffe5b523, 0 0 24px #d8ac4e0e; }
+.hero { position: relative; isolation: isolate; }
+.hero::before {
+  content: ""; position: absolute; z-index: -1;
+  inset: -120px -14vw -20px; pointer-events: none;
+  background:
+    radial-gradient(ellipse 9% 15% at 73% 42%, #ffe9b947, transparent 100%),
+    conic-gradient(from 245deg at 73% 42%, transparent 0deg, #da9b4320 7deg, #ecc47850 27deg, #edc58030 43deg, transparent 67deg),
+    radial-gradient(ellipse 38% 40% at 79% 46%, #4164b340, transparent 85%),
+    radial-gradient(ellipse 32% 32% at 91% 68%, #7c4d9d2c, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 68% 62% at 56% 40%, #000 28%, transparent 88%);
+  mask-image: radial-gradient(ellipse 68% 62% at 56% 40%, #000 28%, transparent 88%);
+  transform-origin: 73% 42%; animation: hub-light-drift 18s ease-in-out infinite alternate;
+}
+.hero::after {
+  content: ""; position: absolute; z-index: -1; inset: -30px -3% 18%; pointer-events: none;
+  background-image: radial-gradient(1px 1px at 20% 18%, #dbe8ff75 60%, transparent), radial-gradient(1px 1px at 68% 43%, #efd6a950 60%, transparent), radial-gradient(1px 1px at 87% 75%, #aec7ff55 60%, transparent);
+  background-size: 277px 237px, 397px 301px, 457px 353px;
+  -webkit-mask-image: linear-gradient(transparent, #000 20%, #000 65%, transparent);
+  mask-image: linear-gradient(transparent, #000 20%, #000 65%, transparent);
+}
+@keyframes hub-light-drift { from { opacity: .78; transform: rotate(-3deg) scale(1); } to { opacity: 1; transform: rotate(2deg) scale(1.04); } }
+.hero-copy { text-shadow: 0 2px 22px #080c14a6; }
+.hero h1 .gold { color: #edcf97; background: linear-gradient(110deg, #fff0ca, #e8c68c 55%, #bd9457); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub { color: #c3c8d2; }
+.status-dot { background: #e8ca92; box-shadow: 0 0 12px #edcb8590; }
+.hero-logo-space { border-radius: 0; background: transparent; overflow: visible; }
+.hero-logo-space::before { display: none; }
+.hero-logo-iframe {
+  -webkit-mask-image: radial-gradient(ellipse 60% 61% at 50% 50%, #000 65%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 61% at 50% 50%, #000 65%, transparent 100%);
+}
+.hero-logo-hint { color: #b9c3d6; letter-spacing: .1em; }
+.hero-fullscreen { box-shadow: 0 8px 32px #d8af5720, inset 0 1px 0 #fff6; }
+.hero-actions .button { background: #11192594; border-color: #dab97c70; box-shadow: inset 0 1px 0 #fff1; }
+.hero-shortcuts .quick-item, .project-card, .offer-card, .collab-card, .partner-card {
+  background: linear-gradient(135deg, #243044a6, #101722eb 75%);
+  border-color: #a5bdd32e;
+  box-shadow: inset 0 1px 0 #e0ebff0c, 0 12px 32px #00000018;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.collab-card.collab-featured { background: linear-gradient(145deg, #42362680, #101722eb 80%); border-color: #c9a56a52; }
+.card-art { background: radial-gradient(ellipse at 50% 0%, #35557c36, transparent 80%), #0d1420b8; }
+.metrics { background: linear-gradient(90deg, transparent, #23354d2e, transparent); border-color: #d8e6ff24; }
+.metrics dd { color: #eee6d7; }
+.search-box { background: #101824d9; border-color: #a5bdd33d; }
+.guide-note { background: linear-gradient(140deg, #1c2634, #111822); }
+.community-panel { background: radial-gradient(ellipse at 0% 0%, #a4793233, transparent 65%), linear-gradient(125deg, #1b202a, #101925); border-color: #b59b675c; }
+.roadmap-section {
+  position: relative; isolation: isolate;
+  background: radial-gradient(ellipse 65% 70% at 10% 0%, #274b813f, transparent 90%), radial-gradient(ellipse 55% 65% at 100% 85%, #69448c30, transparent 90%), #0b101bcc;
+  border-color: #a8c7ff24;
+}
+.roadmap-section::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(#9ab9ee0c 1px, transparent 1px), linear-gradient(90deg, #9ab9ee0c 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(#000, #0004 60%, transparent);
+  mask-image: linear-gradient(#000, #0004 60%, transparent);
+}
+.roadmap-section .eyebrow { color: #b5cfff; }
+.lab-card {
+  border: 1px solid #a4baff2e; border-top: 1px solid #abc7ff70; border-radius: 15px;
+  background: linear-gradient(140deg, #202c43e8, #131b2aef 70%);
+  box-shadow: inset 0 1px 0 #cadcff0b, 0 12px 28px #0002;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.lab-info { border-color: #a4baff24; }
+.lab-card > p { color: #c1c7d4; }
+.lab-card .lab-caveat { color: #adb7c9; }
+.lab-type { background: #2d3d5a80; border-color: #89b2f54f; color: #c6dcff; }
+.lab-repo-link { background: #1c2738; border-color: #879bb651; color: #d0dbee; }
+@media (hover: hover) and (pointer: fine) {
+  .hero-shortcuts .quick-item:hover, .project-card:hover, .offer-card:hover, .collab-card:hover, .partner-card:hover {
+    transform: translateY(-3px); border-color: #d9bc827a;
+    box-shadow: inset 0 1px 0 #ffe5af18, 0 12px 36px #0003, 0 0 24px #d6ac4810;
+    background: linear-gradient(135deg, #2b3548cc, #131b28f2 75%);
+  }
+  .lab-card:hover { transform: translateY(-3px); border-color: #9abfff85; box-shadow: 0 14px 36px #0003, 0 0 24px #6e97ff14; }
+}
+@media (max-width: 700px) {
+  .hero::before {
+    inset: -25px -45px 150px;
+    background: radial-gradient(ellipse 68% 25% at 85% 6%, #c6964b30, transparent 90%), radial-gradient(ellipse 75% 37% at 70% 55%, #3c64aa45, transparent 80%), radial-gradient(ellipse 50% 24% at 12% 64%, #78599b2c, transparent 90%);
+    -webkit-mask-image: linear-gradient(#000, #000 65%, transparent); mask-image: linear-gradient(#000, #000 65%, transparent);
+    animation: none; transform: none; opacity: 1;
+  }
+  .hero::after { opacity: .5; }
+  .site-header { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a101bf7; }
+  .roadmap-section::before { background-size: 40px 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero::before { animation: none; transform: none; }
+}

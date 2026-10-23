@@ -15,7 +15,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="../../favicon.svg">
 <style>
-:root{--bg:#07090e;--white:#f5f6fa;--red:#ff5264;--gold:#ffcf7b;--ease:cubic-bezier(.2,.85,.15,1);--pitch:-6deg;--yaw:-13deg;--zoom:1;--light:1}
+:root{color-scheme:dark;--bg:#07090e;--white:#f5f6fa;--red:#ff5264;--gold:#ffcf7b;--ease:cubic-bezier(.2,.85,.15,1);--pitch:-6deg;--yaw:-13deg;--zoom:1;--light:1}
 *{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans CJK SC",Segoe UI,sans-serif}
 body{overscroll-behavior:none}.app{width:100vw;height:100dvh;min-height:560px;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse 46% 54% at 50% 46%,#292039 0%,#111521 44%,transparent 78%),radial-gradient(ellipse 50% 60% at 52% 112%,#3a131c 0%,transparent 70%),#07090f}
 .app:before{content:'';position:absolute;inset:0;opacity:.16;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.095) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.095) 1px,transparent 1px);background-size:68px 68px;mask-image:radial-gradient(ellipse at 50% 52%,black 1%,transparent 75%)}
@@ -129,9 +129,9 @@ body{margin:0!important}
 @media(max-width:700px){.app{min-height:0!important}.logo-holder{width:min(87vmin,400px)!important;height:min(87vmin,400px)!important}.circles{width:min(97vmin,480px)!important;height:min(97vmin,480px)!important}.scanner,.halo-back{width:min(93vmin,440px)!important;height:min(93vmin,440px)!important}.floor{top:84%}}
 @media(prefers-reduced-motion:reduce){.ring,.star,.app:after{animation:none!important}}
 
-/* Deep space, neutral dark background with dim nebula and white stars */
-html,body{background:#05070d!important}
-.app{background:radial-gradient(ellipse 60% 63% at 50% 48%,#141d33 0%,#080c17 56%,#05070c 100%)!important}
+/* Transparent embedded scene: the host supplies the gold/blue atmosphere. */
+html,body{background:transparent!important}
+.app{background:transparent!important}
 .app:before{opacity:.36!important;mask-image:none!important;transform:none!important;background-image:radial-gradient(1px 1px at 27px 19px,#f0f4ff 80%,transparent),radial-gradient(1.2px 1.2px at 102px 83px,#c2d2ff 82%,transparent),radial-gradient(1px 1px at 192px 122px,#faf7e9 85%,transparent),radial-gradient(1.6px 1.6px at 64px 174px,#b9cffc 85%,transparent)!important;background-size:183px 157px,239px 203px,317px 271px,391px 327px!important}
 .app:after{opacity:.55!important;filter:blur(32px)!important;background:radial-gradient(ellipse 42% 44% at 50% 51%,rgba(49,68,121,.19),transparent 75%)!important}
 .star{background:#eff4ff!important;box-shadow:0 0 10px rgba(153,189,255,.58)!important}
