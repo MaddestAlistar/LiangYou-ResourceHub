@@ -165,3 +165,34 @@ img.is-fallback { object-fit: contain!important; transform: none!important; bord
  .reveal-enter, .section-orbit.in-view .orbit-object { animation: none; }
  .collab-image-wrap img { transition: none; }
 }
+
+/* v4.3: dedicated native SVG identities for the eight offer apps */
+.offers-grid .offer-card .offer-logo{
+  width:66px;height:66px;flex:0 0 66px;display:block;
+  padding:0;border:0;border-radius:17px;
+  color:inherit;background:transparent;box-shadow:none;overflow:hidden;
+  filter:drop-shadow(0 6px 11px rgba(0,0,0,.22));
+  transition:transform .22s ease,filter .22s ease;
+}
+.offers-grid .offer-card .offer-logo img{
+  display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit;
+}
+@media (hover:hover) and (pointer:fine){
+  .offers-grid .offer-card:hover .offer-logo{
+    transform:translateY(-2px) scale(1.035);
+    filter:drop-shadow(0 9px 15px rgba(69,118,167,.25));
+  }
+}
+@media(max-width:700px){
+  .offers-grid .offer-card .offer-logo{
+    width:56px;height:56px;flex:0 0 56px;border-radius:15px;
+  }
+}
+@media(max-width:420px){
+  .offers-grid .offer-card .offer-logo{
+    width:51px;height:51px;flex:0 0 51px;border-radius:14px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .offers-grid .offer-card .offer-logo{transition:none}
+}
