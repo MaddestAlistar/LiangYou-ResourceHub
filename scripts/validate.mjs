@@ -96,7 +96,7 @@ assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store imag
 for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
-assert(html.includes('id="lab"') && html.includes('良友科技资源实验室'), 'Resource Lab section not found');
+assert(html.includes('id="lab"') && html.includes('<h2 id="roadmap-title">资源实验室</h2>') && html.includes('<a href="#lab">资源实验室</a>'), 'Resource Lab section not found');
 assert(!html.includes('v0.1 · 6 个仓库首版') && !html.includes('六个新项目，首版现已开放'), 'Stale first-version headings remain');
 assert.equal(data.future.length, 6, 'Expected six Resource Lab projects');
 for(const item of data.future){
