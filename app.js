@@ -85,6 +85,24 @@
     filters.innerHTML = `<button class="filter is-active" type="button" data-filter="all" aria-pressed="true">全部资源</button>` + categories.map(([id, label]) => `<button class="filter" type="button" data-filter="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(names[id] || label)}</button>`).join("");
   }
 
+
+  // Six distinct inline SVG identities. Self-hosted in the page, no icon font or external CDN.
+  const labIdentity = {
+    poster: { a:"#ffdc9b", b:"#f39370", art:'<g stroke="#fff0d3" stroke-width="2.7" stroke-linejoin="round"><rect x="19" y="32" width="58" height="43" rx="9" fill="url(#GRAD)" fill-opacity=".3"/><path d="M20 32 17 24c-1-3 1-6 4-7l44-10c3-1 6 1 7 4l2 9Z" fill="url(#GRAD)" fill-opacity=".8"/><path d="m30 15 10 13M49 11l10 13M22 45h52" fill="none"/><path d="m43 49 14 8-14 8Z" stroke="none" fill="#fff2d8"/></g><rect x="53" y="63" width="29" height="17" rx="7" fill="#281d28" stroke="#ffdfaa" stroke-width="1.5"/><text x="67.5" y="75" text-anchor="middle" fill="#ffe6b8" font-size="11" font-weight="800">4K</text>'},
+    iptv: { a:"#9ee9ff", b:"#528fff", art:'<g stroke="#dff8ff" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"><rect x="13" y="24" width="70" height="48" rx="12" fill="url(#GRAD)" fill-opacity=".3"/><path d="m31 17 17 8 17-8M48 72v9m-17 0h34" fill="none"/><path d="m41 37 19 12-19 12Z" stroke="none" fill="#dcf7ff"/><path d="M21 35v25" stroke="#9beaff" stroke-opacity=".7"/></g><circle cx="74" cy="31" r="3.5" fill="#a0f4ff"/>'},
+    rss: { a:"#b4a3ff", b:"#77ccf6", art:'<g stroke="#f0e9ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="23" y="11" width="51" height="72" rx="12" fill="url(#GRAD)" fill-opacity=".25"/><path d="M34 63c8 0 15 7 15 15M34 48c16 0 29 13 29 30" fill="none" stroke-width="4"/><circle cx="35" cy="77" r="4" fill="#f4e8ff" stroke="none"/><path d="M35 24h27m-27 9h18" opacity=".75"/></g>'},
+    jellyfin: { a:"#dc9eff", b:"#719dff", art:'<path d="M48 10c3 0 5 2 7 6l28 49c3 6 0 12-7 12H20c-7 0-10-6-7-12l28-49c2-4 4-6 7-6Z" fill="url(#GRAD)" fill-opacity=".16" stroke="#d4c4ff" stroke-width="2.6"/><path d="M48 27 70 66H26Z" fill="url(#GRAD)" fill-opacity=".7" stroke="#f1e2ff" stroke-width="2.3" stroke-linejoin="round"/><path d="M48 42 58 60H38Z" fill="#eef1ff"/><circle cx="48" cy="21" r="2.7" fill="#e6bdff"/>'},
+    profiles: { a:"#9df9cd", b:"#63adff", art:'<circle cx="48" cy="48" r="32" fill="url(#GRAD)" fill-opacity=".17" stroke="#c2ffdf" stroke-opacity=".7" stroke-width="2"/><path d="M23 57a26 26 0 0 1 50-16" fill="none" stroke="#b8ffe1" stroke-width="5" stroke-linecap="round"/><path d="m40 57 8 8 17-23" stroke="#e9fff1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M48 14v6M75 48h6M16 48h5" stroke="#b9fbdc" stroke-width="3" stroke-linecap="round"/>'},
+    network: { a:"#9de7ff", b:"#9d99ff", art:'<g fill="none" stroke="#bfeaff" stroke-width="3.2" stroke-linecap="round"><path d="m27 27 22 19m0 0 24-20M49 46l-3 27M27 27l-4 36m50-37 3 38M23 63l23 10 30-9" opacity=".8"/></g><g fill="url(#GRAD)" stroke="#ecf4ff" stroke-width="2.7"><circle cx="27" cy="27" r="10"/><circle cx="73" cy="26" r="10"/><circle cx="49" cy="46" r="13"/><circle cx="23" cy="63" r="8"/><circle cx="46" cy="73" r="9"/><circle cx="76" cy="64" r="8"/></g><circle cx="49" cy="46" r="4" fill="#f2f8ff"/>'}
+  };
+  function labSymbol(id) {
+    const entry = labIdentity[id];
+    if (!entry) return '';
+    const gradient = 'lab-gradient-' + id;
+    const image = entry.art.replaceAll('#GRAD', '#' + gradient);
+    return '<span class="lab-symbol lab-symbol-' + id + '" aria-hidden="true"><svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false"><defs><linearGradient id="' + gradient + '" x1="10" y1="8" x2="83" y2="90" gradientUnits="userSpaceOnUse"><stop stop-color="' + entry.a + '"/><stop offset="1" stop-color="' + entry.b + '"/></linearGradient></defs>' + image + '</svg></span>';
+  }
+
   function renderCatalog(data) {
     projects = data.projects.filter(p => p.stage === "live");
     renderFilters(); renderCards();
@@ -94,7 +112,8 @@
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
     $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card lab-card">
       <div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)} · ${escapeHTML(p.en)}</span><span class="lab-type">JSON 资源索引</span></div>
-      <h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p>
+      ${labSymbol(p.id)}
+       <h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p>
       <div class="lab-info"><span>${escapeHTML(p.contents)}</span><span>${escapeHTML(p.format)}</span></div>
       <p class="lab-caveat">${escapeHTML(p.caveat)}</p>
       <div class="lab-actions"><button type="button" class="button button-primary lab-copy-btn" data-lab-json="${escapeHTML(safeURL(p.jsonUrl))}" aria-label="复制${escapeHTML(p.title)}的 JSON 地址">一键复制 JSON 地址 <span aria-hidden="true">⧉</span></button>
