@@ -11,6 +11,80 @@
     '<circle cx="8" cy="10" r="4"/><circle cx="32" cy="10" r="4"/><circle cx="20" cy="31" r="4"/><path d="M12 10h16M10 14l8 13m12-13-8 13"/>'
   ];
   const icon = i => `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${drawings[i]}</svg>`;
+
+  // The three on-site channel preview WebPs contain a baked-in top-left Douyin badge.
+  // Paint a small locally calculated replacement in the browser. No third-party API,
+  // external image request, or mutation of the original thumbnail files is required.
+  function prepareChannelPortrait(img) {
+    if (img.dataset.channelPrepared) return;
+    img.dataset.channelPrepared = 'true';
+    const clean = () => {
+      if (!img.naturalWidth || !img.naturalHeight || img.classList.contains('is-fallback')) return;
+      try {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        if (w < 100 || h < 100) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, w, h);
+        const bitmap = ctx.getImageData(0, 0, w, h);
+        const out = bitmap.data;
+        const work = new Float32Array(out.length);
+        work.set(out);
+        // An expanded patch includes the whole black logo box, not just the glyph.
+        const x1 = Math.max(2, Math.floor(w * .017));
+        const x2 = Math.min(w - 3, Math.ceil(w * .386));
+        const y1 = Math.max(2, Math.floor(h * .018));
+        const y2 = Math.min(h - 3, Math.ceil(h * .225));
+        const stride = w * 4;
+        // Interpolate the surrounding original photo across the masked rectangle.
+        for (let y = y1; y <= y2; y++) {
+          for (let x = x1; x <= x2; x++) {
+            const n = (y * w + x) * 4;
+            const left = (y * w + x1 - 1) * 4;
+            const right = (y * w + x2 + 1) * 4;
+            const above = ((y1 - 1) * w + x) * 4;
+            const below = ((y2 + 1) * w + x) * 4;
+            const tx = (x - x1 + 1) / (x2 - x1 + 2);
+            const ty = (y - y1 + 1) / (y2 - y1 + 2);
+            for (let c = 0; c < 3; c++) {
+              const horizontal = work[left + c] * (1 - tx) + work[right + c] * tx;
+              const vertical = work[above + c] * (1 - ty) + work[below + c] * ty;
+              work[n + c] = (horizontal + vertical) / 2;
+            }
+          }
+        }
+        // Low-cost harmonic fill smooths the patch without altering the rest.
+        for (let pass = 0; pass < 110; pass++) {
+          for (let y = y1; y <= y2; y++) {
+            for (let x = x1; x <= x2; x++) {
+              const n = (y * w + x) * 4;
+              for (let c = 0; c < 3; c++) {
+                work[n + c] = (work[n - 4 + c] + work[n + 4 + c] +
+                  work[n - stride + c] + work[n + stride + c]) * .25;
+              }
+            }
+          }
+        }
+        for (let y = y1; y <= y2; y++) {
+          for (let x = x1; x <= x2; x++) {
+            const n = (y * w + x) * 4;
+            for (let c = 0; c < 3; c++) out[n + c] = work[n + c];
+          }
+        }
+        ctx.putImageData(bitmap, 0, 0);
+        img.dataset.channelCleaned = 'true';
+        img.src = canvas.toDataURL('image/webp', .9);
+      } catch {
+        // Graceful fallback: preserve the source picture if canvas is unavailable.
+        img.dataset.channelCleaned = 'unsupported';
+      }
+    };
+    if (img.complete) clean();
+    else img.addEventListener('load', clean, { once: true });
+  }
+
   const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
     for (const entry of entries) {
       entry.target.classList.toggle('in-view', entry.isIntersecting);
@@ -22,6 +96,7 @@
     }
   }, {threshold: .08}) : null;
   function enhance() {
+    document.querySelectorAll('.art-channels img[data-clean-channel-badge]').forEach(prepareChannelPortrait);
     document.querySelectorAll('.lab-card').forEach((card, i) => {
       if (card.querySelector('.lab-symbol')) return;
       const emblem = document.createElement('span');
