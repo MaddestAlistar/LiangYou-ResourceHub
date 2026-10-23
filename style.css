@@ -522,3 +522,28 @@ svg { display: block; flex-shrink: 0; }
 .roadmap-repo{display:inline-flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:43px;margin-top:1px;padding:10px 14px;border-radius:10px;border:1px solid #927a56;background:#34291e;color:#f5d8a7;font-size:12px;font-weight:650;transition:background .18s,border-color .18s}
 .roadmap-repo:hover{background:#473629;border-color:#d2b785;color:#fff1d3}
 .roadmap-repo:focus-visible{outline:2px solid #f1d19c;outline-offset:3px}
+
+
+/* Resource Lab / 资源实验室 */
+#lab,#roadmap{scroll-margin-top:110px}
+.lab-anchor{position:relative;display:block;height:0}
+.roadmap-section{background:radial-gradient(ellipse at 92% 5%,#2a211d 0%,transparent 42%),#151618}
+.lab-card{border-top:2px solid #baa27e;border-radius:12px;background:linear-gradient(160deg,#222125,#191a1d);padding:25px;gap:15px;box-shadow:0 11px 32px #0002}
+.lab-card .roadmap-meta{align-items:center}
+.lab-card .roadmap-number{font-size:11px;letter-spacing:.04em;color:#c9a875}
+.lab-type{font-size:10px;color:#e4cdaa;padding:5px 9px;border-radius:999px;border:1px solid #6b5940;background:#342d24}
+.lab-card h3{font-size:20px;margin-top:1px}
+.lab-card>p{font-size:13px;line-height:1.85;color:#c0bab4}
+.lab-info{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#ded0b8;padding:15px 0;border-top:1px solid #393632;border-bottom:1px solid #393632;width:100%}
+.lab-info span:last-child{color:#aaa4a0;font-size:11px}
+.lab-card .lab-caveat{min-height:36px;color:#a8a9af;font-size:11px;line-height:1.75;margin-top:auto}
+.lab-actions{display:flex;align-items:stretch;gap:9px;width:100%;margin-top:4px}
+.lab-copy-btn{min-width:0;flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;padding-inline:10px;font-size:12px;white-space:nowrap}
+.lab-repo-link{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid #68594c;color:#ddc8ac;background:#272424;font-size:12px;white-space:nowrap}
+.lab-repo-link:hover{border-color:#ac8c62;color:#fff}
+.lab-copy-fallback{width:100%;padding:11px;border:1px solid #726047;border-radius:10px;background:#1a1817}
+.lab-copy-fallback label{display:block;font-size:12px;color:#e2c99e;margin-bottom:6px}
+.lab-copy-fallback input{width:100%;border:1px solid #504a42;border-radius:7px;padding:10px;color:#fff;background:#121314;font-size:13px}
+.lab-copy-fallback[hidden]{display:none}
+@media(max-width:700px){#lab,#roadmap{scroll-margin-top:125px}.roadmap-section{padding-block:50px}.lab-card{padding:20px;gap:13px}.lab-info{padding:12px 0}.lab-actions{flex-wrap:wrap}.lab-copy-btn{min-width:180px}.lab-repo-link{flex:0 0 auto}}
+@media(max-width:380px){.lab-actions{flex-direction:column}.lab-repo-link{width:100%}}

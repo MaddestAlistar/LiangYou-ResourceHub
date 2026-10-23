@@ -91,7 +91,15 @@
     const metrics = [["已上线项目", projects.length + 1], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
-    $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card" data-phase="${escapeHTML(p.phase)}"><div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)}</span><span class="roadmap-phase">${escapeHTML(p.phaseLabel)}</span></div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p><div><div class="roadmap-format">${escapeHTML(p.format)}</div><div class="roadmap-audience">面向 ${escapeHTML(p.audience)}</div></div><div class="roadmap-next">下一步：${escapeHTML(p.next)}</div>${p.repo ? `<a class="roadmap-repo" href="${escapeHTML(safeURL(p.repo))}" target="_blank" rel="noopener noreferrer" aria-label="查看${escapeHTML(p.title)}首版 GitHub 仓库">进入 GitHub 首版 <span aria-hidden="true">↗</span></a>` : ""}</article>`).join("");
+    $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card lab-card">
+      <div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)} · ${escapeHTML(p.en)}</span><span class="lab-type">JSON 资源索引</span></div>
+      <h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.description)}</p>
+      <div class="lab-info"><span>${escapeHTML(p.contents)}</span><span>${escapeHTML(p.format)}</span></div>
+      <p class="lab-caveat">${escapeHTML(p.caveat)}</p>
+      <div class="lab-actions"><button type="button" class="button button-primary lab-copy-btn" data-lab-json="${escapeHTML(safeURL(p.jsonUrl))}" aria-label="复制${escapeHTML(p.title)}的 JSON 地址">一键复制 JSON 地址 <span aria-hidden="true">⧉</span></button>
+        <a class="lab-repo-link" href="${escapeHTML(safeURL(p.repo))}" target="_blank" rel="noopener noreferrer">查看 GitHub ↗</a></div>
+      <div class="lab-copy-fallback" hidden><label>请长按或全选 JSON 地址</label><input type="text" readonly value="${escapeHTML(safeURL(p.jsonUrl))}" aria-label="${escapeHTML(p.title)} JSON 资源地址"></div>
+    </article>`).join("");
     $("updateList").innerHTML = (data.updates || []).map(item => `<button class="update-item" type="button" data-open="${escapeHTML(item.project)}"><time datetime="${escapeHTML(item.date)}">${escapeHTML(item.date)}</time><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.detail)}</small></span><span aria-hidden="true">↗</span></button>`).join("");
     if (location.hash.startsWith("#resource-")) openProject(location.hash.slice(10));
   }
@@ -136,6 +144,50 @@
   search.addEventListener("input", renderCards);
   $("resetSearch").addEventListener("click", () => { search.value = ""; filter = "all"; renderFilters(); renderCards(); search.focus(); });
   document.addEventListener("click", event => { const button = event.target.closest("[data-open]"); if (button) openProject(button.dataset.open); });
+
+  // Resource Lab buttons copy the raw GitHub JSON URL, not the entire JSON payload.
+  async function copyLabJSON(button) {
+    const url = safeURL(button.dataset.labJson);
+    if (url === "#" || !url.endsWith("/index.json")) return;
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(url); copied = true; } catch { /* fallback */ }
+    }
+    if (!copied) {
+      const field = document.createElement("textarea");
+      field.value = url;
+      field.readOnly = true;
+      field.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;";
+      document.body.append(field);
+      try {
+        field.focus({ preventScroll: true });
+        field.select();
+        field.setSelectionRange(0, url.length);
+        copied = document.execCommand("copy");
+      } catch { /* manual copy below */ }
+      finally { field.remove(); }
+    }
+    if (copied) {
+      const previous = button.innerHTML;
+      button.innerHTML = "已复制 JSON 地址 ✓";
+      notify("JSON 地址已复制，可粘贴到支持该资源目录的工具中。");
+      setTimeout(() => { if (button.isConnected) button.innerHTML = previous; }, 2200);
+    } else {
+      const fallback = button.closest(".lab-card")?.querySelector(".lab-copy-fallback");
+      if (fallback) {
+        fallback.hidden = false;
+        const field = fallback.querySelector("input");
+        field?.focus({ preventScroll: true });
+        field?.select();
+      }
+      notify("浏览器未允许自动复制，已显示完整 JSON 地址供手动复制。");
+    }
+  }
+  $("roadmapGrid").addEventListener("click", event => {
+    const button = event.target.closest("[data-lab-json]");
+    if (button) copyLabJSON(button);
+  });
+
   body.addEventListener("click", event => { const button = event.target.closest("[data-copy]"); if (button && activeProject) copyText(activeProject.imports[Number(button.dataset.copy)].url, button); });
   // A failed remote image keeps the surrounding layout and gives a useful label.
   grid.addEventListener("error", event => { if (event.target.tagName === "IMG") { const label = document.createElement("span"); label.className = "image-fallback"; label.textContent = "预览图片暂不可用"; event.target.replaceWith(label); } }, true);

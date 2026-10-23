@@ -145,15 +145,15 @@ og-cover.png           社交分享封面
 
 电脑端双列，手机端单列，图片文件跟随仓库托管、不依赖外部图床。
 
-## 六个新项目首版（2026-10-23）
+## 良友科技资源实验室 · Resource Lab（2026-10-23）
 
-网站的原「未来计划」区已更新为「新资源仓库」，六个项目均已创建首版并提供 GitHub 入口：
+在网站 `#lab` 展示六个独立维护的开放资源项目。每个仓库新增统一 `index.json` 文件，用于机器读取资源和访问地址；对应卡片点击「一键复制 JSON 地址」会复制 GitHub Raw 直链。
 
-- [PosterBadges](https://github.com/MaddestAlistar/PosterBadges)
-- [IPTV](https://github.com/MaddestAlistar/IPTV)
-- [TechFeeds](https://github.com/MaddestAlistar/TechFeeds)
-- [JellyfinThemes](https://github.com/MaddestAlistar/JellyfinThemes)
-- [MediaProfiles](https://github.com/MaddestAlistar/MediaProfiles)
-- [MediaNetworkRules](https://github.com/MaddestAlistar/MediaNetworkRules)
+- **[PosterBadges](https://github.com/MaddestAlistar/PosterBadges)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/PosterBadges/main/index.json)
+- **[IPTV](https://github.com/MaddestAlistar/IPTV)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/IPTV/main/index.json)
+- **[TechFeeds](https://github.com/MaddestAlistar/TechFeeds)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/TechFeeds/main/index.json)
+- **[JellyfinThemes](https://github.com/MaddestAlistar/JellyfinThemes)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/JellyfinThemes/main/index.json)
+- **[MediaProfiles](https://github.com/MaddestAlistar/MediaProfiles)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/MediaProfiles/main/index.json)
+- **[MediaNetworkRules](https://github.com/MaddestAlistar/MediaNetworkRules)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/MediaNetworkRules/main/index.json)
 
-标记为首版的功能包含透明角标、EPG 映射演示、OPML、Jellyfin CSS、片源评分参考和网络规则示例。具体可导入性、兼容性、数据源有效性请见各仓库 README；不是所有模板都可直接用于实际客户端。
+原生格式如 PNG、SVG、OPML、CSS、XMLTV、网络客户端规则仍保留。JSON 只是结构化数据目录，**并不意味着任意 App 可以把它作为原生配置直接导入**。网站保留原 `#roadmap` 锚点兼容已有分享链接，并新增 `#lab` 直达。

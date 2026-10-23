@@ -34,10 +34,10 @@ for (const p of data.projects) {
   if (p.imageLabels) assert.equal(p.imageLabels.length, p.images.length, 'Preview labels do not match images');
 }
 for (const p of data.future) {
-  assert(p.title && p.description && p.format && p.audience && p.next, 'Incomplete roadmap');
-  assert(['priority', 'research', 'beta'].includes(p.phase), 'Unknown roadmap phase');
-  if(p.phase==='beta') assert(p.repo && p.repo.startsWith('https://github.com/MaddestAlistar/'), 'Published starter repo link missing');
-  assert(!p.imports && !p.url, 'Roadmap entries should not pretend to offer direct App imports');
+  assert(p.title && p.description && p.format && p.audience && p.contents && p.caveat, 'Incomplete lab resource');
+  assert(p.repo?.startsWith('https://github.com/MaddestAlistar/'), 'Resource Lab repository missing');
+  assert(p.jsonUrl?.startsWith('https://raw.githubusercontent.com/MaddestAlistar/'), 'Resource Lab JSON index missing');
+  assert(!p.imports && !p.url, 'Lab indexes must not pretend to be direct App imports');
 }
 for (const update of data.updates) assert(data.projects.some(p => p.id === update.project), 'Update points to missing project');
 for (const key of ['icons', 'originalIcons', 'channels', 'platforms', 'sections']) assert(Number.isInteger(data.metrics[key]) && data.metrics[key] > 0, 'Invalid metric: ' + key);
@@ -96,8 +96,17 @@ assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store imag
 for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
-assert(data.future.every(p => p.phase === 'beta' && html.includes('v0.1 · 6 个仓库首版')), 'Starter repositories are not surfaced');
-assert(js.includes('roadmap-repo'), 'Future cards must link to their GitHub starter repositories');
+assert(html.includes('id="lab"') && html.includes('良友科技资源实验室'), 'Resource Lab section not found');
+assert(!html.includes('v0.1 · 6 个仓库首版') && !html.includes('六个新项目，首版现已开放'), 'Stale first-version headings remain');
+assert.equal(data.future.length, 6, 'Expected six Resource Lab projects');
+for(const item of data.future){
+  assert(item.title && item.description && item.contents && item.format && item.audience && item.caveat, 'Incomplete Resource Lab card');
+  const url = secureURL(item.jsonUrl);
+  assert(url.hostname === 'raw.githubusercontent.com' && url.pathname.startsWith('/MaddestAlistar/') && url.pathname.endsWith('/main/index.json'), 'Unexpected Lab JSON URL');
+  const name = url.pathname.split('/')[2];
+  assert(item.repo === 'https://github.com/MaddestAlistar/' + name, 'JSON repository mismatch');
+}
+assert(js.includes('data-lab-json') && js.includes('copyLabJSON') && js.includes('lab-copy-fallback'), 'JSON copy flow missing');
 assert(html.includes('id="partners"') && html.includes('友情合作单位'), 'Partner section missing');
 assert(html.includes('https://t.me/Amazing_jlqz') && html.includes('https://t.me/Chat3ayne'), 'Partner URLs missing');
 for(const file of ['assets/partners/amzing.webp','assets/partners/3ayne.webp']){
