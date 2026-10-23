@@ -196,3 +196,236 @@ img.is-fallback { object-fit: contain!important; transform: none!important; bord
 @media(prefers-reduced-motion:reduce){
   .offers-grid .offer-card .offer-logo{transition:none}
 }
+
+
+/* v4.4 — restrained liquid-glass: meaningful reflections, self-hosted app identities.
+   All text remains readable if backdrop-filter is unsupported or disabled. */
+:root {
+  --glass-outline: rgba(208, 230, 255, .24);
+  --glass-light: rgba(239, 247, 255, .10);
+}
+.offers-section { isolation:isolate; }
+.offers-section::before {
+  content:""; position:absolute; z-index:-1; pointer-events:none;
+  inset: 0 -10vw -5%;
+  background:
+    radial-gradient(ellipse 42% 48% at 2% 32%, rgba(85,122,196,.17), transparent 78%),
+    radial-gradient(ellipse 38% 55% at 98% 72%, rgba(116,75,170,.16), transparent 78%);
+}
+.offers-heading .eyebrow { color:#bad4ff; }
+.offers-count {
+  border:1px solid rgba(173,213,255,.28);
+  background:linear-gradient(150deg,rgba(186,213,255,.12),rgba(30,48,72,.23));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  color:#e4efff; font-size:11px; padding:8px 13px;
+}
+.offers-grid { gap:18px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.offers-grid .offer-card {
+  --offer-ink:#a9ccfa; --offer-aura:rgba(120,174,251,.22);
+  position:relative; isolation:isolate; display:flex; align-items:center;
+  overflow:hidden; min-height:158px; gap:20px; padding:23px 23px;
+  border:1px solid rgba(192,219,255,.28); border-radius:23px;
+  background:
+    radial-gradient(ellipse 85% 145% at 100% 0%,var(--offer-aura),transparent 72%),
+    linear-gradient(132deg,rgba(67,87,118,.38),rgba(18,30,48,.76) 54%,rgba(14,22,38,.85));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 1px 0 0 rgba(255,255,255,.07),
+    0 16px 40px rgba(1,8,24,.23);
+  transform:translateZ(0);
+  transition:transform .28s cubic-bezier(.2,.65,.2,1),border-color .28s,box-shadow .28s,background .28s;
+}
+.offers-grid .offer-card::before {
+  content:""; position:absolute; z-index:0; pointer-events:none;
+  top:-89px; right:-48px; left:auto; bottom:auto; width:204px; height:204px;
+  border:1px solid rgba(235,246,255,.12); border-radius:48% 52% 58% 42%;
+  background:radial-gradient(circle at 32% 33%,rgba(236,247,255,.13),transparent 38%),
+    radial-gradient(ellipse at 70% 70%,var(--offer-aura),transparent 74%);
+  box-shadow:inset 1px 2px 1px rgba(255,255,255,.12),0 0 50px var(--offer-aura);
+  transform:rotate(-24deg); opacity:.9;
+  transition:transform .55s ease,opacity .3s;
+}
+.offers-grid .offer-card::after {
+  content:""; position:absolute; z-index:0; pointer-events:none;
+  top:0; right:0; bottom:auto; left:0; width:auto; height:49%;
+  border:0; border-radius:22px 22px 60% 60%;
+  background:linear-gradient(179deg,rgba(255,255,255,.11),rgba(255,255,255,.028) 38%,transparent 100%);
+}
+.offer-card.offer-0{--offer-ink:#8ef3e8;--offer-aura:rgba(60,198,181,.22)}
+.offer-card.offer-1{--offer-ink:#a0dcff;--offer-aura:rgba(77,155,245,.24)}
+.offer-card.offer-2{--offer-ink:#8ccfff;--offer-aura:rgba(60,138,236,.22)}
+.offer-card.offer-3{--offer-ink:#f3b8ff;--offer-aura:rgba(180,107,214,.20)}
+.offer-card.offer-4{--offer-ink:#afffe4;--offer-aura:rgba(56,187,144,.19)}
+.offer-card.offer-5{--offer-ink:#b2baff;--offer-aura:rgba(116,104,230,.21)}
+.offer-card.offer-6{--offer-ink:#b8e3ff;--offer-aura:rgba(75,157,215,.23)}
+.offer-card.offer-7{--offer-ink:#ffe0b0;--offer-aura:rgba(214,155,93,.22)}
+.offers-grid .offer-card > * { position:relative; z-index:1; }
+.offers-grid .offer-card .offer-logo {
+  display:grid;place-items:center; flex:0 0 77px; width:77px;height:77px;
+  padding:6px; border:1px solid rgba(255,255,255,.23);
+  border-radius:22px; overflow:visible;
+  background:linear-gradient(135deg,rgba(231,243,255,.23),rgba(255,255,255,.035) 60%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.29),0 10px 25px rgba(0,5,19,.24);
+  filter:none; transform:none;
+  transition:transform .28s ease,box-shadow .28s ease;
+}
+.offers-grid .offer-card .offer-logo img {
+  display:block; width:100%;height:100%;
+  border-radius:16px;object-fit:contain;
+  box-shadow:0 3px 13px rgba(0,3,20,.38);
+}
+.offer-card .offer-copy { gap:3px; min-width:0; padding-right:12px; }
+.offer-card .offer-overline {
+  color:var(--offer-ink);font-size:10px;line-height:1.6;
+  letter-spacing:.11em;font-weight:680;
+}
+.offer-card .offer-copy strong {
+  font-size:20px;font-weight:720;letter-spacing:-.02em;
+  color:#f5f8ff;line-height:1.35;
+}
+.offer-card .offer-copy small { color:#c4cddd;font-size:12px; }
+.offer-card .offer-cta {
+  display:inline-flex;gap:7px;align-items:center;
+  width:max-content;max-width:100%;margin-top:9px;
+  font-size:11px;font-weight:650;color:var(--offer-ink);
+  transition:transform .24s ease;
+}
+.offer-card .offer-cta span { font-size:14px; }
+.offer-card .offer-arrow {
+  align-self:flex-start; flex:0 0 30px; width:30px;height:30px;
+  display:grid;place-items:center; padding:0; margin-left:auto;
+  border:1px solid rgba(230,242,255,.24);
+  border-radius:11px; background:rgba(225,239,255,.08);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  color:#e7f4ff;font-size:17px;
+}
+.offers-grid .offer-card:focus-visible { outline:2px solid var(--offer-ink); outline-offset:4px; }
+@media (hover:hover) and (pointer:fine) {
+  .offers-grid .offer-card:hover {
+    transform:translateY(-5px);
+    border-color:rgba(222,240,255,.51);
+    background:
+      radial-gradient(ellipse 85% 145% at 100% 0%,var(--offer-aura),transparent 72%),
+      linear-gradient(132deg,rgba(81,101,133,.49),rgba(25,39,60,.83) 54%,rgba(18,28,46,.91));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 22px 50px rgba(0,6,23,.32),0 0 22px var(--offer-aura);
+  }
+  .offers-grid .offer-card:hover::before { transform:rotate(0) translate(-9px,9px); }
+  .offers-grid .offer-card:hover .offer-logo {
+    transform:translateY(-3px) scale(1.04);filter:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 15px 30px rgba(0,6,22,.30);
+  }
+  .offers-grid .offer-card:hover .offer-cta { transform:translateX(3px); }
+}
+/* Lab: each type owns a recognizable dimensional icon rather than a repeated line pictogram. */
+.roadmap-grid { gap:19px; }
+.roadmap-grid .lab-card {
+  --lab-aura:rgba(115,157,243,.24); --lab-stroke:rgba(163,194,255,.33);
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:26px; border:1px solid var(--lab-stroke);border-radius:23px;
+  background:
+    radial-gradient(ellipse 95% 68% at 100% 0%,var(--lab-aura),transparent 84%),
+    linear-gradient(145deg,rgba(51,72,105,.45),rgba(19,28,47,.86) 63%,rgba(13,22,38,.92));
+  box-shadow:inset 0 1px 0 rgba(245,250,255,.20),0 15px 36px rgba(2,8,23,.19);
+}
+.roadmap-grid .lab-card:nth-child(1) {--lab-aura:rgba(238,159,91,.21);--lab-stroke:rgba(255,205,145,.32)}
+.roadmap-grid .lab-card:nth-child(2) {--lab-aura:rgba(89,179,255,.23);--lab-stroke:rgba(143,217,255,.34)}
+.roadmap-grid .lab-card:nth-child(3) {--lab-aura:rgba(171,119,238,.24);--lab-stroke:rgba(207,175,255,.33)}
+.roadmap-grid .lab-card:nth-child(4) {--lab-aura:rgba(160,100,236,.24);--lab-stroke:rgba(203,160,255,.33)}
+.roadmap-grid .lab-card:nth-child(5) {--lab-aura:rgba(74,211,153,.20);--lab-stroke:rgba(154,244,193,.31)}
+.roadmap-grid .lab-card:nth-child(6) {--lab-aura:rgba(87,149,247,.23);--lab-stroke:rgba(169,190,255,.32)}
+.roadmap-grid .lab-card::before {
+  content:"";position:absolute;pointer-events:none;z-index:0;
+  top:-105px;right:-95px;width:255px;height:255px;border-radius:50%;
+  border:1px solid rgba(242,248,255,.10);
+  background:radial-gradient(circle at 40% 42%,rgba(245,251,255,.10),transparent 60%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11);
+}
+.roadmap-grid .lab-card::after {
+  content:"";position:absolute;pointer-events:none;z-index:0;
+  left:18px;right:18px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.54),transparent);
+}
+.roadmap-grid .lab-card > * { position:relative;z-index:1; }
+.roadmap-grid .lab-card .roadmap-meta { gap:8px; }
+.roadmap-grid .lab-card .roadmap-number { color:#d2dcf1;font-size:10px; }
+.roadmap-grid .lab-card .lab-type {
+  color:#d9e8ff;background:rgba(160,195,250,.09);
+  border-color:rgba(193,219,255,.23);padding:5px 9px;
+}
+.roadmap-grid .lab-card .lab-symbol {
+  display:grid;place-items:center; width:91px;height:91px;
+  padding:8px; margin-top:4px; border:1px solid rgba(238,246,255,.30);
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 26% 13%,rgba(244,249,255,.24),transparent 55%),
+    linear-gradient(135deg,rgba(137,175,236,.24),rgba(56,73,120,.13));
+  box-shadow:inset 0 2px 1px rgba(255,255,255,.23),
+    inset 0 -8px 24px rgba(11,17,36,.19),
+    0 15px 30px rgba(0,5,24,.22),0 0 32px var(--lab-aura);
+  transform:rotate(-4deg);
+  transition:transform .32s cubic-bezier(.2,.7,.2,1),box-shadow .3s;
+}
+.roadmap-grid .lab-card:nth-child(even) .lab-symbol { transform:rotate(4deg); }
+.roadmap-grid .lab-card .lab-symbol svg { width:100%;height:100%;filter:drop-shadow(0 3px 5px rgba(6,15,35,.22)); }
+.roadmap-grid .lab-card h3 { font-size:22px;letter-spacing:-.026em;color:#f5f8ff;margin-top:0; }
+.roadmap-grid .lab-card > p { color:#cbd3e3; }
+.roadmap-grid .lab-card .lab-info { border-color:rgba(192,214,247,.19); }
+.roadmap-grid .lab-card .lab-copy-btn {
+  border-color:rgba(175,210,255,.50);
+  background:linear-gradient(125deg,rgba(99,146,215,.49),rgba(55,103,176,.26));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16);
+  border-radius:12px;
+}
+.roadmap-grid .lab-card .lab-repo-link {
+  border-radius:12px; background:rgba(192,219,255,.08);
+  border-color:rgba(173,202,241,.25);
+}
+.roadmap-grid .lab-card:focus-within { border-color:rgba(220,240,255,.66); }
+@media (hover:hover) and (pointer:fine) {
+  .roadmap-grid .lab-card:hover {
+    transform:translateY(-5px);
+    border-color:rgba(208,231,255,.58);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.23),0 20px 42px rgba(2,8,23,.29),0 0 30px var(--lab-aura);
+  }
+  .roadmap-grid .lab-card:hover .lab-symbol { transform:rotate(0) translateY(-3px) scale(1.035); }
+}
+/* Small doses of shared glass across functional surfaces, not over the entire website. */
+.toolbar, .guide-steps li, .tf-store-card, .community-panel {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 14px 35px rgba(2,8,20,.17);
+}
+.guide-steps li { border-color:rgba(185,215,255,.25);background:linear-gradient(140deg,rgba(58,82,115,.37),rgba(17,27,45,.77)); }
+.tf-store-card { border-color:rgba(190,221,255,.38); }
+.hero-shortcuts .quick-item { border-color:rgba(186,213,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 10px 30px rgba(2,8,20,.19); }
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
+  @media (min-width:701px) {
+    .offers-grid .offer-card, .roadmap-grid .lab-card, .toolbar, .hero-shortcuts .quick-item {
+      -webkit-backdrop-filter:blur(13px) saturate(130%);
+      backdrop-filter:blur(13px) saturate(130%);
+    }
+  }
+}
+@media (max-width:700px) {
+  .offers-grid { grid-template-columns:minmax(0,1fr);gap:13px; }
+  .offers-grid .offer-card { border-radius:20px;min-height:132px;padding:17px;gap:15px; }
+  .offers-grid .offer-card::after { border-radius:20px 20px 55% 55%; }
+  .offers-grid .offer-card .offer-logo {
+    width:63px;height:63px;flex-basis:63px;padding:5px;border-radius:19px;
+  }
+  .offers-grid .offer-card .offer-logo img { border-radius:14px; }
+  .offer-card .offer-copy strong { font-size:18px; }
+  .offer-card .offer-copy small { font-size:11px; }
+  .offer-card .offer-arrow { width:27px;height:27px;flex-basis:27px;border-radius:9px; }
+  .offer-card .offer-cta { margin-top:6px; }
+  .roadmap-grid .lab-card { padding:22px;border-radius:21px; }
+  .roadmap-grid .lab-card .lab-symbol { width:79px;height:79px;border-radius:25px;padding:7px; }
+}
+@media (max-width:380px) {
+  .offers-grid .offer-card { padding:14px;gap:11px; }
+  .offers-grid .offer-card .offer-logo { width:56px;height:56px;flex-basis:56px;border-radius:17px; }
+  .offer-card .offer-copy strong { font-size:16px; }
+  .offer-card .offer-arrow { width:25px;height:25px;flex-basis:25px;font-size:14px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .offers-grid .offer-card,.offers-grid .offer-card .offer-logo,.offer-card .offer-cta,
+  .roadmap-grid .lab-card,.roadmap-grid .lab-card .lab-symbol { transition:none!important; }
+}
