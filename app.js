@@ -88,7 +88,7 @@
   function renderCatalog(data) {
     projects = data.projects.filter(p => p.stage === "live");
     renderFilters(); renderCards();
-    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-symbol" aria-hidden="true">${({badges:"◈",icons:"✦",channels:"◉"})[p.id] || "◇"}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span class="quick-arrow" aria-hidden="true">↗</span></button>`).join("");
+    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-symbol" aria-hidden="true">${({badges:"badges",icons:"icons",channels:"channels"})[p.id] ? `<img src="./assets/shortcut-icons/${({badges:"badges",icons:"icons",channels:"channels"})[p.id]}.svg" width="256" height="256" alt="" loading="eager" decoding="async">` : "◇"}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span class="quick-arrow" aria-hidden="true">↗</span></button>`).join("");
     const metrics = [["已上线项目", projects.length + 1], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
