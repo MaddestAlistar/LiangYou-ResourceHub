@@ -77,7 +77,7 @@
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
         <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
         <div class="highlights">${(p.highlights || []).map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
-        <div class="card-actions"><button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button><div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">资源更新 ${escapeHTML(p.updated)}</time></div></div></div>
+        <div class="card-actions">${p.id === "sports" ? `<a class="button button-primary" href="#sports">查看赛事数据 <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="https://conflux.kami.asia/i/VM3ZA" target="_blank" rel="noopener noreferrer">获取汇流直播 ↗</a>` : `<button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button>`}<div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">资源更新 ${escapeHTML(p.updated)}</time></div></div></div>
       </article>`;
     }).join("");
     $("emptyState").hidden = visible.length > 0;
@@ -87,7 +87,7 @@
   }
 
   function renderFilters() {
-    const names = { player: "媒体徽章", icon: "媒体图标", live: "频道主播" };
+    const names = { player: "媒体徽章", icon: "媒体图标", live: "频道主播", sports: "赛事数据" };
     const categories = [...new Map(projects.map(p => [p.category, p.categoryLabel])).entries()];
     filters.innerHTML = `<button class="filter is-active" type="button" data-filter="all" aria-pressed="true">全部资源</button>` + categories.map(([id, label]) => `<button class="filter" type="button" data-filter="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(names[id] || label)}</button>`).join("");
   }
@@ -113,8 +113,8 @@
   function renderCatalog(data) {
     projects = data.projects.filter(p => p.stage === "live");
     renderFilters(); renderCards();
-    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-symbol" aria-hidden="true">${({badges:"badges",icons:"icons",channels:"channels"})[p.id] ? `<img src="./assets/shortcut-icons/${({badges:"badges",icons:"icons",channels:"channels"})[p.id]}.svg" width="256" height="256" alt="" loading="eager" decoding="async">` : "◇"}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span class="quick-arrow" aria-hidden="true">↗</span></button>`).join("");
-    const metrics = [["已上线项目", projects.length + 1], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
+    $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-symbol" aria-hidden="true">${({badges:"badges",icons:"icons",channels:"channels",sports:"sports"})[p.id] ? `<img src="./assets/shortcut-icons/${({badges:"badges",icons:"icons",channels:"channels"})[p.id]}.svg" width="256" height="256" alt="" loading="eager" decoding="async">` : "◇"}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span class="quick-arrow" aria-hidden="true">↗</span></button>`).join("");
+    const metrics = [["已上线项目", projects.length], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
     $("dataNote").textContent = `目录核对 ${data.checkedAt} · 数量以原仓库后续更新为准`;
     $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card lab-card">
@@ -132,6 +132,7 @@
   }
 
   function openProject(id) {
+    if (id === "sports") { location.hash = "#sports"; document.getElementById("sports")?.scrollIntoView({ behavior: "smooth" }); return; }
     const p = projects.find(p => p.id === id);
     if (!p) return;
     opener = document.activeElement;
