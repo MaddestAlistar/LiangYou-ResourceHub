@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check design.js
+          node --check daily-free.js
       - name: Validate catalog and web structure
         run: node scripts/validate.mjs
