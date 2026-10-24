@@ -121,3 +121,49 @@
   .sports-promo {padding:12px}
 }
 @media (prefers-reduced-motion:reduce){.sports-list-btn{transition:none}}
+
+
+/* Localised sports language control, compact enough for narrow phones. */
+.sports-language {
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  border:1px solid rgba(220,184,116,.46);
+  border-radius:999px;
+  padding:3px;
+  background:rgba(10,18,30,.82);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  width:max-content;
+}
+.sports-language-btn {
+  border:1px solid transparent;
+  background:transparent;
+  color:#acb7c9;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:650;
+  line-height:1.3;
+  min-height:34px;
+  white-space:nowrap;
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.sports-language-btn:hover {color:#f5e5ca}
+.sports-language-btn.is-active {
+  background:linear-gradient(120deg,rgba(226,193,138,.27),rgba(173,135,80,.17));
+  border-color:rgba(227,189,124,.55);
+  color:#fbe2b4;
+}
+.sports-language-btn:focus-visible {outline:2px solid #f2d09a;outline-offset:3px}
+.sports-meta .sports-language {margin-top:4px}
+@media(max-width:760px){
+  .sports-meta {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;column-gap:12px;row-gap:8px;width:100%}
+  .sports-meta strong {flex:0 0 auto}
+  .sports-meta > span {order:3;flex-basis:100%;font-size:11px}
+  .sports-meta .sports-language {margin-top:0;margin-left:auto}
+}
+@media(max-width:420px){
+  .sports-language-btn {min-height:32px;padding:5px 11px;font-size:11px}
+  .sports-meta {gap:5px 9px}
+}
+@media(prefers-reduced-motion:reduce){.sports-language-btn{transition:none}}
