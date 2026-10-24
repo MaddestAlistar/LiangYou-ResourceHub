@@ -21,11 +21,11 @@
   <link rel="stylesheet" href="./style.css?v=4.1">
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=1.3">
-  <link rel="stylesheet" href="./sports.css?v=1.0">
+  <link rel="stylesheet" href="./sports.css?v=1.1">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=1.3" defer></script>
-  <script src="./sports.js?v=1.0" defer></script>
+  <script src="./sports.js?v=1.1" defer></script>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
@@ -95,6 +95,13 @@
           <button class="sports-tab" type="button" data-sport-filter="other" aria-pressed="false">🏈 其他体育</button>
         </div>
         <div class="sports-grid" id="sportsGrid" aria-live="polite"><div class="sports-empty"><strong>正在读取赛事数据</strong>首次同步前不会展示示意赔率或虚构比赛。</div></div>
+        <div class="sports-list-actions" id="sportsListActions" hidden>
+          <span id="sportsShowing" aria-live="polite"></span>
+          <div class="sports-list-buttons">
+            <button id="sportsCollapse" class="sports-list-btn sports-list-btn-secondary" type="button" hidden>收起赛事 ↑</button>
+            <button id="sportsMore" class="sports-list-btn" type="button" hidden>查看更多赛事 ↓</button>
+          </div>
+        </div>
         <p class="sports-foot">数据来源：Polymarket 公开 Gamma API · 市场报价对应的隐含概率，不等同于博彩公司赔率、官方胜率或实时比分。按每 2 小时计划检查；部分赛事可能暂时无数据。比赛时间按北京时间显示。</p>
         <div class="sports-promo">
           <img src="./assets/collabs/conflux.webp" width="120" height="120" loading="lazy" decoding="async" alt="汇流直播 App 图标">
