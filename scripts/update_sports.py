@@ -249,16 +249,6 @@ def main():
         "events": selection,
         "notes": "市场报价隐含概率，并非博彩公司赔率，也不保证赛事结果；数据按 2 小时计划更新，GitHub Actions 执行可能延迟。",
     }
-    # Do not replace an existing populated snapshot with all-empty results caused by
-    # upstream category/relevance changes; an empty first run is still valid.
-    if not selection and OUTPUT.exists():
-        try:
-            previous = json.loads(OUTPUT.read_text(encoding="utf-8"))
-            if previous.get("events"):
-                print("Warning: no valid events; retaining last known snapshot", file=sys.stderr)
-                return
-        except (ValueError, OSError):
-            pass
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n"
     if OUTPUT.exists() and OUTPUT.read_text(encoding="utf-8") == text:
