@@ -1,0 +1,22 @@
+name: Deploy Icon Review Worker
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/icon-review-worker.js'
+      - 'workers/wrangler.jsonc'
+      - '.github/workflows/deploy-icon-review.yml'
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy Cloudflare Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config workers/wrangler.jsonc
