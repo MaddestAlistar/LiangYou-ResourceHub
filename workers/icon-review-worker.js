@@ -34,6 +34,53 @@ export default {async fetch(request,env){
    if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending"].includes(status))return reply({error:"Invalid request"},400,origin);
    const current=await gh(path);if(!current.ok)return reply({error:"Metadata not found"},404,origin);
    const item=await current.json();let meta;try{meta=JSON.parse(decode(item.content))}catch{return reply({error:"Bad metadata"},502,origin)}
+   if(status==="approved"){
+    if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"请先在 Cloudflare 添加 PUBLISH_GITHUB_TOKEN（仅正式图标库 Contents 读写权限）"},503,origin);
+    if(meta.status==="approved")return reply({error:"Already approved; check official library before retrying"},409,origin);
+    const official="MaddestAlistar/LiangYou-IconLibrary";
+    const publishHeaders={...ghHeaders,Authorization:"Bearer "+env.PUBLISH_GITHUB_TOKEN};
+    const getOfficial=async p=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{headers:publishHeaders});
+    const putOfficial=async(p,content,sha)=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{method:"PUT",headers:publishHeaders,body:JSON.stringify({message:"publish reviewed icon: "+meta.name,content,...(sha?{sha}:{})})});
+    const imagePath="icons/liangyou/"+meta.filename.split("/").pop();
+    const originalImage=await gh(meta.filename.split("/").map(encodeURIComponent).join("/"));
+    if(!originalImage.ok)return reply({error:"Review image unavailable"},502,origin);
+    const imageData=await originalImage.json();
+    const exists=await getOfficial(imagePath.split("/").map(encodeURIComponent).join("/"));
+    if(exists.ok)return reply({error:"Image filename already exists in official library; manual review needed"},409,origin);
+    if(exists.status!==404)return reply({error:"Could not check official image path"},502,origin);
+    const files=["LiangYou-Original-Icons.json","LiangYou-Emby-Icons.json"];
+    const plans=[];
+    const newUrl="https://raw.githubusercontent.com/"+official+"/main/"+imagePath.split("/").map(encodeURIComponent).join("/");
+    for(const file of files){
+      const resp=await getOfficial(file);
+      if(!resp.ok)return reply({error:"Cannot read "+file,status:resp.status},502,origin);
+      const current=await resp.json();
+      let data;try{data=JSON.parse(decode(current.content))}catch{return reply({error:"Invalid official JSON: "+file},502,origin)}
+      if(!Array.isArray(data.icons))return reply({error:"Unsupported icon list: "+file},502,origin);
+      if(data.icons.some(x=>x.url===newUrl))return reply({error:"Icon already listed in "+file},409,origin);
+      let title=meta.name;
+      const names=new Set(data.icons.map(x=>String(x.name||"").toLowerCase()));
+      if(names.has(title.toLowerCase())){
+        let n=2;while(names.has((meta.name+" "+String(n).padStart(2,"0")).toLowerCase()))n++;
+        title=meta.name+" "+String(n).padStart(2,"0");
+      }
+      const item={name:title,url:newUrl};
+      data.icons.push(item);
+      const fixed=data.icons.slice(0,5);
+      const rest=data.icons.slice(5).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"zh-CN",{numeric:true,sensitivity:"base"}));
+      data.icons=[...fixed,...rest];
+      data.description=String(data.description||"").replace(/更新时间：[^｜]+/,"更新时间："+new Date().toISOString().slice(0,10));
+      plans.push({file,sha:current.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\\n")))});
+    }
+    const uploaded=await putOfficial(imagePath.split("/").map(encodeURIComponent).join("/"),imageData.content.replace(/\\s/g,""));
+    if(!uploaded.ok)return reply({error:"Official image upload failed",status:uploaded.status},502,origin);
+    for(const plan of plans){
+      const saved=await putOfficial(plan.file,plan.content,plan.sha);
+      if(!saved.ok)return reply({error:"Image uploaded, but subscription update failed at "+plan.file+"; manual repair needed",status:saved.status},502,origin);
+    }
+    meta.publishedUrl=newUrl;
+    meta.publishedAt=new Date().toISOString();
+   }
    meta.status=status;meta.reviewedAt=new Date().toISOString();
    const content=btoa(unescape(encodeURIComponent(JSON.stringify(meta,null,2))));
    const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: "+status+" "+meta.name,content,sha:item.sha})});
