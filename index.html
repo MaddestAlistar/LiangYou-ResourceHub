@@ -20,15 +20,17 @@
   <title>良友资源中心 · LiangYou Resource Hub</title>
   <link rel="stylesheet" href="./style.css?v=4.1">
   <link rel="stylesheet" href="./design.css?v=4.7">
+  <link rel="stylesheet" href="./daily-free.css?v=1.0">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./design.js?v=4.6" defer></script>
+  <script src="./daily-free.js?v=1.0" defer></script>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
   <header class="site-header">
     <div class="container header-inner">
       <a href="#top" class="brand" aria-label="良友资源中心首页"><span class="brand-mark" aria-hidden="true">良</span><span class="brand-copy"><strong>良友资源中心</strong><small>LIANGYOU RESOURCE HUB</small></span></a>
-      <nav class="nav" aria-label="主导航"><a href="#library">资源库</a><a href="#offers">良友福利</a><a href="#tf-store">TF Store</a><a href="#lab">资源实验室</a><a href="#community">交流社区</a></nav>
+      <nav class="nav" aria-label="主导航"><a href="#library">资源库</a><a href="#daily-free">每日限免</a><a href="#offers">良友福利</a><a href="#tf-store">TF Store</a><a href="#lab">资源实验室</a><a href="#community">交流社区</a></nav>
       <a class="header-link" href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-4 18-6-5-3 3 1-6 8-7-10 6-5-2Z"/></svg><span>Telegram</span><span aria-hidden="true">↗</span></a>
     </div>
   </header>
@@ -68,6 +70,35 @@
       <div class="project-grid" id="projectGrid" aria-busy="true"><p class="loading-note">正在加载资源目录…</p></div>
       <div class="empty-state" id="emptyState" hidden><h3>没有找到匹配的资源</h3><p>试试「EplayerX」「精选」「汇流」等关键词，或清除当前筛选。</p><button id="resetSearch" class="button button-secondary" type="button">清除筛选</button></div>
       <noscript><div class="notice"><p>开启 JavaScript 后可搜索资源、选择版本并复制链接。也可以直接查看原仓库：</p><ul><li><a href="https://github.com/MaddestAlistar/liangyou-appletv-badges">良友媒体徽章库</a></li><li><a href="https://github.com/MaddestAlistar/LiangYou-IconLibrary">良友媒体图标库</a></li><li><a href="https://github.com/MaddestAlistar/LiangyouChannels">良友频道库</a></li></ul></div></noscript>
+    </section>
+    <section class="section dailyfree-section container" id="daily-free" aria-labelledby="daily-free-title">
+      <div class="dailyfree-shell">
+        <div class="section-heading dailyfree-heading">
+          <div>
+            <p class="eyebrow">APP STORE · VERIFIED FREE DEALS</p>
+            <h2 id="daily-free-title">每日限免 <span class="dailyfree-orb" aria-hidden="true">✦</span></h2>
+            <p class="section-description">从付费到 0 元，每日自动追踪。只展示经过 App Store 当前价格校验的本体限免。</p>
+          </div>
+          <div class="dailyfree-side">
+            <span class="dailyfree-stats" id="dailyFreeCount" role="status">自动同步中</span>
+            <span class="dailyfree-update" id="dailyFreeUpdated">等待首次同步</span>
+          </div>
+        </div>
+        <div class="dailyfree-toolbar">
+          <div class="dailyfree-regions" role="group" aria-label="切换 App Store 地区">
+            <button class="dailyfree-region is-active" type="button" data-daily-region="cn" aria-pressed="true">🇨🇳 中国区</button>
+            <button class="dailyfree-region" type="button" data-daily-region="us" aria-pressed="false">🇺🇸 美国区</button>
+          </div>
+          <span class="dailyfree-toolbar-note">自动更新 · 无需手动整理 · 限免随时可能结束</span>
+        </div>
+        <div class="dailyfree-grid" id="dailyFreeGrid" aria-live="polite">
+          <div class="dailyfree-empty"><strong>正在载入限免信息…</strong><p>自动加载最新一次商店价格核验结果。</p></div>
+        </div>
+        <div class="dailyfree-bottom-note">
+          <p>仅统计 App 本体从收费变为免费；不包含内购及订阅。各区价格可能不同，最终以对应地区 App Store 显示为准。</p>
+          <a href="https://github.com/appstore-discounts/appstore-discounts" target="_blank" rel="noopener noreferrer">查看开源数据源 ↗</a>
+        </div>
+      </div>
     </section>
     <section class="section offers-section container" id="offers" aria-labelledby="offers-title">
       <div class="section-heading offers-heading"><div><p class="eyebrow">APP OFFERS · 良友福利</p><h2 id="offers-title">App 限时优惠<span class="offer-hourglass" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false"><defs><linearGradient id="offer-hourglass-metal" x1="14" y1="10" x2="49" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#fff2c3"/><stop offset=".51" stop-color="#e9b96c"/><stop offset="1" stop-color="#b88139"/></linearGradient></defs><path d="M19 13c0 10 8 13 13 19-5 6-13 9-13 19m26-38c0 10-8 13-13 19 5 6 13 9 13 19" stroke="url(#offer-hourglass-metal)" stroke-width="3" stroke-linecap="round"/><path class="hourglass-sand-top" d="M24 21H40L32 29Z" fill="#f7d993"/><path class="hourglass-sand-bottom" d="M32 39L41 47H23Z" fill="#f4cd77"/><path class="hourglass-stream" d="M32 31v9" stroke="#fbe3a8" stroke-width="2" stroke-linecap="round"/><path d="M16 11h32M16 53h32" stroke="url(#offer-hourglass-metal)" stroke-width="5" stroke-linecap="round"/><path d="M17 8h30M17 56h30" stroke="#fff1ce" stroke-opacity=".38" stroke-width="1.4" stroke-linecap="round"/></svg></span></h2><p class="section-description">常用 App 的优惠入口，点击卡片直达活动页面。</p></div><span class="offers-count">8 个活动入口</span></div>
