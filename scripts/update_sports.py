@@ -58,7 +58,7 @@ def get_events(tag_slug):
         "closed": "false",
         "limit": "100",
         "order": "startDate",
-        "ascending": "true",
+        "ascending": "false" if tag_slug in ("soccer", "epl", "ucl") else "true",
     })
     url = BASE + "?" + query
     req = Request(url, headers={
@@ -207,7 +207,7 @@ def main():
                 debug = [e for e in events if isinstance(e, dict) and re.search(r"\\bvs\\.?\\b", str(e.get("title", "")), re.I)][:4]
                 for e in debug:
                     m = e.get("markets") or []
-                    print("SOCCER_SAMPLE", json.dumps({"title": e.get("title"), "markets": [{"q": x.get("question"), "type": x.get("sportsMarketType"), "outcomes": x.get("outcomes"), "prices": x.get("outcomePrices")} for x in m[:6] if isinstance(x, dict)]}, ensure_ascii=False)[:2200], flush=True)
+                    print("SOCCER_SAMPLE", json.dumps({"title": e.get("title"), "markets": [{"q": x.get("question"), "type": x.get("sportsMarketType"), "outcomes": x.get("outcomes"), "prices": x.get("outcomePrices")} for x in m[:3] if isinstance(x, dict)]}, ensure_ascii=False)[:1500], flush=True)
             for event in events:
                 if not isinstance(event, dict):
                     continue
