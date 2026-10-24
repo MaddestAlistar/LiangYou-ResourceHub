@@ -50,13 +50,22 @@ def google_package(href: str) -> str | None:
     app_id = urllib.parse.parse_qs(p.query).get("id", [""])[0]
     return app_id if PLAY_ID.fullmatch(app_id) and len(app_id) <= 160 else None
 
-def pick_card(link):
+def pick_card(link, package):
     """Find the nearest card containing explicit FREE, old price and -100%."""
     for parent in list(link.parents)[:10]:
         if getattr(parent, "name", None) in ("body", "html"):
             break
         text = parent.get_text(" ", strip=True)
         if len(text) > 900:
+            continue
+        # A large ancestor may contain several different apps and a FREE
+        # label / former price belonging to a different app. Never mix cards.
+        ids = {
+            google_package(a.get("href", ""))
+            for a in parent.select('a[href*="play.google.com/store/apps/details"]')
+        }
+        ids.discard(None)
+        if ids != {package}:
             continue
         if FREE.search(text) and DISCOUNT.search(text) and PRICE.search(text):
             return parent
@@ -95,7 +104,7 @@ def parse_appsales(html: bytes, page: int) -> list[dict]:
         package = google_package(a.get("href", ""))
         if not package or package in packages:
             continue
-        card = pick_card(a)
+        card = pick_card(a, package)
         if card is None:
             continue
         text = card.get_text(" ", strip=True)
@@ -115,7 +124,8 @@ def parse_appsales(html: bytes, page: int) -> list[dict]:
             "url": f"https://play.google.com/store/apps/details?id={urllib.parse.quote(package)}&hl=en_US&gl=US",
             "image_source": find_image(card),
             "source": "AppSales",
-            "verification": "tracker",
+            "source_url": "https://www.app-sales.net/nowfree/",
+            "verification": "third_party_price_tracker_not_google_play_confirmation",
             "genre": "Google Play",
             "page": page,
         })
