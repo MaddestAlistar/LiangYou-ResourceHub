@@ -71,11 +71,11 @@
     });
     grid.innerHTML = visible.map(p => {
       const i = projects.indexOf(p) + 1;
-      return `<article class="project-card" id="resource-${escapeHTML(p.id)}">
-        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span><span class="art-index">${circled(i)}</span></div><div class="art-images"><div class="preview-gallery">${p.images.map((url,index) => previewThumb(p,url,index)).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
+      return `<article class="project-card${p.id === "sports" ? " project-card-sports" : ""}" id="resource-${escapeHTML(p.id)}">
+        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span>${p.id === "sports" ? "" : `<span class="art-index">${circled(i)}</span>`}</div><div class="art-images"><div class="preview-gallery">${p.images.map((url,index) => previewThumb(p,url,index)).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
         <div class="card-content"><div class="card-meta"><span class="card-type">${escapeHTML(p.categoryLabel)}</span><span class="live-status"><span class="status-dot"></span>已上线</span></div>
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
-        <p class="card-desc">${escapeHTML(p.description)}</p><div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>
+        <p class="card-desc">${escapeHTML(p.description)}</p>${p.id === "sports" ? "" : `<div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>`}
         <div class="highlights">${(p.highlights || []).map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
         <div class="card-actions">${p.id === "sports" ? `<a class="button button-primary" href="#sports">查看赛事数据 <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="https://conflux.kami.asia/i/VM3ZA" target="_blank" rel="noopener noreferrer">获取汇流直播 ↗</a>` : `<button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button>`}<div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">资源更新 ${escapeHTML(p.updated)}</time></div></div></div>
       </article>`;
