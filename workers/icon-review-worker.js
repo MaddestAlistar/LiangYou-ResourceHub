@@ -45,7 +45,6 @@ export default {async fetch(request,env){
     const ext=String(meta.filename).split(".").pop().toLowerCase();
     const rawName=String(meta.name||"").trim().replace(/\\s*(?:动态|dynamic)\\s*(?:0*[0-9]+)?$/i,"").trim();
     if(!rawName||!["png","webp","gif"].includes(ext))return reply({error:"Invalid icon name or extension"},400,origin);
-    const stem=rawName.normalize("NFKC").toLowerCase().replace(/[^a-z0-9\\u4e00-\\u9fff]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"icon";
     const files=["LiangYou-Original-Icons.json","LiangYou-Emby-Icons.json"];
     const plans=[];
     const snapshots=[];
@@ -57,20 +56,36 @@ export default {async fetch(request,env){
       if(!Array.isArray(data.icons)||data.icons.length<5)return reply({error:"Unsupported icon list: "+file},502,origin);
       snapshots.push({file,sha:record.sha,data});
     }
-    const normalized=s=>String(s||"").trim().toLocaleLowerCase().replace(/\\s+0*[0-9]+$/,"");
-    const labelBase=rawName+(isDynamic?" 动态":"");
-    const existingNames=new Set(snapshots.flatMap(x=>x.data.icons.map(y=>String(y.name||"").toLocaleLowerCase())));
-    const matchingNames=snapshots.flatMap(x=>x.data.icons.map(y=>String(y.name||""))).filter(n=>normalized(n)===labelBase.toLocaleLowerCase());
-    const numberNeeded=matchingNames.length>0;
-    let number=1,label=labelBase;
-    if(numberNeeded){
-      number=1;
-      do{number++;label=labelBase+" "+String(number).padStart(2,"0")}while(existingNames.has(label.toLocaleLowerCase()));
-    }
+    const existing=snapshots.flatMap(x=>x.data.icons);
+    const stripIndex=v=>String(v||"").trim().replace(/\\s+0*[0-9]+$/,"").trim();
+    const displayPart=v=>stripIndex(v).split("｜").pop().trim();
+    const lower=v=>v.toLocaleLowerCase();
+    const nameKey=lower(rawName);
+    const related=existing.filter(x=>{
+      const base=displayPart(x.name).replace(/\\s*动态$/,"").trim();
+      return lower(base)===nameKey;
+    });
+    const existingPrefix=related.map(x=>String(x.name).split("｜")[0]).find(x=>/^[a-zA-Z0-9-]+$/.test(x));
+    const hasChinese=/[\\p{Script=Han}]/u.test(rawName);
+    // Reuse a verified existing romanized prefix; do not invent pinyin for new Chinese names.
+    const asciiStem=rawName.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+    const fileStem=(hasChinese&&existingPrefix?existingPrefix.toLowerCase():hasChinese?rawName.normalize("NFKC").toLowerCase():asciiStem).replace(/[^a-z0-9\\p{Script=Han}-]+/gu,"-").replace(/^-+|-+$/g,"").slice(0,70)||"icon";
+    const prefix=hasChinese&&existingPrefix?existingPrefix+"｜":"";
+    const baseLabel=prefix+rawName+(isDynamic?"动态":"");
+    const existingNames=new Set(existing.map(x=>lower(String(x.name||""))));
+    let number=1;
+    let label;
+    do{
+      label=baseLabel+(isDynamic||number>1?" "+String(number).padStart(2,"0"):"");
+      if(!existingNames.has(lower(label)))break;
+      number++;
+    }while(number<1000);
+    if(number>=1000)return reply({error:"Too many duplicate icon names"},409,origin);
+    // Dynamic entries must always contain 动态 and a numbered suffix for search compatibility.
     let imagePath,exists;
     for(let attempt=0;attempt<100;attempt++){
       const suffix=String(number+attempt).padStart(2,"0");
-      imagePath="icons/liangyou/"+stem+(isDynamic?"-dynamic":"")+"-"+suffix+"."+ext;
+      imagePath="icons/liangyou/"+fileStem+(isDynamic?"-animated":"")+"-"+suffix+"."+ext;
       exists=await getOfficial(imagePath.split("/").map(encodeURIComponent).join("/"));
       if(exists.status===404)break;
       if(!exists.ok)return reply({error:"Cannot check official image filename",status:exists.status},502,origin);
