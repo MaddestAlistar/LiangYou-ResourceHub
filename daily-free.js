@@ -34,18 +34,18 @@
     const current = payload?.regions?.[region];
     const time = current?.verified_at;
     updated.textContent = time ? "价格核验 · " + formatDate(time) : "等待首次自动同步";
-    const items = Array.isArray(current?.items) ? current.items.filter(isValid).slice(0, 12) : [];
+    const items = Array.isArray(current?.items) ? current.items.filter(isValid).slice(0, 10) : [];
     if (!isFresh(time)) {
       count.textContent = "暂不展示未核实价格";
       grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">⌁</span><strong>正在等待有效的限免数据</strong><p>首次同步可能需要一点时间。若上游数据暂时不可用，将自动隐藏未验证或已过期的信息。</p></div>';
       return;
     }
-    count.textContent = items.length + " 款已核实为当前免费";
+    count.textContent = "已核验 " + items.length + " / 10 款限免";
     if (!items.length) {
       grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">✧</span><strong>本区暂无限免上榜</strong><p>目前没有通过商店价格校验的本体限免，系统会在下一次同步时继续查询。</p></div>';
       return;
     }
-    grid.innerHTML = items.map((app, index) => {
+    grid.innerHTML = items.map(app => {
       const icon = typeof app.icon === "string" && /^\.\/assets\/daily-free\/[a-z0-9-]+\.(jpg|png|webp)$/.test(app.icon)
         ? '<img src="' + escapeHTML(app.icon) + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.hidden=true">' : fallback;
       const original = typeof app.original_price === "string" ? app.original_price : "";
