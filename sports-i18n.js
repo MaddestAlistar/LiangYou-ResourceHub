@@ -110,7 +110,7 @@
       all: '全部赛事', lol: '🎮 英雄联盟', basketball: '🏀 NBA',
       football: '⚽ 足球', esports: '🕹️ 其他电竞', other: '🏈 其他体育',
       loading: '正在读取赛事数据', firstLoad: '首次同步前不会展示示意赔率或虚构比赛。',
-      sourceNote: '数据来源：Polymarket 公开 Gamma API · 显示的是市场隐含概率，并非博彩公司赔率、官方胜率或实时比分。按每 2 小时计划检查；部分赛事可能暂无数据。时间按北京时间显示。常见队名提供中文译名，未收录的名称保留原文。',
+      sourceNote: '数据来源：Polymarket 公开 Gamma API · 显示的是市场隐含概率，并非博彩公司赔率、官方胜率或实时比分。每 2 小时计划检查，页面每 5 分钟读取更新；仅展示尚未开赛、开放报价的胜负市场。独立市场的概率合计可能略偏离 100%。时间按北京时间显示。常见队名提供中文译名，未收录的名称保留原文。',
       promoTitle: '想边看赛事数据，边追比赛直播？',
       promoText: '欢迎使用「汇流直播」关注电竞与体育内容，查看支持的赛事信息及相关直播。实际数据展示、赛程与可观看场次以 App 当前版本和直播平台为准。',
       download: '获取汇流直播 ↗',
@@ -124,7 +124,8 @@
       emptyTitle: '当前暂无可展示的赛事',
       emptyMessage: '赛事尚未开始或公开市场暂无有效数据。新数据会定时同步。',
       pending: '等待首次同步', updated: s => '上次同步：' + s,
-      delayed: '同步可能延迟', expired: '数据已过期',
+      delayed: '同步延迟或部分来源不可用', expired: '数据等待更新',
+      staleMessage: '超过 6 小时未完成核验，旧概率已隐藏，恢复后自动显示。',
       failed: '同步失败', unavailable: '同步数据暂不可用',
       unavailableTitle: '赛事数据暂不可用',
       unavailableMessage: '请稍后刷新。本栏目不会展示未经验证的赔率。'
@@ -135,7 +136,7 @@
       all: 'All Sports', lol: '🎮 League of Legends', basketball: '🏀 NBA',
       football: '⚽ Football', esports: '🕹️ Other Esports', other: '🏈 Other Sports',
       loading: 'Loading sports data', firstLoad: 'No placeholder matches or fabricated odds are shown.',
-      sourceNote: 'Source: Polymarket public Gamma API. Prices reflect implied market probabilities, not bookmaker odds, official win rates or live scores. Scheduled refresh every 2 hours; some events may be unavailable. Times shown in UTC+8. Original English names are preserved.',
+      sourceNote: 'Source: Polymarket public Gamma API. Prices reflect implied market probabilities, not bookmaker odds, official win rates or live scores. Checked every 2 hours; this page reloads data every 5 minutes. Only open pre-match winner markets are shown. Independent market prices may not sum to 100%. Times shown in UTC+8. Original English names are preserved.',
       promoTitle: 'Follow the data and watch the games',
       promoText: 'Explore esports and sports content with Conflux Live. Available event information, streams and viewing rights depend on the app version and respective providers.',
       download: 'Get Conflux Live ↗',
@@ -149,7 +150,8 @@
       emptyTitle: 'No upcoming matches available',
       emptyMessage: 'No eligible upcoming prediction markets in this category. Data is checked regularly.',
       pending: 'Waiting for first sync', updated: s => 'Last synced: ' + s,
-      delayed: 'Refresh may be delayed', expired: 'Data is out of date',
+      delayed: 'Delayed or partially unavailable', expired: 'Waiting for fresh data',
+      staleMessage: 'Quotes older than 6 hours are hidden until a successful refresh.',
       failed: 'Sync failed', unavailable: 'Data currently unavailable',
       unavailableTitle: 'Sports data unavailable',
       unavailableMessage: 'Please check back later. No unverified probabilities are displayed.'
@@ -167,14 +169,16 @@
     if (lang === 'en') return raw === '平局' ? 'Draw' : raw;
     if (category === 'lol' || /^league of legends$/i.test(raw)) return '英雄联盟';
     if (category === 'basketball' && /^NBA(?:\s+\d{4})?$/i.test(raw)) return raw.replace(/^NBA/i, 'NBA').replace(/(\d{4})$/, '$1 赛季');
-    if (/premier league/i.test(raw)) return '英超' + (raw.match(/\d{4}/)?.[0] ? ' · ' + raw.match(/\d{4}/)[0] : '');
-    if (/\bla liga\b/i.test(raw)) return '西甲';
-    if (/serie a/i.test(raw)) return '意甲';
-    if (/bundesliga/i.test(raw)) return '德甲';
-    if (/ligue 1/i.test(raw)) return '法甲';
-    if (/champions league/i.test(raw)) return '欧冠';
-    if (/europa league/i.test(raw)) return '欧联杯';
-    if (/efl championship/i.test(raw)) return '英冠';
+    // Match whole league names so second divisions and other countries are not relabelled.
+    const clean = raw.replace(/\s+20\d{2}(?:[-/]\d{2,4})?$/, '').trim();
+    const leagueNames = {
+      'premier league':'英超', 'english premier league':'英超',
+      'la liga':'西甲', 'la liga 2':'西乙', 'laliga 2':'西乙', 'segunda division':'西乙',
+      'serie a':'意甲', 'serie b':'意乙', 'bundesliga':'德甲', 'bundesliga 2':'德乙', '2. bundesliga':'德乙',
+      'ligue 1':'法甲', 'ligue 2':'法乙', 'champions league':'欧冠', 'uefa champions league':'欧冠',
+      'europa league':'欧联杯', 'uefa europa league':'欧联杯', 'efl championship':'英冠'
+    };
+    if (leagueNames[clean.toLowerCase()]) return leagueNames[clean.toLowerCase()];
     if (/superettan/i.test(raw)) return '瑞典足球甲级联赛';
     if (/dota\s*2/i.test(raw)) return 'Dota 2';
     if (raw === 'MLB') return '美国职棒 MLB';

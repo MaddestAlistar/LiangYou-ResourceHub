@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Update Google Play paid-to-free deals using public AppSales listings.
-No API key or paid hosting. AppSales is an independent tracker, NOT an official
-Google Play pricing API. Always show users the region/price disclaimer.
+"""Verify AppSales paid-to-free candidates against public Google Play USD offers.
+No API key. Anonymous US storefront prices can differ from the signed-in account.
 """
 from __future__ import annotations
 import json
+import io
 import re
 import sys
 import time
@@ -13,20 +13,23 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+from feed_common import write_json, iso
 from bs4 import BeautifulSoup
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "data" / "android-free.json"
 ICONS = ROOT / "assets" / "android-free"
 NOW = datetime.now(timezone.utc).replace(microsecond=0)
-MAX_RESULTS = 12
+MAX_RESULTS = 120
 PAGES = (
     "https://www.app-sales.net/nowfree/",
     "https://www.app-sales.net/nowfree/?page=2",
     "https://www.app-sales.net/nowfree/?page=3",
 )
 PLAY_ID = re.compile(r"^[a-zA-Z][\w]*(?:\.[a-zA-Z_][\w]*)+$")
-PRICE = re.compile(r"\$\s*([1-9]\d*(?:,\d{3})*(?:\.\d{1,2})?)")
+PRICE = re.compile(r"\$\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)")
 DISCOUNT = re.compile(r"(?<!\d)-100\s*%")
 FREE = re.compile(r"\bFREE\b", re.I)
 UA = "Mozilla/5.0 (compatible; LiangYouFreeApps/1.1; +https://github.com/MaddestAlistar/LiangYou-ResourceHub)"
@@ -109,7 +112,7 @@ def parse_appsales(html: bytes, page: int) -> list[dict]:
             continue
         text = card.get_text(" ", strip=True)
         price = PRICE.search(text)
-        if not price:
+        if not price or float(price.group(1).replace(",", "")) <= 0:
             continue
         packages.add(package)
         title = candidate_name(card, package)
@@ -124,7 +127,7 @@ def parse_appsales(html: bytes, page: int) -> list[dict]:
             "url": f"https://play.google.com/store/apps/details?id={urllib.parse.quote(package)}&hl=en_US&gl=US",
             "image_source": find_image(card),
             "source": "AppSales",
-            "source_url": "https://www.app-sales.net/nowfree/",
+            "source_url": PAGES[page - 1],
             "verification": "third_party_price_tracker_not_google_play_confirmation",
             "genre": "Google Play",
             "page": page,
@@ -141,15 +144,17 @@ def cache_icon(url: str, package: str) -> str:
     ):
         return ""
     try:
-        raw = get_bytes(url, limit=185_000, timeout=12)
-        if raw.startswith(b"\xff\xd8\xff"):
-            suffix = ".jpg"
-        elif raw.startswith(b"\x89PNG\r\n\x1a\n"):
-            suffix = ".png"
-        elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
-            suffix = ".webp"
-        else:
-            return ""
+        # Play often supplies a full-resolution image. Ask its image CDN for
+        # an icon-sized variant and bound the stored file independently.
+        if host.endswith('.googleusercontent.com'):
+            url = url.split('=')[0] + '=s128-rw'
+        raw = get_bytes(url, limit=1_000_000, timeout=12)
+        with Image.open(io.BytesIO(raw)) as image:
+            image.thumbnail((128, 128))
+            output = io.BytesIO()
+            image.convert('RGBA').save(output, format='WEBP', quality=82)
+            raw = output.getvalue()
+        suffix = '.webp'
         ICONS.mkdir(parents=True, exist_ok=True)
         filename = f"{package}{suffix}"
         path = ICONS / filename
@@ -159,6 +164,56 @@ def cache_icon(url: str, package: str) -> str:
     except (OSError, urllib.error.URLError, TimeoutError, ValueError) as exc:
         print(f"App icon could not be cached for {package}: {exc}", flush=True)
         return ""
+
+def play_price(raw, package):
+    """Use a matching public SoftwareApplication offer, not a random 'Free' word."""
+    soup = BeautifulSoup(raw, 'html.parser')
+    for node in soup.select('script[type="application/ld+json"]'):
+        try:
+            value = json.loads(node.get_text())
+        except (ValueError, TypeError):
+            continue
+        objects = value if isinstance(value, list) else [value]
+        for app in objects:
+            if not isinstance(app, dict) or app.get('@type') != 'SoftwareApplication':
+                continue
+            url = str(app.get('url', '')).replace('\\u003d', '=').replace('\\u0026', '&')
+            if google_package(url) != package:
+                continue
+            offers = app.get('offers', [])
+            if isinstance(offers, dict):
+                offers = [offers]
+            for offer in offers:
+                if not isinstance(offer, dict) or offer.get('priceCurrency') != 'USD':
+                    continue
+                if offer.get('availability') not in ('https://schema.org/InStock', 'http://schema.org/InStock'):
+                    continue
+                try:
+                    price = float(offer['price'])
+                    if price >= 0:
+                        return price, app.get('name'), app.get('image')
+                except (ValueError, TypeError, KeyError):
+                    pass
+    raise ValueError('No matching USD SoftwareApplication offer')
+
+def verify_google_play(candidate):
+    app = dict(candidate)
+    try:
+        price, name, image = play_price(get_bytes(app['url']), app['package'])
+        if price != 0:
+            return None, 'paid'
+        app.pop('page', None)
+        image_source = app.pop('image_source', '')
+        app['name'] = str(name or app['name'])[:120]
+        existing = list(ICONS.glob(app['package'] + '.*'))
+        app['icon'] = './assets/android-free/' + existing[0].name if existing else cache_icon(image or image_source, app['package'])
+        app['observed_at'] = iso()
+        app['verified_at'] = iso()
+        app['verification'] = 'google_play_page_price_and_appsales_drop'
+        return app, 'free'
+    except Exception as exc:
+        print(f"Google Play check skipped {app['package']}: {exc}", flush=True)
+        return None, 'unavailable'
 
 def main():
     pages_ok = 0
@@ -173,7 +228,7 @@ def main():
                 print(f"Page {index} HTML snippet: {BeautifulSoup(raw[:3000], 'html.parser').get_text(' ', strip=True)[:260]}", flush=True)
             for app in batch:
                 candidates.setdefault(app["package"], app)
-            if len(candidates) >= 32:
+            if len(candidates) >= MAX_RESULTS:
                 break
         except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
             print(f"AppSales page {index} unavailable: {exc}", flush=True)
@@ -182,31 +237,38 @@ def main():
         # Don't replace working snapshot with an empty success.
         raise SystemExit(f"No eligible AppSales deals: {pages_ok} pages loaded, {len(candidates)} candidates")
     selected = list(candidates.values())[:MAX_RESULTS]
-    items = []
-    for app in selected:
-        icon = cache_icon(app.pop("image_source"), app["package"])
-        app.pop("page", None)
-        app["icon"] = icon
-        app["observed_at"] = NOW.isoformat().replace("+00:00", "Z")
-        items.append(app)
+    items, price_checks, unavailable = [], 0, 0
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for app, status in pool.map(verify_google_play, selected):
+            price_checks += int(status in ("free", "paid"))
+            unavailable += int(status == "unavailable")
+            if app is not None:
+                items.append(app)
+    if selected and not price_checks:
+        raise SystemExit("Google Play could not verify any candidate; keeping original snapshot")
     data = {
         "schema": 1,
-        "generated_at": NOW.isoformat().replace("+00:00", "Z"),
-        "checked_at": NOW.isoformat().replace("+00:00", "Z"),
-        "source_name": "AppSales",
+        "generated_at": iso(),
+        "checked_at": iso(),
+        "interval_hours": 3,
+        "source_name": "AppSales + Google Play",
         "source_url": PAGES[0],
-        "price_confirmation": "independent_tracker",
+        "price_confirmation": "google_play_public_page",
         "market": "Google Play / US reference market",
+        "candidate_count": len(candidates),
+        "price_checked_count": price_checks,
+        "unavailable_count": unavailable,
+        "status": "partial" if unavailable or pages_ok < len(PAGES) else "ok",
         "items": items,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n",encoding="utf-8")
+    write_json(OUTPUT, data)
     used = {Path(x["icon"]).name for x in items if x["icon"]}
     if ICONS.exists():
         for path in ICONS.iterdir():
             if path.is_file() and path.suffix in (".jpg",".png",".webp") and path.name not in used:
                 path.unlink()
-    print(f"Updated {OUTPUT.relative_to(ROOT)} with {len(items)} Android offers (tracker-sourced, country-dependent).",flush=True)
+    print(f"Updated {OUTPUT.relative_to(ROOT)} with {len(items)} Android offers (Google Play public-page checked, country-dependent).",flush=True)
 
 if __name__ == "__main__":
     main()

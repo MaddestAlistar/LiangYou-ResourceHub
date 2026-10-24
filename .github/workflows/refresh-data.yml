@@ -1,0 +1,79 @@
+name: Refresh verified feeds and publish
+
+on:
+  schedule:
+    # Heartbeat, not repeated full collection: scripts decide what is due.
+    # GitHub may delay/drop cron events; the next heartbeat retries due work.
+    - cron: '17,47 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-data.yml'
+      - 'scripts/update_*.py'
+      - 'scripts/feed_common.py'
+      - 'scripts/refresh_data.py'
+      - 'scripts/publish_pages.py'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: resourcehub-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install public-feed parsers
+        run: python -m pip install --disable-pip-version-check beautifulsoup4 pillow
+      - name: Test verification rules
+        run: python -m unittest discover -s scripts -p 'test_feeds.py'
+      - name: Refresh due snapshots
+        id: collect
+        continue-on-error: true
+        env:
+          FORCE_REFRESH: ${{ github.event_name != 'schedule' }}
+        run: |
+          if [ "$FORCE_REFRESH" = "true" ]; then
+            python scripts/refresh_data.py --force
+          else
+            python scripts/refresh_data.py
+          fi
+      - name: Validate complete snapshots and web references
+        run: |
+          node scripts/validate.mjs
+          node scripts/test_sports_i18n.mjs
+      - name: Commit snapshots and icons with concurrent-edit protection
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/update-status.json assets/daily-free assets/android-free assets/game-free
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh verified feeds and check health [skip ci]"
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = 3 ]; then exit 1; fi
+            done
+          fi
+      - name: Publish bot updates to the existing Pages site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/publish_pages.py
+      - name: Report collector failure after publishing status
+        if: steps.collect.outcome == 'failure'
+        run: exit 1

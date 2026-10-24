@@ -120,26 +120,59 @@ assert.equal((html.match(/class="partner-card /g) || []).length, 2, 'Expected ex
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);
 
 
-// Android storefront invariant: independently tracked Google Play paid-to-free only.
-// Apple price checks are separate; no Android claim of official price verification.
+// Verified snapshots must be traceable, region-specific and safe to render.
+const appleOffers = JSON.parse(text('data/daily-free.json'));
+assert.equal(appleOffers.schema, 1);
+for (const country of ['cn', 'us']) {
+  const region = appleOffers.regions[country];
+  assert(region && Array.isArray(region.items));
+  const seen = new Set();
+  for (const app of region.items) {
+    assert(Number.isInteger(app.id) && !seen.has(app.id)); seen.add(app.id);
+    assert(app.country === country && app.price === 0 && app.verification === 'current_apple_price_and_recent_dated_drop');
+    assert(app.source_url?.startsWith('https://') && Number.isFinite(Date.parse(app.discovered_at)));
+    if (app.icon) assert(app.icon.startsWith('./assets/daily-free/') && existsSync(app.icon.slice(2)), 'Missing Apple icon');
+  }
+}
 const androidOffers=JSON.parse(text('data/android-free.json'));
 assert.equal(androidOffers.schema,1,'Android JSON schema mismatch');
-assert.equal(androidOffers.price_confirmation,'independent_tracker','Android pricing cannot claim official verification');
-assert(Array.isArray(androidOffers.items) && androidOffers.items.length <= 12,'Android storefront maximum is twelve');
+assert.equal(androidOffers.price_confirmation,'google_play_public_page','Android offers require current store-page verification');
+assert(Array.isArray(androidOffers.items));
 const seenAndroid=new Set();
 for(const app of androidOffers.items){
   assert(typeof app.package==='string' && /^[a-zA-Z][\w]*(?:\.[\w]+)+$/.test(app.package),'Invalid Google Play package');
-  assert(!seenAndroid.has(app.package),'Duplicated Android app');
-  seenAndroid.add(app.package);
-  assert(app.source==='AppSales' && app.country==='us' && app.price===0,'Android tracker data mismatched');
-  assert(/^\$\d/.test(app.original_price) && app.name && app.url.startsWith('https://play.google.com/store/apps/details?id='),'Android price or link missing');
-  if(app.icon){
-    assert(app.icon.startsWith('./assets/android-free/'),'Android icon must be hosted locally');
-    assert(existsSync(app.icon.slice(2)),'Android app icon missing: '+app.package);
+  assert(!seenAndroid.has(app.package),'Duplicated Android app'); seenAndroid.add(app.package);
+  assert(app.source==='AppSales' && app.country==='us' && app.price===0);
+  assert(app.verification === 'google_play_page_price_and_appsales_drop');
+  assert(Number.isFinite(Date.parse(app.verified_at)) && app.url.startsWith('https://play.google.com/store/apps/details?id='));
+  if(app.icon) assert(app.icon.startsWith('./assets/android-free/') && existsSync(app.icon.slice(2)), 'Missing Android icon');
+}
+const gameOffers=JSON.parse(text('data/game-free.json'));
+assert.equal(gameOffers.schema,1);
+for(const platform of ['steam','epic']) {
+  const section = gameOffers.platforms[platform];
+  assert(Array.isArray(section.items));
+  const seen = new Set();
+  for(const item of section.items) {
+    assert(!seen.has(item.id)); seen.add(item.id);
+    assert(item.price === 0 && item.verification === 'official_active_free_to_keep');
+    assert(['game','dlc'].includes(item.kind) && Number.isFinite(Date.parse(item.ends_at)));
+    const url = secureURL(item.url);
+    assert(url.hostname === (platform === 'steam' ? 'store.steampowered.com' : 'store.epicgames.com'));
+    if(item.icon) assert(item.icon.startsWith('./assets/game-free/') && existsSync(item.icon.slice(2)), 'Missing game image');
   }
 }
-const androidJS=text('daily-free.js');
-assert(androidJS.includes('data/android-free.json') && androidJS.includes('data-daily-region'),'Android tab not loaded');
-assert(html.includes('data-daily-region="android"'),'Android tab button missing');
-assert(html.includes('id="dailyFreeDisclaimer"') && html.includes('id="dailyFreeSource"'),'Android source disclosure missing');
-console.log('PASS: Android Google Play deal snapshot and three-platform tab.');
+const sports = JSON.parse(text('data/sports.json'));
+assert.equal(sports.source_type, 'prediction_market');
+assert(Array.isArray(sports.events));
+for(const event of sports.events) {
+  assert(event.verification === 'open_match_winner_market' && Number.isFinite(Date.parse(event.start_time)));
+  assert([2,3].includes(event.outcomes.length));
+  assert(event.outcomes.every(o => o.market_id && Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1));
+}
+for (const platform of ['cn','us','android','steam','epic']) assert(html.includes('data-daily-region="' + platform + '"'));
+assert(html.includes('id="dailyFreeMore"') && html.includes('id="dailyFreeRefresh"'));
+const feedStatus=JSON.parse(text('data/update-status.json'));
+assert.equal(feedStatus.schema,1);
+for(const key of ['apple','android','games','sports']) assert(feedStatus.jobs[key]?.interval_hours > 0);
+console.log('PASS: Regional Apple, verified Android, Steam/Epic, sports provenance and scheduler metadata.');

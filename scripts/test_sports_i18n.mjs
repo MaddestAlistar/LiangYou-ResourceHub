@@ -19,7 +19,9 @@ assert.equal(tr.team('Heat', 'basketball', 'zh'), '热火');
 assert.equal(tr.team('Arsenal FC', 'football', 'zh'), '阿森纳');
 assert.equal(tr.team('平局', 'football', 'en'), 'Draw');
 assert.equal(tr.team('Unknown New Club', 'football', 'zh'), 'Unknown New Club');
-assert.equal(tr.league('Premier League 2025', 'football', 'zh'), '英超 · 2025');
+assert.equal(tr.league('Premier League 2025', 'football', 'zh'), '英超');
+assert.equal(tr.league('La Liga 2', 'football', 'zh'), '西乙');
+assert.equal(tr.league('Scottish Premier League', 'football', 'zh'), 'Scottish Premier League');
 assert.equal(tr.league('League of Legends', 'lol', 'zh'), '英雄联盟');
 
 const lol = {

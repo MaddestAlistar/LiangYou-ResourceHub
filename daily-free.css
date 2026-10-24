@@ -202,3 +202,42 @@
   .dailyfree-region { padding: 8px 3px; font-size: 11px; }
   .dailyfree-android-card .dailyfree-free-tag { font-size: 8px; }
 }
+
+/* Five stores, evidence links, pagination and official game offers. */
+.dailyfree-regions { display:flex; flex-wrap:wrap; width:auto; max-width:100%; }
+.dailyfree-region { flex:0 0 auto; padding:10px 13px; }
+.dailyfree-toolbar { flex-wrap:wrap; gap:12px; }
+.dailyfree-toolbar-note { white-space:normal; }
+.dailyfree-sync { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:0 0 18px; padding:12px 14px; border:1px solid #d5be8f26; border-radius:12px; background:#0b14254d; }
+.dailyfree-sync span { color:#d7d7cc; font-size:12px; }
+.dailyfree-sync small { display:block; margin-top:5px; color:#a4adbe; font-size:11px; line-height:1.5; }
+.dailyfree-sync button,.dailyfree-list-actions button { cursor:pointer; color:#ecd7ad; background:#b89b5821; border:1px solid #e7c89044; border-radius:9px; padding:9px 13px; font:inherit; font-size:12px; }
+.dailyfree-sync button { flex-shrink:0; }
+.dailyfree-sync button:disabled { opacity:.5; cursor:wait; }
+.dailyfree-main-link { display:flex; flex-direction:column; flex:1; min-height:0; color:inherit; text-decoration:none; }
+.dailyfree-evidence { display:flex; flex-direction:column; align-items:flex-start; gap:5px; margin-top:9px; padding-top:8px; border-top:1px solid #d9c18e18; font-size:10px; line-height:1.45; }
+.dailyfree-evidence span { color:#a7adba; }
+.dailyfree-evidence a { color:#d8c7a7; text-decoration:underline; text-underline-offset:3px; }
+.dailyfree-list-actions { display:flex; justify-content:center; gap:12px; margin-top:18px; }
+.dailyfree-list-actions[hidden],.dailyfree-list-actions button[hidden] { display:none; }
+.dailyfree-requirement { display:block; font-size:11px; line-height:1.5; color:#dfc89e; margin-bottom:9px; }
+.dailyfree-grid.is-games { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.dailyfree-game-card .dailyfree-card-top { display:flex; flex-direction:column; align-items:stretch; gap:10px; }
+.dailyfree-game-card .dailyfree-icon { width:100%; height:auto; aspect-ratio:16/9; flex-basis:auto; border-radius:10px; }
+.dailyfree-game-card .dailyfree-icon img { height:100%; object-fit:cover; }
+.dailyfree-game-card .dailyfree-free-tag { align-self:flex-start; }
+.dailyfree-game-card .dailyfree-card-name { font-size:15px; }
+.dailyfree-game-card .dailyfree-card-sub { white-space:normal; }
+.dailyfree-game-card { min-height:270px; }
+.dailyfree-region:focus-visible,.dailyfree-sync button:focus-visible,.dailyfree-main-link:focus-visible,.dailyfree-list-actions button:focus-visible { outline:2px solid #f1d29d; outline-offset:3px; }
+@media (max-width:700px) {
+  .dailyfree-regions { display:flex; gap:5px; }
+  .dailyfree-region { font-size:11px; padding:9px 10px; }
+  .dailyfree-sync { padding:10px; flex-wrap:wrap; }
+  .dailyfree-sync button { padding:8px 10px; font-size:11px; }
+  .dailyfree-grid.is-games { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dailyfree-game-card .dailyfree-card-name { font-size:12px; }
+  .dailyfree-game-card { min-height:260px; }
+  .dailyfree-evidence { font-size:9px; }
+}
+@media (max-width:380px) { .dailyfree-grid.is-games { grid-template-columns:1fr; } }

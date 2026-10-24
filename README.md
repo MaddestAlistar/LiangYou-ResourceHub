@@ -157,3 +157,35 @@ og-cover.png           社交分享封面
 - **[MediaNetworkRules](https://github.com/MaddestAlistar/MediaNetworkRules)** · [JSON 资源目录](https://raw.githubusercontent.com/MaddestAlistar/MediaNetworkRules/main/index.json)
 
 原生格式如 PNG、SVG、OPML、CSS、XMLTV、网络客户端规则仍保留。JSON 只是结构化数据目录，**并不意味着任意 App 可以把它作为原生配置直接导入**。网站保留原 `#roadmap` 锚点兼容已有分享链接，并新增 `#lab` 直达。
+
+## 每日限免与赛事自动更新（2026-10-24）
+
+唯一调度入口为 `.github/workflows/refresh-data.yml`，每小时第 17、47 分钟检查任务是否到期。苹果、安卓和游戏每 3 小时采集一次；赛事每 2 小时采集一次。手动运行或修改采集器会立即执行完整采集。GitHub 的 cron 可能延迟或丢失，下一次检查会补做，不能保证精确到分钟。
+
+采集、验证、提交、请求 Pages 构建、确认发布形成完整流程。`GITHUB_TOKEN` 提交不会自动触发 Pages 构建，因此使用 GitHub 官方 Pages build API 明确请求发布，需要 `contents: write` 和 `pages: write`。仍使用现有 `main` 分支和 GitHub Pages 网址，无需第三方付费服务或 API 密钥。
+
+| 数据 | 发现来源 | 上榜条件 |
+| --- | --- | --- |
+| 苹果国区 | App Store Discounts RSS、GoFans、果粉查询 | 精确 App ID、国区近 30 天付费转免费记录、Apple Lookup 国区现价为 0 |
+| 苹果美区 | App Store Discounts RSS、AppStore-Discounts 首页及分类价格历史 | 美区近 30 天带日期的付费转免费记录、Apple Lookup 美区现价为 0 |
+| Android | AppSales 三页去重 | 原价大于 0、-100% 标记、Google Play 美区公开商店页对应包名的 USD 报价为 0 |
+| Steam | Steam 官方优惠搜索与前次活动复查 | 官方购买项 `is_free_to_keep`、100% 折扣、现价 0、领取尚未截止；区分本体与 DLC |
+| Epic | Epic 官方 `freeGamesPromotions` | 中国/美国区域分别检查，原价大于 0、现价 0、正在进行的免费活动窗口 |
+| 赛事 | Polymarket Gamma API | 未开赛、市场未关闭且仍接受报价、整场胜负市场；足球三项仅在主胜/平局/客胜均可识别时组合 |
+
+首页每页显示 12 款限免，可以继续展开；实际收录不强行凑数。Steam 未保证检索到全商店活动。苹果保留仍有效的近期记录，不把原始降价日期改成“今天”；来源仅有无时区的日期时按日期精度处理。内购/订阅优惠、长期免费游戏、试玩周末与站外任务领码不混入本体限免。App 免费下载不代表应用内全部内容免费，匿名地区报价也不保证所有登录账号的领取资格。
+
+每条卡片保留商店入口、来源和核验时间，游戏另有截止时间。所有图片本地缓存。`data/update-status.json` 记录每个任务的尝试与成功时间；失败不刷新旧数据的成功时间。每日限免超过 7 小时、赛事超过 6 小时未核验时隐藏旧数据；浏览器每 5 分钟读取新快照，切回页面也会检查，已过期游戏和已开赛市场每分钟移除。
+
+赛事值是预测市场报价隐含概率，并非博彩公司赔率、官方胜率或实时比分。直接保留来源数值和市场 ID；市场上市日期 `startDate` 不能充当比赛时间。独立足球市场概率不强制归一化，合计可能稍偏离 100%；中文/英文切换保持不变。
+
+本地验证：
+
+```sh
+python -m pip install beautifulsoup4 pillow
+python -m unittest discover -s scripts -p 'test_feeds.py'
+node scripts/validate.mjs
+node scripts/test_sports_i18n.mjs
+```
+
+手动刷新：`python scripts/refresh_data.py --force`。`data/update-status.json` 的 `last_success_at` 才是成功核验时间，不能用文件修改时间或任务启动时间代替。

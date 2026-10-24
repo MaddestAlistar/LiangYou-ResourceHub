@@ -30,6 +30,8 @@
   let visibleLimit = initialLimit();
   let lastUpdated = null;
   let failed = false;
+  let refreshPending = false;
+  let sourcePartial = false;
   const copy = () => translation.ui[language];
 
   function time(value) {
@@ -57,8 +59,8 @@
     }
     const age = Date.now() - lastUpdated.getTime();
     status.textContent = copy().updated(time(lastUpdated.toISOString())) +
-      (age > 12 * 3600000 ? ' · ' + copy().expired
-        : age > 6 * 3600000 ? ' · ' + copy().delayed : '');
+      (age > 6 * 3600000 ? ' · ' + copy().expired
+        : age > 3 * 3600000 || sourcePartial ? ' · ' + copy().delayed : '');
   }
 
   function renderStatic() {
@@ -106,11 +108,11 @@
     const prob = event.outcomes.length === 3
       ? '<div class="sports-three">' + names.map((name, i) =>
           '<div class="sports-side"><span>' + esc(name) + '</span><b>' +
-          percentages[i].toFixed(0) + '%</b></div>').join('') + '</div>'
+          percentages[i].toFixed(1) + '%</b></div>').join('') + '</div>'
       : '<div class="sports-prob"><div class="sports-side"><span>' + esc(names[0]) +
-          '</span><b>' + percentages[0].toFixed(0) +
+          '</span><b>' + percentages[0].toFixed(1) +
           '%</b></div><span class="sports-versus">VS</span><div class="sports-side right"><span>' +
-          esc(names[1]) + '</span><b>' + percentages[1].toFixed(0) + '%</b></div></div>';
+          esc(names[1]) + '</span><b>' + percentages[1].toFixed(1) + '%</b></div></div>';
 
     const total = event.outcomes.reduce((sum, o) => sum + Number(o.probability), 0) || 1;
     const track = event.outcomes.length === 3
@@ -142,9 +144,17 @@
       updateStatus();
       return;
     }
+    const age = lastUpdated ? Date.now() - lastUpdated.getTime() : Infinity;
+    if (!Number.isFinite(age) || age > 6 * 3600000 || age < -3600000) {
+      count.textContent = labels.expired;
+      grid.innerHTML = '<div class="sports-empty"><strong>' + esc(labels.expired) + '</strong>' + esc(labels.staleMessage) + '</div>';
+      actions.hidden = true;
+      updateStatus();
+      return;
+    }
     const filtered = matches.filter(m =>
       (active === 'all' || m.category === active) &&
-      (!m.start_time || Date.parse(m.start_time) > Date.now())
+      (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now())
     );
     const ordered = arrange(filtered);
     const display = ordered.slice(0, visibleLimit);
@@ -193,27 +203,35 @@
     document.getElementById('sports-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  renderStatic();
-  fetch('./data/sports.json?d=' + Math.floor(Date.now() / 120000), { cache: 'no-store' })
-    .then(response => {
+  async function refresh() {
+    if (refreshPending) return;
+    refreshPending = true;
+    try {
+      const response = await fetch('./data/sports.json?v=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(15000)});
       if (!response.ok) throw new Error('sports data unavailable');
-      return response.json();
-    })
-    .then(data => {
-      if (data.schema !== 1 || !Array.isArray(data.events)) throw new Error('invalid sports data');
+      const data = await response.json();
+      if (data.schema !== 1 || data.source_type !== 'prediction_market' || !Array.isArray(data.events)) throw new Error('invalid sports data');
       matches = data.events.filter(event =>
-        event && Array.isArray(event.outcomes) &&
+        event && event.verification === 'open_match_winner_market' && Array.isArray(event.outcomes) &&
         [2, 3].includes(event.outcomes.length) &&
-        event.outcomes.every(o => o.name && Number.isFinite(Number(o.probability)))
+        event.outcomes.every(o => o.name && o.market_id && typeof o.probability === 'number' && Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1)
       );
       lastUpdated = data.generated_at ? new Date(data.generated_at) : null;
-      const age = lastUpdated ? Date.now() - lastUpdated.getTime() : Infinity;
-      if (!lastUpdated || !Number.isFinite(age) || age > 12 * 3600000) matches = [];
+      sourcePartial = data.status === 'partial';
+      failed = false;
+    } catch {
+      // A network failure must not relabel the old snapshot as newly verified.
+      failed = !lastUpdated;
+      sourcePartial = true;
+    } finally {
+      refreshPending = false;
       updateStatus();
       render();
-    })
-    .catch(() => {
-      failed = true;
-      render();
-    });
+    }
+  }
+  renderStatic();
+  refresh();
+  window.setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
+  window.setInterval(() => { updateStatus(); render(); }, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();

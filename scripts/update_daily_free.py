@@ -1,658 +1,278 @@
 #!/usr/bin/env python3
-"""Refresh LiangYou's free App Store deals using public RSS + Apple Lookup.
-Zero third-party API keys and zero Python dependencies.
-Only a verified paid-to-free APP purchase is shown; IAP-only discounts are excluded.
+"""Regional paid-to-free evidence + fresh Apple Lookup price. No API key.
+Discovery covers the last 30 days, including continuing offers. No fuzzy name
+matching, cross-region old prices, IAP-only deals, or fabricated fill items.
 """
 from __future__ import annotations
-
 import json
-from difflib import SequenceMatcher
 import re
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
-from html.parser import HTMLParser
+from email.utils import parsedate_to_datetime
 from pathlib import Path
+from urllib.parse import urlencode, urljoin, urlparse
+from bs4 import BeautifulSoup
+from feed_common import ROOT, UTC, get, iso, now, date, read_json, write_json
 
-ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "data/daily-free.json"
-ICONS = ROOT / "assets/daily-free"
-UTC = timezone.utc
-NOW = datetime.now(UTC)
-MAX_EVENT_AGE = timedelta(days=3)
-MAX_PER_REGION = 12
-ATOM = "{http://www.w3.org/2005/Atom}"
-FEEDS = {
-    "cn": [
-        ("App Store Discounts", "https://raw.githubusercontent.com/appstore-discounts/appstore-discounts/main/rss/cn.xml"),
-        ("GoFans", "https://rsshub.app/gofans/ios"),
-    ],
-    "us": [
-        ("App Store Discounts", "https://raw.githubusercontent.com/appstore-discounts/appstore-discounts/main/rss/us.xml"),
-        ("Freshapps", "https://freshapps.com/rss/free.xml"),
-    ],
-}
-PRICE_TO_FREE = re.compile(
-    r"^\s*(?:价格|Price)\s*[:：]\s*([¥￥$]?\s*[0-9][0-9,.]*)\s*→\s*(?:免费|free\b|[¥￥$]?\s*0(?:\.0+)?(?:\b|$))",
-    re.IGNORECASE,
-)
-APP_ID = re.compile(r"(?:/id|/(?:cn|us)/)(\d{7,12})(?!\d)", re.IGNORECASE)
-FRESH_PRICE = re.compile(
-    r"([¥￥$]\s*[1-9][0-9,.]*)\s*(?:→|->|to)\s*(?:free\b|[¥￥$]\s*0(?:\.0+)?)",
-    re.IGNORECASE,
-)
+OUT = ROOT / 'data/daily-free.json'
+ICONS = ROOT / 'assets/daily-free'
+MAX_AGE = timedelta(days=30)
+ATOM = '{http://www.w3.org/2005/Atom}'
+APP_ID = re.compile(r'(?:/id|/(?:cn|us)/)(\d{7,12})(?!\d)')
+DROP = re.compile(r'^\s*(?:价格|Price)\s*[:：]\s*([¥￥$]?\s*\d[\d,.]*)\s*→\s*(免费|free|[¥￥$]?\s*0(?:\.0+)?)(?=\s|<|$)', re.I)
+FEED = 'https://raw.githubusercontent.com/appstore-discounts/appstore-discounts/main/rss/{country}.xml'
 
+def recent(value, instant):
+    return value is not None and instant - MAX_AGE <= value <= instant + timedelta(hours=1)
 
-def download(url: str, timeout: int = 18, limit: int = 1_200_000) -> bytes:
-    req = urllib.request.Request(
-        url, headers={"User-Agent": "LiangYouFreeApps/1.0 (+https://github.com/MaddestAlistar/LiangYou-ResourceHub)", "Accept": "application/atom+xml, application/rss+xml, application/json, */*"}
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        raw = response.read(limit + 1)
-    if len(raw) > limit:
-        raise ValueError("response exceeds size limit")
-    return raw
+def candidate(app_id, old, source, url, when):
+    amount = float(re.sub(r'[^\d.]', '', str(old).replace(',', '')) or '0')
+    if amount <= 0:
+        raise ValueError('Original price must be positive')
+    return {'id': int(app_id), 'original_price': str(old).replace(' ', ''), 'source': source,
+            'source_url': url, 'discovered_at': iso(when)}
 
-
-def timestamp(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-    except (ValueError, TypeError):
-        pass
-    try:
-        from email.utils import parsedate_to_datetime
-        return parsedate_to_datetime(value).astimezone(UTC)
-    except (TypeError, ValueError, IndexError):
-        return None
-
-
-def normalize_price(price: str) -> str | None:
-    amount = re.sub(r"[^0-9.]", "", price.replace(",", ""))
-    try:
-        if float(amount) <= 0:
-            return None
-    except ValueError:
-        return None
-    return price.replace(" ", "").strip()
-
-
-def candidates_from_feed(raw: bytes, country: str, source: str) -> list[dict]:
+def parse_rss(raw, country, instant):
     root = ET.fromstring(raw)
-    entries = root.findall(f"{ATOM}entry")
-    if not entries:
-        entries = root.findall("./channel/item")
-    found = []
-    for item in entries[:120]:
-        is_atom = item.tag == f"{ATOM}entry"
-        def get(name: str) -> str:
-            return (item.findtext(f"{ATOM}{name}" if is_atom else name) or "").strip()
-        headline = get("title")
-        summary = get("summary") or get("description")
-        content = get("content") or get("description")
-        link_el = item.find(f"{ATOM}link") if is_atom else None
-        link = (link_el.attrib.get("href", "") if link_el is not None else get("link"))
-        published = timestamp(get("updated") or get("published") or get("pubDate"))
-        if not published or published > NOW + timedelta(hours=3) or NOW - published > MAX_EVENT_AGE:
-            continue
-        # App Store Discounts publishes IAP-only reductions too. Only a
-        # headline that explicitly says the APP price became free qualifies.
-        m = PRICE_TO_FREE.search(summary)
-        if not m and source == "Freshapps":
-            m = FRESH_PRICE.search(" ".join((headline, summary, content[:500])))
-        if not m:
-            continue
-        original = normalize_price(m.group(1))
-        if not original:
-            continue
-        combined = " ".join((link, summary[:700], content[:1200]))
-        app_id = APP_ID.search(combined)
-        if not app_id:
-            # Some feeds embed https://apps.apple.com/.../id... in longer descriptions.
-            app_id = APP_ID.search(content)
-        if not app_id:
-            continue
-        found.append({
-            "id": int(app_id.group(1)),
-            "original_price": original,
-            "source": source,
-            "discovered_at": published.isoformat().replace("+00:00", "Z"),
-            "published": published,
-        })
-    return found
-
-
-
-
-class _MacGiftAnchorParser(HTMLParser):
-    """Read public MacGift deal cards without executing any website scripts."""
-
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.active = None
-        self.links = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag != "a":
-            return
-        href = dict(attrs).get("href", "")
-        if isinstance(href, str) and re.search(r"/app/\d{7,12}/?(?:[?#].*)?$", href):
-            self.active = {"href": href, "texts": []}
-
-    def handle_data(self, data):
-        if self.active is not None:
-            self.active["texts"].append(data)
-
-    def handle_endtag(self, tag):
-        if tag == "a" and self.active is not None:
-            self.links.append((self.active["href"], " ".join(self.active["texts"])))
-            self.active = None
-
-
-def candidates_from_macgift(raw: bytes, country: str) -> list[dict]:
-    """Only use deal links clearly tagged as a *paid* app becoming free.
-
-    Normal free apps, IAP-only offers, and paid-but-discounted apps cannot qualify.
-    Apple Lookup then independently verifies the current price for the region.
-    """
-    parser = _MacGiftAnchorParser()
-    parser.feed(raw.decode("utf-8", errors="replace"))
-    found = []
-    seen = set()
-    money_pattern = r"(?:¥|￥)" if country == "cn" else r"\$"
-    for href, label in parser.links:
-        match_id = re.search(r"/app/(\d{7,12})(?:/|$|[?#])", href)
-        if not match_id:
-            continue
-        app_id = int(match_id.group(1))
-        if app_id in seen:
-            continue
-        text = " ".join(label.split())
-        if country == "cn":
-            if "限免" not in text or "免费" not in text:
-                continue
-        elif not re.search(r"\bFree\b", text, flags=re.IGNORECASE):
-            continue
-        if ("免费·含内购" in text or "Free + IAP" in text
-                or "免费下载" in text or "Free download" in text
-                or "外部源" in text or "External source" in text):
-            continue
-        amounts = re.findall(money_pattern + r"\s*([1-9]\d*(?:\.\d{1,2})?)", text)
-        if not amounts:
-            continue
-        # Original paid price shown by the source; never infer it from a free API.
-        price = (("¥" if country == "cn" else "$") + amounts[0])
-        found.append({
-            "id": app_id,
-            "original_price": price,
-            "source": "MacGift",
-            "discovered_at": NOW.isoformat(timespec="seconds").replace("+00:00", "Z"),
-            "published": NOW,
-        })
-        seen.add(app_id)
-        if len(found) >= 60:
-            break
-    return found
-
-
-
-class _PlainTextParser(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.parts = []
-
-    def handle_data(self, data):
-        if data.strip():
-            self.parts.append(data.strip())
-
-
-def candidates_from_us_deals() -> list[dict]:
-    """Only accept a *dated* recent paid-to-free transition in US price history.
-
-    The source's generic "Free" listing and relative "Drop detected" badge
-    cannot prove a current sale started recently: some records are months old.
-    Apple's current regional price must independently be zero, too.
-    """
-    raw = download("https://appstore-discounts.com/en/free", timeout=18, limit=2_200_000)
-    parser = _MacGiftAnchorParser()
-    parser.feed(raw.decode("utf-8", errors="replace"))
-    seen = set()
-    found = []
-    for href, _ in parser.links:
-        match = re.search(r"/en/app/(\d{7,12})(?:/|$|[?#])", href)
+    entries = root.findall(f'{ATOM}entry') or root.findall('./channel/item')
+    result = []
+    for item in entries:
+        prefix = ATOM if item.tag.startswith(ATOM) else ''
+        value = lambda key: (item.findtext(prefix + key) or '').strip()
+        summary = value('summary') or value('description')
+        match = DROP.search(summary)
         if not match:
             continue
-        app_id = int(match.group(1))
-        if app_id in seen:
+        stamp = value('updated') or value('published') or value('pubDate')
+        when = date(stamp)
+        if not when:
+            try:
+                when = parsedate_to_datetime(stamp).astimezone(UTC)
+            except (TypeError, ValueError):
+                continue
+        link_el = item.find(prefix + 'link')
+        link = link_el.get('href', '') if link_el is not None and prefix else value('link')
+        appid = APP_ID.search(link)
+        if appid and recent(when, instant):
+            try:
+                result.append(candidate(appid[1], match[1], 'App Store Discounts RSS', link, when))
+            except ValueError:
+                pass
+    return result
+
+def parse_us_history(raw, appid, instant):
+    soup = BeautifulSoup(raw, 'html.parser')
+    # The site's display times have no timezone. Use its calendar date only;
+    # interpreting these local times as UTC wrongly excludes today's deals.
+    for table in soup.select('table'):
+        rows = []
+        for row in table.select('tr'):
+            cells = [c.get_text(' ', strip=True) for c in row.select('td')]
+            if len(cells) >= 2:
+                rows.append(cells)
+        if len(rows) < 2 or not re.fullmatch(r'Free|GRATUIT|\$0(?:\.00)?', rows[0][-1], re.I):
             continue
-        seen.add(app_id)
-        if len(seen) > 50:
-            break
+        match = re.search(r'\b(\d{2}/\d{2}/\d{4})\b', rows[0][0])
+        if not match:
+            continue
+        when = datetime.strptime(match[1], '%m/%d/%Y').replace(tzinfo=UTC)
+        if not recent(when, instant):
+            continue
+        # Only the immediately preceding paid observation establishes the drop.
+        prior = re.fullmatch(r'\$\s*(\d[\d,]*(?:\.\d+)?)', rows[1][-1])
+        if prior and float(prior[1].replace(',', '')) > 0:
+            item = candidate(appid, '$' + prior[1], 'AppStore-Discounts', f'https://appstore-discounts.com/en/app/{appid}', when)
+            item['date_precision'] = 'day'
+            return item
+    return None
+
+def us_histories(instant):
+    base = 'https://appstore-discounts.com/en/free'
+    home = get(base)
+    soup = BeautifulSoup(home, 'html.parser')
+    # The homepage is a small selection; category pages discover more real apps.
+    categories = list(dict.fromkeys(a['href'] for a in soup.select('a[href]') if re.fullmatch(re.escape(base) + r'/[a-z-]+', a['href'])))
+    pages = [home]
+    failures = 0
+    def fetch_page(url):
         try:
-            detail = download(f"https://appstore-discounts.com/en/app/{app_id}", timeout=9, limit=700_000)
-            plain = _PlainTextParser()
-            plain.feed(detail.decode("utf-8", errors="replace"))
-            body = " ".join(plain.parts)
-            # Use the actual dated price-history table, NOT a "drop detected"
-            # badge. Require latest history entry Free AND a prior paid entry.
-            marker = body.lower().find("price history")
-            if marker < 0:
-                continue
-            history = body[marker:marker + 2500]
-            rows = list(re.finditer(
-                r"\b(\d{2}/\d{2}/\d{4})\s+(\d{1,2}:\d{2})\s+(Free|GRATUIT|\$\s*\d+(?:\.\d+)?)\b",
-                history, re.IGNORECASE,
-            ))
-            if len(rows) < 2 or rows[0].group(3).lower() not in ("free", "gratuit"):
-                continue
-            event = datetime.strptime(
-                rows[0].group(1) + " " + rows[0].group(2), "%m/%d/%Y %H:%M"
-            ).replace(tzinfo=UTC)
-            if event > NOW + timedelta(hours=3) or not timedelta(0) <= NOW - event <= MAX_EVENT_AGE:
-                continue
-            prior_paid = next((
-                row.group(3).replace(" ", "") for row in rows[1:]
-                if row.group(3).startswith("$") and float(row.group(3).replace("$", "").replace(" ", "")) > 0
-            ), None)
-            if not prior_paid:
-                continue
-            found.append({
-                "id": app_id,
-                "original_price": prior_paid,
-                "source": "AppStore-Discounts",
-                "source_url": f"https://appstore-discounts.com/en/app/{app_id}",
-                "discovered_at": event.isoformat().replace("+00:00", "Z"),
-                "published": event,
-            })
-            if len(found) >= 20:
-                break
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-            print(f"[us] Dated price history unavailable for {app_id}: {exc}", flush=True)
-        time.sleep(0.2)
-    return found
+            return get(url, attempts=1)
+        except Exception:
+            return None
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for raw in pool.map(fetch_page, categories):
+            if raw:
+                pages.append(raw)
+            else:
+                failures += 1
+    ids = list(dict.fromkeys(int(m) for raw in pages for m in re.findall(rb'/en/app/(\d{7,12})', raw)))[:240]
+    def parse(appid):
+        try:
+            return parse_us_history(get(f'https://appstore-discounts.com/en/app/{appid}', attempts=1), appid, instant), False
+        except Exception:
+            return None, True
+    result = []
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for item, error in pool.map(parse, ids):
+            failures += int(error)
+            if item:
+                result.append(item)
+    if ids and failures >= len(ids):
+        raise RuntimeError('Price history pages unavailable')
+    print(f'US history: {len(pages)} category pages, {len(ids)} detail pages, {len(result)} dated drops, {failures} unavailable', flush=True)
+    return result
 
-
-
-class _MergeekParser(HTMLParser):
-    """Extract only public paid-to-free iOS card summaries from the page."""
-
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.heading_tag = None
-        self.heading_parts = []
-        self.groups = []
-        self.active = None
-
-    def handle_starttag(self, tag, attrs):
-        if tag in ("h3", "h4"):
-            self.heading_tag = tag
-            self.heading_parts = []
-
-    def handle_data(self, data):
-        if self.heading_tag:
-            self.heading_parts.append(data)
-        elif self.active is not None:
-            self.active["texts"].append(data)
-
-    def handle_endtag(self, tag):
-        if tag == self.heading_tag:
-            title = " ".join(" ".join(self.heading_parts).split())
-            if title:
-                self.active = {"title": title, "texts": []}
-                self.groups.append(self.active)
-            self.heading_tag = None
-
-
-def normalized_app_name(value: str) -> str:
-    return re.sub(r"[^a-z0-9\u4e00-\u9fff]", "", value.lower())
-
-
-def search_apple_app_by_name(title: str) -> dict | None:
-    url = "https://itunes.apple.com/search?" + urllib.parse.urlencode(
-        {"term": title, "country": "cn", "entity": "software", "limit": "12"}
-    )
-    obj = json.loads(download(url, timeout=16, limit=350_000))
-    options = obj.get("results", [])
-    normalized = normalized_app_name(title)
-    if not normalized:
+def gofans(instant):
+    soup = BeautifulSoup(get('https://gofans.cn/'), 'html.parser')
+    links = []
+    for card in soup.select('.media'):
+        current = card.select_one('.price-now')
+        old = card.select_one('.price-original')
+        link = card.select_one('a[href^="/app/"]')
+        if current and old and link and current.get_text(strip=True).lower() == 'free':
+            links.append(urljoin('https://gofans.cn', link['href']))
+    def detail(url):
+        try:
+            raw = get(url, attempts=1)
+            text = raw.decode('utf-8')
+            appid = re.search(r'track_id:"(\d{7,12})"', text)
+            plain = BeautifulSoup(raw, 'html.parser').get_text(' ', strip=True)
+            # Explicit dated transition in the price history, not just a Free badge.
+            history = plain.split('最低入手价浮动记录', 1)[-1]
+            drop = re.match(r'\s*¥\s*(\d+(?:\.\d+)?)\s*->\s*¥0\.00\s+(\d{4}/\d{2}/\d{2})', history)
+            if not appid or not drop or float(drop[1]) <= 0:
+                return None
+            when = datetime.strptime(drop[2], '%Y/%m/%d').replace(tzinfo=timezone(timedelta(hours=8)))
+            if recent(when, instant):
+                return candidate(appid[1], '¥' + drop[1], 'GoFans', url, when)
+        except Exception as exc:
+            print(f'GoFans detail skipped: {exc}', flush=True)
         return None
-    ranked = []
-    for app in options:
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        return [item for item in pool.map(detail, list(dict.fromkeys(links))) if item]
+
+def guofen(instant):
+    base = 'https://www.guofenchaxun.com/xianmian?type=free'
+    soup = BeautifulSoup(get(base), 'html.parser')
+    cards = []
+    for card in soup.select('a.gf-free-card[href]'):
+        text = card.get_text(' ', strip=True)
+        if '限免' in text and '免费' in text and 'iOS' in text and '内购限免' not in text:
+            cards.append(card['href'])
+    def detail(url):
         try:
-            name = normalized_app_name(str(app.get("trackName") or ""))
-            if not name or not app.get("trackId"):
-                continue
-            confidence = SequenceMatcher(None, normalized, name).ratio()
-            if normalized == name:
-                confidence = 1.0
-            ranked.append((confidence, app))
-        except (TypeError, ValueError):
-            continue
-    ranked.sort(key=lambda item: item[0], reverse=True)
-    if not ranked or ranked[0][0] < 0.92:
+            soup = BeautifulSoup(get(url, attempts=1), 'html.parser')
+            app_link = soup.select_one('a[href*="apps.apple.com/cn/"]')
+            text = soup.get_text(' ', strip=True)
+            appid = APP_ID.search(app_link['href']) if app_link else None
+            drop = re.search(r'限免日\s*(\d{4}-\d{2}-\d{2})', text)
+            old = soup.select_one('s')
+            if not appid or not drop or not old:
+                return None
+            when = date(drop[1] + 'T00:00:00+08:00')
+            if recent(when, instant):
+                return candidate(appid[1], old.get_text(strip=True), '果粉查询', url, when)
+        except Exception as exc:
+            print(f'Guofen detail skipped: {exc}', flush=True)
         return None
-    if len(ranked) > 1 and ranked[0][0] - ranked[1][0] < 0.06:
-        return None
-    return ranked[0][1]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        return [item for item in pool.map(detail, cards[:60]) if item]
 
-
-def candidates_from_mergeek() -> list[dict]:
-    raw = download("https://mergeek.com/free/apps", timeout=18, limit=3_200_000)
-    parser = _MergeekParser()
-    parser.feed(raw.decode("utf-8", errors="replace"))
-    found = []
-    seen = set()
-    for section in parser.groups:
-        title = section["title"]
-        text = " ".join(" ".join(section["texts"]).split())
-        m = re.search(r"原价\s*([1-9]\d*(?:\.\d+)?)\s*元\s*ios\s*(20\d{2}-\d{2}-\d{2})", text, re.IGNORECASE)
-        if not m or "FREE" not in text.upper() or "内购限免" in text:
-            continue
-        event = timestamp(m.group(2) + "T00:00:00+08:00")
-        if event is None or NOW - event > MAX_EVENT_AGE:
-            continue
-        if len(title) > 115:
-            continue
-        try:
-            app = search_apple_app_by_name(title)
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-            print(f"[cn] Mergeek app search unavailable for {title[:30]}: {exc}", flush=True)
-            continue
-        if not app:
-            continue
-        app_id = int(app["trackId"])
-        if app_id in seen:
-            continue
-        seen.add(app_id)
-        found.append({
-            "id": app_id,
-            "original_price": "¥" + m.group(1),
-            "source": "Mergeek",
-            "source_url": "https://mergeek.com/free/apps",
-            "discovered_at": event.isoformat().replace("+00:00", "Z"),
-            "published": event,
-        })
-        if len(found) >= 16:
-            break
-        time.sleep(0.25)
-    return found
-
-
-
-class _GuofenDealsParser(HTMLParser):
-    """Extract public China-region deal cards, never account/login content."""
-
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.links = []
-        self.current = None
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            href = dict(attrs).get("href", "")
-            if isinstance(href, str) and re.search(r"/xianmian/detail/\d+", href):
-                self.current = {"url": href, "parts": []}
-
-    def handle_data(self, data):
-        if self.current is not None:
-            self.current["parts"].append(data)
-
-    def handle_endtag(self, tag):
-        if tag == "a" and self.current is not None:
-            self.links.append(self.current)
-            self.current = None
-
-
-def candidates_from_guofen() -> list[dict]:
-    """Supplement recent CN paid-to-free listings with exact-name Apple matching.
-
-    Source historical price is independently provided, but the actual live free
-    price still MUST pass the official Apple Lookup check.
-    """
-    raw = download("https://www.guofenchaxun.com/xianmian?type=free", timeout=16, limit=1_600_000)
-    parser = _GuofenDealsParser()
-    parser.feed(raw.decode("utf-8", errors="replace"))
-    found = []
-    names = set()
-    today = NOW.astimezone(timezone(timedelta(hours=8)))
-    for card in parser.links:
-        label = " ".join(" ".join(card["parts"]).split())
-        if "限免" not in label or "免费" not in label or "iOS" not in label or "内购限免" in label:
-            continue
-        name = label.split("限免", 1)[0].strip()
-        if len(name) < 2 or len(name) > 100 or name in names:
-            continue
-        price = re.search(r"¥\s*([1-9]\d*(?:\.\d{1,2})?)", label)
-        dates = re.findall(r"\b(\d{1,2})-(\d{1,2})\b", label)
-        if not price or not dates:
-            continue
-        mm, dd = map(int, dates[-1])
-        try:
-            event = datetime(today.year, mm, dd, tzinfo=timezone(timedelta(hours=8))).astimezone(UTC)
-            if event > NOW + timedelta(hours=3):
-                event = event.replace(year=event.year - 1)
-        except ValueError:
-            continue
-        if not timedelta(0) <= NOW - event <= timedelta(days=4):
-            continue
-        names.add(name)
-        try:
-            app = search_apple_app_by_name(name)
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-            print(f"[cn] Guofen app search unavailable for {name[:35]}: {exc}", flush=True)
-            continue
-        if not app:
-            continue
-        found.append({
-            "id": int(app["trackId"]),
-            "original_price": "¥" + price.group(1),
-            "source": "Guofen",
-            "source_url": "https://www.guofenchaxun.com/xianmian?type=free",
-            "discovered_at": event.isoformat().replace("+00:00", "Z"),
-            "published": event,
-        })
-        if len(found) >= 28:
-            break
-        time.sleep(0.2)
-    return found
-
-def lookup_prices(ids: list[int], country: str) -> dict[int, dict]:
-    verified = {}
+def lookup(ids, country):
+    found, failures, checked = {}, 0, 0
     for offset in range(0, len(ids), 25):
         batch = ids[offset:offset + 25]
-        url = "https://itunes.apple.com/lookup?" + urllib.parse.urlencode(
-            {"id": ",".join(str(x) for x in batch), "country": country, "entity": "software"}
-        )
+        url = 'https://itunes.apple.com/lookup?' + urlencode({'id': ','.join(map(str, batch)), 'country': country, 'entity': 'software'})
         try:
-            response = json.loads(download(url, timeout=16))
-            for app in response.get("results", []):
-                if not isinstance(app, dict):
-                    continue
-                try:
-                    app_id = int(app.get("trackId"))
-                    price = float(app.get("price", -1))
-                except (ValueError, TypeError):
-                    continue
-                if app_id not in batch or price != 0:
-                    continue
-                # 'isVppDeviceBasedLicensingEnabled' etc are not price signals.
-                if app.get("wrapperType") != "software" and app.get("kind") not in ("software", "mac-software"):
-                    continue
-                verified[app_id] = app
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
-            print(f"[{country}] Apple Lookup failed for batch {offset // 25 + 1}: {exc}", flush=True)
-        time.sleep(0.5)
-    return verified
+            data = json.loads(get(url))
+            if not isinstance(data.get('results'), list):
+                raise ValueError('Invalid Apple response')
+            checked += len(batch)
+            for app in data['results']:
+                if app.get('trackId') in batch and app.get('kind') in ('software', 'mac-software') and app.get('price') == 0:
+                    found[app['trackId']] = app
+        except Exception as exc:
+            failures += 1
+            print(f'{country} Apple batch unavailable: {exc}', flush=True)
+        # Keep below Apple's documented approximate rate limit.
+        time.sleep(3.1)
+    if ids and not checked:
+        raise RuntimeError('All Apple price requests failed')
+    return found, checked, failures
 
-
-def localize_icon(app: dict, country: str, app_id: int) -> str:
-    url = app.get("artworkUrl100", "")
-    if not isinstance(url, str) or not url.startswith("https://"):
-        return ""
-    hostname = (urllib.parse.urlparse(url).hostname or "").lower()
-    if hostname != "mzstatic.com" and not hostname.endswith(".mzstatic.com"):
-        return ""
+def cache_icon(app, country):
+    appid = app['trackId']
+    for existing in ICONS.glob(f'{country}-{appid}.*'):
+        return './assets/daily-free/' + existing.name
+    url = app.get('artworkUrl100', '')
+    if not (url.startswith('https://') and (urlparse(url).hostname or '').endswith('.mzstatic.com')):
+        return ''
     try:
-        raw = download(url, timeout=10, limit=180_000)
-        if raw.startswith(b"\xff\xd8\xff"):
-            ext = ".jpg"
-        elif raw.startswith(b"\x89PNG\r\n\x1a\n"):
-            ext = ".png"
-        elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
-            ext = ".webp"
-        else:
-            return ""
-        ICONS.mkdir(parents=True, exist_ok=True)
-        destination = ICONS / f"{country}-{app_id}{ext}"
-        if not destination.exists() or destination.read_bytes() != raw:
-            destination.write_bytes(raw)
-        return "./assets/daily-free/" + destination.name
-    except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-        print(f"[{country}] Could not cache icon for {app_id}: {exc}", flush=True)
-        return ""
+        raw = get(url, limit=180_000, attempts=1)
+        ext = '.jpg' if raw.startswith(b'\xff\xd8\xff') else '.png' if raw.startswith(b'\x89PNG') else '.webp' if raw[:4] == b'RIFF' and raw[8:12] == b'WEBP' else ''
+        if ext:
+            ICONS.mkdir(parents=True, exist_ok=True)
+            path = ICONS / f'{country}-{appid}{ext}'
+            path.write_bytes(raw)
+            return './assets/daily-free/' + path.name
+    except Exception:
+        pass
+    return ''
 
-
-def main() -> None:
-    previous = {}
-    if OUT.exists():
+def main():
+    instant = now()
+    old = read_json(OUT)
+    output = {'schema': 1, 'generated_at': iso(instant), 'interval_hours': 3, 'lookback_days': 30, 'regions': {}}
+    successes = 0
+    for country in ('cn', 'us'):
+        candidates, health = {}, []
+        sources = [('App Store Discounts RSS', FEED.format(country=country), lambda: parse_rss(get(FEED.format(country=country)), country, instant))]
+        sources += [('GoFans', 'https://gofans.cn/', lambda: gofans(instant)), ('果粉查询', 'https://www.guofenchaxun.com/xianmian?type=free', lambda: guofen(instant))] if country == 'cn' else [('AppStore-Discounts', 'https://appstore-discounts.com/en/free', lambda: us_histories(instant))]
+        for name, url, collect in sources:
+            try:
+                items = collect()
+                health.append({'name': name, 'url': url, 'status': 'ok', 'candidates': len(items), 'checked_at': iso()})
+                for item in items:
+                    previous = candidates.get(item['id'])
+                    if not previous or item['discovered_at'] > previous['discovered_at']:
+                        candidates[item['id']] = item
+                print(f'{country} {name}: {len(items)} candidates', flush=True)
+            except Exception as exc:
+                health.append({'name': name, 'url': url, 'status': 'unavailable', 'checked_at': iso()})
+                print(f'{country} {name}: {exc}', flush=True)
+        previous_region = old.get('regions', {}).get(country, {})
+        # Keep established regional evidence when offers leave a feed's first page.
+        # The date is never reset and the current price must be checked again.
+        for item in previous_region.get('items', []):
+            if item.get('country') == country and recent(date(item.get('discovered_at')), instant):
+                candidates.setdefault(item['id'], {k: item[k] for k in ('id', 'original_price', 'source', 'source_url', 'discovered_at')})
         try:
-            previous = json.loads(OUT.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            pass
+            if not any(h['status'] == 'ok' for h in health):
+                raise RuntimeError('All discovery sources failed')
+            priced, checked, failures = lookup(list(candidates), country)
+            verified_at = iso()
+            def build(item):
+                app = priced[item['id']]
+                return {**item, 'name': str(app.get('trackName', ''))[:120], 'genre': str(app.get('primaryGenreName', 'App Store'))[:50],
+                        'price': 0, 'currency': app.get('currency', 'CNY' if country == 'cn' else 'USD'), 'country': country,
+                        'platform': 'macOS' if app.get('kind') == 'mac-software' else 'iOS', 'icon': cache_icon(app, country),
+                        'url': f'https://apps.apple.com/{country}/app/id{item["id"]}', 'verified_at': verified_at,
+                        'verification': 'current_apple_price_and_recent_dated_drop'}
+            selected = sorted((c for c in candidates.values() if c['id'] in priced), key=lambda c: c['discovered_at'], reverse=True)
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                items = list(pool.map(build, selected))
+            output['regions'][country] = {'status': 'partial' if failures or any(h['status'] != 'ok' for h in health) else 'ok',
+                'verified_at': verified_at, 'candidate_count': len(candidates), 'price_checked_count': checked, 'sources': health, 'items': items}
+            successes += 1
+        except Exception as exc:
+            print(f'{country} refresh failed, keeping original verification timestamp: {exc}', flush=True)
+            output['regions'][country] = {**previous_region, 'status': 'unavailable', 'last_attempt_at': iso(), 'sources': health}
+    if not successes:
+        raise SystemExit('No region successfully verified; previous snapshot preserved')
+    write_json(OUT, output)
+    print('Apple verified totals:', {k: len(v.get('items', [])) for k, v in output['regions'].items()}, flush=True)
 
-    output = {"schema": 1, "generated_at": NOW.isoformat(timespec="seconds").replace("+00:00", "Z"), "regions": {}}
-    successful_feeds = 0
-    verified_total = 0
-    for country in ("cn", "us"):
-        candidates = {}
-        country_feeds = 0
-        for source, url in FEEDS[country]:
-            try:
-                raw = download(url)
-                items = candidates_from_feed(raw, country, source)
-                country_feeds += 1
-                successful_feeds += 1
-                print(f"[{country}] {source}: {len(items)} recent paid-to-free candidates")
-                for candidate in items:
-                    old = candidates.get(candidate["id"])
-                    if not old or candidate["published"] > old["published"]:
-                        candidates[candidate["id"]] = candidate
-            except (urllib.error.URLError, TimeoutError, ET.ParseError, ValueError, OSError) as exc:
-                print(f"[{country}] Source unavailable: {source}: {exc}", flush=True)
-
-
-        # MacGift is useful as a discovery reference, but its list does not
-        # include an independently verifiable per-app drop timestamp. We
-        # intentionally do NOT accept those listings alone as recent sales.
-        # A current free price is insufficient evidence that a paid app
-        # recently became free.
-
-        if country == "us":
-            try:
-                us_deals = candidates_from_us_deals()
-                country_feeds += 1
-                successful_feeds += 1
-                print(f"[us] AppStore-Discounts: {len(us_deals)} paid-to-free candidates", flush=True)
-                for candidate in us_deals:
-                    old = candidates.get(candidate["id"])
-                    if not old or candidate["published"] > old["published"]:
-                        candidates[candidate["id"]] = candidate
-            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-                print(f"[us] AppStore-Discounts source unavailable: {exc}", flush=True)
-
-
-        if country == "cn":
-            try:
-                mergeek_items = candidates_from_mergeek()
-                country_feeds += 1
-                successful_feeds += 1
-                print(f"[cn] Mergeek: {len(mergeek_items)} matched recent paid-to-free candidates", flush=True)
-                for candidate in mergeek_items:
-                    old = candidates.get(candidate["id"])
-                    if not old or candidate["published"] > old["published"]:
-                        candidates[candidate["id"]] = candidate
-            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-                print(f"[cn] Mergeek source unavailable: {exc}", flush=True)
-
-
-        if country == "cn":
-            try:
-                guofen_items = candidates_from_guofen()
-                country_feeds += 1
-                successful_feeds += 1
-                print(f"[cn] Guofen: {len(guofen_items)} matched recent paid-to-free candidates", flush=True)
-                for candidate in guofen_items:
-                    old = candidates.get(candidate["id"])
-                    if not old or candidate["published"] > old["published"]:
-                        candidates[candidate["id"]] = candidate
-            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-                print(f"[cn] Guofen source unavailable: {exc}", flush=True)
-
-        if not country_feeds:
-            # Avoid rewriting old items as fresh when the entire region is offline.
-            old_region = previous.get("regions", {}).get(country, {})
-            output["regions"][country] = {
-                "status": "unavailable",
-                "verified_at": old_region.get("verified_at"),
-                "items": old_region.get("items", []),
-            }
-            continue
-
-        priced = lookup_prices(list(candidates), country) if candidates else {}
-        if candidates and not priced:
-            # Can indicate expired sales, or an Apple outage. Show none rather
-            # than claiming an unchecked free price.
-            print(f"[{country}] No candidate passed Apple price verification")
-
-        verified = []
-        for candidate in sorted(candidates.values(), key=lambda x: x["published"], reverse=True):
-            if len(verified) >= MAX_PER_REGION:
-                break
-            app = priced.get(candidate["id"])
-            if not app:
-                continue
-            app_id = candidate["id"]
-            icon = localize_icon(app, country, app_id)
-            verified.append({
-                "id": app_id,
-                "name": str(app.get("trackName") or app.get("trackCensoredName") or f"App {app_id}")[:100],
-                "genre": str(app.get("primaryGenreName") or "App Store 软件")[:40],
-                "original_price": candidate["original_price"],
-                "price": 0,
-                "currency": str(app.get("currency") or ("CNY" if country == "cn" else "USD")),
-                "country": country,
-                "platform": "macOS" if app.get("kind") == "mac-software" else "iOS",
-                "icon": icon,
-                "url": f"https://apps.apple.com/{country}/app/id{app_id}",
-                "source": candidate["source"],
-                "source_url": candidate.get("source_url") or (FEEDS[country][0][1] if candidate["source"] == "App Store Discounts" else "https://mergeek.com/free/apps" if candidate["source"] == "Mergeek" else "https://www.guofenchaxun.com/xianmian?type=free" if candidate["source"] == "Guofen" else ""),
-                "verification": "current_apple_price_and_recent_dated_drop",
-                "discovered_at": candidate["discovered_at"],
-            })
-        verified_total += len(verified)
-        output["regions"][country] = {
-            "status": "ok",
-            "verified_at": output["generated_at"],
-            "items": verified,
-        }
-
-    if not successful_feeds:
-        raise SystemExit("No RSS source succeeded. Previous JSON remains unchanged.")
-
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    # Remove icons no longer in use; all artwork is cached locally for China.
-    active = {Path(app["icon"]).name for region in output["regions"].values() for app in region["items"] if app.get("icon")}
-    if ICONS.exists():
-        for path in ICONS.iterdir():
-            if path.is_file() and path.name not in active and path.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
-                path.unlink()
-    print(f"Updated {OUT.relative_to(ROOT)}: {verified_total} verified free apps, {successful_feeds} working feeds.")
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -27,7 +27,11 @@ jobs:
           node --check daily-free.js
           node --check sports-i18n.js
           node --check sports.js
-          python3 -m py_compile scripts/update_sports.py
+          python3 -m py_compile scripts/*.py
+      - name: Install feed parsers
+        run: python3 -m pip install --disable-pip-version-check beautifulsoup4 pillow
+      - name: Verify source filtering regressions
+        run: python3 -m unittest discover -s scripts -p 'test_feeds.py'
       - name: Verify Chinese and English sports translations
         run: node scripts/test_sports_i18n.mjs
       - name: Validate catalog and web structure
