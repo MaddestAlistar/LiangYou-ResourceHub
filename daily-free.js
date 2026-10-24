@@ -124,18 +124,43 @@
     render();
   }));
 
-  const load = (file) => fetch(file, {cache: "no-cache"}).then(res => {
+  // Re-check the locally published JSON while the page stays open.
+  // Back-grounded mobile tabs may throttle timers; visibility resumes checks.
+  let refreshPending = false;
+  const load = (file) => fetch(file + "?v=" + Date.now(), {cache: "no-store"}).then(res => {
     if (!res.ok) throw Error("Missing snapshot");
     return res.json();
   });
-  load("./data/daily-free.json").then(data => {
-    if (!data || data.schema !== 1 || !data.regions) throw Error("Invalid iOS data");
-    apple = data;
-    render();
-  }).catch(() => { appleError = true; render(); });
-  load("./data/android-free.json").then(data => {
-    if (!data || data.schema !== 1 || !Array.isArray(data.items)) throw Error("Invalid Android data");
-    android = data;
-    render();
-  }).catch(() => { androidError = true; render(); });
+  const refresh = async () => {
+    if (refreshPending) return;
+    refreshPending = true;
+    try {
+      const results = await Promise.allSettled([
+        load("./data/daily-free.json"),
+        load("./data/android-free.json")
+      ]);
+      if (results[0].status === "fulfilled" &&
+          results[0].value?.schema === 1 && results[0].value?.regions) {
+        apple = results[0].value;
+        appleError = false;
+      } else {
+        appleError = true;
+      }
+      if (results[1].status === "fulfilled" &&
+          results[1].value?.schema === 1 && Array.isArray(results[1].value?.items)) {
+        android = results[1].value;
+        androidError = false;
+      } else {
+        androidError = true;
+      }
+      render();
+    } finally {
+      refreshPending = false;
+    }
+  };
+  refresh();
+  window.setInterval(refresh, 10 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refresh();
+  });
 })();
