@@ -101,7 +101,9 @@ export default {async fetch(request,env){
       const saved=await putOfficial(plan.file,plan.content,plan.sha);
       if(!saved.ok)return reply({error:"Image uploaded, but subscription update failed at "+plan.file+"; manual repair needed",status:saved.status},502,origin);
     }
-    meta.publishedName=label;\n    meta.publishedFilename=imagePath;\n    meta.publishedUrl=newUrl;
+    meta.publishedName=label;
+    meta.publishedFilename=imagePath;
+    meta.publishedUrl=newUrl;
     meta.publishedAt=new Date().toISOString();
    }
    meta.status=status;meta.reviewedAt=new Date().toISOString();
