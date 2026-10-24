@@ -25,7 +25,7 @@ SOURCES = (
     ("basketball", "NBA", ("nba",)),
     ("football", "足球", ("soccer", "epl", "ucl")),
     ("esports", "电竞", ("counter-strike-2", "dota-2")),
-    ("other", "其他体育", ("nfl", "mlb", "tennis")),
+    ("other", "其他体育", ("nfl", "mlb", "atp", "wta")),
 )
 UTC = dt.timezone.utc
 
@@ -147,8 +147,7 @@ def normal_market(event, category):
         a = left.casefold() in q
         b = right.casefold() in q
         if "draw" in q or "tie" in q:
-            if not (a or b):
-                found["draw"] = yes
+            found["draw"] = yes
         elif a and not b:
             found["left"] = yes
         elif b and not a:
@@ -176,7 +175,7 @@ def normalize(event, category, fallback_label, now):
         return None
     when = date_value(event.get("startTime") or event.get("gameStartTime") or event.get("startDate"))
     if when is not None:
-        if when < now - dt.timedelta(hours=10) or when > now + dt.timedelta(days=120):
+        if when < now or when > now + dt.timedelta(days=60):
             return None
     league = fallback_label
     series = event.get("series")
@@ -203,18 +202,6 @@ def main():
         found = 0
         for tag in tags:
             events = get_events(tag)
-            if tag == "epl":
-                for e in [x for x in events if isinstance(x, dict)][:3]:
-                    markets = e.get("markets") or []
-                    print("SOCCER_SAMPLE", json.dumps({
-                        "title": e.get("title"), "slug": e.get("slug"),
-                        "startDate": e.get("startDate"), "startTime": e.get("startTime"),
-                        "markets": [
-                            {"q": m.get("question"), "type": m.get("sportsMarketType"),
-                             "marketType": m.get("marketType"),
-                             "outcomes": m.get("outcomes"), "prices": m.get("outcomePrices")}
-                            for m in markets[:8] if isinstance(m, dict)
-                        ]}, ensure_ascii=False)[:3700], flush=True)
             for event in events:
                 if not isinstance(event, dict):
                     continue
