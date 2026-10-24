@@ -23,7 +23,7 @@ ICONS = ROOT / "assets/daily-free"
 UTC = timezone.utc
 NOW = datetime.now(UTC)
 MAX_EVENT_AGE = timedelta(days=7)
-MAX_PER_REGION = 10
+MAX_PER_REGION = 12
 ATOM = "{http://www.w3.org/2005/Atom}"
 FEEDS = {
     "cn": [
@@ -362,6 +362,84 @@ def candidates_from_mergeek() -> list[dict]:
         time.sleep(0.25)
     return found
 
+
+
+class _GuofenDealsParser(HTMLParser):
+    """Extract public China-region deal cards, never account/login content."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.links = []
+        self.current = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "a":
+            href = dict(attrs).get("href", "")
+            if isinstance(href, str) and re.search(r"/xianmian/detail/\d+", href):
+                self.current = {"url": href, "parts": []}
+
+    def handle_data(self, data):
+        if self.current is not None:
+            self.current["parts"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self.current is not None:
+            self.links.append(self.current)
+            self.current = None
+
+
+def candidates_from_guofen() -> list[dict]:
+    """Supplement recent CN paid-to-free listings with exact-name Apple matching.
+
+    Source historical price is independently provided, but the actual live free
+    price still MUST pass the official Apple Lookup check.
+    """
+    raw = download("https://www.guofenchaxun.com/xianmian?type=free", timeout=16, limit=1_600_000)
+    parser = _GuofenDealsParser()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    found = []
+    names = set()
+    today = NOW.astimezone(timezone(timedelta(hours=8)))
+    for card in parser.links:
+        label = " ".join(" ".join(card["parts"]).split())
+        if "限免" not in label or "免费" not in label or "iOS" not in label or "内购限免" in label:
+            continue
+        name = label.split("限免", 1)[0].strip()
+        if len(name) < 2 or len(name) > 100 or name in names:
+            continue
+        price = re.search(r"¥\s*([1-9]\d*(?:\.\d{1,2})?)", label)
+        dates = re.findall(r"\b(\d{1,2})-(\d{1,2})\b", label)
+        if not price or not dates:
+            continue
+        mm, dd = map(int, dates[-1])
+        try:
+            event = datetime(today.year, mm, dd, tzinfo=timezone(timedelta(hours=8))).astimezone(UTC)
+            if event > NOW + timedelta(hours=3):
+                event = event.replace(year=event.year - 1)
+        except ValueError:
+            continue
+        if not timedelta(0) <= NOW - event <= timedelta(days=4):
+            continue
+        names.add(name)
+        try:
+            app = search_apple_app_by_name(name)
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            print(f"[cn] Guofen app search unavailable for {name[:35]}: {exc}", flush=True)
+            continue
+        if not app:
+            continue
+        found.append({
+            "id": int(app["trackId"]),
+            "original_price": "¥" + price.group(1),
+            "source": "Guofen",
+            "discovered_at": event.isoformat().replace("+00:00", "Z"),
+            "published": event,
+        })
+        if len(found) >= 28:
+            break
+        time.sleep(0.2)
+    return found
+
 def lookup_prices(ids: list[int], country: str) -> dict[int, dict]:
     verified = {}
     for offset in range(0, len(ids), 25):
@@ -491,6 +569,20 @@ def main() -> None:
                         candidates[candidate["id"]] = candidate
             except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
                 print(f"[cn] Mergeek source unavailable: {exc}", flush=True)
+
+
+        if country == "cn":
+            try:
+                guofen_items = candidates_from_guofen()
+                country_feeds += 1
+                successful_feeds += 1
+                print(f"[cn] Guofen: {len(guofen_items)} matched recent paid-to-free candidates", flush=True)
+                for candidate in guofen_items:
+                    old = candidates.get(candidate["id"])
+                    if not old or candidate["published"] > old["published"]:
+                        candidates[candidate["id"]] = candidate
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+                print(f"[cn] Guofen source unavailable: {exc}", flush=True)
 
         if not country_feeds:
             # Avoid rewriting old items as fresh when the entire region is offline.
