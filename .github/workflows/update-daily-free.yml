@@ -2,7 +2,10 @@ name: Refresh verified App Store daily free
 
 on:
   schedule:
-    - cron: '17 */3 * * *'
+    # Beijing time: every three hours, with a fallback attempt in case GitHub drops a cron event.
+    # Scheduled GitHub Actions can be delayed and are not an exact-time guarantee.
+    - cron: '9 2,5,8,11,14,17,20,23 * * *'
+    - cron: '41 2,5,8,11,14,17,20,23 * * *'
   workflow_dispatch:
   push:
     branches: [main]
