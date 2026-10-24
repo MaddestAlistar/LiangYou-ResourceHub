@@ -197,6 +197,65 @@ def candidates_from_macgift(raw: bytes, country: str) -> list[dict]:
             break
     return found
 
+
+
+class _PlainTextParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+
+    def handle_data(self, data):
+        if data.strip():
+            self.parts.append(data.strip())
+
+
+def candidates_from_us_deals() -> list[dict]:
+    """Read a bounded sample of independently tracked US paid-to-free apps.
+
+    A positive prior store price must appear in each detail record, and the
+    current price is separately checked with Apple before publication.
+    """
+    raw = download("https://appstore-discounts.com/en/free", timeout=18, limit=2_200_000)
+    parser = _MacGiftAnchorParser()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    seen = set()
+    found = []
+    for href, _ in parser.links:
+        if "/en/app/" not in href:
+            continue
+        app_id_match = re.search(r"/en/app/(\d{7,12})(?:/|$|[?#])", href)
+        if not app_id_match:
+            continue
+        app_id = int(app_id_match.group(1))
+        if app_id in seen:
+            continue
+        seen.add(app_id)
+        if len(seen) > 18:
+            break
+        try:
+            detail = download(f"https://appstore-discounts.com/en/app/{app_id}", timeout=9, limit=700_000)
+            plain = _PlainTextParser()
+            plain.feed(detail.decode("utf-8", errors="replace"))
+            summary = " ".join(plain.parts[:100])
+            if "Price history" not in summary and "Drop detected" not in summary:
+                continue
+            paid = re.search(r"\$\s*([1-9]\d*(?:\.\d{1,2})?)\s+(?:Free|GRATUIT)\b", summary, re.IGNORECASE)
+            if not paid:
+                continue
+            found.append({
+                "id": app_id,
+                "original_price": "$" + paid.group(1),
+                "source": "AppStore-Discounts",
+                "discovered_at": NOW.isoformat(timespec="seconds").replace("+00:00", "Z"),
+                "published": NOW,
+            })
+            if len(found) >= 14:
+                break
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            print(f"[us] AppStore-Discounts detail unavailable for {app_id}: {exc}", flush=True)
+        time.sleep(0.2)
+    return found
+
 def lookup_prices(ids: list[int], country: str) -> dict[int, dict]:
     verified = {}
     for offset in range(0, len(ids), 25):
@@ -298,6 +357,20 @@ def main() -> None:
                     candidates[candidate["id"]] = candidate
         except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
             print(f"[{country}] MacGift source unavailable: {exc}", flush=True)
+
+
+        if country == "us":
+            try:
+                us_deals = candidates_from_us_deals()
+                country_feeds += 1
+                successful_feeds += 1
+                print(f"[us] AppStore-Discounts: {len(us_deals)} paid-to-free candidates", flush=True)
+                for candidate in us_deals:
+                    old = candidates.get(candidate["id"])
+                    if not old or candidate["published"] > old["published"]:
+                        candidates[candidate["id"]] = candidate
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+                print(f"[us] AppStore-Discounts source unavailable: {exc}", flush=True)
 
         if not country_feeds:
             # Avoid rewriting old items as fresh when the entire region is offline.
