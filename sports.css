@@ -55,3 +55,69 @@
 .sports-track-three i:nth-child(2){background:#899bb4}
 .sports-track-three i:nth-child(3){background:#647ca7}
 .sports-three .sports-side{overflow-wrap:anywhere}
+
+
+/* Compact resource card: the Sports logo is the visual hero, not a tall poster. */
+.project-card-sports .card-art {padding:16px;gap:8px}
+.project-card-sports .art-images {min-height:0;gap:0}
+.project-card-sports .art-sports .preview-image {height:auto;max-height:140px;aspect-ratio:2 / 1;object-fit:cover}
+.project-card-sports .card-content {padding:18px;gap:11px}
+.project-card-sports .card-content h3 {font-size:21px}
+.project-card-sports .card-desc {font-size:13px;line-height:1.7}
+.project-card-sports .card-stat {font-size:13px}
+.project-card-sports .highlights {gap:6px}
+.project-card-sports .card-actions {gap:8px;padding-top:12px}
+.project-card-sports .card-actions .button {min-height:42px;padding:9px 12px}
+.project-card-sports .card-repo {padding-top:2px}
+@media (max-width:700px) {
+  .project-card-sports .card-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:8px}
+  .project-card-sports .card-actions .button {min-width:0;font-size:12px;padding:8px 4px;gap:4px}
+  .project-card-sports .card-repo {grid-column:1/-1}
+}
+
+/* Progressive disclosure limits page height without hiding any data. */
+.sports-section {padding-block:48px 66px}
+.sports-head {margin-bottom:16px}
+.sports-head h2 {margin:5px 0 5px}
+.sports-tabs {margin-bottom:12px}
+.sports-grid {gap:11px}
+.sports-match {padding:14px 16px;border-radius:15px}
+.sports-match-top {gap:8px}
+.sports-match-top span:last-child {white-space:nowrap}
+.sports-match h3 {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:14px;min-height:0;line-height:1.45;margin:9px 0}
+.sports-prob,.sports-three {margin:7px 0 9px}
+.sports-side b {font-size:20px}
+.sports-side span {font-size:12px;line-height:1.35}
+.sports-three .sports-side b {font-size:19px}
+.sports-match-bottom {margin-top:10px}
+.sports-list-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:16px}
+.sports-list-actions > span {font-size:12px;color:#aab4c5;font-variant-numeric:tabular-nums}
+.sports-list-buttons {display:flex;gap:9px;flex-wrap:wrap}
+.sports-list-btn {min-height:40px;border:1px solid #9d8155;border-radius:10px;background:rgba(183,146,84,.15);color:#f0d6a6;padding:8px 16px;font-size:13px;font-weight:650;transition:background .2s,border-color .2s}
+.sports-list-btn:hover {background:rgba(183,146,84,.25);border-color:#d3b784}
+.sports-list-btn-secondary {border-color:#47556b;background:rgba(28,39,58,.7);color:#c8d3e5}
+.sports-foot {margin-top:14px}
+.sports-promo {margin-top:17px;padding:14px 17px}
+.sports-promo img {width:52px;height:52px;border-radius:13px}
+.sports-promo-copy strong {font-size:15px}
+@media (max-width:760px){
+  .sports-match {padding:13px 15px}
+  .sports-match h3 {font-size:13px}
+  .sports-list-actions {align-items:stretch;justify-content:center;text-align:center}
+  .sports-list-actions > span {width:100%}
+  .sports-list-buttons {width:100%}
+  .sports-list-btn {flex:1}
+  .sports-shell {padding:18px}
+  .sports-promo {gap:11px}
+}
+@media (max-width:420px){
+  .sports-shell {padding:15px}
+  .sports-head {gap:9px}
+  .sports-head h2 {font-size:26px}
+  .sports-head p:not(.eyebrow) {font-size:12px;line-height:1.65}
+  .sports-match-top {font-size:10px}
+  .sports-side b {font-size:19px}
+  .sports-three .sports-side b {font-size:18px}
+  .sports-promo {padding:12px}
+}
+@media (prefers-reduced-motion:reduce){.sports-list-btn{transition:none}}
