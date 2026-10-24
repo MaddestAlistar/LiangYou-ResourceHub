@@ -5,8 +5,43 @@ const reply=(obj,status=200,origin="")=>new Response(JSON.stringify(obj),{status
 export default {async fetch(request,env){
  const origin=request.headers.get("Origin")||"";
  const allowed=env.ALLOWED_ORIGIN||"https://maddestalistar.github.io";
- if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"600"}});
+ if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, X-Admin-Key","Access-Control-Max-Age":"600"}});
  if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
+
+ const url=new URL(request.url);
+ if(url.pathname==="/admin"){
+  if(!env.ADMIN_KEY)return reply({error:"Admin not configured"},503,origin);
+  const key=request.headers.get("X-Admin-Key")||"";
+  if(key.length<24||key!==env.ADMIN_KEY)return reply({error:"Unauthorized"},401,origin);
+  if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)return reply({error:"Server is not configured"},503,origin);
+  const root="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
+  const ghHeaders={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
+  const gh=async(path,options={})=>fetch(root+path,{...options,headers:ghHeaders});
+  const decode=s=>decodeURIComponent(escape(atob(s.replace(/\\s/g,""))));
+  if(request.method==="GET"){
+   const listing=await gh("pending");
+   if(!listing.ok)return reply({error:"Failed to list pending files",status:listing.status},502,origin);
+   const entries=await listing.json();
+   const metas=entries.filter(x=>x.type==="file"&&x.name.endsWith(".json")).slice(-100).reverse();
+   const items=await Promise.all(metas.map(async x=>{
+    try{const res=await gh("pending/"+encodeURIComponent(x.name));if(!res.ok)return null;const obj=await res.json();const m=JSON.parse(decode(obj.content));return {...m,metaPath:"pending/"+x.name,metaSha:obj.sha,imageUrl:"https://raw.githubusercontent.com/"+env.REVIEW_REPO+"/main/"+m.filename.split("/").map(encodeURIComponent).join("/")};}catch{return null}
+   }));
+   return reply({ok:true,items:items.filter(Boolean)},200,origin);
+  }
+  if(request.method==="POST"){
+   let body;try{body=await request.json()}catch{return reply({error:"Invalid JSON"},400,origin)}
+   const path=String(body.path||"");const status=String(body.status||"");
+   if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending"].includes(status))return reply({error:"Invalid request"},400,origin);
+   const current=await gh(path);if(!current.ok)return reply({error:"Metadata not found"},404,origin);
+   const item=await current.json();let meta;try{meta=JSON.parse(decode(item.content))}catch{return reply({error:"Bad metadata"},502,origin)}
+   meta.status=status;meta.reviewedAt=new Date().toISOString();
+   const content=btoa(unescape(encodeURIComponent(JSON.stringify(meta,null,2))));
+   const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: "+status+" "+meta.name,content,sha:item.sha})});
+   if(!saved.ok)return reply({error:"Review update failed",status:saved.status},502,origin);
+   return reply({ok:true,status},200,origin);
+  }
+  return reply({error:"Method not allowed"},405,origin);
+ }
  if(request.method!=="POST")return reply({error:"Method not allowed"},405,origin);
  if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)return reply({error:"Server is not configured"},503,origin);
  const ct=request.headers.get("Content-Type")||"";if(!ct.includes("multipart/form-data"))return reply({error:"Expected multipart form"},400,origin);
@@ -29,7 +64,7 @@ export default {async fetch(request,env){
  if(!valid||w!==720||h!==720)return reply({error:"Image must be 720 × 720 PNG, WebP or GIF"},400,origin);
  const safe=name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g,"-").slice(0,48)||"icon";
  const id=new Date().toISOString().replace(/[-:.TZ]/g,"")+"-"+crypto.randomUUID().slice(0,8);
- const base="pending/"+id+"-"+safe;const b64=(()=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)})();
+ const base="pending/"+safe+"-"+id;const b64=(()=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)})();
  const api="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
  const headers={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
  const put=async(path,content)=>fetch(api+path,{method:"PUT",headers,body:JSON.stringify({message:"queue: "+safe+" ("+id+")",content})});
