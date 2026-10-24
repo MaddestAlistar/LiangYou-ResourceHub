@@ -6,6 +6,7 @@ Only a verified paid-to-free APP purchase is shown; IAP-only discounts are exclu
 from __future__ import annotations
 
 import json
+from difflib import SequenceMatcher
 import re
 import time
 import urllib.error
@@ -256,6 +257,111 @@ def candidates_from_us_deals() -> list[dict]:
         time.sleep(0.2)
     return found
 
+
+
+class _MergeekParser(HTMLParser):
+    """Extract only public paid-to-free iOS card summaries from the page."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.heading_tag = None
+        self.heading_parts = []
+        self.groups = []
+        self.active = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("h3", "h4"):
+            self.heading_tag = tag
+            self.heading_parts = []
+
+    def handle_data(self, data):
+        if self.heading_tag:
+            self.heading_parts.append(data)
+        elif self.active is not None:
+            self.active["texts"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == self.heading_tag:
+            title = " ".join(" ".join(self.heading_parts).split())
+            if title:
+                self.active = {"title": title, "texts": []}
+                self.groups.append(self.active)
+            self.heading_tag = None
+
+
+def normalized_app_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9\u4e00-\u9fff]", "", value.lower())
+
+
+def search_apple_app_by_name(title: str) -> dict | None:
+    url = "https://itunes.apple.com/search?" + urllib.parse.urlencode(
+        {"term": title, "country": "cn", "entity": "software", "limit": "12"}
+    )
+    obj = json.loads(download(url, timeout=16, limit=350_000))
+    options = obj.get("results", [])
+    normalized = normalized_app_name(title)
+    if not normalized:
+        return None
+    ranked = []
+    for app in options:
+        try:
+            name = normalized_app_name(str(app.get("trackName") or ""))
+            if not name or not app.get("trackId"):
+                continue
+            confidence = SequenceMatcher(None, normalized, name).ratio()
+            if normalized == name:
+                confidence = 1.0
+            ranked.append((confidence, app))
+        except (TypeError, ValueError):
+            continue
+    ranked.sort(key=lambda item: item[0], reverse=True)
+    if not ranked or ranked[0][0] < 0.82:
+        return None
+    if len(ranked) > 1 and ranked[0][0] - ranked[1][0] < 0.06:
+        return None
+    return ranked[0][1]
+
+
+def candidates_from_mergeek() -> list[dict]:
+    raw = download("https://mergeek.com/free/apps", timeout=18, limit=3_200_000)
+    parser = _MergeekParser()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    found = []
+    seen = set()
+    for section in parser.groups:
+        title = section["title"]
+        text = " ".join(" ".join(section["texts"]).split())
+        m = re.search(r"原价\s*([1-9]\d*(?:\.\d+)?)\s*元\s*ios\s*(20\d{2}-\d{2}-\d{2})", text, re.IGNORECASE)
+        if not m or "FREE" not in text.upper() or "内购限免" in text:
+            continue
+        event = timestamp(m.group(2) + "T00:00:00+08:00")
+        if event is None or NOW - event > MAX_EVENT_AGE:
+            continue
+        if len(title) > 115:
+            continue
+        try:
+            app = search_apple_app_by_name(title)
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            print(f"[cn] Mergeek app search unavailable for {title[:30]}: {exc}", flush=True)
+            continue
+        if not app:
+            continue
+        app_id = int(app["trackId"])
+        if app_id in seen:
+            continue
+        seen.add(app_id)
+        found.append({
+            "id": app_id,
+            "original_price": "¥" + m.group(1),
+            "source": "Mergeek",
+            "discovered_at": event.isoformat().replace("+00:00", "Z"),
+            "published": event,
+        })
+        if len(found) >= 16:
+            break
+        time.sleep(0.25)
+    return found
+
 def lookup_prices(ids: list[int], country: str) -> dict[int, dict]:
     verified = {}
     for offset in range(0, len(ids), 25):
@@ -371,6 +477,20 @@ def main() -> None:
                         candidates[candidate["id"]] = candidate
             except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
                 print(f"[us] AppStore-Discounts source unavailable: {exc}", flush=True)
+
+
+        if country == "cn":
+            try:
+                mergeek_items = candidates_from_mergeek()
+                country_feeds += 1
+                successful_feeds += 1
+                print(f"[cn] Mergeek: {len(mergeek_items)} matched recent paid-to-free candidates", flush=True)
+                for candidate in mergeek_items:
+                    old = candidates.get(candidate["id"])
+                    if not old or candidate["published"] > old["published"]:
+                        candidates[candidate["id"]] = candidate
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+                print(f"[cn] Mergeek source unavailable: {exc}", flush=True)
 
         if not country_feeds:
             # Avoid rewriting old items as fresh when the entire region is offline.
