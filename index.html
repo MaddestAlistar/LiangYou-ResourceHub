@@ -27,13 +27,23 @@
   <script src="./daily-free.js?v=20261024.4" defer></script>
   <script src="./sports-i18n.js?v=20261024.4" defer></script>
   <script src="./sports.js?v=20261024.4" defer></script>
+<style>
+/* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
+.site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
+.site-header .brand{grid-column:1;grid-row:1;min-width:0}
+.site-header .header-link{grid-column:2;grid-row:1;margin:0;white-space:nowrap}
+.site-header .nav{grid-column:1/-1;grid-row:2;display:flex;flex-wrap:nowrap;justify-content:flex-start;gap:clamp(12px,2.7vw,30px);width:100%;min-width:0;margin:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:3px 0 5px}
+.site-header .nav::-webkit-scrollbar{display:none}
+.site-header .nav a{white-space:nowrap;flex:none}
+@media(max-width:600px){.site-header .header-inner{padding-block:9px;gap:7px 10px}.site-header .brand-mark{width:42px;height:42px;font-size:25px}.site-header .brand-copy strong{font-size:17px}.site-header .brand-copy small{font-size:9px;letter-spacing:.06em}.site-header .header-link{padding:6px 9px;min-height:36px;font-size:11px}.site-header .nav{gap:18px}.site-header .nav a{font-size:12px;min-height:34px}}
+</style>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
   <header class="site-header">
     <div class="container header-inner">
       <a href="#top" class="brand" aria-label="良友资源中心首页"><span class="brand-mark" aria-hidden="true">良</span><span class="brand-copy"><strong>良友资源中心</strong><small>LIANGYOU RESOURCE HUB</small></span></a>
-      <nav class="nav" aria-label="主导航"><a href="#library">资源库</a><a href="#sports">赛事数据</a><a href="#daily-free">每日限免</a><a href="#offers">良友福利</a><a href="#tf-store">TF Store</a><a href="#lab">资源实验室</a><a href="#community">交流社区</a></nav>
+      <nav class="nav" aria-label="主导航"><a href="./icon-submit.html">图标投稿</a><a href="#sports">赛事数据</a><a href="#daily-free">每日限免</a><a href="#offers">良友福利</a><a href="#tf-store">TF Store</a><a href="#lab">资源实验室</a><a href="#community">交流社区</a></nav>
       <a class="header-link" href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-4 18-6-5-3 3 1-6 8-7-10 6-5-2Z"/></svg><span>Telegram</span><span aria-hidden="true">↗</span></a>
     </div>
   </header>
