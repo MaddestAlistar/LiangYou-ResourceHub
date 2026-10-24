@@ -25,7 +25,10 @@ jobs:
           node --check app.js
           node --check design.js
           node --check daily-free.js
+          node --check sports-i18n.js
           node --check sports.js
           python3 -m py_compile scripts/update_sports.py
+      - name: Verify Chinese and English sports translations
+        run: node scripts/test_sports_i18n.mjs
       - name: Validate catalog and web structure
         run: node scripts/validate.mjs
