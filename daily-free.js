@@ -1,18 +1,24 @@
-/* The daily-free section reads a local JSON snapshot. No visitor-side APIs. */
+/* Three-platform daily-free showcase. All data is served as local, cached JSON. */
 (() => {
   const grid = document.getElementById("dailyFreeGrid");
   const updated = document.getElementById("dailyFreeUpdated");
   const count = document.getElementById("dailyFreeCount");
-  const toggles = [...document.querySelectorAll("[data-daily-region]")];
-  if (!grid || !updated || !count || !toggles.length) return;
-  let region = "cn";
-  let payload = null;
+  const disclaimer = document.getElementById("dailyFreeDisclaimer");
+  const sourceLink = document.getElementById("dailyFreeSource");
+  const tabs = [...document.querySelectorAll("[data-daily-region]")];
+  if (!grid || !updated || !count || !disclaimer || !sourceLink || !tabs.length) return;
+
+  let active = "cn";
+  let apple = null;
+  let android = null;
+  let appleError = false;
+  let androidError = false;
 
   const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
   const formatDate = iso => {
-    if (!iso || Number.isNaN(Date.parse(iso))) return "尚未同步";
+    if (!iso || Number.isNaN(Date.parse(iso))) return "等待同步";
     return new Intl.DateTimeFormat("zh-CN", {
       timeZone: "Asia/Shanghai", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit"
     }).format(new Date(iso)) + "（北京时间）";
@@ -21,57 +27,113 @@
     const ts = Date.parse(iso || "");
     return Number.isFinite(ts) && ts <= Date.now() + 3600000 && Date.now() - ts <= 15 * 3600000;
   };
-  const isValid = app => app && Number.isInteger(app.id) && app.id > 0 && app.price === 0 &&
-    app.country === region && typeof app.name === "string" && app.name.length > 0;
-  const fallback = '<span class="dailyfree-icon-fallback" aria-hidden="true">✦</span>';
+  const isApple = item => item && Number.isInteger(item.id) && item.id > 0
+    && item.price === 0 && item.country === active && typeof item.name === "string";
+  const isAndroid = item => item && typeof item.package === "string"
+    && /^[a-zA-Z][\w]*(?:\.[\w]+)+$/.test(item.package) && item.package.length <= 160
+    && item.price === 0 && item.country === "us" && item.source === "AppSales"
+    && typeof item.name === "string" && item.name.length > 0;
+
+  const iconHTML = (item, androidMode) => {
+    const prefix = androidMode ? "android-free" : "daily-free";
+    const icon = item.icon;
+    const safeIcon = typeof icon === "string" && (
+      androidMode
+        ? /^\.\/assets\/android-free\/[a-zA-Z][\w.-]*\.(jpg|png|webp)$/.test(icon) && !icon.includes("..")
+        : /^\.\/assets\/daily-free\/[a-z0-9-]+\.(jpg|png|webp)$/.test(icon)
+    );
+    return safeIcon
+      ? '<img src="' + escapeHTML(icon) + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.hidden=true">'
+      : '<span class="dailyfree-icon-fallback" aria-hidden="true">' + (androidMode ? "▶" : "✦") + "</span>";
+  };
 
   function render() {
-    toggles.forEach(button => {
-      const active = button.dataset.dailyRegion === region;
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", String(active));
+    const androidMode = active === "android";
+    tabs.forEach(button => {
+      const chosen = button.dataset.dailyRegion === active;
+      button.classList.toggle("is-active", chosen);
+      button.setAttribute("aria-pressed", String(chosen));
     });
-    const current = payload?.regions?.[region];
-    const time = current?.verified_at;
-    updated.textContent = time ? "价格核验 · " + formatDate(time) : "等待首次自动同步";
-    const items = Array.isArray(current?.items) ? current.items.filter(isValid).slice(0, 12) : [];
-    if (!isFresh(time)) {
-      count.textContent = "暂不展示未核实价格";
-      grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">⌁</span><strong>正在等待有效的限免数据</strong><p>首次同步可能需要一点时间。若上游数据暂时不可用，将自动隐藏未验证或已过期的信息。</p></div>';
+
+    disclaimer.textContent = androidMode
+      ? "安卓限免来自 AppSales 第三方追踪，价格按 Google Play 美国区参考，不代表官方实时确认。不同国家、账号和设备可能不同，领取前请在 Google Play 核对是否免费；不提供 APK 下载。"
+      : "只展示 App 本体近期从付费变为免费且通过 App Store 当前地区售价核验的项目，不包含内购和订阅；最终价格以对应地区商店显示为准。";
+    sourceLink.textContent = androidMode ? "AppSales 限免数据源 ↗" : "查看苹果开源数据源 ↗";
+    sourceLink.href = androidMode
+      ? "https://www.app-sales.net/nowfree/"
+      : "https://github.com/appstore-discounts/appstore-discounts";
+
+    const current = androidMode ? android : apple?.regions?.[active];
+    const latest = androidMode ? current?.checked_at : current?.verified_at;
+    const error = androidMode ? androidError : appleError;
+    updated.textContent = latest
+      ? (androidMode ? "追踪同步 · " : "价格核验 · ") + formatDate(latest)
+      : error ? "数据暂不可用" : "等待首次同步";
+
+    if (error && !current) {
+      count.textContent = "暂不可用";
+      grid.innerHTML = '<div class="dailyfree-empty"><strong>暂时无法加载限免数据</strong><p>上游网站或同步任务可能遇到问题，恢复后会自动显示最新列表。</p></div>';
       return;
     }
-    count.textContent = "已核验 " + items.length + " / 12 款限免";
-    if (!items.length) {
-      grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">✧</span><strong>本区暂无限免上榜</strong><p>目前没有通过商店价格校验的本体限免，系统会在下一次同步时继续查询。</p></div>';
+    if (!current) {
+      count.textContent = "加载中";
+      grid.innerHTML = '<div class="dailyfree-empty"><strong>正在读取限免目录…</strong><p>列表由 GitHub Actions 自动生成，不需要手动刷新数据。</p></div>';
       return;
     }
-    grid.innerHTML = items.map(app => {
-      const icon = typeof app.icon === "string" && /^\.\/assets\/daily-free\/[a-z0-9-]+\.(jpg|png|webp)$/.test(app.icon)
-        ? '<img src="' + escapeHTML(app.icon) + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.hidden=true">' : fallback;
-      const original = typeof app.original_price === "string" ? app.original_price : "";
-      const platform = app.platform === "macOS" ? "Mac" : "iPhone / iPad";
-      return '<a class="dailyfree-card" href="https://apps.apple.com/' + region + '/app/id' + app.id +
-        '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHTML(app.name) + ' App Store 领取">' +
+    if (!isFresh(latest)) {
+      count.textContent = "数据等待更新";
+      grid.innerHTML = '<div class="dailyfree-empty"><strong>正在等待最新的限免信息</strong><p>同步数据超过安全展示期限，旧优惠已隐藏，避免误导领取。</p></div>';
+      return;
+    }
+
+    const raw = androidMode ? current.items : current.items;
+    const apps = Array.isArray(raw) ? raw.filter(androidMode ? isAndroid : isApple).slice(0, 12) : [];
+    count.textContent = (androidMode ? "限免追踪 " : "已核验 ") + apps.length + " / 12 款";
+    if (!apps.length) {
+      grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">✧</span><strong>目前没有符合条件的限免</strong><p>只有有真实付费转免费记录的软件才会上榜，下一轮会自动重新查询。</p></div>';
+      return;
+    }
+    grid.innerHTML = apps.map(item => {
+      const path = androidMode
+        ? "https://play.google.com/store/apps/details?id=" + encodeURIComponent(item.package) + "&hl=en_US&gl=US"
+        : "https://apps.apple.com/" + active + "/app/id" + item.id;
+      const platform = androidMode ? "Android / Google Play" : item.platform === "macOS" ? "Mac" : "iPhone / iPad";
+      const freeText = androidMode ? "$0" : active === "cn" ? "¥0" : "$0";
+      const tag = androidMode ? "限免追踪" : "限时 0 元";
+      const genre = androidMode ? "Google Play 美区" : String(item.genre || "App Store 软件");
+      return '<a class="dailyfree-card' + (androidMode ? ' dailyfree-android-card' : '') +
+        '" href="' + escapeHTML(path) + '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHTML(item.name) +
+        (androidMode ? " 前往 Google Play 核对价格" : " App Store 领取") + '">' +
         '<span class="dailyfree-card-sheen" aria-hidden="true"></span>' +
-        '<span class="dailyfree-card-top"><span class="dailyfree-icon">' + icon + '</span><span class="dailyfree-free-tag">限时 0 元</span></span>' +
-        '<span class="dailyfree-card-name">' + escapeHTML(app.name) + '</span>' +
-        '<span class="dailyfree-card-sub">' + escapeHTML(app.genre || "App Store 软件") + ' <span aria-hidden="true">·</span> ' + platform + '</span>' +
-        '<span class="dailyfree-card-bottom"><span class="dailyfree-price"><del>' + escapeHTML(original) + '</del><strong>' + (region === "cn" ? "¥0" : "$0") +
-        '</strong></span><span class="dailyfree-go">去领取 <span aria-hidden="true">↗</span></span></span></a>';
+        '<span class="dailyfree-card-top"><span class="dailyfree-icon">' + iconHTML(item, androidMode) +
+        '</span><span class="dailyfree-free-tag">' + tag + '</span></span>' +
+        '<span class="dailyfree-card-name">' + escapeHTML(item.name) + '</span>' +
+        '<span class="dailyfree-card-sub">' + escapeHTML(genre) + ' <span aria-hidden="true">·</span> ' + platform + '</span>' +
+        '<span class="dailyfree-card-bottom"><span class="dailyfree-price"><del>' +
+        escapeHTML(typeof item.original_price === "string" ? item.original_price : "") +
+        '</del><strong>' + freeText + '</strong></span><span class="dailyfree-go">' +
+        (androidMode ? "查看商店" : "去领取") + ' <span aria-hidden="true">↗</span></span></span></a>';
     }).join("");
   }
 
-  toggles.forEach(button => button.addEventListener("click", () => {
-    region = button.dataset.dailyRegion === "us" ? "us" : "cn";
+  tabs.forEach(button => button.addEventListener("click", () => {
+    const next = button.dataset.dailyRegion;
+    active = next === "android" ? "android" : next === "us" ? "us" : "cn";
     render();
   }));
 
-  fetch("./data/daily-free.json", { cache: "no-cache" })
-    .then(response => { if (!response.ok) throw new Error("Snapshot unavailable"); return response.json(); })
-    .then(data => { if (!data || data.schema !== 1 || !data.regions) throw new Error("Invalid snapshot"); payload = data; render(); })
-    .catch(() => {
-      updated.textContent = "同步状态不可用";
-      count.textContent = "未能加载";
-      grid.innerHTML = '<div class="dailyfree-empty"><strong>限免列表暂时不可用</strong><p>数据同步遇到问题，请稍后刷新页面。本站不会展示未经核验的旧优惠。</p></div>';
-    });
+  const load = (file) => fetch(file, {cache: "no-cache"}).then(res => {
+    if (!res.ok) throw Error("Missing snapshot");
+    return res.json();
+  });
+  load("./data/daily-free.json").then(data => {
+    if (!data || data.schema !== 1 || !data.regions) throw Error("Invalid iOS data");
+    apple = data;
+    render();
+  }).catch(() => { appleError = true; render(); });
+  load("./data/android-free.json").then(data => {
+    if (!data || data.schema !== 1 || !Array.isArray(data.items)) throw Error("Invalid Android data");
+    android = data;
+    render();
+  }).catch(() => { androidError = true; render(); });
 })();
