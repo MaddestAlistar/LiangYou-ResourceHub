@@ -22,7 +22,7 @@ OUT = ROOT / "data/daily-free.json"
 ICONS = ROOT / "assets/daily-free"
 UTC = timezone.utc
 NOW = datetime.now(UTC)
-MAX_EVENT_AGE = timedelta(days=7)
+MAX_EVENT_AGE = timedelta(days=3)
 MAX_PER_REGION = 12
 ATOM = "{http://www.w3.org/2005/Atom}"
 FEEDS = {
@@ -211,10 +211,11 @@ class _PlainTextParser(HTMLParser):
 
 
 def candidates_from_us_deals() -> list[dict]:
-    """Read a bounded sample of independently tracked US paid-to-free apps.
+    """Only accept a *dated* recent paid-to-free transition in US price history.
 
-    A positive prior store price must appear in each detail record, and the
-    current price is separately checked with Apple before publication.
+    The source's generic "Free" listing and relative "Drop detected" badge
+    cannot prove a current sale started recently: some records are months old.
+    Apple's current regional price must independently be zero, too.
     """
     raw = download("https://appstore-discounts.com/en/free", timeout=18, limit=2_200_000)
     parser = _MacGiftAnchorParser()
@@ -222,38 +223,55 @@ def candidates_from_us_deals() -> list[dict]:
     seen = set()
     found = []
     for href, _ in parser.links:
-        if "/en/app/" not in href:
+        match = re.search(r"/en/app/(\d{7,12})(?:/|$|[?#])", href)
+        if not match:
             continue
-        app_id_match = re.search(r"/en/app/(\d{7,12})(?:/|$|[?#])", href)
-        if not app_id_match:
-            continue
-        app_id = int(app_id_match.group(1))
+        app_id = int(match.group(1))
         if app_id in seen:
             continue
         seen.add(app_id)
-        if len(seen) > 18:
+        if len(seen) > 50:
             break
         try:
             detail = download(f"https://appstore-discounts.com/en/app/{app_id}", timeout=9, limit=700_000)
             plain = _PlainTextParser()
             plain.feed(detail.decode("utf-8", errors="replace"))
-            summary = " ".join(plain.parts[:100])
-            if "Price history" not in summary and "Drop detected" not in summary:
+            body = " ".join(plain.parts)
+            # Use the actual dated price-history table, NOT a "drop detected"
+            # badge. Require latest history entry Free AND a prior paid entry.
+            marker = body.lower().find("price history")
+            if marker < 0:
                 continue
-            paid = re.search(r"\$\s*([1-9]\d*(?:\.\d{1,2})?)\s+(?:Free|GRATUIT)\b", summary, re.IGNORECASE)
-            if not paid:
+            history = body[marker:marker + 2500]
+            rows = list(re.finditer(
+                r"\b(\d{2}/\d{2}/\d{4})\s+(\d{1,2}:\d{2})\s+(Free|GRATUIT|\$\s*\d+(?:\.\d+)?)\b",
+                history, re.IGNORECASE,
+            ))
+            if len(rows) < 2 or rows[0].group(3).lower() not in ("free", "gratuit"):
+                continue
+            event = datetime.strptime(
+                rows[0].group(1) + " " + rows[0].group(2), "%m/%d/%Y %H:%M"
+            ).replace(tzinfo=UTC)
+            if event > NOW + timedelta(hours=3) or not timedelta(0) <= NOW - event <= MAX_EVENT_AGE:
+                continue
+            prior_paid = next((
+                row.group(3).replace(" ", "") for row in rows[1:]
+                if row.group(3).startswith("$") and float(row.group(3).replace("$", "").replace(" ", "")) > 0
+            ), None)
+            if not prior_paid:
                 continue
             found.append({
                 "id": app_id,
-                "original_price": "$" + paid.group(1),
+                "original_price": prior_paid,
                 "source": "AppStore-Discounts",
-                "discovered_at": NOW.isoformat(timespec="seconds").replace("+00:00", "Z"),
-                "published": NOW,
+                "source_url": f"https://appstore-discounts.com/en/app/{app_id}",
+                "discovered_at": event.isoformat().replace("+00:00", "Z"),
+                "published": event,
             })
-            if len(found) >= 14:
+            if len(found) >= 20:
                 break
         except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-            print(f"[us] AppStore-Discounts detail unavailable for {app_id}: {exc}", flush=True)
+            print(f"[us] Dated price history unavailable for {app_id}: {exc}", flush=True)
         time.sleep(0.2)
     return found
 
@@ -315,7 +333,7 @@ def search_apple_app_by_name(title: str) -> dict | None:
         except (TypeError, ValueError):
             continue
     ranked.sort(key=lambda item: item[0], reverse=True)
-    if not ranked or ranked[0][0] < 0.82:
+    if not ranked or ranked[0][0] < 0.92:
         return None
     if len(ranked) > 1 and ranked[0][0] - ranked[1][0] < 0.06:
         return None
@@ -354,6 +372,7 @@ def candidates_from_mergeek() -> list[dict]:
             "id": app_id,
             "original_price": "¥" + m.group(1),
             "source": "Mergeek",
+            "source_url": "https://mergeek.com/free/apps",
             "discovered_at": event.isoformat().replace("+00:00", "Z"),
             "published": event,
         })
@@ -432,6 +451,7 @@ def candidates_from_guofen() -> list[dict]:
             "id": int(app["trackId"]),
             "original_price": "¥" + price.group(1),
             "source": "Guofen",
+            "source_url": "https://www.guofenchaxun.com/xianmian?type=free",
             "discovered_at": event.isoformat().replace("+00:00", "Z"),
             "published": event,
         })
@@ -525,23 +545,11 @@ def main() -> None:
                 print(f"[{country}] Source unavailable: {source}: {exc}", flush=True)
 
 
-        # Additional public region-specific deal cards broaden the coverage.
-        # Each candidate must still pass Apple's official current-price lookup.
-        try:
-            macgift_url = "https://macgift.com/" if country == "cn" else "https://macgift.com/us/"
-            macgift_raw = download(macgift_url, timeout=18, limit=3_000_000)
-            macgift_items = candidates_from_macgift(macgift_raw, country)
-            country_feeds += 1
-            successful_feeds += 1
-            print(f"[{country}] MacGift: {len(macgift_items)} paid-to-free candidates", flush=True)
-            for candidate in macgift_items:
-                # Keep original historical price from the more recent source.
-                old = candidates.get(candidate["id"])
-                if not old or candidate["published"] > old["published"]:
-                    candidates[candidate["id"]] = candidate
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-            print(f"[{country}] MacGift source unavailable: {exc}", flush=True)
-
+        # MacGift is useful as a discovery reference, but its list does not
+        # include an independently verifiable per-app drop timestamp. We
+        # intentionally do NOT accept those listings alone as recent sales.
+        # A current free price is insufficient evidence that a paid app
+        # recently became free.
 
         if country == "us":
             try:
@@ -621,6 +629,8 @@ def main() -> None:
                 "icon": icon,
                 "url": f"https://apps.apple.com/{country}/app/id{app_id}",
                 "source": candidate["source"],
+                "source_url": candidate.get("source_url") or (FEEDS[country][0][1] if candidate["source"] == "App Store Discounts" else "https://mergeek.com/free/apps" if candidate["source"] == "Mergeek" else "https://www.guofenchaxun.com/xianmian?type=free" if candidate["source"] == "Guofen" else ""),
+                "verification": "current_apple_price_and_recent_dated_drop",
                 "discovered_at": candidate["discovered_at"],
             })
         verified_total += len(verified)
