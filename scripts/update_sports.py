@@ -80,6 +80,21 @@ def get_events(tag_slug):
     raise RuntimeError(f"Gamma request failed for tag {tag_slug}: {last_error}")
 
 
+def get_by_slug(slug):
+    """Read the parent match's moneyline event, excluding secondary markets."""
+    req = Request(BASE + "?" + urlencode({"slug": slug}), headers={
+        "User-Agent": "LiangYou-ResourceHub-Sports/1.0",
+        "Accept": "application/json",
+    })
+    try:
+        with urlopen(req, timeout=15) as resp:
+            data = json.load(resp)
+        return data if isinstance(data, list) else []
+    except Exception as exc:
+        print(f"Football match {slug}: {exc}", file=sys.stderr)
+        return []
+
+
 def normal_market(event, category):
     """Return only a real match-winner market (two-way or football three-way)."""
     title = str(event.get("title") or "").strip()
@@ -198,10 +213,37 @@ def main():
     now = dt.datetime.now(UTC)
     items = {}
     totals = {}
+    requested = set()
+    printed_parent = False
     for category, label, tags in SOURCES:
         found = 0
         for tag in tags:
             events = get_events(tag)
+            if category == "football":
+                parent_slugs = []
+                for match in events:
+                    if not isinstance(match, dict):
+                        continue
+                    slug = str(match.get("slug") or "")
+                    matched = re.match(r"^([a-z0-9-]+-\d{4}-\d{2}-\d{2})(?:-[a-z0-9-]+)?$", slug)
+                    if not matched:
+                        continue
+                    parent_slug = matched.group(1)
+                    if parent_slug != slug and parent_slug not in requested:
+                        requested.add(parent_slug)
+                        parent_slugs.append(parent_slug)
+                for parent_slug in parent_slugs[:16]:
+                    matches = get_by_slug(parent_slug)
+                    if matches and not printed_parent:
+                        first = matches[0]
+                        print("FOOTBALL_PARENT", json.dumps({
+                            "title": first.get("title"),
+                            "markets": [{"q": p.get("question"), "type": p.get("sportsMarketType"),
+                                         "outcomes": p.get("outcomes"), "prices": p.get("outcomePrices")}
+                                         for p in (first.get("markets") or [])[:5]
+                                         if isinstance(p, dict)]}, ensure_ascii=False)[:2600], flush=True)
+                        printed_parent = True
+                    events.extend(matches)
             for event in events:
                 if not isinstance(event, dict):
                     continue
