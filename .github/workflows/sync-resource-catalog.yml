@@ -1,7 +1,8 @@
 name: Sync resource catalog metrics
 on:
   schedule:
-    - cron: "25 21 * * *"
+    - cron: "25,55 21 * * *"
+    - cron: "25 22 * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -28,4 +32,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/projects.json
           git commit -m "chore: refresh resource catalog counts from GitHub"
-          git push
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then break; fi
+            if [ "$attempt" = "3" ]; then exit 1; fi
+          done
