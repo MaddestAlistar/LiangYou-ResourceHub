@@ -34,11 +34,6 @@ FEEDS = {
     ],
 }
 PRICE_TO_FREE = re.compile(
-    r"^\s*(?:价格|Price)\s*[:：]\s*([¥￥$]?\s*[0-9][0-9,.]*)\s*→\s*(?:免费|free|[¥￥$]?\s*0(?:\.0+)?)\b?",
-    re.IGNORECASE,
-)
-# Chinese text has no word boundary after 免费. Search with a separate, simpler match.
-PRICE_TO_FREE = re.compile(
     r"^\s*(?:价格|Price)\s*[:：]\s*([¥￥$]?\s*[0-9][0-9,.]*)\s*→\s*(?:免费|free\b|[¥￥$]?\s*0(?:\.0+)?(?:\b|$))",
     re.IGNORECASE,
 )
