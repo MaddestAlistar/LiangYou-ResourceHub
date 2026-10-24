@@ -40,8 +40,7 @@ def update():
     data["updated"] = today
     for p in data["projects"]:
         if p["id"] == "icons":
-            if icon_date:
-                p["updated"] = icon_date.group(1)
+            p["updated"] = today
             p["stats"] = f"{total:,} 枚图标"
             p["description"] = f"影视与音乐服务适用的媒体图标集合，包含 {total:,} 枚图标及 {selected} 枚良哥精选与专属图标；包含静态款与循环 GIF 动态款。"
             p["highlights"] = [f"{selected} 枚精选与专属", "含 GIF 动态款", "5 枚专属置顶"]
