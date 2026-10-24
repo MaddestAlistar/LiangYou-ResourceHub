@@ -3,7 +3,7 @@
 import json
 import re
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +32,7 @@ def update():
         raise ValueError("Original icons exceed full collection; check upstream data")
     platforms = len({str(x["platform"]) for x in entries if x.get("platform")})
     sections = len(sources["channels"].get("sections", []))
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
     data = json.loads(CATALOG.read_text(encoding="utf-8"))
     data["metrics"].update(icons=total, originalIcons=selected, channels=rooms, platforms=platforms, sections=sections)
     data["checkedAt"] = today
