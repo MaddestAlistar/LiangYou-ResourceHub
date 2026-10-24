@@ -8,10 +8,8 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import os
 from pathlib import Path
 import re
-import sys
 import time
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -256,10 +254,20 @@ def main():
             print(f"{tag}: received {len(events)} candidate events", flush=True)
         totals[category] = found
 
-    sorted_items = sorted(
-        items.values(),
-        key=lambda x: (x["start_time"] is None, x["start_time"] or "9999", x["id"]),
-    )
+    def display_priority(event):
+        # Prioritise well-known football leagues while preserving nearer games
+        # and independently filling the other sport groups.
+        if event["category"] != "football":
+            return (0, event["start_time"] is None, event["start_time"] or "9999", event["id"])
+        league = event["league"].casefold()
+        priority_leagues = (
+            "premier league", "champions league", "la liga", "serie a",
+            "bundesliga", "ligue 1", "europa league", "world cup",
+        )
+        return (0 if any(name in league for name in priority_leagues) else 1,
+                event["start_time"] is None, event["start_time"] or "9999", event["id"])
+
+    sorted_items = sorted(items.values(), key=lambda e: (e["category"], display_priority(e)))
     selection = []
     counts = {key: 0 for key, _, _ in SOURCES}
     for item in sorted_items:
