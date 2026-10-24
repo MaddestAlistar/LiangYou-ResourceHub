@@ -56,8 +56,8 @@ def get_events(tag_slug):
         "tag_slug": tag_slug,
         "active": "true",
         "closed": "false",
-        "limit": "100",
-        "order": "startDate",
+        "limit": "140" if tag_slug in ("soccer", "epl", "ucl") else "100",
+        "order": "volume24hr" if tag_slug in ("soccer", "epl", "ucl") else "startDate",
         "ascending": "false" if tag_slug in ("soccer", "epl", "ucl") else "true",
     })
     url = BASE + "?" + query
