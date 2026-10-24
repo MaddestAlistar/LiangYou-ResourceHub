@@ -204,10 +204,17 @@ def main():
         for tag in tags:
             events = get_events(tag)
             if tag == "epl":
-                debug = [e for e in events if isinstance(e, dict) and re.search(r"\\bvs\\.?\\b", str(e.get("title", "")), re.I)][:4]
-                for e in debug:
-                    m = e.get("markets") or []
-                    print("SOCCER_SAMPLE", json.dumps({"title": e.get("title"), "markets": [{"q": x.get("question"), "type": x.get("sportsMarketType"), "outcomes": x.get("outcomes"), "prices": x.get("outcomePrices")} for x in m[:3] if isinstance(x, dict)]}, ensure_ascii=False)[:1500], flush=True)
+                for e in [x for x in events if isinstance(x, dict)][:3]:
+                    markets = e.get("markets") or []
+                    print("SOCCER_SAMPLE", json.dumps({
+                        "title": e.get("title"), "slug": e.get("slug"),
+                        "startDate": e.get("startDate"), "startTime": e.get("startTime"),
+                        "markets": [
+                            {"q": m.get("question"), "type": m.get("sportsMarketType"),
+                             "marketType": m.get("marketType"),
+                             "outcomes": m.get("outcomes"), "prices": m.get("outcomePrices")}
+                            for m in markets[:8] if isinstance(m, dict)
+                        ]}, ensure_ascii=False)[:3700], flush=True)
             for event in events:
                 if not isinstance(event, dict):
                     continue
