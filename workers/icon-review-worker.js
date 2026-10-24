@@ -108,7 +108,7 @@ export default {async fetch(request,env){
  else if(typ==="VP8 "&&bytes.length>30){w=(bytes[26]|bytes[27]<<8)&16383;h=(bytes[28]|bytes[29]<<8)&16383;valid=true}
  else if(typ==="VP8L"&&bytes.length>25){const v=(bytes[21]|bytes[22]<<8|bytes[23]<<16|bytes[24]<<24)>>>0;w=(v&16383)+1;h=((v>>>14)&16383)+1;valid=true}
  }
- if(!valid||w!==720||h!==720)return reply({error:"Image must be 720 × 720 PNG, WebP or GIF"},400,origin);
+ if(!valid||(ext==="gif"?(w!==h||w<240||w>720):(w!==720||h!==720)))return reply({error:ext==="gif"?"GIF must be square, 240–720 px":"Static icon must be 720 × 720 px"},400,origin);
  const safe=name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g,"-").slice(0,48)||"icon";
  const id=new Date().toISOString().replace(/[-:.TZ]/g,"")+"-"+crypto.randomUUID().slice(0,8);
  const base="pending/"+safe+"-"+id;const b64=(()=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)})();
