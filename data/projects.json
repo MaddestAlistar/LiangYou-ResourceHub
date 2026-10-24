@@ -2,7 +2,7 @@
   "brand": "良哥看未来",
   "site": "良友资源中心",
   "version": "2.9",
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "projects": [
     {
       "id": "badges",
@@ -266,6 +266,65 @@
         "地下城与勇士",
         "美食"
       ]
+    },
+    {
+      "id": "sports",
+      "title": "赛事数据中心",
+      "en": "MATCH INTELLIGENCE",
+      "category": "sports",
+      "categoryLabel": "赛事 · 数据",
+      "stage": "live",
+      "tag": "赛事预测",
+      "short": "赛事概率与直播入口",
+      "description": "英雄联盟、NBA、足球和热门电竞赛事的公开市场胜负预测概率，计划每 2 小时自动整理更新。还可通过汇流直播关注相关赛事内容和直播，具体支持以 App 为准。",
+      "stats": "每 2 小时计划同步",
+      "apps": [
+        "汇流直播（Conflux）",
+        "网页赛事看板"
+      ],
+      "repo": "https://github.com/MaddestAlistar/LiangYou-ResourceHub",
+      "previewType": "sports",
+      "images": [
+        "./assets/previews/sports.svg"
+      ],
+      "imports": [
+        {
+          "name": "赛事数据 JSON 快照",
+          "detail": "供网页展示的公开数据快照；并非汇流直播的原生导入格式。",
+          "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-ResourceHub/main/data/sports.json"
+        }
+      ],
+      "steps": [
+        "点击「查看赛事数据」进入赛事看板，选择英雄联盟、NBA 或足球等分类。",
+        "数据来自公开市场价格，展示的是市场隐含概率，并非官方预测或博彩平台赔率。",
+        "通过页面内「获取汇流直播」下载 App，查看实际支持的赛事和相关直播；具体以 App 版本和直播来源为准。"
+      ],
+      "updated": "2026-10-24",
+      "highlights": [
+        "零成本定时更新",
+        "英雄联盟与热门体育",
+        "汇流直播入口"
+      ],
+      "keywords": [
+        "sports",
+        "lol",
+        "League of Legends",
+        "polymarket",
+        "电竞",
+        "赔率",
+        "NBA",
+        "英超",
+        "欧冠",
+        "直播",
+        "汇流直播",
+        "赛程",
+        "胜率"
+      ],
+      "note": "公开市场预测数据，仅供信息参考。每两小时定时检查，实际更新可能延迟；不提供投注入口。",
+      "imageLabels": [
+        "赛事数据中心 · 热门赛事概率与赛程"
+      ],
+      "previewCaption": "MATCH INTELLIGENCE · 赛事数据中心"
     }
   ],
   "future": [
