@@ -17,7 +17,7 @@ export default {async fetch(request,env){
   const root="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
   const ghHeaders={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
   const gh=async(path,options={})=>fetch(root+path,{...options,headers:ghHeaders});
-  const decode=s=>decodeURIComponent(escape(atob(s.replace(/\\s/g,""))));
+  const decode=s=>decodeURIComponent(escape(atob(s.replace(/\s/g,""))));
   if(request.method==="GET"){
    const listing=await gh("pending");
    if(!listing.ok)return reply({error:"Failed to list pending files",status:listing.status},502,origin);
@@ -70,9 +70,9 @@ export default {async fetch(request,env){
       const rest=data.icons.slice(5).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"zh-CN",{numeric:true,sensitivity:"base"}));
       data.icons=[...fixed,...rest];
       data.description=String(data.description||"").replace(/更新时间：[^｜]+/,"更新时间："+new Date().toISOString().slice(0,10));
-      plans.push({file,sha:current.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\\n")))});
+      plans.push({file,sha:current.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\n")))});
     }
-    const uploaded=await putOfficial(imagePath.split("/").map(encodeURIComponent).join("/"),imageData.content.replace(/\\s/g,""));
+    const uploaded=await putOfficial(imagePath.split("/").map(encodeURIComponent).join("/"),imageData.content.replace(/\s/g,""));
     if(!uploaded.ok)return reply({error:"Official image upload failed",status:uploaded.status},502,origin);
     for(const plan of plans){
       const saved=await putOfficial(plan.file,plan.content,plan.sha);
