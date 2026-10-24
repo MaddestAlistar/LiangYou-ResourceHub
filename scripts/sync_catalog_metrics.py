@@ -33,12 +33,15 @@ def update():
     platforms = len({str(x["platform"]) for x in entries if x.get("platform")})
     sections = len(sources["channels"].get("sections", []))
     today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
+    icon_date = re.search(r"更新时间[：:]\s*(\d{4}-\d{2}-\d{2})", str(sources["icons"].get("description", "")))
     data = json.loads(CATALOG.read_text(encoding="utf-8"))
     data["metrics"].update(icons=total, originalIcons=selected, channels=rooms, platforms=platforms, sections=sections)
     data["checkedAt"] = today
     data["updated"] = today
     for p in data["projects"]:
         if p["id"] == "icons":
+            if icon_date:
+                p["updated"] = icon_date.group(1)
             p["stats"] = f"{total:,} 枚图标"
             p["description"] = f"影视与音乐服务适用的媒体图标集合，包含 {total:,} 枚图标及 {selected} 枚良哥精选与专属图标；包含静态款与循环 GIF 动态款。"
             p["highlights"] = [f"{selected} 枚精选与专属", "含 GIF 动态款", "5 枚专属置顶"]
