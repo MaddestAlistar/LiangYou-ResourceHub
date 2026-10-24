@@ -71,7 +71,7 @@ export default {async fetch(request,env){
     const asciiStem=rawName.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
     const fileStem=(hasChinese&&existingPrefix?existingPrefix.toLowerCase():hasChinese?rawName.normalize("NFKC").toLowerCase():asciiStem).replace(/[^a-z0-9\\p{Script=Han}-]+/gu,"-").replace(/^-+|-+$/g,"").slice(0,70)||"icon";
     const prefix=hasChinese&&existingPrefix?existingPrefix+"｜":"";
-    const baseLabel=prefix+rawName+(isDynamic?"动态":"");
+    const baseLabel=prefix+rawName+(isDynamic?(hasChinese?"动态":" 动态"):"");
     const existingNames=new Set(existing.map(x=>lower(String(x.name||""))));
     let number=1;
     let label;
