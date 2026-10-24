@@ -1,0 +1,42 @@
+// Cloudflare Worker · Icon Review Queue
+// Secrets: GITHUB_TOKEN (fine-grained Contents: Read and write, restricted to review repository)
+// Vars: REVIEW_REPO = MaddestAlistar/Icon-Review-Queue; ALLOWED_ORIGIN = https://maddestalistar.github.io
+const reply=(obj,status=200,origin="")=>new Response(JSON.stringify(obj),{status,headers:{"Content-Type":"application/json; charset=utf-8","Access-Control-Allow-Origin":origin,"Vary":"Origin","Cache-Control":"no-store"}});
+export default {async fetch(request,env){
+ const origin=request.headers.get("Origin")||"";
+ const allowed=env.ALLOWED_ORIGIN||"https://maddestalistar.github.io";
+ if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"600"}});
+ if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
+ if(request.method!=="POST")return reply({error:"Method not allowed"},405,origin);
+ if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)return reply({error:"Server is not configured"},503,origin);
+ const ct=request.headers.get("Content-Type")||"";if(!ct.includes("multipart/form-data"))return reply({error:"Expected multipart form"},400,origin);
+ const len=Number(request.headers.get("Content-Length")||0);if(len>11*1024*1024)return reply({error:"File too large"},413,origin);
+ let form;try{form=await request.formData()}catch{return reply({error:"Invalid form"},400,origin)}
+ const file=form.get("file"),name=String(form.get("name")||"").trim(),author=String(form.get("author")||"").trim(),notes=String(form.get("notes")||"").slice(0,600),kind=String(form.get("kind")||"");
+ if(!(file instanceof File)||!name||name.length>60||!author||author.length>100)return reply({error:"Missing or invalid fields"},400,origin);
+ if(file.size>10*1024*1024||file.size===0)return reply({error:"Maximum file size is 10 MB"},413,origin);
+ const ext=(file.name.split(".").pop()||"").toLowerCase();if(!["png","webp","gif"].includes(ext)||((kind==="动态")!==(ext==="gif")))return reply({error:"Invalid image type"},400,origin);
+ const bytes=new Uint8Array(await file.arrayBuffer());let w=0,h=0,valid=false;
+ const be=(p)=>((bytes[p]<<24)>>>0)+(bytes[p+1]<<16)+(bytes[p+2]<<8)+bytes[p+3];
+ if(ext==="png"&&bytes.length>24&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71){w=be(16);h=be(20);valid=true}
+ if(ext==="gif"&&bytes.length>10&&String.fromCharCode(...bytes.slice(0,3))==="GIF"){w=bytes[6]+bytes[7]*256;h=bytes[8]+bytes[9]*256;valid=true}
+ if(ext==="webp"&&bytes.length>30&&String.fromCharCode(...bytes.slice(0,4))==="RIFF"&&String.fromCharCode(...bytes.slice(8,12))==="WEBP"){
+ const typ=String.fromCharCode(...bytes.slice(12,16));
+ if(typ==="VP8X"){w=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);h=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);valid=true}
+ else if(typ==="VP8 "&&bytes.length>30){w=(bytes[26]|bytes[27]<<8)&16383;h=(bytes[28]|bytes[29]<<8)&16383;valid=true}
+ else if(typ==="VP8L"&&bytes.length>25){const v=(bytes[21]|bytes[22]<<8|bytes[23]<<16|bytes[24]<<24)>>>0;w=(v&16383)+1;h=((v>>>14)&16383)+1;valid=true}
+ }
+ if(!valid||w!==720||h!==720)return reply({error:"Image must be 720 × 720 PNG, WebP or GIF"},400,origin);
+ const safe=name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g,"-").slice(0,48)||"icon";
+ const id=new Date().toISOString().replace(/[-:.TZ]/g,"")+"-"+crypto.randomUUID().slice(0,8);
+ const base="pending/"+id+"-"+safe;const b64=(()=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)})();
+ const api="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
+ const headers={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
+ const put=async(path,content)=>fetch(api+path,{method:"PUT",headers,body:JSON.stringify({message:"queue: "+safe+" ("+id+")",content})});
+ const uploaded=await put(base+"."+ext,b64);
+ if(!uploaded.ok)return reply({error:"GitHub upload failed",status:uploaded.status},502,origin);
+ const metadata={id,name,author,kind,notes,filename:base+"."+ext,bytes:file.size,width:w,height:h,submittedAt:new Date().toISOString(),status:"pending"};
+ const meta=await put(base+".json",btoa(unescape(encodeURIComponent(JSON.stringify(metadata,null,2)))));
+ if(!meta.ok)return reply({error:"Image uploaded but metadata failed",id},502,origin);
+ return reply({ok:true,id,reviewUrl:"https://github.com/"+env.REVIEW_REPO+"/tree/main/pending"},201,origin);
+}};
