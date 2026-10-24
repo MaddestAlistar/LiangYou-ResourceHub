@@ -48,7 +48,6 @@ def update():
                     item["name"] = f"完整图标库 · {total:,} 枚"
                 elif "Original-Icons.json" in item.get("url", ""):
                     item["name"] = f"良哥精选与专属 · {selected} 枚"
-            p["updated"] = today
         elif p["id"] == "channels":
             p["stats"] = f"{rooms:,} 个直播间"
             p["description"] = f"良友主播单收录 {platforms} 个平台的 {rooms:,} 个直播间，按 {sections} 个内容分区整理。可在汇流 App 导入完整主播单，也可单独选择分区。"
@@ -58,7 +57,6 @@ def update():
                 if "liangyouchannels-conflux.json" in item.get("url", ""):
                     item["name"] = f"良友主播单 · {rooms:,} 个直播间"
                     item["detail"] = f"汇流 App 的「订阅网址」入口，{sections} 个内容分区"
-            p["updated"] = today
     content = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     if CATALOG.read_text(encoding="utf-8") != content:
         CATALOG.write_text(content, encoding="utf-8")
