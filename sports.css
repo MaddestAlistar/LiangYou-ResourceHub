@@ -45,3 +45,8 @@
 @media (max-width:760px){.sports-grid{grid-template-columns:1fr}.sports-meta{justify-items:start}.sports-promo .button{width:100%}}
 @media (max-width:420px){.sports-shell{padding:16px;border-radius:19px}.sports-match{padding:14px}.sports-prob{gap:6px}.sports-tab{padding-inline:12px}.sports-promo{padding:14px}.sports-promo img{width:50px;height:50px}}
 @media (prefers-reduced-motion:reduce){.sports-match{transition:none}}
+
+.sports-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:8px;margin:10px 0}
+.sports-three .sports-side:nth-child(2){text-align:center}
+.sports-three .sports-side:last-child{text-align:right}
+.sports-three .sports-side b{font-size:clamp(16px,2vw,23px)}
