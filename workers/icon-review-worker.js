@@ -41,44 +41,67 @@ export default {async fetch(request,env){
     const publishHeaders={...ghHeaders,Authorization:"Bearer "+env.PUBLISH_GITHUB_TOKEN};
     const getOfficial=async p=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{headers:publishHeaders});
     const putOfficial=async(p,content,sha)=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{method:"PUT",headers:publishHeaders,body:JSON.stringify({message:"publish reviewed icon: "+meta.name,content,...(sha?{sha}:{})})});
-    const imagePath="icons/liangyou/"+meta.filename.split("/").pop();
-    const originalImage=await gh(meta.filename.split("/").map(encodeURIComponent).join("/"));
-    if(!originalImage.ok)return reply({error:"Review image unavailable"},502,origin);
-    const imageData=await originalImage.json();
-    const exists=await getOfficial(imagePath.split("/").map(encodeURIComponent).join("/"));
-    if(exists.ok)return reply({error:"Image filename already exists in official library; manual review needed"},409,origin);
-    if(exists.status!==404)return reply({error:"Could not check official image path"},502,origin);
+    const isDynamic=meta.kind==="动态"||/\\.gif$/i.test(meta.filename);
+    const ext=String(meta.filename).split(".").pop().toLowerCase();
+    const rawName=String(meta.name||"").trim().replace(/\\s*(?:动态|dynamic)\\s*(?:0*[0-9]+)?$/i,"").trim();
+    if(!rawName||!["png","webp","gif"].includes(ext))return reply({error:"Invalid icon name or extension"},400,origin);
+    const stem=rawName.normalize("NFKC").toLowerCase().replace(/[^a-z0-9\\u4e00-\\u9fff]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70)||"icon";
     const files=["LiangYou-Original-Icons.json","LiangYou-Emby-Icons.json"];
     const plans=[];
-    const newUrl="https://raw.githubusercontent.com/"+official+"/main/"+imagePath.split("/").map(encodeURIComponent).join("/");
+    const snapshots=[];
     for(const file of files){
       const resp=await getOfficial(file);
       if(!resp.ok)return reply({error:"Cannot read "+file,status:resp.status},502,origin);
-      const current=await resp.json();
-      let data;try{data=JSON.parse(decode(current.content))}catch{return reply({error:"Invalid official JSON: "+file},502,origin)}
-      if(!Array.isArray(data.icons))return reply({error:"Unsupported icon list: "+file},502,origin);
-      if(data.icons.some(x=>x.url===newUrl))return reply({error:"Icon already listed in "+file},409,origin);
-      let title=meta.name;
-      const names=new Set(data.icons.map(x=>String(x.name||"").toLowerCase()));
-      if(names.has(title.toLowerCase())){
-        let n=2;while(names.has((meta.name+" "+String(n).padStart(2,"0")).toLowerCase()))n++;
-        title=meta.name+" "+String(n).padStart(2,"0");
-      }
-      const item={name:title,url:newUrl};
-      data.icons.push(item);
+      const record=await resp.json();
+      let data;try{data=JSON.parse(decode(record.content))}catch{return reply({error:"Invalid official JSON: "+file},502,origin)}
+      if(!Array.isArray(data.icons)||data.icons.length<5)return reply({error:"Unsupported icon list: "+file},502,origin);
+      snapshots.push({file,sha:record.sha,data});
+    }
+    const normalized=s=>String(s||"").trim().toLocaleLowerCase().replace(/\\s+0*[0-9]+$/,"");
+    const labelBase=rawName+(isDynamic?" 动态":"");
+    const existingNames=new Set(snapshots.flatMap(x=>x.data.icons.map(y=>String(y.name||"").toLocaleLowerCase())));
+    const matchingNames=snapshots.flatMap(x=>x.data.icons.map(y=>String(y.name||""))).filter(n=>normalized(n)===labelBase.toLocaleLowerCase());
+    const numberNeeded=matchingNames.length>0;
+    let number=1,label=labelBase;
+    if(numberNeeded){
+      number=1;
+      do{number++;label=labelBase+" "+String(number).padStart(2,"0")}while(existingNames.has(label.toLocaleLowerCase()));
+    }
+    let imagePath,exists;
+    for(let attempt=0;attempt<100;attempt++){
+      const suffix=String(number+attempt).padStart(2,"0");
+      imagePath="icons/liangyou/"+stem+(isDynamic?"-dynamic":"")+"-"+suffix+"."+ext;
+      exists=await getOfficial(imagePath.split("/").map(encodeURIComponent).join("/"));
+      if(exists.status===404)break;
+      if(!exists.ok)return reply({error:"Cannot check official image filename",status:exists.status},502,origin);
+      if(attempt===99)return reply({error:"Too many duplicate filenames"},409,origin);
+    }
+    const newUrl="https://raw.githubusercontent.com/"+official+"/main/"+imagePath.split("/").map(encodeURIComponent).join("/");
+    for(const snap of snapshots){
+      const data=snap.data;
+      if(data.icons.some(x=>x.url===newUrl))return reply({error:"Icon already listed in "+snap.file},409,origin);
+      data.icons.push({name:label,url:newUrl});
       const fixed=data.icons.slice(0,5);
-      const rest=data.icons.slice(5).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"zh-CN",{numeric:true,sensitivity:"base"}));
+      const rest=data.icons.slice(5).sort((a,b)=>{
+        const an=String(a.name||""),bn=String(b.name||"");
+        const ad=/^[0-9]/.test(an),bd=/^[0-9]/.test(bn);
+        if(ad!==bd)return ad?1:-1;
+        return an.localeCompare(bn,"zh-CN",{numeric:true,sensitivity:"base"});
+      });
       data.icons=[...fixed,...rest];
       data.description=String(data.description||"").replace(/更新时间：[^｜]+/,"更新时间："+new Date().toISOString().slice(0,10));
-      plans.push({file,sha:current.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\n")))});
+      plans.push({file:snap.file,sha:snap.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\\n")))});
     }
+    const originalImage=await gh(meta.filename.split("/").map(encodeURIComponent).join("/"));
+    if(!originalImage.ok)return reply({error:"Review image unavailable"},502,origin);
+    const imageData=await originalImage.json();
     const uploaded=await putOfficial(imagePath.split("/").map(encodeURIComponent).join("/"),imageData.content.replace(/\s/g,""));
     if(!uploaded.ok)return reply({error:"Official image upload failed",status:uploaded.status},502,origin);
     for(const plan of plans){
       const saved=await putOfficial(plan.file,plan.content,plan.sha);
       if(!saved.ok)return reply({error:"Image uploaded, but subscription update failed at "+plan.file+"; manual repair needed",status:saved.status},502,origin);
     }
-    meta.publishedUrl=newUrl;
+    meta.publishedName=label;\n    meta.publishedFilename=imagePath;\n    meta.publishedUrl=newUrl;
     meta.publishedAt=new Date().toISOString();
    }
    meta.status=status;meta.reviewedAt=new Date().toISOString();
