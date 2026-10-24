@@ -166,3 +166,39 @@
   .dailyfree-card-name { font-size: 11px; }
   .dailyfree-free-tag { font-size: 8px; }
 }
+
+
+/* v1.3 — three balanced platform tabs, compact Android cards */
+.dailyfree-regions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 425px);
+  align-items: stretch;
+  gap: 4px;
+}
+.dailyfree-region {
+  min-width: 0;
+  white-space: nowrap;
+  padding: 9px 13px;
+  font-size: 12px;
+  text-align: center;
+}
+.dailyfree-android-card { border-color: rgba(175,203,188,.23); }
+.dailyfree-android-card:hover { border-color: rgba(166,216,194,.65); }
+.dailyfree-android-card .dailyfree-free-tag {
+  color: #cae9d6;
+  background: rgba(139,199,158,.10);
+  border-color: rgba(155,214,174,.30);
+}
+.dailyfree-android-card .dailyfree-go { color: #c8e1cd; }
+.dailyfree-android-card .dailyfree-icon-fallback { color: #b5dfce; font-size: 21px; }
+@media (max-width: 700px) {
+  .dailyfree-regions { width: 100%; max-width: none; gap: 3px; }
+  .dailyfree-region { padding: 9px 6px; font-size: 12px; }
+  .dailyfree-toolbar-note { width: 100%; }
+  .dailyfree-android-card .dailyfree-free-tag { font-size: 9px; }
+}
+@media (max-width: 370px) {
+  .dailyfree-region { padding: 8px 3px; font-size: 11px; }
+  .dailyfree-android-card .dailyfree-free-tag { font-size: 8px; }
+}
