@@ -118,3 +118,28 @@ for(const file of ['assets/partners/amzing.webp','assets/partners/3ayne.webp']){
 }
 assert.equal((html.match(/class="partner-card /g) || []).length, 2, 'Expected exactly two partner cards');
 console.log(`PASS: ${data.projects.length} resources, ${seenImports.size} valid import mappings, ${data.future.length} planned directions, HTML anchors and data references.`);
+
+
+// Android storefront invariant: independently tracked Google Play paid-to-free only.
+// Apple price checks are separate; no Android claim of official price verification.
+const androidOffers=JSON.parse(text('data/android-free.json'));
+assert.equal(androidOffers.schema,1,'Android JSON schema mismatch');
+assert.equal(androidOffers.price_confirmation,'independent_tracker','Android pricing cannot claim official verification');
+assert(Array.isArray(androidOffers.items) && androidOffers.items.length <= 12,'Android storefront maximum is twelve');
+const seenAndroid=new Set();
+for(const app of androidOffers.items){
+  assert(typeof app.package==='string' && /^[a-zA-Z][\w]*(?:\.[\w]+)+$/.test(app.package),'Invalid Google Play package');
+  assert(!seenAndroid.has(app.package),'Duplicated Android app');
+  seenAndroid.add(app.package);
+  assert(app.source==='AppSales' && app.country==='us' && app.price===0,'Android tracker data mismatched');
+  assert(/^\$\d/.test(app.original_price) && app.name && app.url.startsWith('https://play.google.com/store/apps/details?id='),'Android price or link missing');
+  if(app.icon){
+    assert(app.icon.startsWith('./assets/android-free/'),'Android icon must be hosted locally');
+    assert(existsSync(app.icon.slice(2)),'Android app icon missing: '+app.package);
+  }
+}
+const androidJS=text('daily-free.js');
+assert(androidJS.includes('data/android-free.json') && androidJS.includes('data-daily-region'),'Android tab not loaded');
+assert(html.includes('data-daily-region="android"'),'Android tab button missing');
+assert(html.includes('id="dailyFreeDisclaimer"') && html.includes('id="dailyFreeSource"'),'Android source disclosure missing');
+console.log('PASS: Android Google Play deal snapshot and three-platform tab.');
