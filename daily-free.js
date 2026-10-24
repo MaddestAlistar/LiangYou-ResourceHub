@@ -59,10 +59,12 @@
     disclaimer.textContent = androidMode
       ? "安卓价格来自 AppSales 第三方限免追踪，尚未经过 Google Play 官方即时售价核验，可能出现已经恢复收费、仅特定账号免费或数据延迟；请在购买页面确认显示为免费后领取。不提供 APK 下载。"
       : "只展示有近期降价日期记录、且经 Apple 当前地区价格接口核对为 0 元的 App；不保证应用内全部功能免费。限免可能随时结束，实际以商店结算页为准。";
-    sourceLink.textContent = androidMode ? "查看 AppSales 第三方数据 ↗" : "查看苹果价格监测来源 ↗";
+    sourceLink.textContent = androidMode
+      ? "安卓：AppSales 追踪来源 ↗"
+      : active === "cn" ? "国区：Mergeek 限免来源 ↗" : "美区：AppStore-Discounts 来源 ↗";
     sourceLink.href = androidMode
       ? "https://www.app-sales.net/nowfree/"
-      : "https://appstore-discounts.com/en/free";
+      : active === "cn" ? "https://mergeek.com/free/apps" : "https://appstore-discounts.com/en/free";
 
     const current = androidMode ? android : apple?.regions?.[active];
     const latest = androidMode ? current?.checked_at : current?.verified_at;
@@ -110,7 +112,7 @@
         '</span><span class="dailyfree-free-tag">' + tag + '</span></span>' +
         '<span class="dailyfree-card-name">' + escapeHTML(item.name) + '</span>' +
         '<span class="dailyfree-card-sub">' + escapeHTML(genre) + ' <span aria-hidden="true">·</span> ' + platform +
-        (androidMode ? ' · 未经商店核实' : ' · Apple 当前价已核验') + '</span>' +
+        (androidMode ? ' · AppSales 追踪未核实' : ' · ' + escapeHTML(item.source || "限免记录") + ' / Apple 现价核验') + '</span>' +
         '<span class="dailyfree-card-bottom"><span class="dailyfree-price"><del>' +
         escapeHTML(typeof item.original_price === "string" ? item.original_price : "") +
         '</del><strong>' + freeText + '</strong></span><span class="dailyfree-go">' +
