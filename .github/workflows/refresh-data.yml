@@ -3,8 +3,8 @@ name: Refresh verified feeds and publish
 on:
   schedule:
     # Heartbeat, not repeated full collection: scripts decide what is due.
-    # GitHub may delay/drop cron events; the next heartbeat retries due work.
-    - cron: '17,47 * * * *'
+    # GitHub may delay/drop cron events; check due work every 15 minutes.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
