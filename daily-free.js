@@ -25,10 +25,11 @@
   };
   const isFresh = iso => {
     const ts = Date.parse(iso || "");
-    return Number.isFinite(ts) && ts <= Date.now() + 3600000 && Date.now() - ts <= 15 * 3600000;
+    return Number.isFinite(ts) && ts <= Date.now() + 3600000 && Date.now() - ts <= 7 * 3600000;
   };
   const isApple = item => item && Number.isInteger(item.id) && item.id > 0
-    && item.price === 0 && item.country === active && typeof item.name === "string";
+    && item.price === 0 && item.country === active && typeof item.name === "string"
+    && item.verification === "current_apple_price_and_recent_dated_drop";
   const isAndroid = item => item && typeof item.package === "string"
     && /^[a-zA-Z][\w]*(?:\.[\w]+)+$/.test(item.package) && item.package.length <= 160
     && item.price === 0 && item.country === "us" && item.source === "AppSales"
@@ -56,12 +57,12 @@
     });
 
     disclaimer.textContent = androidMode
-      ? "安卓限免来自 AppSales 第三方追踪，价格按 Google Play 美国区参考，不代表官方实时确认。不同国家、账号和设备可能不同，领取前请在 Google Play 核对是否免费；不提供 APK 下载。"
-      : "只展示 App 本体近期从付费变为免费且通过 App Store 当前地区售价核验的项目，不包含内购和订阅；最终价格以对应地区商店显示为准。";
-    sourceLink.textContent = androidMode ? "AppSales 限免数据源 ↗" : "查看苹果开源数据源 ↗";
+      ? "安卓价格来自 AppSales 第三方限免追踪，尚未经过 Google Play 官方即时售价核验，可能出现已经恢复收费、仅特定账号免费或数据延迟；请在购买页面确认显示为免费后领取。不提供 APK 下载。"
+      : "只展示有近期降价日期记录、且经 Apple 当前地区价格接口核对为 0 元的 App；不保证应用内全部功能免费。限免可能随时结束，实际以商店结算页为准。";
+    sourceLink.textContent = androidMode ? "查看 AppSales 第三方数据 ↗" : "查看苹果价格监测来源 ↗";
     sourceLink.href = androidMode
       ? "https://www.app-sales.net/nowfree/"
-      : "https://github.com/appstore-discounts/appstore-discounts";
+      : "https://appstore-discounts.com/en/free";
 
     const current = androidMode ? android : apple?.regions?.[active];
     const latest = androidMode ? current?.checked_at : current?.verified_at;
@@ -88,7 +89,7 @@
 
     const raw = androidMode ? current.items : current.items;
     const apps = Array.isArray(raw) ? raw.filter(androidMode ? isAndroid : isApple).slice(0, 12) : [];
-    count.textContent = (androidMode ? "限免追踪 " : "已核验 ") + apps.length + " / 12 款";
+    count.textContent = (androidMode ? "追踪候选 " : "双重核验 ") + apps.length + " / 12 款";
     if (!apps.length) {
       grid.innerHTML = '<div class="dailyfree-empty"><span aria-hidden="true">✧</span><strong>目前没有符合条件的限免</strong><p>只有有真实付费转免费记录的软件才会上榜，下一轮会自动重新查询。</p></div>';
       return;
@@ -99,7 +100,7 @@
         : "https://apps.apple.com/" + active + "/app/id" + item.id;
       const platform = androidMode ? "Android / Google Play" : item.platform === "macOS" ? "Mac" : "iPhone / iPad";
       const freeText = androidMode ? "$0" : active === "cn" ? "¥0" : "$0";
-      const tag = androidMode ? "限免追踪" : "限时 0 元";
+      const tag = androidMode ? "第三方追踪价" : "近期付费转免";
       const genre = androidMode ? "Google Play 美区" : String(item.genre || "App Store 软件");
       return '<a class="dailyfree-card' + (androidMode ? ' dailyfree-android-card' : '') +
         '" href="' + escapeHTML(path) + '" target="_blank" rel="noopener noreferrer" aria-label="' + escapeHTML(item.name) +
@@ -108,7 +109,8 @@
         '<span class="dailyfree-card-top"><span class="dailyfree-icon">' + iconHTML(item, androidMode) +
         '</span><span class="dailyfree-free-tag">' + tag + '</span></span>' +
         '<span class="dailyfree-card-name">' + escapeHTML(item.name) + '</span>' +
-        '<span class="dailyfree-card-sub">' + escapeHTML(genre) + ' <span aria-hidden="true">·</span> ' + platform + '</span>' +
+        '<span class="dailyfree-card-sub">' + escapeHTML(genre) + ' <span aria-hidden="true">·</span> ' + platform +
+        (androidMode ? ' · 未经商店核实' : ' · Apple 当前价已核验') + '</span>' +
         '<span class="dailyfree-card-bottom"><span class="dailyfree-price"><del>' +
         escapeHTML(typeof item.original_price === "string" ? item.original_price : "") +
         '</del><strong>' + freeText + '</strong></span><span class="dailyfree-go">' +
