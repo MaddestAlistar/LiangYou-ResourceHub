@@ -23,7 +23,7 @@ BASE = "https://gamma-api.polymarket.com/events"
 SOURCES = (
     ("lol", "英雄联盟", ("league-of-legends",)),
     ("basketball", "NBA", ("nba",)),
-    ("football", "足球", ("epl", "ucl", "la-liga")),
+    ("football", "足球", ("soccer", "epl", "ucl")),
     ("esports", "电竞", ("counter-strike-2", "dota-2")),
     ("other", "其他体育", ("nfl", "mlb", "tennis")),
 )
@@ -57,7 +57,7 @@ def get_events(tag_slug):
         "active": "true",
         "closed": "false",
         "limit": "100",
-        "order": "startTime",
+        "order": "startDate",
         "ascending": "true",
     })
     url = BASE + "?" + query
@@ -80,8 +80,8 @@ def get_events(tag_slug):
     raise RuntimeError(f"Gamma request failed for tag {tag_slug}: {last_error}")
 
 
-def normal_market(event):
-    """Pick an actual two-team match winner, not props or a yes/no futures question."""
+def normal_market(event, category):
+    """Return only a real match-winner market (two-way or football three-way)."""
     title = str(event.get("title") or "").strip()
     if not re.search(r"\bvs\.?\b|\bv\.?\b|\s@\s", title, re.I):
         return None
@@ -89,17 +89,16 @@ def normal_market(event):
     if not isinstance(markets, list):
         return None
     candidates = []
+    binary = []
     for market in markets:
         if not isinstance(market, dict) or market.get("closed") is True:
             continue
         outcomes = as_list(market.get("outcomes"))
         values = as_list(market.get("outcomePrices"))
-        if len(outcomes) != 2 or len(values) != 2:
+        if len(outcomes) not in (2, 3) or len(values) != len(outcomes):
             continue
         names = [str(x).strip() for x in outcomes]
         if any(not x or len(x) > 90 for x in names):
-            continue
-        if set(x.lower() for x in names).issubset({"yes", "no"}):
             continue
         try:
             prices = [float(x) for x in values]
@@ -107,23 +106,60 @@ def normal_market(event):
             continue
         if not all(0 <= p <= 1 for p in prices):
             continue
-        if not (0.80 <= sum(prices) <= 1.20):
+        if not (0.78 <= sum(prices) <= 1.22):
             continue
         market_kind = str(market.get("sportsMarketType") or market.get("marketType") or "").lower()
         question = str(market.get("question") or "").lower()
         if market_kind and market_kind not in ("moneyline", "h2h", "match winner", "winner"):
             continue
-        # Among eligible markets, prefer explicitly marked moneyline / match winner.
+        if re.search(r"\b(spread|handicap|total|over/under|maps|kills|rounds|points|correct score)\b", question):
+            continue
+        if set(x.lower() for x in names) == {"yes", "no"}:
+            if category == "football" and market_kind == "moneyline":
+                binary.append((question, dict(zip((x.lower() for x in names), prices))["yes"]))
+            continue
+        if any(n.lower() in ("over", "under", "yes", "no") for n in names):
+            continue
+        if not market_kind and not re.search(r"\b(win|winner|vs|match)\b", question):
+            continue
         score = 2 if market_kind in ("moneyline", "h2h", "match winner") else 0
         if "winner" in question or "win " in question or " vs " in question:
             score += 1
         candidates.append((score, names, prices))
-    if not candidates:
+    if candidates:
+        candidates.sort(key=lambda entry: entry[0], reverse=True)
+        _, names, prices = candidates[0]
+        return [{"name": n, "probability": round(p, 4)} for n, p in zip(names, prices)]
+    # Many football games expose three separate binary moneyline questions:
+    # "Will Team A win?" / "Will the match be a draw?" / "Will Team B win?".
+    # Reconstruct only when all 3 outcomes are unambiguously identified.
+    if category != "football" or len(binary) < 3:
         return None
-    candidates.sort(key=lambda entry: entry[0], reverse=True)
-    _, names, prices = candidates[0]
-    return [{"name": names[0], "probability": round(prices[0], 4)},
-            {"name": names[1], "probability": round(prices[1], 4)}]
+    teams = re.split(r"\s+vs\.?\s+|\s+@\s+", title, maxsplit=1, flags=re.I)
+    if len(teams) != 2:
+        return None
+    left = teams[0].split(":")[-1].strip()
+    right = re.split(r"\s+\-\s+|\s+\(", teams[1], maxsplit=1)[0].strip()
+    if min(len(left), len(right)) < 3:
+        return None
+    found = {}
+    for q, yes in binary:
+        a = left.casefold() in q
+        b = right.casefold() in q
+        if "draw" in q or "tie" in q:
+            if not (a or b):
+                found["draw"] = yes
+        elif a and not b:
+            found["left"] = yes
+        elif b and not a:
+            found["right"] = yes
+    if set(found) != {"left", "draw", "right"}:
+        return None
+    probs = [found["left"], found["draw"], found["right"]]
+    if not 0.78 <= sum(probs) <= 1.22:
+        return None
+    return [{"name": n, "probability": round(p, 4)} for n, p in
+            zip((left, "平局", right), probs)]
 
 
 def normalize(event, category, fallback_label, now):
@@ -135,7 +171,7 @@ def normalize(event, category, fallback_label, now):
     title = str(event.get("title") or "").strip()
     if not 4 <= len(title) <= 170:
         return None
-    outcomes = normal_market(event)
+    outcomes = normal_market(event, category)
     if outcomes is None:
         return None
     when = date_value(event.get("startTime") or event.get("gameStartTime") or event.get("startDate"))
