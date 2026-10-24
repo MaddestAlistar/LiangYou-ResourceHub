@@ -51,6 +51,7 @@ def update():
                 elif "Original-Icons.json" in item.get("url", ""):
                     item["name"] = f"良哥精选与专属 · {selected} 枚"
         elif p["id"] == "channels":
+            p["updated"] = today
             p["stats"] = f"{rooms:,} 个直播间"
             p["description"] = f"良友主播单收录 {platforms} 个平台的 {rooms:,} 个直播间，按 {sections} 个内容分区整理。可在汇流 App 导入完整主播单，也可单独选择分区。"
             p["highlights"] = [f"{platforms} 个直播平台", f"{sections} 个内容分区", "支持分区订阅"]
