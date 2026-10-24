@@ -13,6 +13,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,7 +22,7 @@ ICONS = ROOT / "assets/daily-free"
 UTC = timezone.utc
 NOW = datetime.now(UTC)
 MAX_EVENT_AGE = timedelta(days=7)
-MAX_PER_REGION = 12
+MAX_PER_REGION = 10
 ATOM = "{http://www.w3.org/2005/Atom}"
 FEEDS = {
     "cn": [
@@ -124,6 +125,78 @@ def candidates_from_feed(raw: bytes, country: str, source: str) -> list[dict]:
     return found
 
 
+
+
+class _MacGiftAnchorParser(HTMLParser):
+    """Read public MacGift deal cards without executing any website scripts."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.active = None
+        self.links = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "a":
+            return
+        href = dict(attrs).get("href", "")
+        if isinstance(href, str) and re.search(r"/app/\d{7,12}/?(?:[?#].*)?$", href):
+            self.active = {"href": href, "texts": []}
+
+    def handle_data(self, data):
+        if self.active is not None:
+            self.active["texts"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self.active is not None:
+            self.links.append((self.active["href"], " ".join(self.active["texts"])))
+            self.active = None
+
+
+def candidates_from_macgift(raw: bytes, country: str) -> list[dict]:
+    """Only use deal links clearly tagged as a *paid* app becoming free.
+
+    Normal free apps, IAP-only offers, and paid-but-discounted apps cannot qualify.
+    Apple Lookup then independently verifies the current price for the region.
+    """
+    parser = _MacGiftAnchorParser()
+    parser.feed(raw.decode("utf-8", errors="replace"))
+    found = []
+    seen = set()
+    money_pattern = r"(?:¥|￥)" if country == "cn" else r"\$"
+    for href, label in parser.links:
+        match_id = re.search(r"/app/(\d{7,12})(?:/|$|[?#])", href)
+        if not match_id:
+            continue
+        app_id = int(match_id.group(1))
+        if app_id in seen:
+            continue
+        text = " ".join(label.split())
+        if country == "cn":
+            if "限免" not in text or "免费" not in text:
+                continue
+        elif not re.search(r"\bFree\b", text, flags=re.IGNORECASE):
+            continue
+        if ("免费·含内购" in text or "Free + IAP" in text
+                or "免费下载" in text or "Free download" in text
+                or "外部源" in text or "External source" in text):
+            continue
+        amounts = re.findall(money_pattern + r"\s*([1-9]\d*(?:\.\d{1,2})?)", text)
+        if not amounts:
+            continue
+        # Original paid price shown by the source; never infer it from a free API.
+        price = (("¥" if country == "cn" else "$") + amounts[0])
+        found.append({
+            "id": app_id,
+            "original_price": price,
+            "source": "MacGift",
+            "discovered_at": NOW.isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "published": NOW,
+        })
+        seen.add(app_id)
+        if len(found) >= 60:
+            break
+    return found
+
 def lookup_prices(ids: list[int], country: str) -> dict[int, dict]:
     verified = {}
     for offset in range(0, len(ids), 25):
@@ -207,6 +280,24 @@ def main() -> None:
                         candidates[candidate["id"]] = candidate
             except (urllib.error.URLError, TimeoutError, ET.ParseError, ValueError, OSError) as exc:
                 print(f"[{country}] Source unavailable: {source}: {exc}", flush=True)
+
+
+        # Additional public region-specific deal cards broaden the coverage.
+        # Each candidate must still pass Apple's official current-price lookup.
+        try:
+            macgift_url = "https://macgift.com/" if country == "cn" else "https://macgift.com/us/"
+            macgift_raw = download(macgift_url, timeout=18, limit=3_000_000)
+            macgift_items = candidates_from_macgift(macgift_raw, country)
+            country_feeds += 1
+            successful_feeds += 1
+            print(f"[{country}] MacGift: {len(macgift_items)} paid-to-free candidates", flush=True)
+            for candidate in macgift_items:
+                # Keep original historical price from the more recent source.
+                old = candidates.get(candidate["id"])
+                if not old or candidate["published"] > old["published"]:
+                    candidates[candidate["id"]] = candidate
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            print(f"[{country}] MacGift source unavailable: {exc}", flush=True)
 
         if not country_feeds:
             # Avoid rewriting old items as fresh when the entire region is offline.
