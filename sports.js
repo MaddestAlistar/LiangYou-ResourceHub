@@ -7,7 +7,7 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const time=v=>{if(!v)return '时间待确认';const d=new Date(v);return Number.isFinite(d.getTime())?d.toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+' 北京时间':'时间待确认'};
   function render(){
-    const filtered=matches.filter(m=>active==='all'||m.category===active);
+    const filtered=matches.filter(m=>(active==='all'||m.category===active)&&(!m.start_time||Date.parse(m.start_time)>Date.now()));
     const display=active==='all'?['lol','basketball','football','esports','other'].flatMap(cat=>filtered.filter(m=>m.category===cat).slice(0,5)):filtered.slice(0,24);
     count.textContent=active==='all'?'收录 '+filtered.length+' 场 · 精选 '+display.length+' 场':filtered.length+' 场赛事';
     if(!filtered.length){grid.innerHTML='<div class="sports-empty"><strong>当前暂无可展示的数据</strong>数据源还未同步，或该分区暂时没有公开的有效胜负市场。不会使用虚构赔率填充页面。</div>';return}
@@ -19,7 +19,11 @@
       const probabilityBlock=m.outcomes.length===3
         ?'<div class="sports-three">'+m.outcomes.map(o=>'<div class="sports-side"><span>'+esc(o.name)+'</span><b>'+Math.max(0,Math.min(100,Number(o.probability)*100)).toFixed(0)+'%</b></div>').join('')+'</div>'
         :'<div class="sports-prob"><div class="sports-side"><span>'+esc(a.name)+'</span><b>'+p.toFixed(0)+'%</b></div><span class="sports-versus">VS</span><div class="sports-side right"><span>'+esc(b.name)+'</span><b>'+q.toFixed(0)+'%</b></div></div>';
-      return '<article class="sports-match"><div class="sports-match-top"><span>'+esc(m.league||'赛事')+'</span><span>'+esc(time(m.start_time))+'</span></div><h3>'+esc(m.title)+'</h3>'+probabilityBlock+'<div class="sports-track" aria-label="预测概率分布"><i style="width:'+p.toFixed(1)+'%"></i></div><div class="sports-match-bottom"><span>Polymarket · 市场隐含概率</span>'+(url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">来源 ↗</a>':'')+'</div></article>'
+      const total=m.outcomes.reduce((sum,o)=>sum+Number(o.probability),0)||1;
+      const track=m.outcomes.length===3
+        ?'<div class="sports-track sports-track-three" aria-label="主胜、平局、客胜比例">'+m.outcomes.map(o=>'<i style="width:'+(Math.max(0,Number(o.probability))/total*100).toFixed(2)+'%"></i>').join('')+'</div>'
+        :'<div class="sports-track" aria-label="预测概率分布"><i style="width:'+p.toFixed(1)+'%"></i></div>';
+      return '<article class="sports-match"><div class="sports-match-top"><span>'+esc(m.league||'赛事')+'</span><span>'+esc(time(m.start_time))+'</span></div><h3>'+esc(m.title)+'</h3>'+probabilityBlock+track+'<div class="sports-match-bottom"><span>Polymarket · 市场隐含概率</span>'+(url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">来源 ↗</a>':'')+'</div></article>'
     }).join('');
   }
   tabs.forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.sportFilter;tabs.forEach(t=>{const ok=t===btn;t.classList.toggle('is-active',ok);t.setAttribute('aria-pressed',String(ok))});render()}));
