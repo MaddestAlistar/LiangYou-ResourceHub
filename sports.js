@@ -33,6 +33,7 @@
     updated=d.generated_at?new Date(d.generated_at):null;
     const age=updated?Date.now()-updated.getTime():Infinity;
     status.textContent=updated&&Number.isFinite(age)?'上次同步：'+time(d.generated_at)+(age>6*3600*1000?' · 数据可能已过期':''):'等待首次同步';
+    if(updated&&age>12*3600*1000){matches=[];status.textContent='上次同步：'+time(d.generated_at)+' · 数据已过期，暂不展示';}
     render();
   }).catch(()=>{status.textContent='同步数据暂不可用';grid.innerHTML='<div class="sports-empty"><strong>赛事数据暂不可用</strong>请稍后刷新。本栏目不展示未经验证的预测概率。</div>';count.textContent='同步失败'});
 })();
