@@ -8,9 +8,10 @@
   const time=v=>{if(!v)return '时间待确认';const d=new Date(v);return Number.isFinite(d.getTime())?d.toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+' 北京时间':'时间待确认'};
   function render(){
     const filtered=matches.filter(m=>active==='all'||m.category===active);
-    count.textContent=filtered.length+' 场赛事';
+    const display=active==='all'?['lol','basketball','football','esports','other'].flatMap(cat=>filtered.filter(m=>m.category===cat).slice(0,5)):filtered.slice(0,24);
+    count.textContent=active==='all'?'收录 '+filtered.length+' 场 · 精选 '+display.length+' 场':filtered.length+' 场赛事';
     if(!filtered.length){grid.innerHTML='<div class="sports-empty"><strong>当前暂无可展示的数据</strong>数据源还未同步，或该分区暂时没有公开的有效胜负市场。不会使用虚构赔率填充页面。</div>';return}
-    grid.innerHTML=filtered.slice(0,24).map(m=>{
+    grid.innerHTML=display.map(m=>{
       const [a,b]=m.outcomes;
       const p=Math.min(100,Math.max(0,Number(a.probability)*100));
       const q=Math.min(100,Math.max(0,Number(b.probability)*100));
