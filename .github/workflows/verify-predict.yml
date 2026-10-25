@@ -1,0 +1,57 @@
+name: Verify Predict.fun feed
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-predict.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-predict-feed
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate Predict market parsing without credentials
+        run: python -m unittest discover -s scripts -p 'test_feeds.py'
+      - name: Collect real read-only Predict markets
+        env:
+          PREDICT_FUN_API_TOKEN: ${{ secrets.PREDICT_FUN_API_TOKEN }}
+        run: python -u scripts/update_predict_sports.py
+      - name: Ensure data is valid before publishing
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('data/predict-sports.json').read_text())
+          assert data['schema']==1 and data['source_type']=='prediction_market'
+          assert data['status']=='ok' and isinstance(data['events'],list)
+          print('Verified Predict events:', len(data['events']))
+          PY
+      - name: Publish verified snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/predict-sports.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update read-only Predict.fun match probabilities [skip ci]"
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = "3" ]; then exit 1; fi
+            done
+          fi
