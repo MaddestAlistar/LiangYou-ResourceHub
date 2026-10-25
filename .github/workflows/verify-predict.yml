@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/verify-predict.yml'
+      - 'scripts/update_predict_sports.py'
 
 permissions:
   contents: write
