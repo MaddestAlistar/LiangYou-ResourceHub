@@ -673,3 +673,39 @@ img.is-fallback { object-fit: contain!important; transform: none!important; bord
     transition:none!important;
   }
 }
+
+/* v4.8 — balanced two-line Icon Library caption; gallery float animation remains untouched. */
+.art-icons .preview-caption--split {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:100%;
+  max-width:600px;
+  margin:6px auto 2px;
+  padding:0 12px;
+  text-align:center;
+  line-height:1.65;
+}
+.art-icons .preview-caption--split .caption-lead {
+  display:block;
+  color:#e2e9f4;
+  font-size:clamp(12px,1.1vw,15px);
+  font-weight:600;
+  letter-spacing:.07em;
+  text-wrap:balance;
+}
+.art-icons .preview-caption--split .caption-detail {
+  display:block;
+  color:#b9c6d8;
+  font-size:clamp(12px,1.05vw,14px);
+  font-weight:400;
+  letter-spacing:.035em;
+  text-wrap:balance;
+}
+@media (max-width:700px) {
+  .art-icons .preview-caption--split {gap:4px;padding:0 2px;margin:4px auto 1px}
+  .art-icons .preview-caption--split .caption-lead {font-size:12px;letter-spacing:.025em}
+  .art-icons .preview-caption--split .caption-detail {font-size:12px;letter-spacing:.012em}
+}

@@ -63,6 +63,15 @@
     return channels ? `<span class="channel-avatar-shell">${img}</span>` : img;
   }
 
+  // Give the Icon Library caption two deliberately balanced lines.
+  function renderPreviewCaption(project) {
+    if (Array.isArray(project.previewCaptionLines) && project.previewCaptionLines.length === 2) {
+      const [headline, detail] = project.previewCaptionLines;
+      return `<p class="preview-caption preview-caption--split"><span class="caption-lead">${escapeHTML(headline)}</span><span class="caption-detail">${escapeHTML(detail)}</span></p>`;
+    }
+    return project.previewCaption ? `<p class="preview-caption">${escapeHTML(project.previewCaption)}</p>` : "";
+  }
+
   function renderCards() {
     const terms = search.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
     const visible = projects.filter(p => {
@@ -72,7 +81,7 @@
     grid.innerHTML = visible.map(p => {
       const i = projects.indexOf(p) + 1;
       return `<article class="project-card${p.id === "sports" ? " project-card-sports" : ""}" id="resource-${escapeHTML(p.id)}">
-        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span>${p.id === "sports" ? "" : `<span class="art-index">${circled(i)}</span>`}</div><div class="art-images"><div class="preview-gallery">${p.images.map((url,index) => previewThumb(p,url,index)).join("")}</div>${p.previewCaption ? `<p class="preview-caption">${escapeHTML(p.previewCaption)}</p>` : ""}</div></div>
+        <div class="card-art art-${escapeHTML(p.previewType)}"><div class="art-caption"><span>${escapeHTML(p.en)}</span>${p.id === "sports" ? "" : `<span class="art-index">${circled(i)}</span>`}</div><div class="art-images"><div class="preview-gallery">${p.images.map((url,index) => previewThumb(p,url,index)).join("")}</div>${renderPreviewCaption(p)}</div></div>
         <div class="card-content"><div class="card-meta"><span class="card-type">${escapeHTML(p.categoryLabel)}</span><span class="live-status"><span class="status-dot"></span>已上线</span></div>
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
         <p class="card-desc">${escapeHTML(p.description)}</p>${p.id === "sports" ? "" : `<div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>`}
