@@ -116,42 +116,36 @@ def team_list(category):
     return []
 
 
-def side_name(market, teams):
-    resolution = market.get("resolution")
-    details = market.get("variantDetails")
+def side_name(item, teams):
+    """Match a quote's team identity against the event's real participants."""
+    details = item.get("variantDetails")
+    variants = item.get("variantData")
     sports = details.get("sports") if isinstance(details, dict) else None
-    variants = market.get("variantData")
-    candidates = [market.get("team"), resolution.get("team") if isinstance(resolution, dict) else None,
-                  (sports or {}).get("team"), variants.get("team") if isinstance(variants, dict) else None]
-    def same(text, team):
-        norm = lambda s: re.sub(r"[^a-z0-9]+", "", str(s).casefold())
-        return bool(norm(text)) and norm(text) == norm(team)
-    for item in candidates:
-        if isinstance(item, dict):
-            for attr in ("name", "alias", "abbreviation"):
-                label = item.get(attr)
-                for team in teams:
-                    if same(label, team):
-                        return team
-    label = str(market.get("title") or market.get("question") or "")
+    options = [item.get("team"), (sports or {}).get("team"),
+               variants.get("team") if isinstance(variants, dict) else None]
+    def compact(x):
+        return re.sub(r"[^a-z0-9]+", "", str(x or "").casefold())
+    for entry in options:
+        if not isinstance(entry, dict):
+            continue
+        for key in ("name", "alias", "abbreviation"):
+            for team in teams:
+                if compact(entry.get(key)) and compact(entry.get(key)) == compact(team):
+                    return team
+    name = str(item.get("name") or item.get("title") or "")
     for team in teams:
-        if same(label, team):
+        if compact(name) and compact(name) == compact(team):
             return team
-    # Binary questions whose title explicitly names one of the two opponents.
-    matches = [team for team in teams if re.search(r"(?<!\w)" + re.escape(team) + r"(?!\w)", label, re.I)]
-    return matches[0] if len(matches) == 1 else None
+    return "平局" if name.casefold() in ("draw", "tie") else None
 
 
-def mid_price(market):
-    resolution = market.get("resolution")
-    if not isinstance(resolution, dict):
-        return None
+def mid_price(outcome):
     try:
-        bid = float((resolution.get("bestBid") or {})["price"])
-        ask = float((resolution.get("bestAsk") or {})["price"])
+        bid = float((outcome.get("bestBid") or {})["price"])
+        ask = float((outcome.get("bestAsk") or {})["price"])
     except (TypeError, ValueError, KeyError):
         return None
-    # A blank/illiquid book is not a usable prediction.
+    # Price interpolation is forbidden for huge spreads/placeholder books.
     if not (0 < bid <= ask < 1 and ask - bid <= .20):
         return None
     return round((bid + ask) / 2, 4)
@@ -167,7 +161,7 @@ def normalize(category, now):
     if not kind or not when or not (now < when <= now + dt.timedelta(days=30)):
         return None
     slug = str(category.get("slug") or "")
-    if not re.fullmatch(r"[a-z0-9-]{3,190}", slug):
+    if not re.fullmatch(r"[a-z0-9_-]{3,190}", slug):
         return None
     teams = team_list(category)
     if len(teams) != 2:
@@ -175,42 +169,49 @@ def normalize(category, now):
     markets = category.get("markets")
     if not isinstance(markets, list):
         return None
-    selections = {}
+    selected = None
     for market in markets:
         if not isinstance(market, dict):
             continue
-        mtype = str(market.get("marketType") or "").upper()
-        if mtype not in ("SPORTS_MONEYLINE", "MONEYLINE"):
+        if str(market.get("marketType") or "").upper() not in ("SPORTS_MONEYLINE", "MONEYLINE"):
             continue
         if market.get("tradingStatus") not in (None, "OPEN") or market.get("isVisible") is False:
             continue
-        if EXCLUDE.search(str(market.get("title") or "") + " " + str(market.get("question") or "")):
+        if EXCLUDE.search(str(market.get("title") or "") + " " +
+                          str(market.get("question") or "") + " " +
+                          str(market.get("description") or "")[:150]):
             continue
-        price = mid_price(market)
-        side = side_name(market, teams)
-        mid = market.get("id")
-        if side is None or price is None or mid is None:
+        market_id = market.get("id")
+        if market_id is None:
             continue
-        selections[side] = {"name": side, "probability": price, "market_id": str(mid)}
-    # Standalone binary Yes/No moneyline: the opposite team is the No side.
-    # Only use it when exactly one market exists and one team is identified.
-    if len(selections) == 1 and len(markets) == 1:
-        side = next(iter(selections))
-        opposite = next((x for x in teams if x != side), None)
-        if opposite:
-            yes = selections[side]
-            selections[opposite] = {"name": opposite, "probability": round(1 - yes["probability"], 4),
-                                    "market_id": yes["market_id"]}
-    if set(teams) != set(selections):
-        return None
-    ordered = [selections[t] for t in teams]
-    if not .95 <= sum(x["probability"] for x in ordered) <= 1.05:
+        outcomes = market.get("outcomes")
+        if not isinstance(outcomes, list) or len(outcomes) not in (2, 3):
+            continue
+        found = {}
+        for outcome in outcomes:
+            if not isinstance(outcome, dict):
+                continue
+            side = side_name(outcome, teams)
+            price = mid_price(outcome)
+            if side is None or price is None or side in found:
+                continue
+            found[side] = {"name": side, "probability": price, "market_id": str(market_id)}
+        wanted = teams if len(outcomes) == 2 else [teams[0], "平局", teams[1]]
+        if set(found) != set(wanted):
+            continue
+        candidate = [found[team] for team in wanted]
+        if not .95 <= sum(x["probability"] for x in candidate) <= 1.05:
+            continue
+        selected = candidate
+        break
+    if not selected:
         return None
     title = str(category.get("shortTitle") or category.get("title") or "").strip()
     if not title or len(title) > 180:
         title = " vs ".join(teams)
     league = LEAGUES[kind]
-    for member in category.get("teams") or []:
+    sports = (category.get("variantDetails") or {}).get("sports") or {}
+    for member in (category.get("teams") or sports.get("teams") or []):
         if isinstance(member, dict) and member.get("league"):
             league = str(member["league"])[:64]
             break
@@ -218,7 +219,7 @@ def normalize(category, now):
         "id": "predict-" + str(category.get("id") or slug),
         "title": title, "category": kind, "league": league,
         "start_time": when.isoformat(timespec="seconds").replace("+00:00", "Z"),
-        "outcomes": ordered, "checked_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "outcomes": selected, "checked_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
         "verification": "open_match_winner_market",
         "provider": "predict",
         "source_url": "https://predict.fun/market/" + slug,
@@ -241,38 +242,6 @@ def main():
         if len(groups[event["category"]]) < 12:
             groups[event["category"]].append(event)
     selected = [event for category in LEAGUES for event in groups[category]]
-    # Safe diagnostics: market titles and public metadata only, never credentials.
-    if not selected:
-        print("Predict diagnosis: categories=%d typed=%d future=%d" % (
-            len(categories),
-            sum(category_type(c) is not None for c in categories if isinstance(c, dict)),
-            sum(moment(c.get("startsAt")) is not None and moment(c.get("startsAt")) > now for c in categories if isinstance(c, dict))
-        ))
-        examples = [c for c in categories if isinstance(c, dict) and
-                    re.search(r"lol|nba|nfl|esports|football|counter.strike|worlds|soccer", str(c.get("slug") or "") + " " + str(c.get("title") or ""), re.I)]
-        examples = (examples[:5] if examples else categories[:3])
-        for c in examples:
-            if not isinstance(c, dict):
-                continue
-            markets = c.get("markets") or []
-            m = markets[0] if isinstance(markets, list) and markets and isinstance(markets[0], dict) else {}
-            print("Predict category sample: " + json.dumps({
-                "slug": c.get("slug"), "title": c.get("title"),
-                "startsAt": c.get("startsAt"), "status": c.get("status"),
-                "marketVariant": c.get("marketVariant"),
-                "tags": [t.get("name") or t.get("slug") for t in (c.get("tags") or [])[:3] if isinstance(t, dict)],
-                "teams": c.get("teams"), "sports": (c.get("variantDetails") or {}).get("sports"),
-                "market_count": len(markets) if isinstance(markets, list) else 0,
-                "market_keys": list(m)[:30],
-                "market_type": m.get("marketType"),
-                "market_team": m.get("team"), "market_resolution": m.get("resolution"),
-                "market_outcomes": m.get("outcomes"),
-                "market_title": m.get("title"), "market_question": m.get("question"),
-                "market_trading": m.get("tradingStatus"),
-                "market_variant_data": m.get("variantData"),
-                "market_variant_details": m.get("variantDetails"),
-                "top_bid": m.get("bestBid"), "top_ask": m.get("bestAsk"),
-            }, ensure_ascii=False, default=str)[:2200])
     snapshot = {
         "schema": 1, "source": "Predict.fun API", "source_type": "prediction_market",
         "generated_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
