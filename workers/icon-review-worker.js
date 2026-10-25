@@ -1,3 +1,4 @@
+import { publishIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
 // Cloudflare Worker · Icon Review Queue
 // Secrets: GITHUB_TOKEN (fine-grained Contents: Read and write, restricted to review repository)
 // Vars: REVIEW_REPO = MaddestAlistar/Icon-Review-Queue; ALLOWED_ORIGIN = https://maddestalistar.github.io
@@ -5,10 +6,12 @@ const reply=(obj,status=200,origin="")=>new Response(JSON.stringify(obj),{status
 export default {async fetch(request,env){
  const origin=request.headers.get("Origin")||"";
  const allowed=env.ALLOWED_ORIGIN||"https://maddestalistar.github.io";
+ try {
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, X-Admin-Key","Access-Control-Max-Age":"600"}});
  if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
 
  const url=new URL(request.url);
+ if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin);
  if(url.pathname==="/admin"){
   if(!env.ADMIN_KEY)return reply({error:"Admin not configured"},503,origin);
   const key=request.headers.get("X-Admin-Key")||"";
@@ -16,17 +19,19 @@ export default {async fetch(request,env){
   if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)return reply({error:"Server is not configured"},503,origin);
   const root="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
   const ghHeaders={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
-  const gh=async(path,options={})=>fetch(root+path,{...options,headers:ghHeaders});
+  const gh=async(path,options={})=>fetch(root+path,{...options,headers:ghHeaders,signal:AbortSignal.timeout(20000)});
   const decode=s=>decodeURIComponent(escape(atob(s.replace(/\s/g,""))));
   if(request.method==="GET"){
    const listing=await gh("pending");
    if(!listing.ok)return reply({error:"Failed to list pending files",status:listing.status},502,origin);
    const entries=await listing.json();
-   const metas=entries.filter(x=>x.type==="file"&&x.name.endsWith(".json")).slice(-100).reverse();
+   const all=entries.filter(x=>x.type==="file"&&x.name.endsWith(".json")).sort((a,b)=>a.name.localeCompare(b.name));
+   const offset=Math.max(0,Number.parseInt(url.searchParams.get("cursor")||"0",10)||0);
+   const metas=all.slice(offset,offset+30);
    const items=await Promise.all(metas.map(async x=>{
     try{const res=await gh("pending/"+encodeURIComponent(x.name));if(!res.ok)return null;const obj=await res.json();const m=JSON.parse(decode(obj.content));return {...m,metaPath:"pending/"+x.name,metaSha:obj.sha,imageUrl:"https://raw.githubusercontent.com/"+env.REVIEW_REPO+"/main/"+m.filename.split("/").map(encodeURIComponent).join("/")};}catch{return null}
    }));
-   return reply({ok:true,items:items.filter(Boolean)},200,origin);
+   return reply({ok:true,items:items.filter(Boolean),nextCursor:offset+30<all.length?offset+30:null,total:all.length},200,origin);
   }
   if(request.method==="POST"){
    let body;try{body=await request.json()}catch{return reply({error:"Invalid JSON"},400,origin)}
@@ -34,98 +39,26 @@ export default {async fetch(request,env){
    if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending"].includes(status))return reply({error:"Invalid request"},400,origin);
    const current=await gh(path);if(!current.ok)return reply({error:"Metadata not found"},404,origin);
    const item=await current.json();let meta;try{meta=JSON.parse(decode(item.content))}catch{return reply({error:"Bad metadata"},502,origin)}
+   if(status!=="approved"&&(meta.publishedUrl||meta.status==="approved"))return reply({error:"已发布图标不能改回待审核或拒绝；如需下架，须同步移除正式库索引"},409,origin);
    if(status==="approved"){
-    if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"请先在 Cloudflare 添加 PUBLISH_GITHUB_TOKEN（仅正式图标库 Contents 读写权限）"},503,origin);
-    if(meta.status==="approved")return reply({error:"Already approved; check official library before retrying"},409,origin);
-    const official="MaddestAlistar/LiangYou-IconLibrary";
-    const publishHeaders={...ghHeaders,Authorization:"Bearer "+env.PUBLISH_GITHUB_TOKEN};
-    const getOfficial=async p=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{headers:publishHeaders});
-    const putOfficial=async(p,content,sha)=>fetch("https://api.github.com/repos/"+official+"/contents/"+p,{method:"PUT",headers:publishHeaders,body:JSON.stringify({message:"publish reviewed icon: "+meta.name,content,...(sha?{sha}:{})})});
-    const isDynamic=meta.kind==="动态"||/\\.gif$/i.test(meta.filename);
-    const ext=String(meta.filename).split(".").pop().toLowerCase();
-    const rawName=String(meta.name||"").trim().replace(/\\s*(?:动态|dynamic)\\s*(?:0*[0-9]+)?$/i,"").trim();
-    if(!rawName||!["png","webp","gif"].includes(ext))return reply({error:"Invalid icon name or extension"},400,origin);
-    const files=["LiangYou-Original-Icons.json","LiangYou-Emby-Icons.json"];
-    const plans=[];
-    const snapshots=[];
-    for(const file of files){
-      const resp=await getOfficial(file);
-      if(!resp.ok)return reply({error:"Cannot read "+file,status:resp.status},502,origin);
-      const record=await resp.json();
-      let data;try{data=JSON.parse(decode(record.content))}catch{return reply({error:"Invalid official JSON: "+file},502,origin)}
-      if(!Array.isArray(data.icons)||data.icons.length<5)return reply({error:"Unsupported icon list: "+file},502,origin);
-      snapshots.push({file,sha:record.sha,data});
-    }
-    const existing=snapshots.flatMap(x=>x.data.icons);
-    const stripIndex=v=>String(v||"").trim().replace(/\\s+0*[0-9]+$/,"").trim();
-    const displayPart=v=>stripIndex(v).split("｜").pop().trim();
-    const lower=v=>v.toLocaleLowerCase();
-    const nameKey=lower(rawName);
-    const related=existing.filter(x=>{
-      const base=displayPart(x.name).replace(/\\s*动态$/,"").trim();
-      return lower(base)===nameKey;
-    });
-    const existingPrefix=related.map(x=>String(x.name).split("｜")[0]).find(x=>/^[a-zA-Z0-9-]+$/.test(x));
-    const hasChinese=/[\\p{Script=Han}]/u.test(rawName);
-    // Reuse a verified existing romanized prefix; do not invent pinyin for new Chinese names.
-    const asciiStem=rawName.normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-    const fileStem=(hasChinese&&existingPrefix?existingPrefix.toLowerCase():hasChinese?rawName.normalize("NFKC").toLowerCase():asciiStem).replace(/[^a-z0-9\\p{Script=Han}-]+/gu,"-").replace(/^-+|-+$/g,"").slice(0,70)||"icon";
-    const prefix=hasChinese&&existingPrefix?existingPrefix+"｜":"";
-    const baseLabel=prefix+rawName+(isDynamic?(hasChinese?"动态":" 动态"):"");
-    const existingNames=new Set(existing.map(x=>lower(String(x.name||""))));
-    let number=1;
-    let label;
-    do{
-      label=baseLabel+(isDynamic||number>1?" "+String(number).padStart(2,"0"):"");
-      if(!existingNames.has(lower(label)))break;
-      number++;
-    }while(number<1000);
-    if(number>=1000)return reply({error:"Too many duplicate icon names"},409,origin);
-    // Dynamic entries must always contain 动态 and a numbered suffix for search compatibility.
-    let imagePath,exists;
-    for(let attempt=0;attempt<100;attempt++){
-      const suffix=String(number+attempt).padStart(2,"0");
-      imagePath="icons/liangyou/"+fileStem+(isDynamic?"-animated":"")+"-"+suffix+"."+ext;
-      exists=await getOfficial(imagePath.split("/").map(encodeURIComponent).join("/"));
-      if(exists.status===404)break;
-      if(!exists.ok)return reply({error:"Cannot check official image filename",status:exists.status},502,origin);
-      if(attempt===99)return reply({error:"Too many duplicate filenames"},409,origin);
-    }
-    const newUrl="https://raw.githubusercontent.com/"+official+"/main/"+imagePath.split("/").map(encodeURIComponent).join("/");
-    for(const snap of snapshots){
-      const data=snap.data;
-      if(data.icons.some(x=>x.url===newUrl))return reply({error:"Icon already listed in "+snap.file},409,origin);
-      data.icons.push({name:label,url:newUrl});
-      const fixed=data.icons.slice(0,5);
-      const rest=data.icons.slice(5).sort((a,b)=>{
-        const an=String(a.name||""),bn=String(b.name||"");
-        const ad=/^[0-9]/.test(an),bd=/^[0-9]/.test(bn);
-        if(ad!==bd)return ad?1:-1;
-        return an.localeCompare(bn,"zh-CN",{numeric:true,sensitivity:"base"});
+    if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式图标库发布权限未配置"},503,origin);
+    try {
+      const publication=await publishIcon(meta,githubClient("MaddestAlistar/LiangYou-IconLibrary",env.PUBLISH_GITHUB_TOKEN),async()=>{
+        const image=await gh(meta.filename.split("/").map(encodeURIComponent).join("/"));
+        if(!image.ok)throw new Error("审核图片读取失败");
+        const data=await image.json();
+        if(data.encoding==="base64")return data;
+        return githubClient(env.REVIEW_REPO,env.GITHUB_TOKEN)("git/blobs/"+data.sha);
       });
-      data.icons=[...fixed,...rest];
-      data.description=String(data.description||"").replace(/更新时间：[^｜]+/,"更新时间："+new Date().toISOString().slice(0,10));
-      plans.push({file:snap.file,sha:snap.sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2)+"\\n")))});
-    }
-    const originalImage=await gh(meta.filename.split("/").map(encodeURIComponent).join("/"));
-    if(!originalImage.ok)return reply({error:"Review image unavailable"},502,origin);
-    const imageData=await originalImage.json();
-    const uploaded=await putOfficial(imagePath.split("/").map(encodeURIComponent).join("/"),imageData.content.replace(/\s/g,""));
-    if(!uploaded.ok)return reply({error:"Official image upload failed",status:uploaded.status},502,origin);
-    for(const plan of plans){
-      const saved=await putOfficial(plan.file,plan.content,plan.sha);
-      if(!saved.ok)return reply({error:"Image uploaded, but subscription update failed at "+plan.file+"; manual repair needed",status:saved.status},502,origin);
-    }
-    meta.publishedName=label;
-    meta.publishedFilename=imagePath;
-    meta.publishedUrl=newUrl;
-    meta.publishedAt=new Date().toISOString();
+      for(const key of ["publishedName","publishedFilename","publishedUrl","publishedAt","publishedCommit","publisherVersion"])if(publication[key])meta[key]=publication[key];
+      meta.publicationVerifiedAt=new Date().toISOString();
+    } catch(error){return reply({error:error.message||"发布失败，请刷新后重试"},502,origin)}
    }
    meta.status=status;meta.reviewedAt=new Date().toISOString();
-   const content=btoa(unescape(encodeURIComponent(JSON.stringify(meta,null,2))));
+   const content=encode(JSON.stringify(meta,null,2)+"\n");
    const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: "+status+" "+meta.name,content,sha:item.sha})});
-   if(!saved.ok)return reply({error:"Review update failed",status:saved.status},502,origin);
-   return reply({ok:true,status},200,origin);
+   if(!saved.ok)return reply({error:status==="approved"?"正式库已发布，但审核状态未保存。请刷新后再次点击通过，系统会核对已有发布，不会重复入库":"审核状态保存失败，请刷新后重试",status:saved.status},502,origin);
+   return reply({ok:true,status,item:meta,publicationVerified:status==="approved"},200,origin);
   }
   return reply({error:"Method not allowed"},405,origin);
  }
@@ -161,4 +94,5 @@ export default {async fetch(request,env){
  const meta=await put(base+".json",btoa(unescape(encodeURIComponent(JSON.stringify(metadata,null,2)))));
  if(!meta.ok)return reply({error:"Image uploaded but metadata failed",id},502,origin);
  return reply({ok:true,id,reviewUrl:"https://github.com/"+env.REVIEW_REPO+"/tree/main/pending"},201,origin);
+} catch { return reply({error:"服务暂时不可用，请刷新记录后重试；已完成发布的投稿不会重复入库"},503,origin===allowed?origin:"null"); }
 }};
