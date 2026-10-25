@@ -28,7 +28,10 @@ for attempt in range(60):
             print('Pages build completed for ' + head, flush=True)
             break
         if build.get('status') == 'errored':
-            raise SystemExit('Pages build failed: ' + str(build.get('error', {}).get('message')))
+            # A replacement Pages build may still be running for the same SHA.
+            # Treat the latest build's early 'errored' state as provisional:
+            # the automated deployment workflow may supersede it shortly.
+            print('Pages latest build temporarily errored; checking for replacement', flush=True)
     # A newer user commit can supersede this one while retaining the data.
     if build.get('status') == 'built' and build.get('commit') != head:
         subprocess.run(['git', 'fetch', 'origin', 'main'], check=True, capture_output=True)

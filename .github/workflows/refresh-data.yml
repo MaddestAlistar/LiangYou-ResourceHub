@@ -47,7 +47,7 @@ jobs:
         id: collect
         continue-on-error: true
         env:
-          FORCE_REFRESH: ${{ github.event_name != 'schedule' }}
+          FORCE_REFRESH: ${{ github.event_name == 'workflow_dispatch' }}
           PREDICT_FUN_API_TOKEN: ${{ secrets.PREDICT_FUN_API_TOKEN }}
         run: |
           if [ "$FORCE_REFRESH" = "true" ]; then
