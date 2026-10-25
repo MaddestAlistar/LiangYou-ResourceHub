@@ -36,12 +36,14 @@ def moment(value):
         return None
 
 
-def fetch_categories(api_key, pages=12):
+def fetch_categories(api_key, pages=8, tag_id=None):
     """Bounded cursor pagination and retry; never include credentials in errors."""
     cursor, seen = None, set()
     all_categories = []
     for _ in range(pages):
         query = {"first": 100, "status": "OPEN"}
+        if tag_id is not None:
+            query["tagIds"] = str(tag_id)
         if cursor:
             query["after"] = cursor
         request = Request(BASE + "?" + urlencode(query), headers={**HEADERS, "x-api-key": api_key})
@@ -65,6 +67,46 @@ def fetch_categories(api_key, pages=12):
         seen.add(next_cursor)
         cursor = next_cursor
     return all_categories
+
+
+
+def get_sports_categories(api_key):
+    """Use real market tags to prevent LoL/NBA from disappearing between pagination windows."""
+    all_categories = fetch_categories(api_key, pages=8)
+    selected_tags = []
+    try:
+        request = Request("https://api.predict.fun/v1/tags",
+                          headers={**HEADERS, "x-api-key": api_key})
+        with urlopen(request, timeout=20) as response:
+            payload = json.load(response)
+        if isinstance(payload, dict) and payload.get("success") is True:
+            for tag in payload.get("data") or []:
+                if not isinstance(tag, dict) or tag.get("id") is None:
+                    continue
+                name = str(tag.get("name") or "").strip()
+                if re.fullmatch(
+                    r"LoL|League of Legends|Worlds|NBA|Basketball|Soccer|Football|"
+                    r"CS2|Counter-Strike(?: 2)?|Dota ?2|NFL|MLB|ATP|WTA|Tennis|"
+                    r"Premier League|Champions League|La Liga|Bundesliga|Serie A",
+                    name, flags=re.I
+                ):
+                    selected_tags.append((name, tag["id"]))
+    except Exception:
+        # A broken optional tag index must never break the existing global feed.
+        print("Predict.fun tags index unavailable, global categories remain usable")
+    if selected_tags:
+        print("Predict.fun focused tags: " + ", ".join(name for name, _ in selected_tags[:20]))
+    unique = {str(c.get("id") or c.get("slug")): c for c in all_categories if isinstance(c, dict)}
+    for label, tag_id in selected_tags[:18]:
+        try:
+            matched = fetch_categories(api_key, pages=3, tag_id=tag_id)
+        except Exception:
+            print("Predict.fun tag unavailable: " + label)
+            continue
+        for category in matched:
+            if isinstance(category, dict):
+                unique[str(category.get("id") or category.get("slug"))] = category
+    return list(unique.values())
 
 
 def category_type(category):
@@ -233,7 +275,7 @@ def main():
     if not key:
         raise SystemExit("Predict.fun API token is not configured; existing snapshot preserved")
     now = dt.datetime.now(UTC)
-    categories = fetch_categories(key)
+    categories = get_sports_categories(key)
     matched = {}
     for category in categories:
         event = normalize(category, now)
