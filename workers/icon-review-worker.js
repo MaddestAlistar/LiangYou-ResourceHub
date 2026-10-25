@@ -1,3 +1,4 @@
+import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
 import { publishIcon, withdrawIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
 // Cloudflare Worker · Icon Review Queue
 // Secrets: GITHUB_TOKEN (fine-grained Contents: Read and write, restricted to review repository)
@@ -29,7 +30,7 @@ export default {async fetch(request,env){
    const offset=Math.max(0,Number.parseInt(url.searchParams.get("cursor")||"0",10)||0);
    const metas=all.slice(offset,offset+30);
    const items=await Promise.all(metas.map(async x=>{
-    try{const res=await gh("pending/"+encodeURIComponent(x.name));if(!res.ok)return null;const obj=await res.json();const m=JSON.parse(decode(obj.content));return {...m,metaPath:"pending/"+x.name,metaSha:obj.sha,imageUrl:"https://raw.githubusercontent.com/"+env.REVIEW_REPO+"/main/"+m.filename.split("/").map(encodeURIComponent).join("/")};}catch{return null}
+    try{const res=await gh("pending/"+encodeURIComponent(x.name));if(!res.ok)return null;const obj=await res.json();const m=JSON.parse(decode(obj.content));return {...await adminMetadata(m,env),metaPath:"pending/"+x.name,metaSha:obj.sha,imageUrl:"https://raw.githubusercontent.com/"+env.REVIEW_REPO+"/main/"+m.filename.split("/").map(encodeURIComponent).join("/")};}catch{return null}
    }));
    return reply({ok:true,items:items.filter(Boolean),nextCursor:offset+30<all.length?offset+30:null,total:all.length},200,origin);
   }
@@ -66,7 +67,7 @@ export default {async fetch(request,env){
    const content=encode(JSON.stringify(meta,null,2)+"\n");
    const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: "+status+" "+meta.name,content,sha:item.sha})});
    if(!saved.ok)return reply({error:status==="approved"?"正式库已发布，但审核状态未保存。请刷新后再次点击通过，系统会核对已有发布，不会重复入库":status==="withdrawn"?"正式库已下架，但审核状态未保存。请刷新后再次点击下架，系统会核对已有结果":"审核状态保存失败，请刷新后重试",status:saved.status},502,origin);
-   return reply({ok:true,status,item:meta,publicationVerified:status==="approved",withdrawalVerified:status==="withdrawn"},200,origin);
+   return reply({ok:true,status,item:await adminMetadata(meta,env),publicationVerified:status==="approved",withdrawalVerified:status==="withdrawn"},200,origin);
   }
   return reply({error:"Method not allowed"},405,origin);
  }
@@ -75,6 +76,8 @@ export default {async fetch(request,env){
  const ct=request.headers.get("Content-Type")||"";if(!ct.includes("multipart/form-data"))return reply({error:"Expected multipart form"},400,origin);
  const len=Number(request.headers.get("Content-Length")||0);if(len>11*1024*1024)return reply({error:"File too large"},413,origin);
  let form;try{form=await request.formData()}catch{return reply({error:"Invalid form"},400,origin)}
+ const email=String(form.get("email")||"").trim();
+ if(!validEmail(email))return reply({error:"邮箱格式不正确，请修改或留空 / Invalid email"},400,origin);
  const file=form.get("file"),name=String(form.get("name")||"").trim(),author=String(form.get("author")||"").trim(),notes=String(form.get("notes")||"").slice(0,600),kind=String(form.get("kind")||"");
  if(!(file instanceof File)||!name||name.length>60||!author||author.length>100)return reply({error:"Missing or invalid fields"},400,origin);
  if(file.size>10*1024*1024||file.size===0)return reply({error:"Maximum file size is 10 MB"},413,origin);
@@ -92,13 +95,15 @@ export default {async fetch(request,env){
  if(!valid||(ext==="gif"?(w!==h||w<320||w>480):(w!==720||h!==720)))return reply({error:ext==="gif"?"GIF must be square, 320–480 px":"Static icon must be 720 × 720 px"},400,origin);
  const safe=name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g,"-").slice(0,48)||"icon";
  const id=new Date().toISOString().replace(/[-:.TZ]/g,"")+"-"+crypto.randomUUID().slice(0,8);
+ let contactEmailEncrypted;
+ try{contactEmailEncrypted=await sealEmail(email,id,env)}catch{return reply({error:"邮箱暂时无法安全保存，请稍后重试或留空邮箱后提交"},503,origin)}
  const base="pending/"+safe+"-"+id;const b64=(()=>{let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)})();
  const api="https://api.github.com/repos/"+env.REVIEW_REPO+"/contents/";
  const headers={"Authorization":"Bearer "+env.GITHUB_TOKEN,"Accept":"application/vnd.github+json","Content-Type":"application/json","User-Agent":"LiangYou-Icon-Review","X-GitHub-Api-Version":"2022-11-28"};
  const put=async(path,content)=>fetch(api+path,{method:"PUT",headers,body:JSON.stringify({message:"queue: "+safe+" ("+id+")",content})});
  const uploaded=await put(base+"."+ext,b64);
  if(!uploaded.ok)return reply({error:"GitHub upload failed",status:uploaded.status},502,origin);
- const metadata={id,name,author,kind,notes,filename:base+"."+ext,bytes:file.size,width:w,height:h,submittedAt:new Date().toISOString(),status:"pending"};
+ const metadata={id,name,author,kind,notes,...(contactEmailEncrypted?{contactEmailEncrypted}:{}),filename:base+"."+ext,bytes:file.size,width:w,height:h,submittedAt:new Date().toISOString(),status:"pending"};
  const meta=await put(base+".json",btoa(unescape(encodeURIComponent(JSON.stringify(metadata,null,2)))));
  if(!meta.ok)return reply({error:"Image uploaded but metadata failed",id},502,origin);
  return reply({ok:true,id,reviewUrl:"https://github.com/"+env.REVIEW_REPO+"/tree/main/pending"},201,origin);
