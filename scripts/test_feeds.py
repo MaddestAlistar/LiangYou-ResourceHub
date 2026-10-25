@@ -127,6 +127,10 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(record["provider"], "predict")
         self.assertAlmostEqual(record["outcomes"][0]["probability"], .61)
         self.assertAlmostEqual(record["outcomes"][1]["probability"], .39)
+        self.assertAlmostEqual(record["outcomes"][0]["best_bid"], .60)
+        self.assertAlmostEqual(record["outcomes"][0]["best_ask"], .62)
+        self.assertIsNone(record["best_of"])
+        self.assertIsNone(record["competition"])
         category["markets"][0]["marketType"] = "SPORTS_SPREAD"
         self.assertIsNone(predict.normalize(category, NOW))
         category["markets"][0]["marketType"] = "SPORTS_MONEYLINE"
@@ -135,6 +139,26 @@ class FeedRules(unittest.TestCase):
         category["markets"][0]["outcomes"][0]["bestAsk"]["price"] = .62
         category.pop("startsAt")
         self.assertIsNone(predict.normalize(category, NOW))
+
+    def test_predict_rich_metadata_uses_only_real_match_fields(self):
+        category = {
+            "id": 88, "slug": "lol-team-a-team-b-2026-10-25",
+            "title": "LoL: Team A vs Team B (BO3) - Worlds Group Stage",
+            "status": "OPEN", "startsAt": "2026-10-25T13:00:00Z",
+            "variantDetails": {"sports": {
+                "teams": [{"name": "Team A"}, {"name": "Team B"}],
+                "scoreboard": {"bestOf": 3}}},
+            "markets": [{"id": 200, "marketType": "SPORTS_MONEYLINE", "tradingStatus": "OPEN",
+                "outcomes": [
+                    {"name": "Team A", "bestBid": {"price": .48}, "bestAsk": {"price": .50}},
+                    {"name": "Team B", "bestBid": {"price": .50}, "bestAsk": {"price": .52}}
+                ]}]
+        }
+        event = predict.normalize(category, NOW)
+        self.assertIsNotNone(event)
+        self.assertEqual(event["best_of"], 3)
+        self.assertEqual(event["competition"], "Worlds Group Stage")
+        self.assertEqual(event["outcomes"][0]["best_ask"], .50)
 
     def test_predict_sports_skips_map_or_bad_outcomes(self):
         category = {

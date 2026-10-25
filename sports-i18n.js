@@ -117,6 +117,9 @@
       timeUnknown: '时间待确认', timezone: '北京时间',
       prediction: '赛前市场隐含概率', source: '查看市场 ↗',
       sourcesHeading: '数据来源', allSources: '全部来源',
+      richHint: 'Predict.fun 详细模式：展示赛制、赛事阶段及可展开的双边报价；数据定时采集，非实时。',
+      preMatch: '赛前胜负', details: '展开买卖报价详情', bestBid: '最高买价', bestAsk: '最低卖价',
+      asOf: '采集时间', quoteNote: '价格对应市场隐含概率，并非官方胜率或传统博彩公司赔率。买卖报价可能存在价差。',
       sourceAria: '打开赛事数据来源：',
       vs: '对阵', draw: '平局', match: '赛事',
       total: n => '收录 ' + n + ' 场', current: n => '当前显示 ' + n + ' 场',
@@ -144,6 +147,9 @@
       timeUnknown: 'Time TBD', timezone: 'UTC+8',
       prediction: 'Pre-match implied probability', source: 'View market ↗',
       sourcesHeading: 'Sources', allSources: 'All sources',
+      richHint: 'Predict.fun detail view: format, tournament stage and expandable bid/ask quotes. Snapshots are not live.',
+      preMatch: 'Pre-match winner', details: 'Show bid / ask quotes', bestBid: 'Best bid', bestAsk: 'Best ask',
+      asOf: 'Captured', quoteNote: 'Quotes imply market probabilities, not official win odds or bookmaker prices. Bid and ask can differ.',
       sourceAria: 'Open prediction market source for ',
       vs: 'vs', draw: 'Draw', match: 'Match',
       total: n => n + ' matches', current: n => n + ' shown',
@@ -223,5 +229,5 @@
     return text;
   }
 
-  window.LiangYouSportsI18n = Object.freeze({ ui, team, league, title });
+  window.LiangYouSportsI18n = Object.freeze({ ui, team, league, title, stage });
 })();

@@ -239,7 +239,9 @@ def normalize(category, now):
             price = mid_price(outcome)
             if side is None or price is None or side in found:
                 continue
-            found[side] = {"name": side, "probability": price, "market_id": str(market_id)}
+            found[side] = {"name": side, "probability": price, "market_id": str(market_id),
+                           "best_bid": round(float(outcome["bestBid"]["price"]), 4),
+                           "best_ask": round(float(outcome["bestAsk"]["price"]), 4)}
         wanted = teams if len(outcomes) == 2 else [teams[0], "平局", teams[1]]
         if set(found) != set(wanted):
             continue
@@ -253,8 +255,23 @@ def normalize(category, now):
     title = str(category.get("shortTitle") or category.get("title") or "").strip()
     if not title or len(title) > 180:
         title = " vs ".join(teams)
+    # Enrich only with verified public match metadata, never fake live scores.
+    details = category.get("variantDetails") or {}
+    sports = details.get("sports") if isinstance(details, dict) else {}
+    sports = sports if isinstance(sports, dict) else {}
+    scoreboard = sports.get("scoreboard") or {}
+    scoreboard = scoreboard if isinstance(scoreboard, dict) else {}
+    best_of = scoreboard.get("bestOf")
+    if type(best_of) is not int or best_of not in (1, 3, 5, 7):
+        match_format = re.search(r"\bBO([1357])\b", title, re.I)
+        best_of = int(match_format.group(1)) if match_format else None
+    competition = None
+    match_competition = re.search(r"\)\s*[-–]\s*(.+)$", title)
+    if match_competition:
+        candidate = match_competition.group(1).strip()
+        if 2 <= len(candidate) <= 85:
+            competition = candidate
     league = LEAGUES[kind]
-    sports = (category.get("variantDetails") or {}).get("sports") or {}
     for member in (category.get("teams") or sports.get("teams") or []):
         if isinstance(member, dict) and member.get("league"):
             league = str(member["league"])[:64]
@@ -262,6 +279,7 @@ def normalize(category, now):
     return {
         "id": "predict-" + str(category.get("id") or slug),
         "title": title, "category": kind, "league": league,
+        "best_of": best_of, "competition": competition,
         "start_time": when.isoformat(timespec="seconds").replace("+00:00", "Z"),
         "outcomes": selected, "checked_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
         "verification": "open_match_winner_market",

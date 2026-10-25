@@ -23,6 +23,8 @@ assert.equal(tr.league('Premier League 2025', 'football', 'zh'), '英超');
 assert.equal(tr.league('La Liga 2', 'football', 'zh'), '西乙');
 assert.equal(tr.league('Scottish Premier League', 'football', 'zh'), 'Scottish Premier League');
 assert.equal(tr.league('League of Legends', 'lol', 'zh'), '英雄联盟');
+assert.equal(tr.stage('Worlds Group Stage'), '全球总决赛小组赛');
+for(const lang of ['zh','en']) for(const key of ['richHint','preMatch','details','bestBid','bestAsk','asOf','quoteNote']) assert(tr.ui[lang][key]);
 
 const lol = {
   title: "LoL: Top Esports vs Anyone's Legend (BO1) - Worlds Group Stage",
@@ -61,4 +63,8 @@ assert(html.indexOf('sports-i18n.js?') < html.indexOf('sports.js?'), 'Dictionary
 assert(html.includes('data-sports-t="sourceNote"'));
 const ui = readFileSync('sports.js', 'utf8');
 assert(ui.includes('renderStatic()') && ui.includes('translation.title(event, language)'));
+assert(ui.includes("activeSource === 'predict'") && ui.includes('richPredictDetails(event, names)'));
+assert(html.includes('id="sportsSourceHint"') && html.includes('data-sports-t="richHint"'));
+const sportsStyles = readFileSync('sports.css','utf8');
+assert(sportsStyles.includes('.sports-match-rich') && sportsStyles.includes('.sports-quote-row'));
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');

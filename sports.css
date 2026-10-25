@@ -182,3 +182,41 @@
 .sports-match-bottom a{margin-left:auto}
 @media(max-width:500px){.sports-source-toolbar{gap:6px;margin-bottom:12px}.sports-source-label{width:100%;margin-bottom:1px}.sports-source-btn{font-size:10px;padding:6px 10px}.sports-match-bottom{gap:6px;flex-wrap:wrap}.sports-match-bottom .sports-provider{order:0}.sports-match-bottom>a{order:2}}
 @media(prefers-reduced-motion:reduce){.sports-source-btn{transition:none}}
+
+
+/* Predict.fun: reveal richer match intelligence only when the source tab is selected. */
+.sports-source-hint {position:relative;margin:0 0 13px;padding:10px 13px;border:1px solid rgba(111,180,210,.27);
+  border-radius:11px;background:linear-gradient(115deg,rgba(22,63,89,.35),rgba(20,28,43,.35));
+  color:#b9d3e1;font-size:11px;line-height:1.7}
+.sports-source-hint[hidden]{display:none!important}
+.sports-match-rich{border-color:rgba(107,177,207,.31);background:linear-gradient(145deg,rgba(22,35,54,.96),rgba(17,23,35,.94))}
+.sports-match-rich h3{font-size:15px;line-height:1.45;margin:11px 0 9px;min-height:auto;-webkit-line-clamp:2}
+.sports-rich-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 11px}
+.sports-rich-tag{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;
+  max-width:100%;border:1px solid rgba(141,165,191,.23);border-radius:7px;
+  background:rgba(115,139,174,.1);color:#cbd9e7;font-size:10px;font-weight:650;line-height:1.4}
+.sports-rich-tag-primary{color:#a6e2e2;border-color:rgba(86,196,187,.3);background:rgba(50,148,147,.13)}
+.sports-quote-details{margin:10px 0 11px;border:1px solid rgba(112,155,185,.25);
+  background:rgba(13,25,40,.6);border-radius:11px;overflow:hidden}
+.sports-quote-details summary{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  list-style:none;cursor:pointer;min-height:35px;padding:9px 12px;font-size:11px;
+  font-weight:650;color:#b7d6e6;user-select:none}
+.sports-quote-details summary::-webkit-details-marker{display:none}
+.sports-quote-details summary:focus-visible{outline:2px solid #9bdae6;outline-offset:-3px}
+.sports-quote-chevron{font-size:19px;line-height:12px;transition:transform .18s}
+.sports-quote-details[open] .sports-quote-chevron{transform:rotate(180deg)}
+.sports-quote-content{padding:4px 12px 12px;border-top:1px solid rgba(140,168,191,.16)}
+.sports-quote-row{display:grid;grid-template-columns:minmax(0,1fr) 67px 67px;
+  align-items:center;column-gap:8px;padding:9px 0}
+.sports-quote-row+.sports-quote-row{border-top:1px solid rgba(140,168,191,.12)}
+.sports-quote-team{min-width:0;overflow-wrap:anywhere;font-size:11px;color:#e1eaf2;font-weight:600}
+.sports-quote-number{display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-variant-numeric:tabular-nums}
+.sports-quote-number small{color:#8da5bb;font-size:9px;white-space:nowrap}
+.sports-quote-number b{color:#e1d5be;font-size:13px;font-weight:700}
+.sports-quote-number:last-child b{color:#9dd3e8}
+.sports-quote-asof,.sports-quote-note{margin:7px 0 0!important;color:#92a8bb!important;font-size:10px!important;line-height:1.55!important}
+.sports-match-rich .sports-prob,.sports-match-rich .sports-three{margin-top:10px}
+@media(max-width:420px){.sports-rich-tag{font-size:9.5px}.sports-match-rich h3{font-size:14px}
+ .sports-quote-row{grid-template-columns:minmax(0,1fr) 61px 61px;gap:6px}
+ .sports-quote-content{padding-inline:10px}}
+@media(prefers-reduced-motion:reduce){.sports-quote-chevron{transition:none}}
