@@ -21,13 +21,13 @@
   <link rel="stylesheet" href="./style.css?v=4.1">
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=20261025.1">
-  <link rel="stylesheet" href="./sports.css?v=20261026.1">
+  <link rel="stylesheet" href="./sports.css?v=20261026.2">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=6" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=20261024.4" defer></script>
-  <script src="./sports-i18n.js?v=20261026.1" defer></script>
-  <script src="./sports.js?v=20261026.1" defer></script>
+  <script src="./sports-i18n.js?v=20261026.2" defer></script>
+  <script src="./sports.js?v=20261026.2" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
 .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
@@ -134,7 +134,7 @@
           <button type="button" class="sports-source-btn" data-source-filter="predict" aria-pressed="false">Predict.fun</button>
           <button type="button" class="sports-source-btn" data-source-filter="polymarket" aria-pressed="false">Polymarket</button>
         </div>
-        <p class="sports-source-hint" id="sportsSourceHint" data-sports-t="richHint" hidden>赛制、赛事阶段和买卖报价仅在 Predict.fun 详情模式展示；数据定时采集，非实时盘口。</p>
+        <p class="sports-source-hint" id="sportsSourceHint" data-sports-t="richHint" hidden>切换 Predict.fun 或 Polymarket 可查看更多市场数据；数据定时采集，非实时盘口。</p>
         <div class="sports-grid" id="sportsGrid" aria-live="polite"><div class="sports-empty"><strong>正在读取赛事数据</strong>首次同步前不会展示示意赔率或虚构比赛。</div></div>
         <div class="sports-list-actions" id="sportsListActions" hidden>
           <span id="sportsShowing" aria-live="polite"></span>

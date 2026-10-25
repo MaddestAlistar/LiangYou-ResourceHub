@@ -170,6 +170,20 @@ for(const event of sports.events) {
   assert([2,3].includes(event.outcomes.length));
   assert(event.outcomes.every(o => o.market_id && Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1));
 }
+const predict = JSON.parse(text('data/predict-sports.json'));
+assert.equal(predict.source_type,'prediction_market');
+assert(Array.isArray(predict.events));
+for (const event of [...sports.events,...predict.events]) {
+  if (event.stats) for(const name of ['volume_24h_usd','volume_total_usd','liquidity_usd']) {
+    if(name in event.stats) assert(Number.isFinite(event.stats[name]) && event.stats[name] > 0);
+  }
+  for(const outcome of event.outcomes) {
+    assert(!('_clob_token' in outcome) && !('_clob_ref' in outcome),'CLOB internal tokens leaked');
+    if('best_bid' in outcome || 'best_ask' in outcome) {
+      assert(outcome.best_bid > 0 && outcome.best_ask < 1 && outcome.best_bid <= outcome.best_ask);
+    }
+  }
+}
 for (const platform of ['cn','us','android','steam','epic']) assert(html.includes('data-daily-region="' + platform + '"'));
 assert(html.includes('id="dailyFreeMore"') && html.includes('id="dailyFreeRefresh"'));
 const feedStatus=JSON.parse(text('data/update-status.json'));

@@ -220,3 +220,23 @@
  .sports-quote-row{grid-template-columns:minmax(0,1fr) 61px 61px;gap:6px}
  .sports-quote-content{padding-inline:10px}}
 @media(prefers-reduced-motion:reduce){.sports-quote-chevron{transition:none}}
+
+/* Two-source market dashboard: compact three-column stats, responsive detail rows. */
+.sports-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 8px}
+.sports-metric{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:4px;
+  border:1px solid rgba(121,156,176,.25);border-radius:10px;padding:9px 10px;
+  background:rgba(14,29,45,.55)}
+.sports-metric span{font-size:10px;line-height:1.4;color:#9cb5c7;overflow-wrap:anywhere}
+.sports-metric strong{font-size:15px;color:#ebdfbb;line-height:1.3;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.sports-quote-number em{font-style:normal;font-size:9px;font-weight:400;color:#91a8bd;white-space:nowrap}
+.sports-quote-missing{margin:10px 0!important;font-size:11px!important;line-height:1.5!important;color:#a3b8c8!important}
+.sports-match-rich:not(.sports-provider-predict){border-color:rgba(214,178,113,.25)}
+@media(max-width:420px){
+ .sports-metrics{gap:5px}
+ .sports-metric{padding:8px 7px}
+ .sports-metric span{font-size:9px}
+ .sports-metric strong{font-size:13px}
+ .sports-quote-number em{font-size:8px}
+}
+@media(max-width:355px){.sports-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}

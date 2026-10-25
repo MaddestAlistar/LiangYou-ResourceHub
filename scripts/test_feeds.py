@@ -101,6 +101,53 @@ class FeedRules(unittest.TestCase):
         event['markets'].pop()
         self.assertIsNone(sports.normal_market(event,'football'))
 
+
+    def test_polymarket_selected_market_stats_are_not_mixed_with_side_bets(self):
+        event = self.event()
+        market = event["markets"][0]
+        market.update({"volume24hr": 1280.5, "volumeNum": 9200,
+                       "liquidityNum": 840, "clobTokenIds": ["12345678901234567890", "98765432109876543210"]})
+        event["markets"].append({"id": "side", "volume24hr": 999999, "volumeNum": 999999})
+        row = sports.normalize(event, "lol", "League of Legends", NOW)
+        self.assertEqual(row["stats"]["volume_24h_usd"], 1280.5)
+        self.assertEqual(row["stats"]["volume_total_usd"], 9200)
+        self.assertEqual(row["stats"]["liquidity_usd"], 840)
+        self.assertEqual(row["outcomes"][0]["_clob_token"], "12345678901234567890")
+        self.assertNotIn("best_bid", row["outcomes"][0])
+
+    def test_polymarket_orderbook_filters_invalid_prices_and_selects_best(self):
+        raw = {"bids": [{"price":"0.4","size":"11"}, {"price":"0.49","size":"22"}],
+               "asks": [{"price":"0.55","size":"10"}, {"price":"0.53","size":"9"}]}
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self): return json.dumps(raw).encode()
+        with patch.object(sports, "urlopen", return_value=Resp()):
+            result = sports.book_quote("12345678901234567890")
+        self.assertEqual(result["best_bid"], .49)
+        self.assertEqual(result["best_ask"], .53)
+        self.assertEqual(result["best_bid_size"], 22)
+        self.assertIsNone(sports.book_quote("not-a-token"))
+
+    def test_polymarket_cleans_internal_token_ids_when_book_unavailable(self):
+        rows = [{"outcomes":[{"name":"A","_clob_token":"12345678901234567890"}]}]
+        with patch.object(sports, "book_quote", return_value=None):
+            self.assertEqual(sports.enrich_books(rows), 0)
+        self.assertNotIn("_clob_token", rows[0]["outcomes"][0])
+        self.assertNotIn("_clob_ref", rows[0]["outcomes"][0])
+
+    def test_predict_stats_accept_only_valid_positive_amounts(self):
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self): return json.dumps({"success": True,
+                "data":{"volume24hUsd":123.4,"volumeTotalUsd":2345,
+                        "totalLiquidityUsd":0}}).encode()
+        with patch.object(predict, "urlopen", return_value=Resp()):
+            stats = predict.market_statistics("dummy", "3333")
+        self.assertEqual(stats, {"volume_24h_usd":123.4,"volume_total_usd":2345.0})
+        self.assertEqual(predict.market_statistics("dummy", "oops"), {})
+
     def test_scheduler_uses_oldest_successful_region_not_generation_time(self):
         snapshot = {'generated_at':'2026-10-24T11:30:00Z','regions':{'cn':{'verified_at':'2026-10-24T11:00:00Z'},'us':{'verified_at':'2026-10-24T07:00:00Z'}}}
         self.assertTrue(is_due(verified_time('apple',snapshot),NOW,3))
@@ -159,6 +206,7 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(event["best_of"], 3)
         self.assertEqual(event["competition"], "Worlds Group Stage")
         self.assertEqual(event["outcomes"][0]["best_ask"], .50)
+        self.assertTrue("best_bid_size" not in event["outcomes"][0])
 
     def test_predict_sports_skips_map_or_bad_outcomes(self):
         category = {

@@ -7,6 +7,7 @@ Only real open match-winner markets are published. Missing categories stay empty
 from __future__ import annotations
 
 import datetime as dt
+import math
 import json
 from pathlib import Path
 import re
@@ -97,6 +98,113 @@ def get_by_slug(slug):
         return []
 
 
+def money(value):
+    """Positive, finite USD figure; never invent volume or liquidity."""
+    try:
+        number = float(value)
+    except (ValueError, TypeError):
+        return None
+    return round(number, 2) if math.isfinite(number) and number > 0 else None
+
+
+def market_stats(markets):
+    """Aggregate selected winner market(s), not unrelated map/spread markets."""
+    out = {}
+    fields = {
+        "volume_24h_usd": ("volume24hr", "volume24hrClob"),
+        "volume_total_usd": ("volumeNum", "volume"),
+        "liquidity_usd": ("liquidityNum", "liquidity"),
+    }
+    markets = list(markets)
+    if not markets:
+        return out
+    for name, candidates in fields.items():
+        values = []
+        for market in markets:
+            value = next((money(market[key]) for key in candidates
+                          if money(market.get(key)) is not None), None)
+            if value is None:
+                break
+            values.append(value)
+        if len(values) == len(markets):
+            out[name] = round(sum(values), 2)
+    return out
+
+
+def book_quote(token_id):
+    """Optional best bid/ask from Polymarket public CLOB; no auth or trades."""
+    token_id = str(token_id or "")
+    if not re.fullmatch(r"\d{16,90}", token_id):
+        return None
+    url = "https://clob.polymarket.com/book?" + urlencode({"token_id": token_id})
+    try:
+        with urlopen(Request(url, headers={"Accept": "application/json",
+                 "User-Agent": "LiangYou-ResourceHub-Sports/2.0"}), timeout=8) as response:
+            data = json.load(response)
+        if not isinstance(data, dict):
+            return None
+        def choose(rows, highest):
+            prices = []
+            for row in rows if isinstance(rows, list) else []:
+                if not isinstance(row, dict):
+                    continue
+                try:
+                    price = float(row.get("price"))
+                    size = float(row.get("size"))
+                except (ValueError, TypeError):
+                    continue
+                if 0 < price < 1 and math.isfinite(price) and math.isfinite(size) and size > 0:
+                    prices.append((price, size))
+            return (max if highest else min)(prices, key=lambda item: item[0]) if prices else None
+        bid = choose(data.get("bids"), True)
+        ask = choose(data.get("asks"), False)
+        if not bid or not ask or bid[0] > ask[0]:
+            return None
+        # Wide, illiquid books are still genuine; display them with a caution.
+        return {"best_bid": round(bid[0], 4), "best_ask": round(ask[0], 4),
+                "best_bid_size": round(bid[1], 2), "best_ask_size": round(ask[1], 2)}
+    except Exception:
+        return None
+
+
+def enrich_books(selection):
+    unique = {}
+    for event in selection:
+        for outcome in event["outcomes"]:
+            token = outcome.pop("_clob_token", None)
+            if token and token not in unique:
+                unique[token] = None
+            if token:
+                outcome["_clob_ref"] = token
+    if not unique:
+        return 0
+    def collect(token):
+        return token, book_quote(token)
+    # Missing or geo-blocked CLOB must never break the free Gamma feed.
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for token, result in pool.map(collect, unique):
+            unique[token] = result
+    hits = 0
+    for event in selection:
+        for outcome in event["outcomes"]:
+            token = outcome.pop("_clob_ref", None)
+            quote = unique.get(token) if token else None
+            if quote:
+                outcome.update(quote)
+                hits += 1
+    return hits
+
+
+def fixture_format(title):
+    found = re.search(r"\bBO([1357])\b", str(title), re.I)
+    return int(found.group(1)) if found else None
+
+
+def fixture_competition(title):
+    found = re.search(r"\)\s*[-–]\s*(.{2,85})$", str(title))
+    return found.group(1).strip() if found else None
+
+
 def normal_market(event, category):
     """Return only a real match-winner market (two-way or football three-way)."""
     title = str(event.get("title") or "").strip()
@@ -137,7 +245,10 @@ def normal_market(event, category):
             continue
         if set(x.lower() for x in names) == {"yes", "no"}:
             if category == "football" and market_kind == "moneyline":
-                binary.append((question, dict(zip((x.lower() for x in names), prices))["yes"], str(market.get("id")), market.get("updatedAt")))
+                token_ids = as_list(market.get("clobTokenIds"))
+                binary.append((question, dict(zip((x.lower() for x in names), prices))["yes"],
+                               str(market.get("id")), market.get("updatedAt"),
+                               market, str(token_ids[0]) if token_ids else None))
             continue
         if any(n.lower() in ("over", "under", "yes", "no") for n in names):
             continue
@@ -146,11 +257,15 @@ def normal_market(event, category):
         score = 2 if market_kind in ("moneyline", "h2h", "match winner") else 0
         if "winner" in question or "win " in question or " vs " in question:
             score += 1
-        candidates.append((score, names, prices, str(market.get("id")), market.get("updatedAt")))
+        candidates.append((score, names, prices, str(market.get("id")), market.get("updatedAt"), market))
     if candidates:
         candidates.sort(key=lambda entry: entry[0], reverse=True)
-        _, names, prices, market_id, changed = candidates[0]
-        return [{"name": n, "probability": round(p, 4), "market_id": market_id, "market_updated_at": changed} for n, p in zip(names, prices)]
+        _, names, prices, market_id, changed, market = candidates[0]
+        tokens = as_list(market.get("clobTokenIds"))
+        return [dict({"name": n, "probability": round(p, 4), "market_id": market_id,
+                      "market_updated_at": changed},
+                     **({"_clob_token": str(tokens[i])} if len(tokens) == len(names) and tokens[i] else {}))
+                for i, (n, p) in enumerate(zip(names, prices))]
     # Many football games expose three separate binary moneyline questions:
     # "Will Team A win?" / "Will the match be a draw?" / "Will Team B win?".
     # Reconstruct only when all 3 outcomes are unambiguously identified.
@@ -165,25 +280,27 @@ def normal_market(event, category):
         return None
     found = {}
     provenance = {}
-    for q, yes, market_id, changed in binary:
+    for q, yes, market_id, changed, market, token in binary:
         a = left.casefold() in q
         b = right.casefold() in q
         if "draw" in q or "tie" in q:
             found["draw"] = yes
-            provenance["draw"] = (market_id, changed)
+            provenance["draw"] = (market_id, changed, token)
         elif a and not b:
             found["left"] = yes
-            provenance["left"] = (market_id, changed)
+            provenance["left"] = (market_id, changed, token)
         elif b and not a:
             found["right"] = yes
-            provenance["right"] = (market_id, changed)
+            provenance["right"] = (market_id, changed, token)
     if set(found) != {"left", "draw", "right"}:
         return None
     probs = [found["left"], found["draw"], found["right"]]
     if not 0.95 <= sum(probs) <= 1.05:
         return None
-    return [{"name": n, "probability": round(p, 4), "market_id": provenance[k][0], "market_updated_at": provenance[k][1]} for n, p, k in
-            zip((left, "平局", right), probs, ("left", "draw", "right"))]
+    return [dict({"name": n, "probability": round(p, 4),
+                  "market_id": provenance[k][0], "market_updated_at": provenance[k][1]},
+                 **({"_clob_token": provenance[k][2]} if provenance[k][2] else {}))
+            for n, p, k in zip((left, "平局", right), probs, ("left", "draw", "right"))]
 
 
 def normalize(event, category, fallback_label, now):
@@ -215,11 +332,15 @@ def normalize(event, category, fallback_label, now):
         league = str(series[0].get("title") or fallback_label)[:60]
     elif isinstance(series, dict):
         league = str(series.get("title") or fallback_label)[:60]
+    selected_markets = [m for m in event.get("markets", []) if
+                        isinstance(m, dict) and str(m.get("id")) in selected_ids]
+    stats = market_stats(selected_markets) if len(selected_markets) == len(selected_ids) else {}
     return {
         "id": str(event.get("id") or slug),
         "title": title,
         "category": category,
-        "league": league,
+        "league": league, "best_of": fixture_format(title),
+        "competition": fixture_competition(title), "stats": stats,
         "start_time": when.isoformat().replace("+00:00", "Z") if when else None,
         "outcomes": outcomes,
         "checked_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
@@ -313,6 +434,9 @@ def main():
             continue
         selection.append(item)
         counts[group] += 1
+
+    quotes = enrich_books(selection)
+    print(f"Polymarket CLOB bid/ask results: {quotes} outcome quotes across {len(selection)} events", flush=True)
 
     if not selection and not all(h["status"] == "ok" for h in health):
         raise SystemExit("Partial source failure with no verified matches; previous snapshot preserved")

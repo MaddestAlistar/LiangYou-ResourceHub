@@ -104,43 +104,62 @@
     return result;
   }
 
-  // Predict.fun has event metadata and outcome-level bid/ask quotes.
-  // Expand this only in the explicit Predict.fun tab to keep the main grid short.
-  function richPredictDetails(event, names) {
+  // Source-specific detail view; "All" remains compact on small phones.
+  const hasNumber = n => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+  function moneyUSD(value) {
+    if (!hasNumber(value)) return '';
+    const locale = language === 'zh' ? 'zh-CN' : 'en-US';
+    return '$' + Intl.NumberFormat(locale, {
+      notation: 'compact', maximumFractionDigits: value < 100 ? 2 : 1
+    }).format(value);
+  }
+  function richMarketDetails(event, names) {
     const labels = copy();
     const tokens = [];
-    if (Number.isInteger(event.best_of) && [1, 3, 5, 7].includes(event.best_of))
+    if (Number.isInteger(event.best_of) && [1,3,5,7].includes(event.best_of))
       tokens.push('BO' + event.best_of);
     if (typeof event.competition === 'string' && event.competition.length <= 85) {
       const translated = language === 'zh' && translation.stage
         ? translation.stage(event.competition) : event.competition;
-      tokens.push(translated);
+      if (translated) tokens.push(translated);
     }
     const chips = '<div class="sports-rich-tags">' +
       '<span class="sports-rich-tag sports-rich-tag-primary">' + esc(labels.preMatch) + '</span>' +
-      tokens.map(v => '<span class="sports-rich-tag">' + esc(v) + '</span>').join('') +
-      '</div>';
-    const quotes = event.outcomes.map((outcome, index) => {
+      tokens.map(v => '<span class="sports-rich-tag">' + esc(v) + '</span>').join('') + '</div>';
+    const stats = event.stats && typeof event.stats === 'object' ? event.stats : {};
+    const metrics = [
+      ['volume_24h_usd',labels.volume24h], ['volume_total_usd',labels.totalVolume],
+      ['liquidity_usd',labels.liquidity]
+    ].filter(([field]) => hasNumber(stats[field]) && stats[field] > 0);
+    const summary = metrics.length ? '<div class="sports-metrics">' +
+      metrics.map(([field,label]) => '<div class="sports-metric"><span>' +
+        esc(label) + '</span><strong>' + esc(moneyUSD(stats[field])) +
+        '</strong></div>').join('') + '</div>' : '';
+    const rows = event.outcomes.map((outcome, index) => {
       const bid = outcome.best_bid, ask = outcome.best_ask;
-      if (typeof bid !== 'number' || typeof ask !== 'number' ||
-          !Number.isFinite(bid) || !Number.isFinite(ask) ||
-          bid < 0 || ask > 1 || bid > ask) return '';
+      if (!hasNumber(bid) || !hasNumber(ask) || bid <= 0 || ask >= 1 || bid > ask)
+        return '';
+      const sizeText = (size) => hasNumber(size) && size > 0
+        ? '<em>' + esc(labels.bookSize) + ' ' + esc(Intl.NumberFormat(
+           language === 'zh' ? 'zh-CN' : 'en-US',{maximumFractionDigits:1}).format(size)) + '</em>' : '';
       return '<div class="sports-quote-row"><span class="sports-quote-team">' +
         esc(names[index]) + '</span><span class="sports-quote-number">' +
-        '<small>' + esc(labels.bestBid) + '</small><b>' + (bid * 100).toFixed(1) +
-        '%</b></span><span class="sports-quote-number">' +
-        '<small>' + esc(labels.bestAsk) + '</small><b>' + (ask * 100).toFixed(1) +
-        '%</b></span></div>';
+        '<small>' + esc(labels.bestBid) + '</small><b>' +
+        (bid * 100).toFixed(1) + '%</b>' + sizeText(outcome.best_bid_size) +
+        '</span><span class="sports-quote-number">' +
+        '<small>' + esc(labels.bestAsk) + '</small><b>' +
+        (ask * 100).toFixed(1) + '%</b>' + sizeText(outcome.best_ask_size) + '</span></div>';
     }).filter(Boolean);
+    const quoteList = rows.length ? rows.join('') :
+      '<p class="sports-quote-missing">' + esc(labels.quotesUnavailable) + '</p>';
     const captured = Number.isFinite(Date.parse(event.checked_at))
       ? '<p class="sports-quote-asof">' + esc(labels.asOf) + ' ' + esc(time(event.checked_at)) + '</p>' : '';
-    const detail = quotes.length === event.outcomes.length && quotes.length >= 2
-      ? '<details class="sports-quote-details"><summary>' + esc(labels.details) +
-        '<span class="sports-quote-chevron" aria-hidden="true">⌄</span></summary>' +
-        '<div class="sports-quote-content">' + quotes.join('') + captured +
-        '<p class="sports-quote-note">' + esc(labels.quoteNote) + '</p></div></details>'
-      : captured;
-    return { chips, detail };
+    // Even when CLOB is unavailable, the collected market statistics remain available.
+    const detail = '<details class="sports-quote-details"><summary>' +
+      esc(labels.details) + '<span class="sports-quote-chevron" aria-hidden="true">⌄</span></summary>' +
+      '<div class="sports-quote-content">' + quoteList + captured +
+      '<p class="sports-quote-note">' + esc(labels.quoteNote) + '</p></div></details>';
+    return {chips, summary, detail};
   }
 
   function eventCard(event) {
@@ -151,11 +170,11 @@
     const url = typeof event.source_url === 'string' &&
       (provider === 'predict' ? /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i : /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i).test(event.source_url)
       ? event.source_url : '';
-    const rich = provider === 'predict' && activeSource === 'predict';
+    const rich = activeSource !== 'all' && activeSource === provider;
     const title = rich ? names[0] + (language === 'zh' ? ' 对阵 ' : ' vs ') +
       names[names.length - 1] : translation.title(event, language);
     const league = translation.league(event.league, event.category, language);
-    const extra = rich ? richPredictDetails(event, names) : {chips:'', detail:''};
+    const extra = rich ? richMarketDetails(event, names) : {chips:'',summary:'',detail:''};
     const prob = event.outcomes.length === 3
       ? '<div class="sports-three">' + names.map((name, i) =>
           '<div class="sports-side"><span>' + esc(name) + '</span><b>' +
@@ -178,7 +197,7 @@
     return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') + '"><div class="sports-match-top"><span>' +
       esc(league || labels.match) + '</span><span>' + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
-      extra.chips + prob + track + extra.detail + '<div class="sports-match-bottom"><span>' +
+      extra.chips + prob + track + extra.summary + extra.detail + '<div class="sports-match-bottom"><span>' +
       esc(labels.prediction) + '</span><span class="sports-provider sports-provider-' + provider + '">' +
       (provider === 'predict' ? 'Predict.fun' : 'Polymarket') + '</span>' +
       (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
@@ -188,7 +207,7 @@
 
   function render() {
     const labels = copy();
-    if (sourceHint) sourceHint.hidden = activeSource !== 'predict';
+    if (sourceHint) sourceHint.hidden = activeSource === 'all';
     if (failed) {
       count.textContent = labels.failed;
       grid.innerHTML = '<div class="sports-empty"><strong>' + esc(labels.unavailableTitle) +

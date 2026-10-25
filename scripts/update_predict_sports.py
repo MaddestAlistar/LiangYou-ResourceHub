@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import datetime as dt
+import math
 import json
 import os
 from pathlib import Path
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -239,9 +241,15 @@ def normalize(category, now):
             price = mid_price(outcome)
             if side is None or price is None or side in found:
                 continue
-            found[side] = {"name": side, "probability": price, "market_id": str(market_id),
-                           "best_bid": round(float(outcome["bestBid"]["price"]), 4),
-                           "best_ask": round(float(outcome["bestAsk"]["price"]), 4)}
+            item = {"name": side, "probability": price, "market_id": str(market_id),
+                    "best_bid": round(float(outcome["bestBid"]["price"]), 4),
+                    "best_ask": round(float(outcome["bestAsk"]["price"]), 4)}
+            for original, renamed in (("bestBid", "best_bid_size"), ("bestAsk", "best_ask_size")):
+                book = outcome.get(original)
+                size = valid_usd(book.get("size")) if isinstance(book, dict) else None
+                if size is not None:
+                    item[renamed] = size
+            found[side] = item
         wanted = teams if len(outcomes) == 2 else [teams[0], "平局", teams[1]]
         if set(found) != set(wanted):
             continue
@@ -288,6 +296,49 @@ def normalize(category, now):
     }
 
 
+def valid_usd(value):
+    try:
+        n = float(value)
+    except (ValueError, TypeError):
+        return None
+    return round(n, 2) if math.isfinite(n) and n > 0 else None
+
+
+def market_statistics(api_key, market_id):
+    market_id = str(market_id or "")
+    if not re.fullmatch(r"\d{1,24}", market_id):
+        return {}
+    url = "https://api.predict.fun/v1/markets/" + market_id + "/stats"
+    req = Request(url, headers={**HEADERS, "x-api-key": api_key})
+    try:
+        with urlopen(req, timeout=12) as response:
+            payload = json.load(response)
+        if not isinstance(payload, dict) or payload.get("success") is not True:
+            return {}
+        data = payload.get("data")
+        if not isinstance(data, dict):
+            return {}
+        fields = {"volume_24h_usd": "volume24hUsd",
+                  "volume_total_usd": "volumeTotalUsd",
+                  "liquidity_usd": "totalLiquidityUsd"}
+        return {out: valid_usd(data[key]) for out, key in fields.items()
+                if valid_usd(data.get(key)) is not None}
+    except Exception:
+        return {}
+
+
+def enrich_statistics(api_key, selection):
+    ids = list(dict.fromkeys(event["outcomes"][0]["market_id"]
+                             for event in selection if event.get("outcomes")))
+    def collect(market_id):
+        return market_id, market_statistics(api_key, market_id)
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        found = dict(pool.map(collect, ids))
+    for event in selection:
+        event["stats"] = found.get(event["outcomes"][0]["market_id"], {})
+    return sum(bool(x) for x in found.values())
+
+
 def main():
     key = os.environ.get("PREDICT_FUN_API_TOKEN", "").strip()
     if not key:
@@ -304,6 +355,8 @@ def main():
         if len(groups[event["category"]]) < 12:
             groups[event["category"]].append(event)
     selected = [event for category in LEAGUES for event in groups[category]]
+    enriched = enrich_statistics(key, selected)
+    print(f"Predict.fun market statistics: {enriched}/{len(selected)} markets with data", flush=True)
     snapshot = {
         "schema": 1, "source": "Predict.fun API", "source_type": "prediction_market",
         "generated_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
