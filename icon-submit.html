@@ -52,7 +52,7 @@ for(const id of ["name","author"])$(id).addEventListener("input",()=>{if($(id).v
 $("submit").addEventListener("click",async()=>{
   const name=$("name").value.trim(),author=$("author").value.trim();
   fieldError("name",name?null:"name");fieldError("author",author?null:"author");
-  if(!valid)fieldError("file",$("file").files.length?"mismatch":"file");
+  if(!valid&&!(!$("file-error").hidden))fieldError("file",$("file").files.length?"unreadable":"file");
   if(!name||!author||!valid){status("incomplete",true);const first=document.querySelector(".is-invalid");first?.focus();return}
   if(UPLOAD_ENDPOINT){
     const fd=new FormData();fd.append("file",$("file").files[0]);fd.append("name",name);fd.append("author",author);fd.append("kind",$("kind").value);fd.append("notes",$("notes").value.trim());
