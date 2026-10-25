@@ -2,14 +2,14 @@
   "schema": 1,
   "source": "Polymarket Gamma API",
   "source_type": "prediction_market",
-  "generated_at": "2026-10-24T21:47:03Z",
+  "generated_at": "2026-10-25T01:42:31Z",
   "interval_hours": 2,
   "status": "ok",
   "sources": [
     {
       "tag": "league-of-legends",
       "status": "ok",
-      "received": 46
+      "received": 50
     },
     {
       "tag": "nba",
@@ -39,7 +39,7 @@
     {
       "tag": "dota-2",
       "status": "ok",
-      "received": 21
+      "received": 23
     },
     {
       "tag": "nfl",
@@ -49,7 +49,7 @@
     {
       "tag": "mlb",
       "status": "ok",
-      "received": 52
+      "received": 41
     },
     {
       "tag": "atp",
@@ -64,174 +64,6 @@
   ],
   "events": [
     {
-      "id": "1208439",
-      "title": "Heat vs. Hornets",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-24T22:00:00Z",
-      "outcomes": [
-        {
-          "name": "Heat",
-          "probability": 0.615,
-          "market_id": "5847746",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Hornets",
-          "probability": 0.385,
-          "market_id": "5847746",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-mia-cha-2026-10-24"
-    },
-    {
-      "id": "1208440",
-      "title": "Nets vs. Cavaliers",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-24T23:30:00Z",
-      "outcomes": [
-        {
-          "name": "Nets",
-          "probability": 0.195,
-          "market_id": "5847749",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Cavaliers",
-          "probability": 0.805,
-          "market_id": "5847749",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-bkn-cle-2026-10-24"
-    },
-    {
-      "id": "1208441",
-      "title": "Bucks vs. 76ers",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-24T23:30:00Z",
-      "outcomes": [
-        {
-          "name": "Bucks",
-          "probability": 0.165,
-          "market_id": "5847752",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "76ers",
-          "probability": 0.835,
-          "market_id": "5847752",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-mil-phi-2026-10-24"
-    },
-    {
-      "id": "1208443",
-      "title": "Wizards vs. Bulls",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-25T00:00:00Z",
-      "outcomes": [
-        {
-          "name": "Wizards",
-          "probability": 0.475,
-          "market_id": "5847758",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Bulls",
-          "probability": 0.525,
-          "market_id": "5847758",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-was-chi-2026-10-24"
-    },
-    {
-      "id": "1208444",
-      "title": "Spurs vs. Mavericks",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-25T00:00:00Z",
-      "outcomes": [
-        {
-          "name": "Spurs",
-          "probability": 0.865,
-          "market_id": "5847761",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Mavericks",
-          "probability": 0.135,
-          "market_id": "5847761",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-sas-dal-2026-10-24"
-    },
-    {
-      "id": "1208442",
-      "title": "Rockets vs. Hawks",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-25T00:30:00Z",
-      "outcomes": [
-        {
-          "name": "Rockets",
-          "probability": 0.495,
-          "market_id": "5847755",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Hawks",
-          "probability": 0.505,
-          "market_id": "5847755",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-hou-atl-2026-10-24"
-    },
-    {
-      "id": "1210114",
-      "title": "Pelicans vs. Nuggets",
-      "category": "basketball",
-      "league": "NBA 2026",
-      "start_time": "2026-10-25T01:00:00Z",
-      "outcomes": [
-        {
-          "name": "Pelicans",
-          "probability": 0.195,
-          "market_id": "5861655",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Nuggets",
-          "probability": 0.805,
-          "market_id": "5861655",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/nba-nop-den-2026-10-24"
-    },
-    {
       "id": "1210115",
       "title": "Warriors vs. Suns",
       "category": "basketball",
@@ -242,16 +74,16 @@
           "name": "Warriors",
           "probability": 0.225,
           "market_id": "5861664",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Suns",
           "probability": 0.775,
           "market_id": "5861664",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nba-gsw-phx-2026-10-24"
     },
@@ -264,18 +96,18 @@
       "outcomes": [
         {
           "name": "Lakers",
-          "probability": 0.705,
+          "probability": 0.685,
           "market_id": "5911655",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Jazz",
-          "probability": 0.295,
+          "probability": 0.315,
           "market_id": "5911655",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nba-lal-uta-2026-10-25"
     },
@@ -288,18 +120,18 @@
       "outcomes": [
         {
           "name": "Pacers",
-          "probability": 0.675,
+          "probability": 0.715,
           "market_id": "5911658",
-          "market_updated_at": "2026-10-24T21:36:39.021415Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Nets",
-          "probability": 0.325,
+          "probability": 0.285,
           "market_id": "5911658",
-          "market_updated_at": "2026-10-24T21:36:39.021415Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nba-ind-bkn-2026-10-25"
     },
@@ -312,18 +144,18 @@
       "outcomes": [
         {
           "name": "Magic",
-          "probability": 0.265,
+          "probability": 0.255,
           "market_id": "5911661",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Knicks",
-          "probability": 0.735,
+          "probability": 0.745,
           "market_id": "5911661",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nba-orl-nyk-2026-10-25"
     },
@@ -336,116 +168,188 @@
       "outcomes": [
         {
           "name": "Raptors",
-          "probability": 0.405,
+          "probability": 0.455,
           "market_id": "5911664",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Timberwolves",
-          "probability": 0.595,
+          "probability": 0.545,
           "market_id": "5911664",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nba-tor-min-2026-10-25"
     },
     {
-      "id": "1243366",
-      "title": "Counter-Strike: BESTIA vs Imperial (BO3) - Circuit X Curitiba Playoffs",
-      "category": "esports",
-      "league": "Counter Strike",
-      "start_time": "2026-10-24T21:55:00Z",
+      "id": "1215093",
+      "title": "Clippers vs. Thunder",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-25T23:00:00Z",
       "outcomes": [
         {
-          "name": "BESTIA",
-          "probability": 0.355,
-          "market_id": "6101189",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Clippers",
+          "probability": 0.105,
+          "market_id": "5911667",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Imperial",
-          "probability": 0.645,
-          "market_id": "6101189",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Thunder",
+          "probability": 0.895,
+          "market_id": "5911667",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/cs2-bst-imp11-2026-10-24"
+      "source_url": "https://polymarket.com/event/nba-lac-okc-2026-10-25"
     },
     {
-      "id": "1240692",
-      "title": "Counter-Strike: Grêmio Esports vs Yawara Esports (BO3) - CCT South America Series 7 Playoffs",
-      "category": "esports",
-      "league": "Counter Strike",
-      "start_time": "2026-10-24T22:00:00Z",
+      "id": "1215094",
+      "title": "Pistons vs. 76ers",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-25T23:30:00Z",
       "outcomes": [
         {
-          "name": "Grêmio Esports",
-          "probability": 0.345,
-          "market_id": "6082003",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Pistons",
+          "probability": 0.47,
+          "market_id": "5911670",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Yawara Esports",
-          "probability": 0.655,
-          "market_id": "6082003",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "76ers",
+          "probability": 0.53,
+          "market_id": "5911670",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/cs2-grmioe-yaw-2026-10-24"
+      "source_url": "https://polymarket.com/event/nba-det-phi-2026-10-25"
     },
     {
-      "id": "1247520",
-      "title": "Counter-Strike: Iowa Stormboar vs Chicken Coop Esports (BO3) - CCT North America Cup #1 Playoffs",
-      "category": "esports",
-      "league": "Counter Strike",
-      "start_time": "2026-10-24T23:15:00Z",
+      "id": "1216324",
+      "title": "Grizzlies vs. Kings",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-26T01:00:00Z",
       "outcomes": [
         {
-          "name": "Iowa Stormboar",
-          "probability": 0.5,
-          "market_id": "6147260",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Grizzlies",
+          "probability": 0.615,
+          "market_id": "5916778",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Chicken Coop Esports",
-          "probability": 0.5,
-          "market_id": "6147260",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Kings",
+          "probability": 0.385,
+          "market_id": "5916778",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/cs2-iowast-cce-2026-10-24"
+      "source_url": "https://polymarket.com/event/nba-mem-sac-2026-10-25"
     },
     {
-      "id": "1247521",
-      "title": "Counter-Strike: LAG Gaming vs Detonate (BO3) - CCT North America Cup #1 Playoffs",
-      "category": "esports",
-      "league": "Counter Strike",
-      "start_time": "2026-10-24T23:15:00Z",
+      "id": "1220869",
+      "title": "Wizards vs. Hornets",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-26T23:00:00Z",
       "outcomes": [
         {
-          "name": "LAG Gaming",
-          "probability": 0.75,
-          "market_id": "6147264",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Wizards",
+          "probability": 0.515,
+          "market_id": "5951674",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Detonate",
-          "probability": 0.25,
-          "market_id": "6147264",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Hornets",
+          "probability": 0.485,
+          "market_id": "5951674",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/cs2-lag-dtn1-2026-10-24"
+      "source_url": "https://polymarket.com/event/nba-was-cha-2026-10-26"
+    },
+    {
+      "id": "1220870",
+      "title": "Timberwolves vs. Cavaliers",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-26T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Timberwolves",
+          "probability": 0.515,
+          "market_id": "5951677",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Cavaliers",
+          "probability": 0.485,
+          "market_id": "5951677",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/nba-min-cle-2026-10-26"
+    },
+    {
+      "id": "1220871",
+      "title": "Bulls vs. Celtics",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-26T23:30:00Z",
+      "outcomes": [
+        {
+          "name": "Bulls",
+          "probability": 0.145,
+          "market_id": "5951680",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Celtics",
+          "probability": 0.855,
+          "market_id": "5951680",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/nba-chi-bos-2026-10-26"
+    },
+    {
+      "id": "1220872",
+      "title": "Mavericks vs. Heat",
+      "category": "basketball",
+      "league": "NBA 2026",
+      "start_time": "2026-10-26T23:30:00Z",
+      "outcomes": [
+        {
+          "name": "Mavericks",
+          "probability": 0.29,
+          "market_id": "5951683",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Heat",
+          "probability": 0.71,
+          "market_id": "5951683",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/nba-dal-mia-2026-10-26"
     },
     {
       "id": "1241322",
@@ -456,18 +360,18 @@
       "outcomes": [
         {
           "name": "Team Liquid",
-          "probability": 0.565,
+          "probability": 0.555,
           "market_id": "6085321",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "OG",
-          "probability": 0.435,
+          "probability": 0.445,
           "market_id": "6085321",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/dota2-liquid-og-2026-10-25"
     },
@@ -480,18 +384,18 @@
       "outcomes": [
         {
           "name": "FUT Esports",
-          "probability": 0.695,
+          "probability": 0.725,
           "market_id": "6153863",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Liquid",
-          "probability": 0.305,
+          "probability": 0.275,
           "market_id": "6153863",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/cs2-fut-tl1-2026-10-25"
     },
@@ -504,18 +408,18 @@
       "outcomes": [
         {
           "name": "Spirit",
-          "probability": 0.87,
+          "probability": 0.895,
           "market_id": "6153867",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "TYLOO",
-          "probability": 0.13,
+          "probability": 0.105,
           "market_id": "6153867",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/cs2-ts7-tyloo-2026-10-25"
     },
@@ -528,18 +432,18 @@
       "outcomes": [
         {
           "name": "Acend",
-          "probability": 0.395,
+          "probability": 0.41,
           "market_id": "6072790",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "UNiTY esports",
-          "probability": 0.605,
+          "probability": 0.59,
           "market_id": "6072790",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/cs2-ace1-unity-2026-10-25"
     },
@@ -552,18 +456,18 @@
       "outcomes": [
         {
           "name": "Lavked",
-          "probability": 0.395,
+          "probability": 0.365,
           "market_id": "6110043",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "mellren",
-          "probability": 0.605,
+          "probability": 0.635,
           "market_id": "6110043",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/cs2-lavked-mellre-2026-10-25"
     },
@@ -578,16 +482,16 @@
           "name": "Prestige",
           "probability": 0.5,
           "market_id": "6147037",
-          "market_updated_at": "2026-10-24T21:42:38.944047Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Revenge",
           "probability": 0.5,
           "market_id": "6147037",
-          "market_updated_at": "2026-10-24T21:42:38.944047Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/cs2-pre-rev-2026-10-25"
     },
@@ -600,18 +504,18 @@
       "outcomes": [
         {
           "name": "salamit",
-          "probability": 0.375,
+          "probability": 0.335,
           "market_id": "6148750",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Team Lynx",
-          "probability": 0.625,
+          "probability": 0.665,
           "market_id": "6148750",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/dota2-salami-lynx-2026-10-25"
     },
@@ -624,20 +528,116 @@
       "outcomes": [
         {
           "name": "Team Yandex",
-          "probability": 0.875,
+          "probability": 0.895,
           "market_id": "6085341",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "1win",
-          "probability": 0.125,
+          "probability": 0.105,
           "market_id": "6085341",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/dota2-ty-1win-2026-10-25"
+    },
+    {
+      "id": "1247117",
+      "title": "Counter-Strike: Acend vs INOX Division (BO3) - CCT Europe Series #11 Playoffs",
+      "category": "esports",
+      "league": "Counter Strike",
+      "start_time": "2026-10-25T11:00:00Z",
+      "outcomes": [
+        {
+          "name": "Acend",
+          "probability": 0.395,
+          "market_id": "6141930",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "INOX Division",
+          "probability": 0.605,
+          "market_id": "6141930",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/cs2-ace1-inox-2026-10-25"
+    },
+    {
+      "id": "1247522",
+      "title": "Counter-Strike: Quintessence vs TitanFlow (BO3) - CCT Europe Challengers Series Playoffs",
+      "category": "esports",
+      "league": "Counter Strike",
+      "start_time": "2026-10-25T11:00:00Z",
+      "outcomes": [
+        {
+          "name": "Quintessence",
+          "probability": 0.5,
+          "market_id": "6147270",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "TitanFlow",
+          "probability": 0.5,
+          "market_id": "6147270",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/cs2-quinte-titanf-2026-10-25"
+    },
+    {
+      "id": "1248305",
+      "title": "Counter-Strike: Vitality vs TheMongolz (BO3) - PGL Masters Bucharest Group Stage",
+      "category": "esports",
+      "league": "Counter Strike",
+      "start_time": "2026-10-25T11:00:00Z",
+      "outcomes": [
+        {
+          "name": "Vitality",
+          "probability": 0.805,
+          "market_id": "6153871",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "TheMongolz",
+          "probability": 0.195,
+          "market_id": "6153871",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/cs2-vit-mglz-2026-10-25"
+    },
+    {
+      "id": "1248306",
+      "title": "Counter-Strike: BetBoom Team vs Nemiga (BO3) - PGL Masters Bucharest Group Stage",
+      "category": "esports",
+      "league": "Counter Strike",
+      "start_time": "2026-10-25T11:00:00Z",
+      "outcomes": [
+        {
+          "name": "BetBoom Team",
+          "probability": 0.615,
+          "market_id": "6153875",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Nemiga",
+          "probability": 0.385,
+          "market_id": "6153875",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/cs2-bb3-nemi1-2026-10-25"
     },
     {
       "id": "1173929",
@@ -650,24 +650,54 @@
           "name": "FC Internazionale Milano",
           "probability": 0.725,
           "market_id": "5590007",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.165,
           "market_id": "5590009",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "ACF Fiorentina",
-          "probability": 0.105,
+          "probability": 0.115,
           "market_id": "5590010",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/sea-int-fio-2026-10-25"
+    },
+    {
+      "id": "1175514",
+      "title": "Athletic Club vs. Getafe CF",
+      "category": "football",
+      "league": "La Liga 2025",
+      "start_time": "2026-10-25T13:00:00Z",
+      "outcomes": [
+        {
+          "name": "Athletic Club",
+          "probability": 0.615,
+          "market_id": "5597927",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "平局",
+          "probability": 0.235,
+          "market_id": "5597933",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Getafe CF",
+          "probability": 0.145,
+          "market_id": "5597939",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lal-bil-get-2026-10-25"
     },
     {
       "id": "1174962",
@@ -680,22 +710,22 @@
           "name": "AS Monaco FC",
           "probability": 0.485,
           "market_id": "5593549",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.275,
           "market_id": "5593552",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Lille OSC",
           "probability": 0.235,
           "market_id": "5593554",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/fl1-asm-lil-2026-10-25"
     },
@@ -710,22 +740,22 @@
           "name": "Crystal Palace FC",
           "probability": 0.325,
           "market_id": "5593625",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.265,
           "market_id": "5593635",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Newcastle United FC",
           "probability": 0.415,
           "market_id": "5593644",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/epl-cry-new-2026-10-25"
     },
@@ -740,22 +770,22 @@
           "name": "Liverpool FC",
           "probability": 0.455,
           "market_id": "5593894",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.245,
           "market_id": "5593901",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Brighton & Hove Albion FC",
           "probability": 0.305,
           "market_id": "5593903",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/epl-liv-bri-2026-10-25"
     },
@@ -770,22 +800,22 @@
           "name": "Manchester United FC",
           "probability": 0.435,
           "market_id": "5594091",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.265,
           "market_id": "5594092",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "AFC Bournemouth",
           "probability": 0.305,
           "market_id": "5594093",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/epl-mun-bou-2026-10-25"
     },
@@ -800,22 +830,22 @@
           "name": "Hull City AFC",
           "probability": 0.195,
           "market_id": "5594192",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.235,
           "market_id": "5594193",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Brentford FC",
-          "probability": 0.565,
+          "probability": 0.575,
           "market_id": "5594194",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/epl-hul-bre-2026-10-25"
     },
@@ -830,22 +860,22 @@
           "name": "TSG 1899 Hoffenheim",
           "probability": 0.335,
           "market_id": "5593578",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.245,
           "market_id": "5593580",
-          "market_updated_at": "2026-10-24T21:42:38.944047Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Bayer 04 Leverkusen",
           "probability": 0.425,
           "market_id": "5593588",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/bun-hof-b04-2026-10-25"
     },
@@ -860,22 +890,22 @@
           "name": "RC Celta de Vigo",
           "probability": 0.295,
           "market_id": "5598123",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:38:38.403822Z"
         },
         {
           "name": "平局",
           "probability": 0.275,
           "market_id": "5598125",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:38:38.403822Z"
         },
         {
           "name": "Real Betis Balompié",
           "probability": 0.435,
           "market_id": "5598127",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:36:36.672883Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/lal-cel-bet-2026-10-25"
     },
@@ -890,22 +920,22 @@
           "name": "SC Freiburg",
           "probability": 0.145,
           "market_id": "5593842",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.165,
           "market_id": "5593849",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "FC Bayern München",
           "probability": 0.685,
           "market_id": "5593858",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/bun-fre-bay-2026-10-25"
     },
@@ -920,156 +950,246 @@
           "name": "Sunderland AFC",
           "probability": 0.315,
           "market_id": "5594284",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
           "probability": 0.305,
           "market_id": "5594287",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Leeds United FC",
           "probability": 0.385,
           "market_id": "5594290",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/epl-sun-lee-2026-10-25"
     },
     {
-      "id": "1175548",
-      "title": "FC Barcelona vs. Real Madrid CF",
+      "id": "1175537",
+      "title": "Real Sociedad de Fútbol vs. Levante UD",
       "category": "football",
       "league": "La Liga 2025",
-      "start_time": "2026-10-25T20:00:00Z",
+      "start_time": "2026-10-25T17:30:00Z",
       "outcomes": [
         {
-          "name": "FC Barcelona",
-          "probability": 0.585,
-          "market_id": "5598475",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Real Sociedad de Fútbol",
+          "probability": 0.615,
+          "market_id": "5598295",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "平局",
-          "probability": 0.155,
-          "market_id": "5598478",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "probability": 0.215,
+          "market_id": "5598297",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Real Madrid CF",
-          "probability": 0.255,
-          "market_id": "5598481",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/lal-bar-rea-2026-10-25"
-    },
-    {
-      "id": "1175042",
-      "title": "Paris Saint-Germain FC vs. Olympique Lyonnais",
-      "category": "football",
-      "league": "Ligue 1 2025",
-      "start_time": "2026-10-26T19:30:00Z",
-      "outcomes": [
-        {
-          "name": "Paris Saint-Germain FC",
-          "probability": 0.695,
-          "market_id": "5594302",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "平局",
+          "name": "Levante UD",
           "probability": 0.175,
-          "market_id": "5594303",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Olympique Lyonnais",
-          "probability": 0.135,
-          "market_id": "5594305",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_id": "5598304",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/fl1-psg-lyo-2026-10-25"
+      "source_url": "https://polymarket.com/event/lal-rso-lev-2026-10-25"
     },
     {
-      "id": "1243526",
-      "title": "LoL: Hanwha Life Esports vs Gen.G (BO1) - Worlds Group Stage",
+      "id": "1249636",
+      "title": "LoL: Top Esports vs G2 Esports (BO1) - Worlds Group Stage",
       "category": "lol",
       "league": "League of Legends",
-      "start_time": "2026-10-24T22:00:00Z",
+      "start_time": "2026-10-25T17:00:00Z",
+      "outcomes": [
+        {
+          "name": "Top Esports",
+          "probability": 0.455,
+          "market_id": "6168122",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "G2 Esports",
+          "probability": 0.545,
+          "market_id": "6168122",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lol-tes-g2-2026-10-25"
+    },
+    {
+      "id": "1249637",
+      "title": "LoL: Hanwha Life Esports vs Invictus Gaming (BO1) - Worlds Group Stage",
+      "category": "lol",
+      "league": "League of Legends",
+      "start_time": "2026-10-25T18:00:00Z",
       "outcomes": [
         {
           "name": "Hanwha Life Esports",
-          "probability": 0.415,
-          "market_id": "6102366",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "probability": 0.725,
+          "market_id": "6168128",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "Gen.G",
-          "probability": 0.585,
-          "market_id": "6102366",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Invictus Gaming",
+          "probability": 0.275,
+          "market_id": "6168128",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/lol-hle1-gen-2026-10-24"
+      "source_url": "https://polymarket.com/event/lol-hle1-ig1-2026-10-25"
     },
     {
-      "id": "1243524",
-      "title": "LoL: Dplus KIA vs T1 (BO1) - Worlds Group Stage",
+      "id": "1249638",
+      "title": "LoL: Gen.G vs LYON (BO3) - Worlds Group Stage",
       "category": "lol",
       "league": "League of Legends",
-      "start_time": "2026-10-24T23:00:00Z",
+      "start_time": "2026-10-25T19:00:00Z",
+      "outcomes": [
+        {
+          "name": "Gen.G",
+          "probability": 0.875,
+          "market_id": "6168136",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "LYON",
+          "probability": 0.125,
+          "market_id": "6168136",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lol-gen-ly-2026-10-25"
+    },
+    {
+      "id": "1249639",
+      "title": "LoL: Dplus KIA vs Movistar KOI (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "League of Legends",
+      "start_time": "2026-10-25T22:00:00Z",
       "outcomes": [
         {
           "name": "Dplus KIA",
-          "probability": 0.435,
-          "market_id": "6102354",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "probability": 0.755,
+          "market_id": "6168155",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
-          "name": "T1",
-          "probability": 0.565,
-          "market_id": "6102354",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Movistar KOI",
+          "probability": 0.245,
+          "market_id": "6168155",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/lol-dk-t1-2026-10-24"
+      "source_url": "https://polymarket.com/event/lol-dk-mkoi-2026-10-25"
     },
     {
-      "id": "1243551",
-      "title": "LoL: Team Liquid vs Bilibili Gaming (BO1) - Worlds Group Stage",
+      "id": "1249642",
+      "title": "LoL: Karmine Corp vs Bilibili Gaming (BO1) - Worlds Group Stage",
       "category": "lol",
       "league": "League of Legends",
-      "start_time": "2026-10-25T00:00:00Z",
+      "start_time": "2026-10-26T17:00:00Z",
       "outcomes": [
         {
-          "name": "Team Liquid",
-          "probability": 0.245,
-          "market_id": "6102537",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "name": "Karmine Corp",
+          "probability": 0.31,
+          "market_id": "6168174",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Bilibili Gaming",
-          "probability": 0.755,
-          "market_id": "6102537",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "probability": 0.69,
+          "market_id": "6168174",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/lol-tl2-blg-2026-10-24"
+      "source_url": "https://polymarket.com/event/lol-kc-blg-2026-10-26"
+    },
+    {
+      "id": "1249643",
+      "title": "LoL: T1 vs CTBC Flying Oyster (BO1) - Worlds Group Stage",
+      "category": "lol",
+      "league": "League of Legends",
+      "start_time": "2026-10-26T18:00:00Z",
+      "outcomes": [
+        {
+          "name": "T1",
+          "probability": 0.84,
+          "market_id": "6168180",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "CTBC Flying Oyster",
+          "probability": 0.16,
+          "market_id": "6168180",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lol-t1-cfo-2026-10-26"
+    },
+    {
+      "id": "1249644",
+      "title": "LoL: LOS vs Team Secret Whales (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "League of Legends",
+      "start_time": "2026-10-26T19:00:00Z",
+      "outcomes": [
+        {
+          "name": "LOS",
+          "probability": 0.37,
+          "market_id": "6168188",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Team Secret Whales",
+          "probability": 0.63,
+          "market_id": "6168188",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lol-los-tsw-2026-10-26"
+    },
+    {
+      "id": "1249645",
+      "title": "LoL: Team Liquid vs Anyone's Legend (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "League of Legends",
+      "start_time": "2026-10-26T22:00:00Z",
+      "outcomes": [
+        {
+          "name": "Team Liquid",
+          "probability": 0.33,
+          "market_id": "6168207",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Anyone's Legend",
+          "probability": 0.67,
+          "market_id": "6168207",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/lol-tl2-al-2026-10-26"
     },
     {
       "id": "1233784",
@@ -1080,44 +1200,20 @@
       "outcomes": [
         {
           "name": "Vitality Rising Bees",
-          "probability": 0.62,
+          "probability": 0.64,
           "market_id": "6036989",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Mental Rush",
-          "probability": 0.38,
+          "probability": 0.36,
           "market_id": "6036989",
-          "market_updated_at": "2026-10-24T21:44:38.511625Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/lol-rb-mr-2026-10-27"
-    },
-    {
-      "id": "1223684",
-      "title": "Tampa Bay Rays vs. Milwaukee Brewers",
-      "category": "other",
-      "league": "MLB",
-      "start_time": "2026-10-25T00:00:00Z",
-      "outcomes": [
-        {
-          "name": "Tampa Bay Rays",
-          "probability": 0.475,
-          "market_id": "5969237",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        },
-        {
-          "name": "Milwaukee Brewers",
-          "probability": 0.525,
-          "market_id": "5969237",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
-        }
-      ],
-      "checked_at": "2026-10-24T21:47:03Z",
-      "verification": "open_match_winner_market",
-      "source_url": "https://polymarket.com/event/mlb-tb-mil-2026-10-24"
     },
     {
       "id": "1022434",
@@ -1130,16 +1226,16 @@
           "name": "Steelers",
           "probability": 0.605,
           "market_id": "4551269",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Saints",
           "probability": 0.395,
           "market_id": "4551269",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-pit-no-2026-10-25"
     },
@@ -1154,16 +1250,16 @@
           "name": "49ers",
           "probability": 0.575,
           "market_id": "4551272",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Falcons",
           "probability": 0.425,
           "market_id": "4551272",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-sf-atl-2026-10-25"
     },
@@ -1178,16 +1274,16 @@
           "name": "Bengals",
           "probability": 0.585,
           "market_id": "4551273",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Ravens",
           "probability": 0.415,
           "market_id": "4551273",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-cin-bal-2026-10-25"
     },
@@ -1202,16 +1298,16 @@
           "name": "Buccaneers",
           "probability": 0.415,
           "market_id": "4551275",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Panthers",
           "probability": 0.585,
           "market_id": "4551275",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-tb-car-2026-10-25"
     },
@@ -1226,16 +1322,16 @@
           "name": "Giants",
           "probability": 0.195,
           "market_id": "4551277",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Texans",
           "probability": 0.805,
           "market_id": "4551277",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-nyg-hou-2026-10-25"
     },
@@ -1250,16 +1346,16 @@
           "name": "Colts",
           "probability": 0.285,
           "market_id": "4551282",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Vikings",
           "probability": 0.715,
           "market_id": "4551282",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-ind-min-2026-10-25"
     },
@@ -1274,16 +1370,16 @@
           "name": "Dolphins",
           "probability": 0.335,
           "market_id": "4551284",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Jets",
           "probability": 0.665,
           "market_id": "4551284",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-mia-nyj-2026-10-25"
     },
@@ -1298,16 +1394,16 @@
           "name": "Browns",
           "probability": 0.545,
           "market_id": "4551285",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Titans",
           "probability": 0.455,
           "market_id": "4551285",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-cle-ten-2026-10-25"
     },
@@ -1322,16 +1418,16 @@
           "name": "Broncos",
           "probability": 0.675,
           "market_id": "4551290",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Cardinals",
           "probability": 0.325,
           "market_id": "4551290",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-den-ari-2026-10-25"
     },
@@ -1346,16 +1442,16 @@
           "name": "Packers",
           "probability": 0.365,
           "market_id": "4551293",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Lions",
           "probability": 0.635,
           "market_id": "4551293",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-gb-det-2026-10-25"
     },
@@ -1370,18 +1466,42 @@
           "name": "Rams",
           "probability": 0.615,
           "market_id": "4551294",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         },
         {
           "name": "Raiders",
           "probability": 0.385,
           "market_id": "4551294",
-          "market_updated_at": "2026-10-24T21:46:38.830133Z"
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
         }
       ],
-      "checked_at": "2026-10-24T21:47:03Z",
+      "checked_at": "2026-10-25T01:42:31Z",
       "verification": "open_match_winner_market",
       "source_url": "https://polymarket.com/event/nfl-la-lv-2026-10-25"
+    },
+    {
+      "id": "1022451",
+      "title": "Chiefs vs. Seahawks",
+      "category": "other",
+      "league": "NFL 2026",
+      "start_time": "2026-10-26T00:20:00Z",
+      "outcomes": [
+        {
+          "name": "Chiefs",
+          "probability": 0.415,
+          "market_id": "4551296",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        },
+        {
+          "name": "Seahawks",
+          "probability": 0.585,
+          "market_id": "4551296",
+          "market_updated_at": "2026-10-25T01:40:38.467625Z"
+        }
+      ],
+      "checked_at": "2026-10-25T01:42:31Z",
+      "verification": "open_match_winner_market",
+      "source_url": "https://polymarket.com/event/nfl-kc-sea-2026-10-26"
     }
   ],
   "notes": "市场报价隐含概率，并非博彩公司赔率，也不保证赛事结果；数据按 2 小时计划更新，GitHub Actions 执行可能延迟。"
