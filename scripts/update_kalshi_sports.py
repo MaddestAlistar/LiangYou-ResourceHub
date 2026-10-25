@@ -22,11 +22,12 @@ HEADERS = {"Accept": "application/json", "User-Agent": "LiangYou-ResourceHub-Spo
 # Real match-winner series only: totals, spreads, map props and outright futures excluded.
 SERIES = {
     "lol": ("KXLOLGAME",),
-    "basketball": ("KXNBAGAME",),
+    "basketball": ("KXNBAGAME", "KXWNBAGAME", "KXNCAABBGAME"),
     "football": ("KXEPLGAME", "KXUCLGAME", "KXUEFAGAME", "KXLALIGAGAME",
                  "KXSERIEAGAME", "KXBUNDESLIGAGAME", "KXMLSGAME"),
     "esports": ("KXCS2GAME", "KXDOTA2GAME", "KXVALORANTGAME"),
-    "other": ("KXNFLGAME", "KXMLBGAME", "KXNHLGAME", "KXATPMATCH", "KXWTAMATCH"),
+    "other": ("KXNFLGAME", "KXMLBGAME", "KXNHLGAME", "KXATPMATCH", "KXWTAMATCH",
+              "KXCFBGAME", "KXUFCFIGHT", "KXF1H2H"),
 }
 LEAGUE = {
     "KXLOLGAME":"英雄联盟", "KXNBAGAME":"NBA", "KXEPLGAME":"英超",
@@ -163,7 +164,7 @@ def selected_time(event, markets, now):
     return None, None
 
 
-def normalize(event, series, now, page_slug=None):
+def normalize(event, series, now, page_slug=None, discovered_category=None, league_label=None):
     if not isinstance(event, dict):
         return None
     ticker = str(event.get("event_ticker") or "")
@@ -171,7 +172,7 @@ def normalize(event, series, now, page_slug=None):
         return None
     if str(event.get("category") or "Sports").lower() not in ("sports", "esports"):
         return None
-    category = next((k for k, v in SERIES.items() if series in v), None)
+    category = discovered_category or next((k for k, v in SERIES.items() if series in v), None)
     if not category:
         return None
     all_markets = event.get("markets")
@@ -246,7 +247,7 @@ def normalize(event, series, now, page_slug=None):
     checked = iso(now)
     return {
         "id":"kalshi-" + ticker.lower(), "title":title,
-        "category":category, "league":LEAGUE.get(series,category),
+        "category":category, "league":league_label or LEAGUE.get(series,category),
         "start_time":iso(when), "time_kind":kind,
         "best_of":int(best_of_match.group(1)) if best_of_match else None,
         "competition":competition, "outcomes":[o for _,o in parsed],
@@ -258,27 +259,74 @@ def normalize(event, series, now, page_slug=None):
     }
 
 
+def find_extra_series():
+    """Single optional metadata request, capped to six additional head-to-head series."""
+    try:
+        data = get_json(BASE + "/series?category=Sports")
+        options = data.get("series", []) if isinstance(data, dict) else []
+        if not isinstance(options, list):
+            return []
+        exclude = {s for group in SERIES.values() for s in group}
+        extras = []
+        for entry in options:
+            if not isinstance(entry, dict):
+                continue
+            ticker = str(entry.get("ticker") or "")
+            title = str(entry.get("title") or "")
+            labels = " ".join(str(x) for x in entry.get("tags",[]) if isinstance(x,str))
+            description = (ticker+" "+title+" "+labels).lower()
+            if not re.fullmatch(r"KX[A-Z0-9]{3,40}", ticker) or ticker in exclude:
+                continue
+            if not re.search(r"game|match|head.to.head|h2h|fight", description):
+                continue
+            if re.search(r"total|spread|prop|futures|outright|champion|winner of|over|under|goals|points|set winner|map winner",description):
+                continue
+            if re.search(r"college basketball|ncaa basketball|wnba",description):
+                cat="basketball"
+            elif re.search(r"college football|ncaa football|ufc|mma|formula 1|formula one|motorsport|golf",description):
+                cat="other"
+            elif re.search(r"ligue 1|french league|national team soccer|international soccer",description):
+                cat="football"
+            elif re.search(r"valorant|league of legends|counter.strike|dota 2",description):
+                cat="esports" if not re.search(r"league of legends",description) else "lol"
+            else:
+                continue
+            extras.append((cat,ticker,title[:55] or ticker))
+            exclude.add(ticker)
+            if len(extras) >= 6:
+                break
+        return extras
+    except Exception:
+        print("Kalshi series discovery unavailable; using curated series",flush=True)
+        return []
+
+
 def main():
     now = datetime.now(UTC)
-    all_series = [(k, s) for k,series in SERIES.items() for s in series]
+    curated = [(k,s,LEAGUE.get(s,s)) for k,series in SERIES.items() for s in series]
+    extra = find_extra_series()
+    all_series = (curated+extra)[:28]
+    print("Kalshi series budget: %d curated and %d discovered" %
+          (len(curated),len(all_series)-len(curated)),flush=True)
     health = []
     def collect(entry):
-        category, series = entry
+        category, series, league = entry
         try:
-            rows = fetch_series(series)
+            pages = 2 if series in {s for _,s,_ in curated} else 1
+            rows = fetch_series(series,pages=pages)
             slug = series_slug(series) if rows else None
-            return (category,series,rows,slug,None)
+            return (category,series,league,rows,slug,None)
         except Exception as exc:
-            return (category,series,[],None,str(exc)[:110])
+            return (category,series,league,[],None,str(exc)[:110])
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(collect, all_series))
     found = {}
-    for category,series,rows,slug,error in results:
+    for category,series,league,rows,slug,error in results:
         health.append({"tag":series,"status":"unavailable" if error else "ok","received":len(rows)})
         if error:
             print("Kalshi series unavailable: %s" % series,flush=True)
         for raw in rows:
-            event = normalize(raw,series,now,slug)
+            event = normalize(raw,series,now,slug,category,league)
             if event:
                 found[event["id"]] = event
     if not any(h["status"]=="ok" for h in health):
@@ -288,9 +336,11 @@ def main():
         raise RuntimeError("No verifiable Kalshi events during a partial outage")
     buckets = {c:[] for c in SERIES}
     for event in sorted(found.values(),key=lambda e:(e["start_time"], e["id"])):
-        if len(buckets[event["category"]])<12:
+        if len(buckets[event["category"]])<30:
             buckets[event["category"]].append(event)
-    events = [v for cat in SERIES for v in buckets[cat]]
+    # Interleave categories so the "all" tab isn't front-loaded with one sport.
+    events = [buckets[cat][i] for i in range(30) for cat in SERIES
+              if i < len(buckets[cat])]
     snapshot = {
         "schema":1,"source":"Kalshi public market API",
         "source_type":"prediction_market","generated_at":iso(now),

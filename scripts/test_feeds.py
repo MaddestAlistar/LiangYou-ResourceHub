@@ -213,6 +213,24 @@ class FeedRules(unittest.TestCase):
         self.assertIsNone(kalshi.positive_number("-4"))
         self.assertIsNone(kalshi.moment("not-an-iso-time"))
 
+
+    def test_sports_event_source_expansion_remains_bounded(self):
+        self.assertGreater(len(sports.SOURCES), 3)
+        self.assertLessEqual(len({t for _,_,tags in sports.SOURCES for t in tags}),25)
+        self.assertTrue("nhl" in [t for _,_,tags in sports.SOURCES for t in tags])
+
+    def test_kalshi_series_discovery_is_bounded_and_filters_props(self):
+        mock = {"series":[
+            {"ticker":"KXWNBAABC","title":"WNBA Game Match Winner","tags":["WNBA"]},
+            {"ticker":"KXSPREADNCAA","title":"NCAA Basketball Game Spread","tags":["College Basketball"]},
+            {"ticker":"KXUFCH2H","title":"UFC Fight Match","tags":["MMA"]},
+        ]}
+        with patch.object(kalshi,"get_json",return_value=mock):
+            extras=kalshi.find_extra_series()
+        self.assertEqual(len(extras),2)
+        self.assertEqual(extras[0][0],"basketball")
+        self.assertEqual(extras[1][0],"other")
+
     def test_scheduler_uses_oldest_successful_region_not_generation_time(self):
         snapshot = {'generated_at':'2026-10-24T11:30:00Z','regions':{'cn':{'verified_at':'2026-10-24T11:00:00Z'},'us':{'verified_at':'2026-10-24T07:00:00Z'}}}
         self.assertTrue(is_due(verified_time('apple',snapshot),NOW,3))

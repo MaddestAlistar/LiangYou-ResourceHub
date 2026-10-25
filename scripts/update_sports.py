@@ -24,10 +24,10 @@ BASE = "https://gamma-api.polymarket.com/events"
 # Query by current public Gamma tags. A tag can be temporarily empty between events.
 SOURCES = (
     ("lol", "英雄联盟", ("league-of-legends",)),
-    ("basketball", "NBA", ("nba",)),
-    ("football", "足球", ("soccer", "epl", "ucl")),
-    ("esports", "电竞", ("counter-strike-2", "dota-2")),
-    ("other", "其他体育", ("nfl", "mlb", "atp", "wta")),
+    ("basketball", "NBA", ("nba", "wnba", "ncaa-basketball")),
+    ("football", "足球", ("soccer", "epl", "ucl", "la-liga", "bundesliga")),
+    ("esports", "电竞", ("counter-strike-2", "dota-2", "valorant")),
+    ("other", "其他体育", ("nfl", "mlb", "atp", "wta", "nhl", "ufc", "f1")),
 )
 UTC = dt.timezone.utc
 
@@ -54,34 +54,42 @@ def date_value(value):
 
 
 def get_events(tag_slug):
-    query = urlencode({
-        "tag_slug": tag_slug,
-        "active": "true",
-        "closed": "false",
-        "limit": "140" if tag_slug in ("soccer", "epl", "ucl") else "100",
-        "order": "volume24hr",
-        "ascending": "false",
-        "end_date_min": dt.datetime.now(UTC).isoformat(),
-    })
-    url = BASE + "?" + query
-    req = Request(url, headers={
-        "User-Agent": "LiangYou-ResourceHub-Sports/1.0 (+https://github.com/MaddestAlistar/LiangYou-ResourceHub)",
-        "Accept": "application/json",
-    })
-    last_error = None
-    for attempt in range(3):
-        try:
-            with urlopen(req, timeout=20) as response:
-                obj = json.load(response)
-            if not isinstance(obj, list):
-                raise ValueError("Gamma endpoint returned non-list")
-            return obj
-        except Exception as exc:
-            last_error = exc
-            if attempt < 2:
-                time.sleep(2 * (attempt + 1))
-    raise RuntimeError(f"Gamma request failed for tag {tag_slug}: {last_error}")
-
+    """Capped 1-2 Gamma pages per tag; use no auth and respect provider limits."""
+    max_pages = 2 if tag_slug in (
+        "league-of-legends", "nba", "soccer", "epl", "ucl",
+        "counter-strike-2", "nfl", "nhl") else 1
+    page_size = 100
+    gathered = []
+    for page in range(max_pages):
+        query = urlencode({
+            "tag_slug": tag_slug,
+            "active": "true", "closed": "false",
+            "limit": page_size, "offset": page*page_size,
+            "order": "volume24hr", "ascending": "false",
+            "end_date_min": dt.datetime.now(UTC).isoformat()
+        })
+        request = Request(BASE + "?" + query, headers={
+            "User-Agent": "LiangYou-ResourceHub-Sports/2.0",
+            "Accept": "application/json"
+        })
+        for attempt in range(3):
+            try:
+                with urlopen(request, timeout=16) as response:
+                    events = json.load(response)
+                if not isinstance(events, list):
+                    raise ValueError("Gamma response was not an events array")
+                gathered.extend(events)
+                break
+            except Exception as exc:
+                if attempt == 2:
+                    if gathered:
+                        print(f"{tag_slug}: optional page failed; using verified preceding page",flush=True)
+                        return gathered
+                    raise RuntimeError(f"Gamma request failed for {tag_slug}") from None
+                time.sleep(1+attempt)
+        if len(events) < page_size:
+            break
+    return gathered
 
 def get_by_slug(slug):
     """Read the parent match's moneyline event, excluding secondary markets."""
@@ -174,12 +182,14 @@ def book_quote(token_id):
 
 def enrich_books(selection):
     unique = {}
+    max_tokens = 128  # strict public CLOB request budget, independent of match count
     for event in selection:
+        tokens = [o.get("_clob_token") for o in event["outcomes"] if o.get("_clob_token")]
+        eligible = len(set(unique).union(tokens)) <= max_tokens
         for outcome in event["outcomes"]:
             token = outcome.pop("_clob_token", None)
-            if token and token not in unique:
-                unique[token] = None
-            if token:
+            if eligible and token:
+                unique.setdefault(token, None)
                 outcome["_clob_ref"] = token
     if not unique:
         return 0
@@ -393,7 +403,7 @@ def main():
                     if parent_slug != slug and parent_slug not in requested:
                         requested.add(parent_slug)
                         parent_slugs.append(parent_slug)
-                for parent_slug in parent_slugs[:16]:
+                for parent_slug in parent_slugs[:12]:
                     matches = get_by_slug(parent_slug)
                     if matches and not printed_parent:
                         first = matches[0]
@@ -433,12 +443,14 @@ def main():
     sorted_items = sorted(items.values(), key=lambda e: (e["category"], display_priority(e)))
     selection = []
     counts = {key: 0 for key, _, _ in SOURCES}
-    for item in sorted_items:
-        group = item["category"]
-        if counts[group] >= 12:
-            continue
-        selection.append(item)
-        counts[group] += 1
+    # Round robin across sports: don't let NBA consume the CLOB quote budget.
+    lists = {key:[item for item in sorted_items if item["category"] == key]
+             for key,_,_ in SOURCES}
+    for n in range(30):
+        for cat in lists:
+            if n < len(lists[cat]):
+                selection.append(lists[cat][n])
+                counts[cat] += 1
 
     quotes = enrich_books(selection)
     print(f"Polymarket CLOB bid/ask results: {quotes} outcome quotes across {len(selection)} events", flush=True)

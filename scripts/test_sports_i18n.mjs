@@ -26,7 +26,8 @@ assert.equal(tr.league('League of Legends', 'lol', 'zh'), '英雄联盟');
 assert.equal(tr.stage('Worlds Group Stage'), '全球总决赛小组赛');
 for(const lang of ['zh','en']) for(const key of ['richHint','preMatch','details','bestBid','bestAsk','asOf','quoteNote',
  'volume24h','totalVolume','liquidity','quotesUnavailable','bookSize',
- 'volume24hContracts','volumeTotalContracts','openInterest','marketDeadline','lastTrade','kalshiQuoteNote']) assert(tr.ui[lang][key]);
+ 'volume24hContracts','volumeTotalContracts','openInterest','marketDeadline','lastTrade','kalshiQuoteNote',
+ 'searchLabel','searchPlaceholder','sortTime','sortActivity','noSearchResults']) assert(tr.ui[lang][key]);
 
 const lol = {
   title: "LoL: Top Esports vs Anyone's Legend (BO1) - Worlds Group Stage",
@@ -69,6 +70,12 @@ assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(e
 assert(ui.includes("extra.summary") && ui.includes("volume_24h_usd") && ui.includes("quotesUnavailable"));
 assert(ui.includes("volume_24h_contracts") && ui.includes("provider === 'kalshi'"));
 assert(html.includes('data-source-filter="kalshi"'));
+assert(html.includes('id="sportsSearch"') && html.includes('id="sportsSort"'));
+assert.equal((html.match(/data-sport-filter="/g)||[]).length,5);
+assert(html.indexOf('data-sport-filter="football"') < html.indexOf('data-sport-filter="other"'));
+assert(!html.includes('data-sport-filter="esports"'));
+assert(ui.includes('search.addEventListener') && ui.includes('sortControl.addEventListener'));
+assert(ui.includes("['other','esports'].includes(m.category)"));
 assert(html.includes('data-sports-t="richHint"'));
 
 assert(html.includes('id="sportsSourceHint"') && html.includes('data-sports-t="richHint"'));

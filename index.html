@@ -21,13 +21,13 @@
   <link rel="stylesheet" href="./style.css?v=4.1">
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=20261025.1">
-  <link rel="stylesheet" href="./sports.css?v=20261026.3">
+  <link rel="stylesheet" href="./sports.css?v=20261026.4">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=6" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=20261024.4" defer></script>
-  <script src="./sports-i18n.js?v=20261026.3" defer></script>
-  <script src="./sports.js?v=20261026.3" defer></script>
+  <script src="./sports-i18n.js?v=20261026.4" defer></script>
+  <script src="./sports.js?v=20261026.4" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
 .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
@@ -123,10 +123,19 @@
         <div class="sports-tabs" role="group" aria-label="赛事分类">
           <button class="sports-tab is-active" type="button" data-sport-filter="all" aria-pressed="true">全部赛事</button>
           <button class="sports-tab" type="button" data-sport-filter="lol" aria-pressed="false">🎮 英雄联盟</button>
-          <button class="sports-tab" type="button" data-sport-filter="basketball" aria-pressed="false">🏀 NBA</button>
+          <button class="sports-tab" type="button" data-sport-filter="basketball" aria-pressed="false">🏀 篮球</button>
           <button class="sports-tab" type="button" data-sport-filter="football" aria-pressed="false">⚽ 足球</button>
-          <button class="sports-tab" type="button" data-sport-filter="esports" aria-pressed="false">🕹️ 其他电竞</button>
-          <button class="sports-tab" type="button" data-sport-filter="other" aria-pressed="false">🏈 其他体育</button>
+          <button class="sports-tab" type="button" data-sport-filter="other" aria-pressed="false">其他</button>
+        </div>
+        <div class="sports-findbar" role="search" aria-label="搜索赛事">
+          <label for="sportsSearch" class="sports-search-label" data-sports-t="searchLabel">搜索赛事</label>
+          <div class="sports-search-wrap"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m16 16 5 5"/></svg>
+            <input id="sportsSearch" type="search" inputmode="search" autocomplete="off" maxlength="90" placeholder="搜索球队、选手、联赛或赛事名称" aria-label="搜索球队或赛事">
+          </div>
+          <select id="sportsSort" class="sports-sort" aria-label="赛事排序">
+            <option value="time" data-sports-t="sortTime">按开赛时间</option>
+            <option value="activity" data-sports-t="sortActivity">按市场活跃度</option>
+          </select>
         </div>
         <div class="sports-source-toolbar" role="group" aria-label="数据来源" id="sportsSources">
           <span class="sports-source-label" data-sports-t="sourcesHeading">预测数据来源</span>

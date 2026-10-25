@@ -11,13 +11,15 @@
   const languageGroup = document.getElementById('sportsLanguage');
   const translation = window.LiangYouSportsI18n;
   if (!grid || !status || !count || !actions || !more || !collapse || !showing ||
-      !section || !languageGroup || !translation) return;
+      !section || !languageGroup || !translation || !search || !sortControl) return;
 
   const storageKey = 'liangyou-sports-lang-v1';
   const tabs = [...section.querySelectorAll('[data-sport-filter]')];
   const langButtons = [...languageGroup.querySelectorAll('[data-sports-lang]')];
   const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sourceHint = document.getElementById('sportsSourceHint');
+  const search = document.getElementById('sportsSearch');
+  const sortControl = document.getElementById('sportsSort');
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
   const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 4 : 6;
   const esc = value => String(value ?? '').replace(/[&<>"']/g,
@@ -30,6 +32,8 @@
   let matches = [];
   let active = 'all';
   let activeSource = 'all';
+  let searchTerms = '';
+  let sortMode = 'time';
   let visibleLimit = initialLimit();
   let lastUpdated = null;
   let failed = false;
@@ -80,6 +84,12 @@
     sourceButtons.forEach(button => {
       const key = button.dataset.sportsT;
       if (key && typeof labels[key] === 'string') button.textContent = labels[key];
+    });
+    search.placeholder = labels.searchPlaceholder;
+    search.setAttribute('aria-label', labels.searchLabel);
+    sortControl.setAttribute('aria-label', labels.sortTime);
+    [...sortControl.options].forEach(option => {
+      if (labels[option.dataset.sportsT]) option.textContent = labels[option.dataset.sportsT];
     });
     langButtons.forEach(button => {
       const selected = button.dataset.sportsLang === language;
@@ -228,6 +238,38 @@
       '</div></article>';
   }
 
+  function searchableText(event) {
+    const translate = name => translation.team(name, event.category, language);
+    return [event.title,event.league,event.category,event.provider || 'polymarket',
+      translation.title(event,language),
+      translation.league(event.league,event.category,language),
+      translation.ui[language][event.category],
+      ...event.outcomes.map(o => o.name),
+      ...event.outcomes.map(o => translate(o.name))
+    ].join(' ').normalize('NFKC').toLocaleLowerCase();
+  }
+  function activityRank(events) {
+    // Compare normalized ranks WITHIN each venue, not USD volume vs Kalshi contracts.
+    const groups = new Map();
+    for(const event of events){
+      const venue=event.provider || 'polymarket';
+      if(!groups.has(venue))groups.set(venue,[]);
+      groups.get(venue).push(event);
+    }
+    const ranks=new Map();
+    for(const group of groups.values()){
+      const value = event => {
+        const stats=event.stats || {};
+        return event.provider === 'kalshi'
+          ? (stats.volume_24h_contracts || 0)
+          : (stats.volume_24h_usd || 0);
+      };
+      group.sort((a,b) => value(b)-value(a));
+      group.forEach((event,index)=>ranks.set(event.id+'|'+(event.provider||'polymarket'),
+        group.length>1 ? 1-index/(group.length-1) : 1));
+    }
+    return ranks;
+  }
   function render() {
     const labels = copy();
     if (sourceHint) sourceHint.hidden = activeSource === 'all';
@@ -248,9 +290,10 @@
       return;
     }
     const filtered = matches.filter(m =>
-      (active === 'all' || m.category === active) &&
+      (active === 'all' || (active === 'other' ? ['other','esports'].includes(m.category) : m.category === active)) &&
       (activeSource === 'all' || (m.provider || 'polymarket') === activeSource) &&
-      (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now())
+      (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now()) &&
+      (!searchTerms || searchTerms.split(/\s+/).every(word => searchableText(m).includes(word)))
     );
     let visible = filtered;
     if (activeSource === 'all') {
@@ -264,13 +307,23 @@
         return true;
       });
     }
-    const ordered = arrange(visible);
+    let ordered;
+    if (sortMode === 'activity') {
+      const ranks=activityRank(visible);
+      ordered=[...visible].sort((a,b)=>
+        (ranks.get(b.id+'|'+(b.provider||'polymarket'))||0)-
+        (ranks.get(a.id+'|'+(a.provider||'polymarket'))||0) ||
+        Date.parse(a.start_time)-Date.parse(b.start_time));
+    } else {
+      ordered = active === 'all' ? arrange(visible) : [...visible].sort((a,b)=>
+        Date.parse(a.start_time)-Date.parse(b.start_time));
+    }
     const display = ordered.slice(0, visibleLimit);
     count.textContent = labels.total(visible.length) +
       (visible.length ? ' · ' + labels.current(display.length) : '');
     if (!visible.length) {
       grid.innerHTML = '<div class="sports-empty"><strong>' + esc(labels.emptyTitle) +
-        '</strong>' + esc(labels.emptyMessage) + '</div>';
+        '</strong>' + esc(searchTerms ? labels.noSearchResults : labels.emptyMessage) + '</div>';
       actions.hidden = true;
       return;
     }
@@ -285,6 +338,16 @@
     collapse.textContent = labels.collapse;
   }
 
+  search.addEventListener('input', () => {
+    searchTerms=search.value.trim().normalize('NFKC').toLocaleLowerCase().slice(0,90);
+    visibleLimit=initialLimit();
+    render(); // purely local; never calls a market API
+  });
+  sortControl.addEventListener('change', () => {
+    sortMode=sortControl.value === 'activity' ? 'activity' : 'time';
+    visibleLimit=initialLimit();
+    render();
+  });
   tabs.forEach(button => button.addEventListener('click', () => {
     active = button.dataset.sportFilter;
     visibleLimit = initialLimit();
@@ -356,23 +419,9 @@
       }));
       const good = requests.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value);
       if (!good.length) throw new Error('no fresh sources');
-      // Merge without hiding the other market: each filter reveals its own prices.
-      // In "All", cross-venue duplicates are kept only when their normalized
-      // opponent names and kick-off times are clearly identical.
-      const all = good.flatMap(x => x.events).sort((a,b) =>
+      // Keep all providers, retaining independent prices for source-specific views.
+      matches = good.flatMap(x => x.events).sort((a,b) =>
         Number(b.provider === 'predict') - Number(a.provider === 'predict'));
-      const unique = new Map();
-      const canonical = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
-      for (const event of all) {
-        const teams = event.outcomes.map(o => canonical(o.name)).sort();
-        const key = [event.category, Math.round(Date.parse(event.start_time)/3600000), ...teams].join('|');
-        const prior = unique.get(key);
-        if (!prior) unique.set(key, event);
-        // Keep a second source record for explicit source filtering.
-      }
-      // This single array is used for both "All" and per-source views; when
-      // All is selected, render() de-duplicates while retaining source filters.
-      matches = all;
       lastUpdated = new Date(Math.max(...good.map(x => x.timestamp)));
       sourcePartial = good.length !== feeds.length || good.some(x => x.partial);
       failed = false;
