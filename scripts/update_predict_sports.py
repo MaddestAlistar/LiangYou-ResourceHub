@@ -86,6 +86,8 @@ def category_type(category):
         return "basketball"
     if re.search(r"counter.strike|\bcs2\b|dota.?2|valorant|esports", value):
         return "esports"
+    if re.search(r"\bcfb\b|college.football|american.football|\bnfl\b|ncaa.football", value):
+        return "other"
     if re.search(r"soccer|football|premier.league|serie.a|la.liga|bundesliga|champions.league|ligue.1|\bepl\b", value):
         return "football"
     if re.search(r"\bnfl\b|\bmlb\b|baseball|\bnhl\b|tennis|\batp\b|\bwta\b", value):
