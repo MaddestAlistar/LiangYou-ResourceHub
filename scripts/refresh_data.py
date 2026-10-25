@@ -14,6 +14,7 @@ JOBS = {
     'games': ('update_game_free.py', 'game-free.json', 3),
     'sports': ('update_sports.py', 'sports.json', 2),
     'predict': ('update_predict_sports.py', 'predict-sports.json', 2),
+    'kalshi': ('update_kalshi_sports.py', 'kalshi-sports.json', 2),
 }
 
 def verified_time(name, snapshot):

@@ -127,13 +127,20 @@
       '<span class="sports-rich-tag sports-rich-tag-primary">' + esc(labels.preMatch) + '</span>' +
       tokens.map(v => '<span class="sports-rich-tag">' + esc(v) + '</span>').join('') + '</div>';
     const stats = event.stats && typeof event.stats === 'object' ? event.stats : {};
-    const metrics = [
-      ['volume_24h_usd',labels.volume24h], ['volume_total_usd',labels.totalVolume],
-      ['liquidity_usd',labels.liquidity]
-    ].filter(([field]) => hasNumber(stats[field]) && stats[field] > 0);
-    const summary = metrics.length ? '<div class="sports-metrics">' +
-      metrics.map(([field,label]) => '<div class="sports-metric"><span>' +
-        esc(label) + '</span><strong>' + esc(moneyUSD(stats[field])) +
+    const metrics = event.provider === 'kalshi'
+      ? [['volume_24h_contracts',labels.volume24hContracts],
+         ['volume_total_contracts',labels.volumeTotalContracts],
+         ['open_interest_contracts',labels.openInterest]]
+      : [['volume_24h_usd',labels.volume24h], ['volume_total_usd',labels.totalVolume],
+         ['liquidity_usd',labels.liquidity]];
+    const available = metrics.filter(([field]) => hasNumber(stats[field]) && stats[field] > 0);
+    const number = value => Intl.NumberFormat(language === 'zh' ? 'zh-CN':'en-US',{
+      notation:'compact', maximumFractionDigits:1
+    }).format(value);
+    const summary = available.length ? '<div class="sports-metrics">' +
+      available.map(([field,label]) => '<div class="sports-metric"><span>' +
+        esc(label) + '</span><strong>' + esc(event.provider === 'kalshi' ?
+          number(stats[field]) + labels.contractSuffix : moneyUSD(stats[field])) +
         '</strong></div>').join('') + '</div>' : '';
     const rows = event.outcomes.map((outcome, index) => {
       const bid = outcome.best_bid, ask = outcome.best_ask;
@@ -152,13 +159,24 @@
     }).filter(Boolean);
     const quoteList = rows.length ? rows.join('') :
       '<p class="sports-quote-missing">' + esc(labels.quotesUnavailable) + '</p>';
+    const lastPrices = event.provider === 'kalshi' ?
+      event.outcomes.map((item,index) => {
+        const previous = item.previous_price, last = item.last_price;
+        if (!hasNumber(last) || last <= 0 || last >= 1) return '';
+        return '<div class="sports-last-price">' + esc(names[index]) + ' · ' +
+          esc(labels.lastTrade) + ' ' + (last * 100).toFixed(1) + '%' +
+          (hasNumber(previous) && previous > 0 && previous < 1 ?
+            ' · ' + esc(labels.vsPrevious) + ' ' +
+            ((last-previous)*100 >= 0 ? '+' : '') + ((last-previous)*100).toFixed(1) + 'pp' : '') +
+          '</div>';
+      }).filter(Boolean).join('') : '';
     const captured = Number.isFinite(Date.parse(event.checked_at))
       ? '<p class="sports-quote-asof">' + esc(labels.asOf) + ' ' + esc(time(event.checked_at)) + '</p>' : '';
     // Even when CLOB is unavailable, the collected market statistics remain available.
     const detail = '<details class="sports-quote-details"><summary>' +
       esc(labels.details) + '<span class="sports-quote-chevron" aria-hidden="true">⌄</span></summary>' +
-      '<div class="sports-quote-content">' + quoteList + captured +
-      '<p class="sports-quote-note">' + esc(labels.quoteNote) + '</p></div></details>';
+      '<div class="sports-quote-content">' + quoteList + lastPrices + captured +
+      '<p class="sports-quote-note">' + esc(event.provider === 'kalshi' ? labels.kalshiQuoteNote : labels.quoteNote) + '</p></div></details>';
     return {chips, summary, detail};
   }
 
@@ -166,9 +184,13 @@
     const labels = copy();
     const names = event.outcomes.map(o => translation.team(o.name, event.category, language));
     const percentages = event.outcomes.map(o => Math.max(0, Math.min(100, Number(o.probability) * 100)));
-    const provider = event.provider === 'predict' ? 'predict' : 'polymarket';
-    const url = typeof event.source_url === 'string' &&
-      (provider === 'predict' ? /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i : /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i).test(event.source_url)
+    const provider = ['predict','kalshi'].includes(event.provider) ? event.provider : 'polymarket';
+    const sourcePattern = provider === 'predict'
+      ? /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i
+      : provider === 'kalshi'
+        ? /^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+\/event\/[a-z0-9-]+$/i
+        : /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i;
+    const url = typeof event.source_url === 'string' && sourcePattern.test(event.source_url)
       ? event.source_url : '';
     const rich = activeSource !== 'all' && activeSource === provider;
     const title = rich ? names[0] + (language === 'zh' ? ' 对阵 ' : ' vs ') +
@@ -195,11 +217,12 @@
           '"><i style="width:' + percentages[0].toFixed(1) + '%"></i></div>';
 
     return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') + '"><div class="sports-match-top"><span>' +
-      esc(league || labels.match) + '</span><span>' + esc(time(event.start_time)) +
+      esc(league || labels.match) + '</span><span>' +
+      (event.time_kind === 'market_close' ? esc(labels.marketDeadline) + ' ' : '') + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
       extra.chips + prob + track + extra.summary + extra.detail + '<div class="sports-match-bottom"><span>' +
       esc(labels.prediction) + '</span><span class="sports-provider sports-provider-' + provider + '">' +
-      (provider === 'predict' ? 'Predict.fun' : 'Polymarket') + '</span>' +
+      (provider === 'predict' ? 'Predict.fun' : provider === 'kalshi' ? 'Kalshi' : 'Polymarket') + '</span>' +
       (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
         esc(labels.sourceAria + title) + '">' + esc(labels.source) + '</a>' : '') +
       '</div></article>';
@@ -301,7 +324,8 @@
 
   const feeds = [
     {url:'./data/sports.json', provider:'polymarket'},
-    {url:'./data/predict-sports.json', provider:'predict'}
+    {url:'./data/predict-sports.json', provider:'predict'},
+    {url:'./data/kalshi-sports.json', provider:'kalshi'}
   ];
   function verifiedFeed(data, provider) {
     if (data.schema !== 1 || data.source_type !== 'prediction_market' || !Array.isArray(data.events)) return null;

@@ -8,6 +8,7 @@ import update_android_free as android
 import update_game_free as games
 import update_sports as sports
 import update_predict_sports as predict
+import update_kalshi_sports as kalshi
 from refresh_data import is_due, verified_time
 
 NOW = datetime(2026, 10, 24, 11, 30, tzinfo=timezone.utc)
@@ -151,6 +152,64 @@ class FeedRules(unittest.TestCase):
             stats = predict.market_statistics("dummy", "3333")
         self.assertEqual(stats, {"volume_24h_usd":123.4,"volume_total_usd":2345.0})
         self.assertEqual(predict.market_statistics("dummy", "oops"), {})
+
+
+    def test_kalshi_three_way_moneyline_and_units(self):
+        now = NOW
+        when = "2026-10-25T13:00:00Z"
+        event = {"event_ticker":"KXEPLGAME-26OCT25AB", "series_ticker":"KXEPLGAME",
+                 "category":"Sports","title":"Team Alpha vs Team Beta",
+                 "product_metadata":{"game_start_time":when},
+                 "markets":[]}
+        for suffix,name,bid,ask in (("A","Team Alpha",".49",".51"),
+                                    ("D","Draw",".20",".22"),
+                                    ("B","Team Beta",".29",".29")):
+            event["markets"].append({
+                "ticker":event["event_ticker"]+"-"+suffix,
+                "event_ticker":event["event_ticker"],"market_type":"binary",
+                "status":"active","result":"","yes_sub_title":name,
+                "yes_bid_dollars":bid,"yes_ask_dollars":ask,
+                "yes_bid_size_fp":"10.50","yes_ask_size_fp":"20.00",
+                "volume_fp":"100.00","volume_24h_fp":"30.00",
+                "open_interest_fp":"44.00","close_time":when
+            })
+        answer = kalshi.normalize(event,"KXEPLGAME",now)
+        self.assertIsNotNone(answer)
+        self.assertEqual([o["name"] for o in answer["outcomes"]],
+                         ["Team Alpha","平局","Team Beta"])
+        self.assertEqual(answer["time_kind"],"kickoff")
+        self.assertEqual(answer["stats"]["volume_24h_contracts"],90)
+        self.assertNotIn("volume_24h_usd",answer["stats"])
+        self.assertEqual(answer["outcomes"][0]["best_bid_size"],10.5)
+        event["markets"][0]["yes_bid_dollars"]="0"
+        self.assertIsNone(kalshi.normalize(event,"KXEPLGAME",now))
+
+    def test_kalshi_close_time_not_kickoff_and_banned_props(self):
+        when="2026-10-25T13:00:00Z"
+        event={"event_ticker":"KXLOLGAME-26OCT25A","series_ticker":"KXLOLGAME",
+               "title":"Team Alpha vs Team Beta","markets":[]}
+        for team,p in (("Team Alpha",".45"),("Team Beta",".55")):
+            event["markets"].append({
+                "ticker":event["event_ticker"]+("-A" if team.endswith("Alpha") else "-B"),
+                "event_ticker":event["event_ticker"],
+                "market_type":"binary","status":"active","result":"",
+                "yes_sub_title":team,"yes_bid_dollars":p,"yes_ask_dollars":p,
+                "close_time":when
+            })
+        out=kalshi.normalize(event,"KXLOLGAME",NOW)
+        self.assertEqual(out["time_kind"],"market_close")
+        event["markets"][0]["yes_sub_title"]="Game 1 kills over 25"
+        self.assertIsNone(kalshi.normalize(event,"KXLOLGAME",NOW))
+        event["markets"][0]["yes_sub_title"]="Team Alpha"
+        event["markets"][0]["status"]="settled"
+        self.assertIsNone(kalshi.normalize(event,"KXLOLGAME",NOW))
+
+    def test_kalshi_empty_series_keeps_schema_and_rejects_invalid_market(self):
+        self.assertEqual(kalshi.price("0.6012"),.6012)
+        self.assertIsNone(kalshi.price("0"))
+        self.assertIsNone(kalshi.price("nan"))
+        self.assertIsNone(kalshi.positive_number("-4"))
+        self.assertIsNone(kalshi.moment("not-an-iso-time"))
 
     def test_scheduler_uses_oldest_successful_region_not_generation_time(self):
         snapshot = {'generated_at':'2026-10-24T11:30:00Z','regions':{'cn':{'verified_at':'2026-10-24T11:00:00Z'},'us':{'verified_at':'2026-10-24T07:00:00Z'}}}

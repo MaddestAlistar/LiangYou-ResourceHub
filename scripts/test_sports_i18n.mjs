@@ -25,7 +25,8 @@ assert.equal(tr.league('Scottish Premier League', 'football', 'zh'), 'Scottish P
 assert.equal(tr.league('League of Legends', 'lol', 'zh'), '英雄联盟');
 assert.equal(tr.stage('Worlds Group Stage'), '全球总决赛小组赛');
 for(const lang of ['zh','en']) for(const key of ['richHint','preMatch','details','bestBid','bestAsk','asOf','quoteNote',
- 'volume24h','totalVolume','liquidity','quotesUnavailable','bookSize']) assert(tr.ui[lang][key]);
+ 'volume24h','totalVolume','liquidity','quotesUnavailable','bookSize',
+ 'volume24hContracts','volumeTotalContracts','openInterest','marketDeadline','lastTrade','kalshiQuoteNote']) assert(tr.ui[lang][key]);
 
 const lol = {
   title: "LoL: Top Esports vs Anyone's Legend (BO1) - Worlds Group Stage",
@@ -66,6 +67,10 @@ const ui = readFileSync('sports.js', 'utf8');
 assert(ui.includes('renderStatic()') && ui.includes('translation.title(event, language)'));
 assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(event, names)'));
 assert(ui.includes("extra.summary") && ui.includes("volume_24h_usd") && ui.includes("quotesUnavailable"));
+assert(ui.includes("volume_24h_contracts") && ui.includes("provider === 'kalshi'"));
+assert(html.includes('data-source-filter="kalshi"'));
+assert(html.includes('data-sports-t="richHint"'));
+
 assert(html.includes('id="sportsSourceHint"') && html.includes('data-sports-t="richHint"'));
 const sportsStyles = readFileSync('sports.css','utf8');
 assert(sportsStyles.includes('.sports-match-rich') && sportsStyles.includes('.sports-quote-row'));

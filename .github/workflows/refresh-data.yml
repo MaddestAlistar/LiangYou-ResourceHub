@@ -63,7 +63,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/predict-sports.json data/update-status.json assets/daily-free assets/android-free assets/game-free
+          git add -A data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/predict-sports.json data/kalshi-sports.json data/update-status.json assets/daily-free assets/android-free assets/game-free
           if ! git diff --cached --quiet; then
             git commit -m "Refresh verified feeds and check health [skip ci]"
             for attempt in 1 2 3; do

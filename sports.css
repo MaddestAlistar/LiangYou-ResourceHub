@@ -240,3 +240,10 @@
  .sports-quote-number em{font-size:8px}
 }
 @media(max-width:355px){.sports-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Third source: Kalshi accents and legible quote history on mobile. */
+.sports-provider-kalshi:before{background:#75d6ad;box-shadow:0 0 8px #75d6ad66}
+.sports-source-btn[data-source-filter="kalshi"].is-active{color:#bdf2d7;background:rgba(55,171,121,.16);border-color:rgba(104,213,161,.67)}
+.sports-last-price{color:#abbfd1;font-size:10px;line-height:1.6;margin:6px 0;overflow-wrap:anywhere}
+.sports-last-price:first-of-type{margin-top:12px}
+@media(max-width:460px){.sports-source-toolbar{gap:7px}.sports-source-btn{padding-inline:10px}}

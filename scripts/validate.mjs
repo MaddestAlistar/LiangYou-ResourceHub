@@ -170,6 +170,20 @@ for(const event of sports.events) {
   assert([2,3].includes(event.outcomes.length));
   assert(event.outcomes.every(o => o.market_id && Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1));
 }
+const kalshi = JSON.parse(text('data/kalshi-sports.json'));
+assert.equal(kalshi.schema,1);
+assert.equal(kalshi.source_type,'prediction_market');
+assert(Array.isArray(kalshi.events));
+for(const e of kalshi.events){
+  assert(e.provider==='kalshi' && e.verification==='open_match_winner_market');
+  assert(['market_close','kickoff'].includes(e.time_kind));
+  assert([2,3].includes(e.outcomes.length));
+  assert(/^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+\/event\/[a-z0-9-]+$/.test(e.source_url));
+  for(const o of e.outcomes) assert(o.market_id && Number.isFinite(o.probability) && o.probability>0 && o.probability<1 &&
+    o.best_bid>0 && o.best_ask<1 && o.best_bid<=o.best_ask);
+  for(const n of ['volume_24h_contracts','volume_total_contracts','open_interest_contracts'])
+    if(n in (e.stats||{})) assert(Number.isFinite(e.stats[n]) && e.stats[n]>=0);
+}
 const predict = JSON.parse(text('data/predict-sports.json'));
 assert.equal(predict.source_type,'prediction_market');
 assert(Array.isArray(predict.events));
@@ -195,4 +209,5 @@ assert.equal(feedStatus.schema,1);
 for(const key of ['apple','android','games','sports']) assert(feedStatus.jobs[key]?.interval_hours > 0);
 // A newly installed feed has no status until the first scheduled collection.
 if (feedStatus.jobs.predict) assert(feedStatus.jobs.predict.interval_hours > 0);
+if (feedStatus.jobs.kalshi) assert(feedStatus.jobs.kalshi.interval_hours > 0);
 console.log('PASS: Regional Apple, verified Android, Steam/Epic, sports provenance and scheduler metadata.');
