@@ -167,3 +167,18 @@
   .sports-meta {gap:5px 9px}
 }
 @media(prefers-reduced-motion:reduce){.sports-language-btn{transition:none}}
+
+/* Source switcher sits below sport tabs, without stretching mobile cards. */
+.sports-source-toolbar{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:7px 8px;margin:-1px 0 15px}
+.sports-source-label{font-size:11px;letter-spacing:.03em;color:#9eabc1;margin-right:5px}
+.sports-source-btn{border:1px solid rgba(130,148,179,.35);background:rgba(17,27,43,.65);color:#c1cada;border-radius:999px;min-height:32px;padding:6px 12px;font-size:11px;font-weight:650;white-space:nowrap;transition:background .15s,border-color .15s}
+.sports-source-btn.is-active{color:#f4deb3;background:rgba(214,169,95,.17);border-color:rgba(230,190,122,.7)}
+.sports-source-btn:focus-visible{outline:2px solid #e3bf7c;outline-offset:2px}
+.sports-provider{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:#d8c3a2;font-size:10px;font-weight:700;letter-spacing:.015em}
+.sports-provider:before{content:"";width:6px;height:6px;border-radius:50%;background:#cfaa6b;box-shadow:0 0 8px #cfaa6b55}
+.sports-provider-predict:before{background:#8ac9df;box-shadow:0 0 8px #8ac9df55}
+.sports-match-bottom{min-width:0}
+.sports-match-bottom .sports-provider{flex:none}
+.sports-match-bottom a{margin-left:auto}
+@media(max-width:500px){.sports-source-toolbar{gap:6px;margin-bottom:12px}.sports-source-label{width:100%;margin-bottom:1px}.sports-source-btn{font-size:10px;padding:6px 10px}.sports-match-bottom{gap:6px;flex-wrap:wrap}.sports-match-bottom .sports-provider{order:0}.sports-match-bottom>a{order:2}}
+@media(prefers-reduced-motion:reduce){.sports-source-btn{transition:none}}

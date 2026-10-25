@@ -7,6 +7,7 @@ import update_daily_free as apple
 import update_android_free as android
 import update_game_free as games
 import update_sports as sports
+import update_predict_sports as predict
 from refresh_data import is_due, verified_time
 
 NOW = datetime(2026, 10, 24, 11, 30, tzinfo=timezone.utc)
@@ -105,5 +106,39 @@ class FeedRules(unittest.TestCase):
         self.assertTrue(is_due(verified_time('apple',snapshot),NOW,3))
         self.assertFalse(is_due(NOW - timedelta(hours=2),NOW,3))
         self.assertTrue(is_due(None,NOW,3))
+
+    def test_predict_sports_requires_real_start_time_and_moneyline_quote(self):
+        category = {
+            "id": 42, "slug": "lol-alpha-beta-2026-10-25",
+            "title": "LoL: Team Alpha vs Team Beta", "status": "OPEN",
+            "startsAt": "2026-10-25T13:00:00Z", "isVisible": True,
+            "teams": [{"name": "Team Alpha"}, {"name": "Team Beta"}],
+            "markets": [{
+                "id": 100, "marketType": "SPORTS_MONEYLINE", "tradingStatus": "OPEN",
+                "team": {"name": "Team Alpha"},
+                "resolution": {"bestBid": {"price": .60}, "bestAsk": {"price": .62}}
+            }]
+        }
+        record = predict.normalize(category, NOW)
+        self.assertEqual(record["provider"], "predict")
+        self.assertAlmostEqual(record["outcomes"][0]["probability"], .61)
+        self.assertAlmostEqual(record["outcomes"][1]["probability"], .39)
+        category["markets"][0]["marketType"] = "SPORTS_SPREAD"
+        self.assertIsNone(predict.normalize(category, NOW))
+        category["markets"][0]["marketType"] = "SPORTS_MONEYLINE"
+        category["markets"][0]["resolution"]["bestAsk"]["price"] = 1
+        self.assertIsNone(predict.normalize(category, NOW))
+        category["markets"][0]["resolution"]["bestAsk"]["price"] = .62
+        category.pop("startsAt")
+        self.assertIsNone(predict.normalize(category, NOW))
+
+    def test_predict_sports_skips_map_or_bad_outcomes(self):
+        category = {
+            "slug": "lol-team-a-vs-team-b-map-1", "title": "LoL Team A vs Team B Map 1",
+            "status": "OPEN", "startsAt": "2026-10-25T13:00:00Z",
+            "teams": [{"name": "Team A"}, {"name": "Team B"}],
+            "markets": []
+        }
+        self.assertIsNone(predict.normalize(category, NOW))
 
 if __name__ == '__main__': unittest.main()

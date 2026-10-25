@@ -128,6 +128,12 @@
           <button class="sports-tab" type="button" data-sport-filter="esports" aria-pressed="false">🕹️ 其他电竞</button>
           <button class="sports-tab" type="button" data-sport-filter="other" aria-pressed="false">🏈 其他体育</button>
         </div>
+        <div class="sports-source-toolbar" role="group" aria-label="数据来源" id="sportsSources">
+          <span class="sports-source-label" data-sports-t="sourcesHeading">预测数据来源</span>
+          <button type="button" class="sports-source-btn is-active" data-source-filter="all" aria-pressed="true" data-sports-t="allSources">全部来源</button>
+          <button type="button" class="sports-source-btn" data-source-filter="predict" aria-pressed="false">Predict.fun</button>
+          <button type="button" class="sports-source-btn" data-source-filter="polymarket" aria-pressed="false">Polymarket</button>
+        </div>
         <div class="sports-grid" id="sportsGrid" aria-live="polite"><div class="sports-empty"><strong>正在读取赛事数据</strong>首次同步前不会展示示意赔率或虚构比赛。</div></div>
         <div class="sports-list-actions" id="sportsListActions" hidden>
           <span id="sportsShowing" aria-live="polite"></span>

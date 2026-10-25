@@ -16,6 +16,7 @@
   const storageKey = 'liangyou-sports-lang-v1';
   const tabs = [...section.querySelectorAll('[data-sport-filter]')];
   const langButtons = [...languageGroup.querySelectorAll('[data-sports-lang]')];
+  const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
   const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 4 : 6;
   const esc = value => String(value ?? '').replace(/[&<>"']/g,
@@ -27,6 +28,7 @@
 
   let matches = [];
   let active = 'all';
+  let activeSource = 'all';
   let visibleLimit = initialLimit();
   let lastUpdated = null;
   let failed = false;
@@ -74,6 +76,10 @@
       const value = button.dataset.sportFilter;
       if (typeof labels[value] === 'string') button.textContent = labels[value];
     });
+    sourceButtons.forEach(button => {
+      const key = button.dataset.sportsT;
+      if (key && typeof labels[key] === 'string') button.textContent = labels[key];
+    });
     langButtons.forEach(button => {
       const selected = button.dataset.sportsLang === language;
       button.setAttribute('aria-pressed', String(selected));
@@ -101,8 +107,10 @@
     const labels = copy();
     const names = event.outcomes.map(o => translation.team(o.name, event.category, language));
     const percentages = event.outcomes.map(o => Math.max(0, Math.min(100, Number(o.probability) * 100)));
+    const provider = event.provider === 'predict' ? 'predict' : 'polymarket';
     const url = typeof event.source_url === 'string' &&
-      /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i.test(event.source_url) ? event.source_url : '';
+      (provider === 'predict' ? /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i : /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i).test(event.source_url)
+      ? event.source_url : '';
     const title = translation.title(event, language);
     const league = translation.league(event.league, event.category, language);
     const prob = event.outcomes.length === 3
@@ -128,7 +136,8 @@
       esc(league || labels.match) + '</span><span>' + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
       prob + track + '<div class="sports-match-bottom"><span>' +
-      esc(labels.prediction) + '</span>' +
+      esc(labels.prediction) + '</span><span class="sports-provider sports-provider-' + provider + '">' +
+      (provider === 'predict' ? 'Predict.fun' : 'Polymarket') + '</span>' +
       (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
         esc(labels.sourceAria + title) + '">' + esc(labels.source) + '</a>' : '') +
       '</div></article>';
@@ -154,13 +163,26 @@
     }
     const filtered = matches.filter(m =>
       (active === 'all' || m.category === active) &&
+      (activeSource === 'all' || (m.provider || 'polymarket') === activeSource) &&
       (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now())
     );
-    const ordered = arrange(filtered);
+    let visible = filtered;
+    if (activeSource === 'all') {
+      const seen = new Set();
+      const canonical = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+      visible = filtered.filter(event => {
+        const key = [event.category, Math.round(Date.parse(event.start_time) / 3600000),
+          ...event.outcomes.map(x => canonical(x.name)).sort()].join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    const ordered = arrange(visible);
     const display = ordered.slice(0, visibleLimit);
-    count.textContent = labels.total(filtered.length) +
-      (filtered.length ? ' · ' + labels.current(display.length) : '');
-    if (!filtered.length) {
+    count.textContent = labels.total(visible.length) +
+      (visible.length ? ' · ' + labels.current(display.length) : '');
+    if (!visible.length) {
       grid.innerHTML = '<div class="sports-empty"><strong>' + esc(labels.emptyTitle) +
         '</strong>' + esc(labels.emptyMessage) + '</div>';
       actions.hidden = true;
@@ -187,6 +209,16 @@
     });
     render();
   }));
+  sourceButtons.forEach(button => button.addEventListener('click', () => {
+    activeSource = button.dataset.sourceFilter;
+    visibleLimit = initialLimit();
+    sourceButtons.forEach(tab => {
+      const selected = tab === button;
+      tab.classList.toggle('is-active', selected);
+      tab.setAttribute('aria-pressed', String(selected));
+    });
+    render();
+  }));
   langButtons.forEach(button => button.addEventListener('click', () => {
     const next = button.dataset.sportsLang;
     if (next !== 'zh' && next !== 'en') return;
@@ -203,24 +235,60 @@
     document.getElementById('sports-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  const feeds = [
+    {url:'./data/sports.json', provider:'polymarket'},
+    {url:'./data/predict-sports.json', provider:'predict'}
+  ];
+  function verifiedFeed(data, provider) {
+    if (data.schema !== 1 || data.source_type !== 'prediction_market' || !Array.isArray(data.events)) return null;
+    const timestamp = Date.parse(data.generated_at);
+    if (!Number.isFinite(timestamp) || timestamp > Date.now() + 3600000 ||
+        Date.now() - timestamp > 6 * 3600000) return null;
+    return {
+      provider, timestamp, partial:data.status !== 'ok',
+      events: data.events.filter(event =>
+        event && event.verification === 'open_match_winner_market' &&
+        Array.isArray(event.outcomes) && [2,3].includes(event.outcomes.length) &&
+        Number.isFinite(Date.parse(event.start_time)) &&
+        event.outcomes.every(o => o.name && o.market_id && typeof o.probability === 'number' &&
+          Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1)
+      ).map(event => ({...event, provider}))
+    };
+  }
   async function refresh() {
     if (refreshPending) return;
     refreshPending = true;
     try {
-      const response = await fetch('./data/sports.json?v=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(15000)});
-      if (!response.ok) throw new Error('sports data unavailable');
-      const data = await response.json();
-      if (data.schema !== 1 || data.source_type !== 'prediction_market' || !Array.isArray(data.events)) throw new Error('invalid sports data');
-      matches = data.events.filter(event =>
-        event && event.verification === 'open_match_winner_market' && Array.isArray(event.outcomes) &&
-        [2, 3].includes(event.outcomes.length) &&
-        event.outcomes.every(o => o.name && o.market_id && typeof o.probability === 'number' && Number.isFinite(o.probability) && o.probability >= 0 && o.probability <= 1)
-      );
-      lastUpdated = data.generated_at ? new Date(data.generated_at) : null;
-      sourcePartial = data.status === 'partial';
+      const requests = await Promise.allSettled(feeds.map(async feed => {
+        const response = await fetch(feed.url + '?v=' + Date.now(), {
+          cache:'no-store', signal:AbortSignal.timeout(15000)
+        });
+        if (!response.ok) throw new Error('feed unavailable');
+        return verifiedFeed(await response.json(), feed.provider);
+      }));
+      const good = requests.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value);
+      if (!good.length) throw new Error('no fresh sources');
+      // Merge without hiding the other market: each filter reveals its own prices.
+      // In "All", cross-venue duplicates are kept only when their normalized
+      // opponent names and kick-off times are clearly identical.
+      const all = good.flatMap(x => x.events).sort((a,b) =>
+        Number(b.provider === 'predict') - Number(a.provider === 'predict'));
+      const unique = new Map();
+      const canonical = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
+      for (const event of all) {
+        const teams = event.outcomes.map(o => canonical(o.name)).sort();
+        const key = [event.category, Math.round(Date.parse(event.start_time)/3600000), ...teams].join('|');
+        const prior = unique.get(key);
+        if (!prior) unique.set(key, event);
+        // Keep a second source record for explicit source filtering.
+      }
+      // This single array is used for both "All" and per-source views; when
+      // All is selected, render() de-duplicates while retaining source filters.
+      matches = all;
+      lastUpdated = new Date(Math.max(...good.map(x => x.timestamp)));
+      sourcePartial = good.length !== feeds.length || good.some(x => x.partial);
       failed = false;
     } catch {
-      // A network failure must not relabel the old snapshot as newly verified.
       failed = !lastUpdated;
       sourcePartial = true;
     } finally {
