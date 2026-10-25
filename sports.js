@@ -21,7 +21,7 @@
   const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sourceHint = document.getElementById('sportsSourceHint');
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
-  const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 4 : 6;
+  const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 6 : 8;
   const esc = value => String(value ?? '').replace(/[&<>"']/g,
     ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
   let language = 'zh';

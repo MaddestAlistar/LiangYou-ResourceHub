@@ -262,7 +262,10 @@ def normalize(event, series, now, page_slug=None, discovered_category=None, leag
 def find_extra_series():
     """Single optional metadata request, capped to six additional head-to-head series."""
     try:
-        data = get_json(BASE + "/series?category=Sports")
+        # Discovery is opportunistic: one 10s request, never three retries.
+        request = Request(BASE + "/series?category=Sports", headers=HEADERS)
+        with urlopen(request, timeout=10) as response:
+            data = json.load(response)
         options = data.get("series", []) if isinstance(data, dict) else []
         if not isinstance(options, list):
             return []
