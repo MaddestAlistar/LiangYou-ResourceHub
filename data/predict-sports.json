@@ -2,10 +2,17 @@
   "schema": 1,
   "source": "Predict.fun API",
   "source_type": "prediction_market",
-  "generated_at": null,
+  "generated_at": "2026-10-25T17:22:13Z",
   "interval_hours": 2,
-  "status": "pending",
-  "sources": [],
+  "status": "ok",
+  "sources": [
+    {
+      "tag": "predict-categories",
+      "status": "ok",
+      "received": 1200,
+      "verified_matches": 0
+    }
+  ],
   "events": [],
-  "notes": "等待第一次实际 API 采集；不显示示例概率。"
+  "notes": "赛前胜负市场的买卖报价中位数，仅为市场隐含概率；无有效报价不展示。仅供赛事参考。"
 }
