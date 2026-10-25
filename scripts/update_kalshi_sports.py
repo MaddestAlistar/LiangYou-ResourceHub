@@ -342,7 +342,8 @@ def main():
     events = [buckets[cat][i] for i in range(30) for cat in SERIES
               if i < len(buckets[cat])]
     snapshot = {
-        "schema":1,"source":"Kalshi public market API",
+        "schema":1,"coverage_schema_version":2,
+        "source":"Kalshi public market API",
         "source_type":"prediction_market","generated_at":iso(now),
         "interval_hours":2,
         "status":"ok" if all(h["status"]=="ok" for h in health) else "partial",

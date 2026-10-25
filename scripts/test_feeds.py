@@ -214,6 +214,13 @@ class FeedRules(unittest.TestCase):
         self.assertIsNone(kalshi.moment("not-an-iso-time"))
 
 
+    def test_sports_coverage_requires_no_new_concurrent_workflows(self):
+        from refresh_data import JOBS
+        self.assertIn("sports", JOBS)
+        self.assertIn("kalshi", JOBS)
+        self.assertEqual(JOBS["sports"][2], 2)
+        self.assertEqual(JOBS["kalshi"][2], 2)
+
     def test_sports_event_source_expansion_remains_bounded(self):
         self.assertGreater(len(sports.SOURCES), 3)
         self.assertLessEqual(len({t for _,_,tags in sports.SOURCES for t in tags}),25)

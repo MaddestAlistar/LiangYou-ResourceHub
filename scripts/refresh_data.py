@@ -48,7 +48,8 @@ def main():
             entry['status'] = 'ok'
         snapshot = read_json(path) if name == 'kalshi' else {}
         kalshi_link_upgrade = name == 'kalshi' and snapshot.get('link_schema_version') != 2
-        if args.force or kalshi_link_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
+        coverage_upgrade = name in ('kalshi','sports') and read_json(path).get('coverage_schema_version') != 2
+        if args.force or kalshi_link_upgrade or coverage_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
             entry['last_attempt_at'] = iso()
             try:
                 result = subprocess.run([sys.executable, '-u', str(ROOT / 'scripts' / script)], cwd=ROOT, timeout=900)

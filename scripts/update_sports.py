@@ -459,6 +459,7 @@ def main():
         raise SystemExit("Partial source failure with no verified matches; previous snapshot preserved")
     snapshot = {
         "schema": 1,
+        "coverage_schema_version": 2,
         "source": "Polymarket Gamma API",
         "source_type": "prediction_market",
         "generated_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
