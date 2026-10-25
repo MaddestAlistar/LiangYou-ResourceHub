@@ -232,7 +232,11 @@ class FeedRules(unittest.TestCase):
             {"ticker":"KXSPREADNCAA","title":"NCAA Basketball Game Spread","tags":["College Basketball"]},
             {"ticker":"KXUFCH2H","title":"UFC Fight Match","tags":["MMA"]},
         ]}
-        with patch.object(kalshi,"get_json",return_value=mock):
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self): return json.dumps(mock).encode()
+        with patch.object(kalshi,"urlopen",return_value=Resp()):
             extras=kalshi.find_extra_series()
         self.assertEqual(len(extras),2)
         self.assertEqual(extras[0][0],"basketball")
