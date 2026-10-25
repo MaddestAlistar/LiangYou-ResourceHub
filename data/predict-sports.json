@@ -2,18 +2,524 @@
   "schema": 1,
   "source": "Predict.fun API",
   "source_type": "prediction_market",
-  "generated_at": "2026-10-25T17:30:26Z",
+  "generated_at": "2026-10-25T17:32:19Z",
   "interval_hours": 2,
   "status": "ok",
   "sources": [
     {
       "tag": "predict-categories",
       "status": "ok",
-      "received": 1200,
-      "verified_matches": 15
+      "received": 1541,
+      "verified_matches": 44
     }
   ],
   "events": [
+    {
+      "id": "predict-664885",
+      "title": "LoL: Top Esports vs G2 Esports (BO1) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-25T18:00:00Z",
+      "outcomes": [
+        {
+          "name": "TOP ESPORTS",
+          "probability": 0.475,
+          "market_id": "3789984"
+        },
+        {
+          "name": "G2 Esports",
+          "probability": 0.525,
+          "market_id": "3789984"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-tes-g2-2026-10-25"
+    },
+    {
+      "id": "predict-664890",
+      "title": "LoL: Dplus KIA vs Movistar KOI (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-25T19:00:00Z",
+      "outcomes": [
+        {
+          "name": "Dplus KIA",
+          "probability": 0.795,
+          "market_id": "3790063"
+        },
+        {
+          "name": "Movistar KOI",
+          "probability": 0.205,
+          "market_id": "3790063"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-dk-mkoi-2026-10-25"
+    },
+    {
+      "id": "predict-664887",
+      "title": "LoL: Gen.G vs LYON (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-25T22:00:00Z",
+      "outcomes": [
+        {
+          "name": "Gen.G Esports",
+          "probability": 0.905,
+          "market_id": "3790019"
+        },
+        {
+          "name": "LYON",
+          "probability": 0.095,
+          "market_id": "3790019"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-gen-ly-2026-10-25"
+    },
+    {
+      "id": "predict-664888",
+      "title": "LoL: T1 vs CTBC Flying Oyster (BO1) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T17:00:00Z",
+      "outcomes": [
+        {
+          "name": "T1",
+          "probability": 0.885,
+          "market_id": "3790023"
+        },
+        {
+          "name": "CTBC Flying Oyster",
+          "probability": 0.115,
+          "market_id": "3790023"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-t1-cfo-2026-10-26"
+    },
+    {
+      "id": "predict-664884",
+      "title": "LoL: Karmine Corp vs Bilibili Gaming (BO1) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T18:00:00Z",
+      "outcomes": [
+        {
+          "name": "Karmine Corp",
+          "probability": 0.295,
+          "market_id": "3789983"
+        },
+        {
+          "name": "BILIBILI GAMING",
+          "probability": 0.705,
+          "market_id": "3789983"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-kc-blg-2026-10-26"
+    },
+    {
+      "id": "predict-664889",
+      "title": "LoL: LOS vs Team Secret Whales (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T19:00:00Z",
+      "outcomes": [
+        {
+          "name": "LOS",
+          "probability": 0.345,
+          "market_id": "3790040"
+        },
+        {
+          "name": "Team Secret Whales",
+          "probability": 0.655,
+          "market_id": "3790040"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-los-tsw-2026-10-26"
+    },
+    {
+      "id": "predict-664883",
+      "title": "LoL: Team Liquid vs Anyone's Legend (BO3) - Worlds Group Stage",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T22:00:00Z",
+      "outcomes": [
+        {
+          "name": "Team Liquid Alienware",
+          "probability": 0.305,
+          "market_id": "3789982"
+        },
+        {
+          "name": "Anyone's Legend",
+          "probability": 0.695,
+          "market_id": "3789982"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-tl2-al-2026-10-26"
+    },
+    {
+      "id": "predict-651956",
+      "title": "LoL: Vitality Rising Bees vs Mental Rush (BO5) - LGC Rising Playoffs",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-27T16:00:00Z",
+      "outcomes": [
+        {
+          "name": "Vitality Rising Bees",
+          "probability": 0.615,
+          "market_id": "3662603"
+        },
+        {
+          "name": "Mental Rush",
+          "probability": 0.385,
+          "market_id": "3662603"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/lol-rb-mr-2026-10-27"
+    },
+    {
+      "id": "predict-636470",
+      "title": "Lakers vs. Jazz",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T21:00:00Z",
+      "outcomes": [
+        {
+          "name": "Lakers",
+          "probability": 0.695,
+          "market_id": "3541143"
+        },
+        {
+          "name": "Jazz",
+          "probability": 0.305,
+          "market_id": "3541143"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-lal-uta-2026-10-25"
+    },
+    {
+      "id": "predict-636472",
+      "title": "Pacers vs. Nets",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T22:00:00Z",
+      "outcomes": [
+        {
+          "name": "Pacers",
+          "probability": 0.695,
+          "market_id": "3541151"
+        },
+        {
+          "name": "Nets",
+          "probability": 0.305,
+          "market_id": "3541151"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-ind-bkn-2026-10-25"
+    },
+    {
+      "id": "predict-636468",
+      "title": "Raptors vs. Timberwolves",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Raptors",
+          "probability": 0.495,
+          "market_id": "3541142"
+        },
+        {
+          "name": "Timberwolves",
+          "probability": 0.505,
+          "market_id": "3541142"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-tor-min-2026-10-25"
+    },
+    {
+      "id": "predict-636469",
+      "title": "Magic vs. Knicks",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Magic",
+          "probability": 0.285,
+          "market_id": "3541141"
+        },
+        {
+          "name": "Knicks",
+          "probability": 0.715,
+          "market_id": "3541141"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-orl-nyk-2026-10-25"
+    },
+    {
+      "id": "predict-636474",
+      "title": "Clippers vs. Thunder",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Clippers",
+          "probability": 0.095,
+          "market_id": "3541157"
+        },
+        {
+          "name": "Thunder",
+          "probability": 0.905,
+          "market_id": "3541157"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-lac-okc-2026-10-25"
+    },
+    {
+      "id": "predict-636473",
+      "title": "Pistons vs. 76ers",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-25T23:30:00Z",
+      "outcomes": [
+        {
+          "name": "Pistons",
+          "probability": 0.505,
+          "market_id": "3541152"
+        },
+        {
+          "name": "76ers",
+          "probability": 0.495,
+          "market_id": "3541152"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-det-phi-2026-10-25"
+    },
+    {
+      "id": "predict-637510",
+      "title": "Grizzlies vs. Kings",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T01:00:00Z",
+      "outcomes": [
+        {
+          "name": "Grizzlies",
+          "probability": 0.605,
+          "market_id": "3546053"
+        },
+        {
+          "name": "Kings",
+          "probability": 0.395,
+          "market_id": "3546053"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-mem-sac-2026-10-25"
+    },
+    {
+      "id": "predict-642659",
+      "title": "Ningbo Rockets vs. Jilin Northeast Tigers",
+      "category": "basketball",
+      "league": "bkcba",
+      "start_time": "2026-10-26T11:35:00Z",
+      "outcomes": [
+        {
+          "name": "Ningbo Rockets",
+          "probability": 0.31,
+          "market_id": "3591645"
+        },
+        {
+          "name": "Jilin Northeast Tigers",
+          "probability": 0.69,
+          "market_id": "3591645"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/bkcba-nin-jil-2026-10-26"
+    },
+    {
+      "id": "predict-642712",
+      "title": "Shanghai Sharks vs. Guangdong Southern Tigers",
+      "category": "basketball",
+      "league": "bkcba",
+      "start_time": "2026-10-26T11:35:00Z",
+      "outcomes": [
+        {
+          "name": "Shanghai Sharks",
+          "probability": 0.88,
+          "market_id": "3592401"
+        },
+        {
+          "name": "Guangdong Southern Tigers",
+          "probability": 0.12,
+          "market_id": "3592401"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/bkcba-sha3-gua-2026-10-26"
+    },
+    {
+      "id": "predict-641353",
+      "title": "Timberwolves vs. Cavaliers",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Timberwolves",
+          "probability": 0.44,
+          "market_id": "3579678"
+        },
+        {
+          "name": "Cavaliers",
+          "probability": 0.56,
+          "market_id": "3579678"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-min-cle-2026-10-26"
+    },
+    {
+      "id": "predict-641392",
+      "title": "Wizards vs. Hornets",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T23:00:00Z",
+      "outcomes": [
+        {
+          "name": "Wizards",
+          "probability": 0.475,
+          "market_id": "3579732"
+        },
+        {
+          "name": "Hornets",
+          "probability": 0.525,
+          "market_id": "3579732"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-was-cha-2026-10-26"
+    },
+    {
+      "id": "predict-641354",
+      "title": "Bulls vs. Celtics",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T23:30:00Z",
+      "outcomes": [
+        {
+          "name": "Bulls",
+          "probability": 0.145,
+          "market_id": "3579681"
+        },
+        {
+          "name": "Celtics",
+          "probability": 0.855,
+          "market_id": "3579681"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-chi-bos-2026-10-26"
+    },
+    {
+      "id": "predict-655899",
+      "title": "Counter-Strike: Color vs ex-Zero Tenacity (BO3) - NODWIN Clutch Series Playoffs",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-25T18:00:00Z",
+      "outcomes": [
+        {
+          "name": "Color",
+          "probability": 0.505,
+          "market_id": "3697356"
+        },
+        {
+          "name": "ex-Zero Tenacity",
+          "probability": 0.495,
+          "market_id": "3697356"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-color-zerote-2026-10-25"
+    },
+    {
+      "id": "predict-659392",
+      "title": "Counter-Strike: FORZE Reload vs ex-RUSTEC (BO3) - CCT Europe Series #12 Group Stage",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-25T18:00:00Z",
+      "outcomes": [
+        {
+          "name": "FORZE Reload",
+          "probability": 0.545,
+          "market_id": "3721864"
+        },
+        {
+          "name": "ex-RUSTEC",
+          "probability": 0.455,
+          "market_id": "3721864"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-forzer-rustec-2026-10-25"
+    },
     {
       "id": "predict-664938",
       "title": "Counter-Strike: Tropa do KinGui vs Yawara Esports (BO3) - CCT South America Series 7 Playoffs",
@@ -32,10 +538,56 @@
           "market_id": "3790213"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-tdkg-yaw-2026-10-25"
+    },
+    {
+      "id": "predict-664737",
+      "title": "Counter-Strike: paiN vs BESTIA (BO3) - Circuit X Curitiba Playoffs",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-25T19:00:00Z",
+      "outcomes": [
+        {
+          "name": "paiN",
+          "probability": 0.585,
+          "market_id": "3787835"
+        },
+        {
+          "name": "BESTIA",
+          "probability": 0.415,
+          "market_id": "3787835"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-pain-bst-2026-10-25"
+    },
+    {
+      "id": "predict-657414",
+      "title": "Counter-Strike: Spirit Academy Black vs Winx (BO3) - CCT Europe Contenders #10 Playoffs",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-25T19:15:00Z",
+      "outcomes": [
+        {
+          "name": "Spirit Academy Black",
+          "probability": 0.38,
+          "market_id": "3705543"
+        },
+        {
+          "name": "Winx",
+          "probability": 0.62,
+          "market_id": "3705543"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-tsab-winx1-2026-10-25"
     },
     {
       "id": "predict-664936",
@@ -55,7 +607,7 @@
           "market_id": "3790205"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-mars-lag-2026-10-25"
@@ -69,19 +621,272 @@
       "outcomes": [
         {
           "name": "Team Voca",
-          "probability": 0.83,
+          "probability": 0.84,
           "market_id": "3790206"
         },
         {
           "name": "Chicken Coop Esports",
-          "probability": 0.17,
+          "probability": 0.16,
           "market_id": "3790206"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-voc-cce-2026-10-25"
+    },
+    {
+      "id": "predict-664734",
+      "title": "Dota 2: OG vs GamerLegion (BO3) - PARI Universe Group A",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-26T08:00:00Z",
+      "outcomes": [
+        {
+          "name": "OG",
+          "probability": 0.57,
+          "market_id": "3787765"
+        },
+        {
+          "name": "GamerLegion",
+          "probability": 0.43,
+          "market_id": "3787765"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/dota2-og-gl-2026-10-26"
+    },
+    {
+      "id": "predict-664733",
+      "title": "Dota 2: Team Yandex vs Team Liquid (BO3) - PARI Universe Group A",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-26T11:00:00Z",
+      "outcomes": [
+        {
+          "name": "Team Yandex",
+          "probability": 0.76,
+          "market_id": "3787745"
+        },
+        {
+          "name": "Team Liquid",
+          "probability": 0.24,
+          "market_id": "3787745"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/dota2-ty-liquid-2026-10-26"
+    },
+    {
+      "id": "predict-664735",
+      "title": "Dota 2: Team Spirit vs PARIVISION (BO3) - PARI Universe Group B",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-26T14:00:00Z",
+      "outcomes": [
+        {
+          "name": "Team Spirit",
+          "probability": 0.435,
+          "market_id": "3787785"
+        },
+        {
+          "name": "PARIVISION",
+          "probability": 0.565,
+          "market_id": "3787785"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/dota2-ts8-pari-2026-10-26"
+    },
+    {
+      "id": "predict-651115",
+      "title": "Counter-Strike: Sissi State Punks vs BIG Academy (BO3) - DACH CS Masters Regular Season",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-26T17:00:00Z",
+      "outcomes": [
+        {
+          "name": "Sissi State Punks",
+          "probability": 0.135,
+          "market_id": "3658750"
+        },
+        {
+          "name": "BIG Academy",
+          "probability": 0.865,
+          "market_id": "3658750"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-ssp1-biga-2026-10-26"
+    },
+    {
+      "id": "predict-664736",
+      "title": "Dota 2: BetBoom Team vs LEGION (BO3) - PARI Universe Group B",
+      "category": "esports",
+      "league": "其他电竞",
+      "start_time": "2026-10-26T17:00:00Z",
+      "outcomes": [
+        {
+          "name": "BetBoom Team",
+          "probability": 0.75,
+          "market_id": "3787797"
+        },
+        {
+          "name": "LEGION",
+          "probability": 0.25,
+          "market_id": "3787797"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/dota2-bb4-legion1-2026-10-26"
+    },
+    {
+      "id": "predict-477618",
+      "title": "Broncos vs. Cardinals",
+      "category": "other",
+      "league": "nfl",
+      "start_time": "2026-10-25T20:05:00Z",
+      "outcomes": [
+        {
+          "name": "Arizona Cardinals",
+          "probability": 0.325,
+          "market_id": "2280890"
+        },
+        {
+          "name": "Denver Broncos",
+          "probability": 0.675,
+          "market_id": "2280890"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nfl-den-ari-2026-10-25"
+    },
+    {
+      "id": "predict-477605",
+      "title": "Rams vs. Raiders",
+      "category": "other",
+      "league": "nfl",
+      "start_time": "2026-10-25T20:25:00Z",
+      "outcomes": [
+        {
+          "name": "Las Vegas Raiders",
+          "probability": 0.385,
+          "market_id": "2280848"
+        },
+        {
+          "name": "Los Angeles Rams",
+          "probability": 0.615,
+          "market_id": "2280848"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nfl-la-lv-2026-10-25"
+    },
+    {
+      "id": "predict-477617",
+      "title": "Packers vs. Lions",
+      "category": "other",
+      "league": "nfl",
+      "start_time": "2026-10-25T20:25:00Z",
+      "outcomes": [
+        {
+          "name": "Detroit Lions",
+          "probability": 0.645,
+          "market_id": "2280888"
+        },
+        {
+          "name": "Green Bay Packers",
+          "probability": 0.355,
+          "market_id": "2280888"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nfl-gb-det-2026-10-25"
+    },
+    {
+      "id": "predict-477619",
+      "title": "Chiefs vs. Seahawks",
+      "category": "other",
+      "league": "nfl",
+      "start_time": "2026-10-26T00:20:00Z",
+      "outcomes": [
+        {
+          "name": "Seattle Seahawks",
+          "probability": 0.585,
+          "market_id": "2280889"
+        },
+        {
+          "name": "Kansas City Chiefs",
+          "probability": 0.415,
+          "market_id": "2280889"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nfl-kc-sea-2026-10-26"
+    },
+    {
+      "id": "predict-643670",
+      "title": "Milwaukee Brewers vs. Tampa Bay Rays",
+      "category": "other",
+      "league": "mlb",
+      "start_time": "2026-10-27T00:00:00Z",
+      "outcomes": [
+        {
+          "name": "Milwaukee Brewers",
+          "probability": 0.485,
+          "market_id": "3596753"
+        },
+        {
+          "name": "Tampa Bay Rays",
+          "probability": 0.515,
+          "market_id": "3596753"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/mlb-mil-tb-2026-10-26"
+    },
+    {
+      "id": "predict-481803",
+      "title": "Cowboys vs. Eagles",
+      "category": "other",
+      "league": "nfl",
+      "start_time": "2026-10-27T00:15:00Z",
+      "outcomes": [
+        {
+          "name": "Dallas Cowboys",
+          "probability": 0.675,
+          "market_id": "2311830"
+        },
+        {
+          "name": "Philadelphia Eagles",
+          "probability": 0.325,
+          "market_id": "2311830"
+        }
+      ],
+      "checked_at": "2026-10-25T17:32:19Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nfl-dal-phi-2026-10-27"
     },
     {
       "id": "predict-665744",
@@ -101,7 +906,7 @@
           "market_id": "3797241"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-vachero-navone-2026-10-27"
@@ -124,7 +929,7 @@
           "market_id": "3797248"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-cobolli-dimitro-2026-10-27"
@@ -147,7 +952,7 @@
           "market_id": "3797306"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-aguilar-medvede-2026-10-27"
@@ -170,7 +975,7 @@
           "market_id": "3797350"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-djokovi-humbert-2026-10-27"
@@ -193,7 +998,7 @@
           "market_id": "3797352"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-wawrink-lehecka-2026-10-27"
@@ -216,148 +1021,10 @@
           "market_id": "3797356"
         }
       ],
-      "checked_at": "2026-10-25T17:30:26Z",
+      "checked_at": "2026-10-25T17:32:19Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-khachan-alcaraz-2026-10-27"
-    },
-    {
-      "id": "predict-665761",
-      "title": "Erste Bank Open: Alexander Zverev vs Martin Landaluce",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Alexander Zverev",
-          "probability": 0.86,
-          "market_id": "3797362"
-        },
-        {
-          "name": "Martin Landaluce",
-          "probability": 0.14,
-          "market_id": "3797362"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-zverev-landalu-2026-10-27"
-    },
-    {
-      "id": "predict-665762",
-      "title": "Swiss Indoors Basel: Hubert Hurkacz vs Arthur Fils",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Hubert Hurkacz",
-          "probability": 0.475,
-          "market_id": "3797364"
-        },
-        {
-          "name": "Arthur Fils",
-          "probability": 0.525,
-          "market_id": "3797364"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-hurkacz-fils-2026-10-27"
-    },
-    {
-      "id": "predict-665764",
-      "title": "Swiss Indoors Basel: Alejandro Tabilo vs Rafael Jodar",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Alejandro Tabilo",
-          "probability": 0.245,
-          "market_id": "3797368"
-        },
-        {
-          "name": "Rafael Jodar",
-          "probability": 0.755,
-          "market_id": "3797368"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-tabilo-jodar-2026-10-27"
-    },
-    {
-      "id": "predict-665768",
-      "title": "Erste Bank Open: Matteo Berrettini vs Tomas Etcheverry",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Tomas Etcheverry",
-          "probability": 0.38,
-          "market_id": "3797434"
-        },
-        {
-          "name": "Matteo Berrettini",
-          "probability": 0.62,
-          "market_id": "3797434"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-berrett-etcheve-2026-10-27"
-    },
-    {
-      "id": "predict-665772",
-      "title": "Erste Bank Open: Tallon Griekspoor vs Brandon Nakashima",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Tallon Griekspoor",
-          "probability": 0.325,
-          "market_id": "3797442"
-        },
-        {
-          "name": "Brandon Nakashima",
-          "probability": 0.675,
-          "market_id": "3797442"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-grieksp-nakashi-2026-10-27"
-    },
-    {
-      "id": "predict-665776",
-      "title": "Swiss Indoors Basel: Alejandro Davidovich Fokina vs Zizou Bergs",
-      "category": "other",
-      "league": "atp",
-      "start_time": "2026-10-27T09:00:00Z",
-      "outcomes": [
-        {
-          "name": "Alejandro Davidovich Fokina",
-          "probability": 0.515,
-          "market_id": "3797450"
-        },
-        {
-          "name": "Zizou Bergs",
-          "probability": 0.485,
-          "market_id": "3797450"
-        }
-      ],
-      "checked_at": "2026-10-25T17:30:26Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/atp-fokina-bergs-2026-10-27"
     }
   ],
   "notes": "赛前胜负市场的买卖报价中位数，仅为市场隐含概率；无有效报价不展示。仅供赛事参考。"
