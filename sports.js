@@ -140,7 +140,7 @@
         '<div class="sports-quote-content">' + quotes.join('') + captured +
         '<p class="sports-quote-note">' + esc(labels.quoteNote) + '</p></div></details>'
       : captured;
-    return chips + detail;
+    return { chips, detail };
   }
 
   function eventCard(event) {
@@ -155,6 +155,7 @@
     const title = rich ? names[0] + (language === 'zh' ? ' 对阵 ' : ' vs ') +
       names[names.length - 1] : translation.title(event, language);
     const league = translation.league(event.league, event.category, language);
+    const extra = rich ? richPredictDetails(event, names) : {chips:'', detail:''};
     const prob = event.outcomes.length === 3
       ? '<div class="sports-three">' + names.map((name, i) =>
           '<div class="sports-side"><span>' + esc(name) + '</span><b>' +
@@ -177,8 +178,7 @@
     return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') + '"><div class="sports-match-top"><span>' +
       esc(league || labels.match) + '</span><span>' + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
-      (rich ? richPredictDetails(event, names) : '') +
-      prob + track + '<div class="sports-match-bottom"><span>' +
+      extra.chips + prob + track + extra.detail + '<div class="sports-match-bottom"><span>' +
       esc(labels.prediction) + '</span><span class="sports-provider sports-provider-' + provider + '">' +
       (provider === 'predict' ? 'Predict.fun' : 'Polymarket') + '</span>' +
       (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
