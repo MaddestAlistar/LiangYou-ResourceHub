@@ -10,6 +10,8 @@
   const section = document.getElementById('sports');
   const languageGroup = document.getElementById('sportsLanguage');
   const translation = window.LiangYouSportsI18n;
+  const search = document.getElementById('sportsSearch');
+  const sortControl = document.getElementById('sportsSort');
   if (!grid || !status || !count || !actions || !more || !collapse || !showing ||
       !section || !languageGroup || !translation || !search || !sortControl) return;
 
@@ -18,8 +20,6 @@
   const langButtons = [...languageGroup.querySelectorAll('[data-sports-lang]')];
   const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sourceHint = document.getElementById('sportsSourceHint');
-  const search = document.getElementById('sportsSearch');
-  const sortControl = document.getElementById('sportsSort');
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
   const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 4 : 6;
   const esc = value => String(value ?? '').replace(/[&<>"']/g,
