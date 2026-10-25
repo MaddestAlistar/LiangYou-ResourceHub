@@ -241,6 +241,32 @@ def main():
         if len(groups[event["category"]]) < 12:
             groups[event["category"]].append(event)
     selected = [event for category in LEAGUES for event in groups[category]]
+    # Safe diagnostics: market titles and public metadata only, never credentials.
+    if not selected:
+        print("Predict diagnosis: categories=%d typed=%d future=%d" % (
+            len(categories),
+            sum(category_type(c) is not None for c in categories if isinstance(c, dict)),
+            sum(moment(c.get("startsAt")) is not None and moment(c.get("startsAt")) > now for c in categories if isinstance(c, dict))
+        ))
+        examples = [c for c in categories if isinstance(c, dict) and
+                    re.search(r"lol|nba|nfl|esports|football|counter.strike|worlds|soccer", str(c.get("slug") or "") + " " + str(c.get("title") or ""), re.I)]
+        examples = (examples[:5] if examples else categories[:3])
+        for c in examples:
+            if not isinstance(c, dict):
+                continue
+            markets = c.get("markets") or []
+            m = markets[0] if isinstance(markets, list) and markets and isinstance(markets[0], dict) else {}
+            print("Predict category sample: " + json.dumps({
+                "slug": c.get("slug"), "title": c.get("title"),
+                "startsAt": c.get("startsAt"), "status": c.get("status"),
+                "marketVariant": c.get("marketVariant"),
+                "tags": [t.get("name") or t.get("slug") for t in (c.get("tags") or [])[:3] if isinstance(t, dict)],
+                "teams": c.get("teams"), "sports": (c.get("variantDetails") or {}).get("sports"),
+                "market_count": len(markets) if isinstance(markets, list) else 0,
+                "market_keys": list(m)[:30],
+                "market_type": m.get("marketType"),
+                "market_team": m.get("team"), "market_resolution": m.get("resolution"),
+            }, ensure_ascii=False, default=str)[:2200])
     snapshot = {
         "schema": 1, "source": "Predict.fun API", "source_type": "prediction_market",
         "generated_at": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
