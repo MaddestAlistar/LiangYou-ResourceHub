@@ -2,10 +2,2593 @@
   "schema": 1,
   "source": "Kalshi public market API",
   "source_type": "prediction_market",
-  "generated_at": null,
+  "generated_at": "2026-10-25T18:35:23Z",
   "interval_hours": 2,
-  "status": "pending",
-  "sources": [],
-  "events": [],
-  "notes": "Awaiting first actual read-only Kalshi collection; no sample or fabricated prices."
+  "status": "ok",
+  "sources": [
+    {
+      "tag": "KXLOLGAME",
+      "status": "ok",
+      "received": 8
+    },
+    {
+      "tag": "KXNBAGAME",
+      "status": "ok",
+      "received": 32
+    },
+    {
+      "tag": "KXEPLGAME",
+      "status": "ok",
+      "received": 20
+    },
+    {
+      "tag": "KXUCLGAME",
+      "status": "ok",
+      "received": 18
+    },
+    {
+      "tag": "KXUEFAGAME",
+      "status": "ok",
+      "received": 0
+    },
+    {
+      "tag": "KXLALIGAGAME",
+      "status": "ok",
+      "received": 23
+    },
+    {
+      "tag": "KXSERIEAGAME",
+      "status": "ok",
+      "received": 32
+    },
+    {
+      "tag": "KXBUNDESLIGAGAME",
+      "status": "ok",
+      "received": 18
+    },
+    {
+      "tag": "KXMLSGAME",
+      "status": "ok",
+      "received": 45
+    },
+    {
+      "tag": "KXCS2GAME",
+      "status": "ok",
+      "received": 51
+    },
+    {
+      "tag": "KXDOTA2GAME",
+      "status": "ok",
+      "received": 13
+    },
+    {
+      "tag": "KXVALORANTGAME",
+      "status": "ok",
+      "received": 4
+    },
+    {
+      "tag": "KXNFLGAME",
+      "status": "ok",
+      "received": 26
+    },
+    {
+      "tag": "KXMLBGAME",
+      "status": "ok",
+      "received": 2
+    },
+    {
+      "tag": "KXNHLGAME",
+      "status": "ok",
+      "received": 47
+    },
+    {
+      "tag": "KXATPMATCH",
+      "status": "ok",
+      "received": 27
+    },
+    {
+      "tag": "KXWTAMATCH",
+      "status": "ok",
+      "received": 24
+    }
+  ],
+  "events": [
+    {
+      "id": "kalshi-kxlolgame-26oct251300g2tes",
+      "title": "G2 Esports vs. Top Esports",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-25T21:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "G2 Esports",
+          "probability": 0.495,
+          "market_id": "KXLOLGAME-26OCT251300G2TES-G2",
+          "best_bid": 0.49,
+          "best_ask": 0.5,
+          "best_bid_size": 1544.48,
+          "best_ask_size": 26.86,
+          "last_price": 0.5
+        },
+        {
+          "name": "Top Esports",
+          "probability": 0.5,
+          "market_id": "KXLOLGAME-26OCT251300G2TES-TES",
+          "best_bid": 0.49,
+          "best_ask": 0.51,
+          "best_bid_size": 1260.67,
+          "best_ask_size": 1707.2,
+          "last_price": 0.49
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 861080.05,
+        "volume_total_contracts": 967732.31,
+        "open_interest_contracts": 746708.15
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct251300g2tes"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct251500lygen",
+      "title": "LYON vs. Gen.G",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-25T23:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "LYON",
+          "probability": 0.095,
+          "market_id": "KXLOLGAME-26OCT251500LYGEN-LY",
+          "best_bid": 0.09,
+          "best_ask": 0.1,
+          "best_bid_size": 30716.58,
+          "best_ask_size": 165021.8,
+          "last_price": 0.1
+        },
+        {
+          "name": "Gen.G",
+          "probability": 0.905,
+          "market_id": "KXLOLGAME-26OCT251500LYGEN-GEN",
+          "best_bid": 0.9,
+          "best_ask": 0.91,
+          "best_bid_size": 12651.22,
+          "best_ask_size": 67173.02,
+          "last_price": 0.91
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 117894.46,
+        "volume_total_contracts": 119520.57,
+        "open_interest_contracts": 118529.62
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct251500lygen"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct251800mkoidk",
+      "title": "Movistar KOI vs. Dplus KIA",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Movistar KOI",
+          "probability": 0.215,
+          "market_id": "KXLOLGAME-26OCT251800MKOIDK-MKOI",
+          "best_bid": 0.21,
+          "best_ask": 0.22,
+          "best_bid_size": 22745.42,
+          "best_ask_size": 201109.11,
+          "last_price": 0.22
+        },
+        {
+          "name": "Dplus KIA",
+          "probability": 0.785,
+          "market_id": "KXLOLGAME-26OCT251800MKOIDK-DK",
+          "best_bid": 0.78,
+          "best_ask": 0.79,
+          "best_bid_size": 45810.0,
+          "best_ask_size": 127003.32,
+          "last_price": 0.79
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 242635.93,
+        "volume_total_contracts": 243095.37,
+        "open_interest_contracts": 241933.29
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct251800mkoidk"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct261300blgkc",
+      "title": "Bilibili Gaming vs. Karmine Corp",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T21:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Bilibili Gaming",
+          "probability": 0.695,
+          "market_id": "KXLOLGAME-26OCT261300BLGKC-BLG",
+          "best_bid": 0.69,
+          "best_ask": 0.7,
+          "best_bid_size": 21257.89,
+          "best_ask_size": 5938.17,
+          "last_price": 0.7
+        },
+        {
+          "name": "Karmine Corp",
+          "probability": 0.295,
+          "market_id": "KXLOLGAME-26OCT261300BLGKC-KC",
+          "best_bid": 0.29,
+          "best_ask": 0.3,
+          "best_bid_size": 11389.04,
+          "best_ask_size": 127321.18,
+          "last_price": 0.3
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 27590.54,
+        "volume_total_contracts": 27598.54,
+        "open_interest_contracts": 27274.7
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct261300blgkc"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct261400cfot1",
+      "title": "CTBC Flying Oyster vs. T1",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T22:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "CTBC Flying Oyster",
+          "probability": 0.125,
+          "market_id": "KXLOLGAME-26OCT261400CFOT1-CFO",
+          "best_bid": 0.12,
+          "best_ask": 0.13,
+          "best_bid_size": 70.0,
+          "best_ask_size": 106701.51,
+          "last_price": 0.13
+        },
+        {
+          "name": "T1",
+          "probability": 0.875,
+          "market_id": "KXLOLGAME-26OCT261400CFOT1-T1",
+          "best_bid": 0.87,
+          "best_ask": 0.88,
+          "best_bid_size": 12682.39,
+          "best_ask_size": 6249.65,
+          "last_price": 0.87
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 11738.69,
+        "volume_total_contracts": 11738.69,
+        "open_interest_contracts": 11613.37
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct261400cfot1"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct261500tswlos",
+      "title": "Team Secret Whales vs. LOS",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-26T23:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Team Secret Whales",
+          "probability": 0.645,
+          "market_id": "KXLOLGAME-26OCT261500TSWLOS-TSW",
+          "best_bid": 0.64,
+          "best_ask": 0.65,
+          "best_bid_size": 3038.77,
+          "best_ask_size": 5115.66,
+          "last_price": 0.65
+        },
+        {
+          "name": "LOS",
+          "probability": 0.355,
+          "market_id": "KXLOLGAME-26OCT261500TSWLOS-LOS",
+          "best_bid": 0.35,
+          "best_ask": 0.36,
+          "best_bid_size": 5493.0,
+          "best_ask_size": 88354.5,
+          "last_price": 0.36
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 29683.7,
+        "volume_total_contracts": 29683.7,
+        "open_interest_contracts": 28307.58
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct261500tswlos"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct261800altl",
+      "title": "Anyone's Legend vs. Team Liquid",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-27T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Anyone's Legend",
+          "probability": 0.69,
+          "market_id": "KXLOLGAME-26OCT261800ALTL-AL",
+          "best_bid": 0.68,
+          "best_ask": 0.7,
+          "best_bid_size": 2717.65,
+          "best_ask_size": 46366.94,
+          "last_price": 0.69
+        },
+        {
+          "name": "Team Liquid",
+          "probability": 0.315,
+          "market_id": "KXLOLGAME-26OCT261800ALTL-TL",
+          "best_bid": 0.31,
+          "best_ask": 0.32,
+          "best_bid_size": 24.48,
+          "best_ask_size": 123397.03,
+          "last_price": 0.32
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 18436.24,
+        "volume_total_contracts": 18436.24,
+        "open_interest_contracts": 18337.24
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct261800altl"
+    },
+    {
+      "id": "kalshi-kxlolgame-26oct271300rbmr",
+      "title": "Rising Bees vs. Mental Rush",
+      "category": "lol",
+      "league": "英雄联盟",
+      "start_time": "2026-10-27T21:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Rising Bees",
+          "probability": 0.645,
+          "market_id": "KXLOLGAME-26OCT271300RBMR-RB",
+          "best_bid": 0.63,
+          "best_ask": 0.66,
+          "best_bid_size": 3.0,
+          "best_ask_size": 133.0,
+          "last_price": 0.65,
+          "previous_price": 0.64
+        },
+        {
+          "name": "Mental Rush",
+          "probability": 0.38,
+          "market_id": "KXLOLGAME-26OCT271300RBMR-MR",
+          "best_bid": 0.36,
+          "best_ask": 0.4,
+          "best_bid_size": 32.44,
+          "best_ask_size": 105.0,
+          "last_price": 0.41,
+          "previous_price": 0.52
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 352.62,
+        "volume_total_contracts": 387.02,
+        "open_interest_contracts": 371.9
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlolgame/event/kxlolgame-26oct271300rbmr"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25laluta",
+      "title": "Los Angeles L vs Utah",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T00:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Los Angeles L",
+          "probability": 0.685,
+          "market_id": "KXNBAGAME-26OCT25LALUTA-LAL",
+          "best_bid": 0.68,
+          "best_ask": 0.69,
+          "best_bid_size": 78113.88,
+          "best_ask_size": 45344.56,
+          "last_price": 0.69,
+          "previous_price": 0.71
+        },
+        {
+          "name": "Utah",
+          "probability": 0.305,
+          "market_id": "KXNBAGAME-26OCT25LALUTA-UTA",
+          "best_bid": 0.3,
+          "best_ask": 0.31,
+          "best_bid_size": 84747.44,
+          "best_ask_size": 32834.81,
+          "last_price": 0.31,
+          "previous_price": 0.32
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 133670.29,
+        "volume_total_contracts": 159343.54,
+        "open_interest_contracts": 141971.69
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25laluta"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25indbkn",
+      "title": "Indiana vs Brooklyn",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T01:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Indiana",
+          "probability": 0.685,
+          "market_id": "KXNBAGAME-26OCT25INDBKN-IND",
+          "best_bid": 0.68,
+          "best_ask": 0.69,
+          "best_bid_size": 54078.04,
+          "best_ask_size": 384138.61,
+          "last_price": 0.69,
+          "previous_price": 0.7
+        },
+        {
+          "name": "Brooklyn",
+          "probability": 0.315,
+          "market_id": "KXNBAGAME-26OCT25INDBKN-BKN",
+          "best_bid": 0.31,
+          "best_ask": 0.32,
+          "best_bid_size": 34.5,
+          "best_ask_size": 255256.71,
+          "last_price": 0.32,
+          "previous_price": 0.32
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 87905.57,
+        "volume_total_contracts": 89787.75,
+        "open_interest_contracts": 68811.98
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25indbkn"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25lacokc",
+      "title": "Los Angeles C vs Oklahoma City",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Los Angeles C",
+          "probability": 0.095,
+          "market_id": "KXNBAGAME-26OCT25LACOKC-LAC",
+          "best_bid": 0.09,
+          "best_ask": 0.1,
+          "best_bid_size": 30624.7,
+          "best_ask_size": 867727.65,
+          "last_price": 0.1,
+          "previous_price": 0.12
+        },
+        {
+          "name": "Oklahoma City",
+          "probability": 0.905,
+          "market_id": "KXNBAGAME-26OCT25LACOKC-OKC",
+          "best_bid": 0.9,
+          "best_ask": 0.91,
+          "best_bid_size": 41163.05,
+          "best_ask_size": 778357.55,
+          "last_price": 0.91,
+          "previous_price": 0.9
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 219460.4,
+        "volume_total_contracts": 246994.21,
+        "open_interest_contracts": 222846.0
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25lacokc"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25orlnyk",
+      "title": "Orlando vs New York",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Orlando",
+          "probability": 0.285,
+          "market_id": "KXNBAGAME-26OCT25ORLNYK-ORL",
+          "best_bid": 0.28,
+          "best_ask": 0.29,
+          "best_bid_size": 53.63,
+          "best_ask_size": 260169.25,
+          "last_price": 0.29,
+          "previous_price": 0.28
+        },
+        {
+          "name": "New York",
+          "probability": 0.715,
+          "market_id": "KXNBAGAME-26OCT25ORLNYK-NYK",
+          "best_bid": 0.71,
+          "best_ask": 0.72,
+          "best_bid_size": 39493.62,
+          "best_ask_size": 628459.0,
+          "last_price": 0.72,
+          "previous_price": 0.74
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 69058.57,
+        "volume_total_contracts": 78565.8,
+        "open_interest_contracts": 73359.88
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25orlnyk"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25tormin",
+      "title": "Toronto vs Minnesota",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Toronto",
+          "probability": 0.495,
+          "market_id": "KXNBAGAME-26OCT25TORMIN-TOR",
+          "best_bid": 0.49,
+          "best_ask": 0.5,
+          "best_bid_size": 150818.41,
+          "best_ask_size": 6384.58,
+          "last_price": 0.5,
+          "previous_price": 0.43
+        },
+        {
+          "name": "Minnesota",
+          "probability": 0.505,
+          "market_id": "KXNBAGAME-26OCT25TORMIN-MIN",
+          "best_bid": 0.5,
+          "best_ask": 0.51,
+          "best_bid_size": 12865.16,
+          "best_ask_size": 837643.29,
+          "last_price": 0.51,
+          "previous_price": 0.59
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 296693.42,
+        "volume_total_contracts": 322815.19,
+        "open_interest_contracts": 301956.99
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25tormin"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25detphi",
+      "title": "Detroit vs Philadelphia",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T02:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Detroit",
+          "probability": 0.505,
+          "market_id": "KXNBAGAME-26OCT25DETPHI-DET",
+          "best_bid": 0.5,
+          "best_ask": 0.51,
+          "best_bid_size": 79011.02,
+          "best_ask_size": 253879.83,
+          "last_price": 0.51,
+          "previous_price": 0.5
+        },
+        {
+          "name": "Philadelphia",
+          "probability": 0.495,
+          "market_id": "KXNBAGAME-26OCT25DETPHI-PHI",
+          "best_bid": 0.49,
+          "best_ask": 0.5,
+          "best_bid_size": 10529.39,
+          "best_ask_size": 402826.86,
+          "last_price": 0.5,
+          "previous_price": 0.54
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 109697.19,
+        "volume_total_contracts": 121395.51,
+        "open_interest_contracts": 112363.24
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25detphi"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct25memsac",
+      "title": "Memphis vs Sacramento",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-26T04:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Memphis",
+          "probability": 0.605,
+          "market_id": "KXNBAGAME-26OCT25MEMSAC-MEM",
+          "best_bid": 0.6,
+          "best_ask": 0.61,
+          "best_bid_size": 5012.83,
+          "best_ask_size": 897826.66,
+          "last_price": 0.61,
+          "previous_price": 0.6
+        },
+        {
+          "name": "Sacramento",
+          "probability": 0.405,
+          "market_id": "KXNBAGAME-26OCT25MEMSAC-SAC",
+          "best_bid": 0.4,
+          "best_ask": 0.41,
+          "best_bid_size": 72953.13,
+          "best_ask_size": 273413.99,
+          "last_price": 0.41,
+          "previous_price": 0.4
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 24916.48,
+        "volume_total_contracts": 27997.4,
+        "open_interest_contracts": 24163.56
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct25memsac"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct26mincle",
+      "title": "Minnesota vs Cleveland",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-27T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Minnesota",
+          "probability": 0.41,
+          "market_id": "KXNBAGAME-26OCT26MINCLE-MIN",
+          "best_bid": 0.39,
+          "best_ask": 0.43,
+          "best_bid_size": 776.0,
+          "best_ask_size": 22413.02,
+          "last_price": 0.43,
+          "previous_price": 0.53
+        },
+        {
+          "name": "Cleveland",
+          "probability": 0.58,
+          "market_id": "KXNBAGAME-26OCT26MINCLE-CLE",
+          "best_bid": 0.57,
+          "best_ask": 0.59,
+          "best_bid_size": 514.7,
+          "best_ask_size": 900.7,
+          "last_price": 0.59,
+          "previous_price": 0.46
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 11330.3,
+        "volume_total_contracts": 16945.14,
+        "open_interest_contracts": 16025.85
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct26mincle"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct26wascha",
+      "title": "Washington vs Charlotte",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-27T02:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Washington",
+          "probability": 0.465,
+          "market_id": "KXNBAGAME-26OCT26WASCHA-WAS",
+          "best_bid": 0.46,
+          "best_ask": 0.47,
+          "best_bid_size": 9.1,
+          "best_ask_size": 55024.82,
+          "last_price": 0.47,
+          "previous_price": 0.54
+        },
+        {
+          "name": "Charlotte",
+          "probability": 0.525,
+          "market_id": "KXNBAGAME-26OCT26WASCHA-CHA",
+          "best_bid": 0.52,
+          "best_ask": 0.53,
+          "best_bid_size": 14992.34,
+          "best_ask_size": 224.0,
+          "last_price": 0.53,
+          "previous_price": 0.5
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 5811.64,
+        "volume_total_contracts": 9049.15,
+        "open_interest_contracts": 8620.37
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct26wascha"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct26chibos",
+      "title": "Chicago vs Boston",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-27T02:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Chicago",
+          "probability": 0.15,
+          "market_id": "KXNBAGAME-26OCT26CHIBOS-CHI",
+          "best_bid": 0.14,
+          "best_ask": 0.16,
+          "best_bid_size": 6573.88,
+          "best_ask_size": 18849.34,
+          "last_price": 0.16,
+          "previous_price": 0.16
+        },
+        {
+          "name": "Boston",
+          "probability": 0.845,
+          "market_id": "KXNBAGAME-26OCT26CHIBOS-BOS",
+          "best_bid": 0.84,
+          "best_ask": 0.85,
+          "best_bid_size": 40.4,
+          "best_ask_size": 1432.91,
+          "last_price": 0.85,
+          "previous_price": 0.85
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 10522.17,
+        "volume_total_contracts": 14349.63,
+        "open_interest_contracts": 11381.48
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct26chibos"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct26dalmia",
+      "title": "Dallas vs Miami",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-27T02:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Dallas",
+          "probability": 0.245,
+          "market_id": "KXNBAGAME-26OCT26DALMIA-DAL",
+          "best_bid": 0.24,
+          "best_ask": 0.25,
+          "best_bid_size": 2955.63,
+          "best_ask_size": 8226.73,
+          "last_price": 0.25,
+          "previous_price": 0.31
+        },
+        {
+          "name": "Miami",
+          "probability": 0.755,
+          "market_id": "KXNBAGAME-26OCT26DALMIA-MIA",
+          "best_bid": 0.75,
+          "best_ask": 0.76,
+          "best_bid_size": 602.67,
+          "best_ask_size": 19745.12,
+          "last_price": 0.76,
+          "previous_price": 0.69
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 5097.62,
+        "volume_total_contracts": 5639.72,
+        "open_interest_contracts": 5075.52
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct26dalmia"
+    },
+    {
+      "id": "kalshi-kxnbagame-26oct26indmil",
+      "title": "Indiana vs Milwaukee",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-10-27T03:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Indiana",
+          "probability": 0.625,
+          "market_id": "KXNBAGAME-26OCT26INDMIL-IND",
+          "best_bid": 0.62,
+          "best_ask": 0.63,
+          "best_bid_size": 750.0,
+          "best_ask_size": 64.65,
+          "last_price": 0.63,
+          "previous_price": 0.55
+        },
+        {
+          "name": "Milwaukee",
+          "probability": 0.365,
+          "market_id": "KXNBAGAME-26OCT26INDMIL-MIL",
+          "best_bid": 0.36,
+          "best_ask": 0.37,
+          "best_bid_size": 70.0,
+          "best_ask_size": 807.07,
+          "last_price": 0.37,
+          "previous_price": 0.38
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 2300.39,
+        "volume_total_contracts": 2821.28,
+        "open_interest_contracts": 2628.79
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/event/kxnbagame-26oct26indmil"
+    },
+    {
+      "id": "kalshi-kxlaligagame-26oct25rsolev",
+      "title": "Real Sociedad vs Levante",
+      "category": "football",
+      "league": "西甲",
+      "start_time": "2026-10-25T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Real Sociedad",
+          "probability": 0.785,
+          "market_id": "KXLALIGAGAME-26OCT25RSOLEV-RSO",
+          "best_bid": 0.78,
+          "best_ask": 0.79,
+          "best_bid_size": 126336.63,
+          "best_ask_size": 61506.1,
+          "last_price": 0.78,
+          "previous_price": 0.62
+        },
+        {
+          "name": "平局",
+          "probability": 0.155,
+          "market_id": "KXLALIGAGAME-26OCT25RSOLEV-TIE",
+          "best_bid": 0.15,
+          "best_ask": 0.16,
+          "best_bid_size": 70779.16,
+          "best_ask_size": 112513.8,
+          "last_price": 0.16,
+          "previous_price": 0.21
+        },
+        {
+          "name": "Levante",
+          "probability": 0.055,
+          "market_id": "KXLALIGAGAME-26OCT25RSOLEV-LEV",
+          "best_bid": 0.05,
+          "best_ask": 0.06,
+          "best_bid_size": 62956.18,
+          "best_ask_size": 123263.45,
+          "last_price": 0.06,
+          "previous_price": 0.18
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 645964.54,
+        "volume_total_contracts": 674615.3,
+        "open_interest_contracts": 484200.36
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlaligagame/event/kxlaligagame-26oct25rsolev"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct25udiacm",
+      "title": "Udinese vs Milan",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-25T22:45:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Udinese",
+          "probability": 0.205,
+          "market_id": "KXSERIEAGAME-26OCT25UDIACM-UDI",
+          "best_bid": 0.2,
+          "best_ask": 0.21,
+          "best_bid_size": 430.0,
+          "best_ask_size": 229033.95,
+          "last_price": 0.21,
+          "previous_price": 0.2
+        },
+        {
+          "name": "平局",
+          "probability": 0.265,
+          "market_id": "KXSERIEAGAME-26OCT25UDIACM-TIE",
+          "best_bid": 0.26,
+          "best_ask": 0.27,
+          "best_bid_size": 15203.0,
+          "best_ask_size": 62663.65,
+          "last_price": 0.27,
+          "previous_price": 0.26
+        },
+        {
+          "name": "Milan",
+          "probability": 0.545,
+          "market_id": "KXSERIEAGAME-26OCT25UDIACM-ACM",
+          "best_bid": 0.54,
+          "best_ask": 0.55,
+          "best_bid_size": 25037.3,
+          "best_ask_size": 295063.1,
+          "last_price": 0.55,
+          "previous_price": 0.56
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 56423.61,
+        "volume_total_contracts": 62561.39,
+        "open_interest_contracts": 59277.67
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct25udiacm"
+    },
+    {
+      "id": "kalshi-kxlaligagame-26oct25barrma",
+      "title": "Barcelona vs Real Madrid",
+      "category": "football",
+      "league": "西甲",
+      "start_time": "2026-10-25T23:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Barcelona",
+          "probability": 0.615,
+          "market_id": "KXLALIGAGAME-26OCT25BARRMA-BAR",
+          "best_bid": 0.61,
+          "best_ask": 0.62,
+          "best_bid_size": 68331.86,
+          "best_ask_size": 629115.02,
+          "last_price": 0.62,
+          "previous_price": 0.6
+        },
+        {
+          "name": "平局",
+          "probability": 0.145,
+          "market_id": "KXLALIGAGAME-26OCT25BARRMA-TIE",
+          "best_bid": 0.14,
+          "best_ask": 0.15,
+          "best_bid_size": 382006.44,
+          "best_ask_size": 1079746.03,
+          "last_price": 0.15,
+          "previous_price": 0.16
+        },
+        {
+          "name": "Real Madrid",
+          "probability": 0.245,
+          "market_id": "KXLALIGAGAME-26OCT25BARRMA-RMA",
+          "best_bid": 0.24,
+          "best_ask": 0.25,
+          "best_bid_size": 107643.38,
+          "best_ask_size": 2452634.9,
+          "last_price": 0.25,
+          "previous_price": 0.27
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 8232483.99,
+        "volume_total_contracts": 12538569.26,
+        "open_interest_contracts": 11253501.54
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlaligagame/event/kxlaligagame-26oct25barrma"
+    },
+    {
+      "id": "kalshi-kxmlsgame-26oct25lafclag",
+      "title": "Los Angeles F vs Los Angeles G",
+      "category": "football",
+      "league": "MLS",
+      "start_time": "2026-10-26T04:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Los Angeles F",
+          "probability": 0.625,
+          "market_id": "KXMLSGAME-26OCT25LAFCLAG-LAFC",
+          "best_bid": 0.62,
+          "best_ask": 0.63,
+          "best_bid_size": 14983.73,
+          "best_ask_size": 41643.79,
+          "last_price": 0.63,
+          "previous_price": 0.62
+        },
+        {
+          "name": "平局",
+          "probability": 0.205,
+          "market_id": "KXMLSGAME-26OCT25LAFCLAG-TIE",
+          "best_bid": 0.2,
+          "best_ask": 0.21,
+          "best_bid_size": 143.04,
+          "best_ask_size": 91049.77,
+          "last_price": 0.21,
+          "previous_price": 0.2
+        },
+        {
+          "name": "Los Angeles G",
+          "probability": 0.175,
+          "market_id": "KXMLSGAME-26OCT25LAFCLAG-LAG",
+          "best_bid": 0.17,
+          "best_ask": 0.18,
+          "best_bid_size": 27311.78,
+          "best_ask_size": 39804.87,
+          "last_price": 0.18,
+          "previous_price": 0.19
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 13618.99,
+        "volume_total_contracts": 35393.38,
+        "open_interest_contracts": 26893.0
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxmlsgame/event/kxmlsgame-26oct25lafclag"
+    },
+    {
+      "id": "kalshi-kxlaligagame-26oct26sevosa",
+      "title": "Sevilla vs Osasuna",
+      "category": "football",
+      "league": "西甲",
+      "start_time": "2026-10-26T23:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Sevilla",
+          "probability": 0.51,
+          "market_id": "KXLALIGAGAME-26OCT26SEVOSA-SEV",
+          "best_bid": 0.5,
+          "best_ask": 0.52,
+          "best_bid_size": 9710.89,
+          "best_ask_size": 54378.69,
+          "last_price": 0.52,
+          "previous_price": 0.52
+        },
+        {
+          "name": "平局",
+          "probability": 0.275,
+          "market_id": "KXLALIGAGAME-26OCT26SEVOSA-TIE",
+          "best_bid": 0.27,
+          "best_ask": 0.28,
+          "best_bid_size": 12080.41,
+          "best_ask_size": 22094.01,
+          "last_price": 0.28,
+          "previous_price": 0.28
+        },
+        {
+          "name": "Osasuna",
+          "probability": 0.215,
+          "market_id": "KXLALIGAGAME-26OCT26SEVOSA-OSA",
+          "best_bid": 0.21,
+          "best_ask": 0.22,
+          "best_bid_size": 697.84,
+          "best_ask_size": 31563.81,
+          "last_price": 0.22,
+          "previous_price": 0.21
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 10721.5,
+        "volume_total_contracts": 15502.22,
+        "open_interest_contracts": 15049.13
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxlaligagame/event/kxlaligagame-26oct26sevosa"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct27saslaz",
+      "title": "Sassuolo vs Lazio",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-27T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Sassuolo",
+          "probability": 0.29,
+          "market_id": "KXSERIEAGAME-26OCT27SASLAZ-SAS",
+          "best_bid": 0.28,
+          "best_ask": 0.3,
+          "best_bid_size": 8202.61,
+          "best_ask_size": 6593.05
+        },
+        {
+          "name": "平局",
+          "probability": 0.265,
+          "market_id": "KXSERIEAGAME-26OCT27SASLAZ-TIE",
+          "best_bid": 0.26,
+          "best_ask": 0.27,
+          "best_bid_size": 5235.22,
+          "best_ask_size": 3192.05,
+          "last_price": 0.26,
+          "previous_price": 0.27
+        },
+        {
+          "name": "Lazio",
+          "probability": 0.44,
+          "market_id": "KXSERIEAGAME-26OCT27SASLAZ-LAZ",
+          "best_bid": 0.43,
+          "best_ask": 0.45,
+          "best_bid_size": 3301.24,
+          "best_ask_size": 14930.4,
+          "last_price": 0.44,
+          "previous_price": 0.42
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 5023.73,
+        "volume_total_contracts": 7907.07,
+        "open_interest_contracts": 7787.79
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct27saslaz"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct27romcag",
+      "title": "Roma vs Cagliari",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-27T22:45:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Roma",
+          "probability": 0.72,
+          "market_id": "KXSERIEAGAME-26OCT27ROMCAG-ROM",
+          "best_bid": 0.71,
+          "best_ask": 0.73,
+          "best_bid_size": 2209.91,
+          "best_ask_size": 16003.06,
+          "last_price": 0.73,
+          "previous_price": 0.73
+        },
+        {
+          "name": "平局",
+          "probability": 0.19,
+          "market_id": "KXSERIEAGAME-26OCT27ROMCAG-TIE",
+          "best_bid": 0.18,
+          "best_ask": 0.2,
+          "best_bid_size": 2998.17,
+          "best_ask_size": 7712.35
+        },
+        {
+          "name": "Cagliari",
+          "probability": 0.095,
+          "market_id": "KXSERIEAGAME-26OCT27ROMCAG-CAG",
+          "best_bid": 0.09,
+          "best_ask": 0.1,
+          "best_bid_size": 1423.18,
+          "best_ask_size": 5694.02,
+          "last_price": 0.1,
+          "previous_price": 0.09
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 653.04,
+        "volume_total_contracts": 1225.4,
+        "open_interest_contracts": 1068.68
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct27romcag"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct27torcom",
+      "title": "Torino vs Como",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-27T22:45:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Torino",
+          "probability": 0.195,
+          "market_id": "KXSERIEAGAME-26OCT27TORCOM-TOR",
+          "best_bid": 0.19,
+          "best_ask": 0.2,
+          "best_bid_size": 2111.57,
+          "best_ask_size": 11687.94,
+          "last_price": 0.2,
+          "previous_price": 0.19
+        },
+        {
+          "name": "平局",
+          "probability": 0.245,
+          "market_id": "KXSERIEAGAME-26OCT27TORCOM-TIE",
+          "best_bid": 0.24,
+          "best_ask": 0.25,
+          "best_bid_size": 2210.76,
+          "best_ask_size": 111.98,
+          "last_price": 0.25,
+          "previous_price": 0.27
+        },
+        {
+          "name": "Como",
+          "probability": 0.555,
+          "market_id": "KXSERIEAGAME-26OCT27TORCOM-COM",
+          "best_bid": 0.55,
+          "best_ask": 0.56,
+          "best_bid_size": 463.0,
+          "best_ask_size": 4455.76,
+          "last_price": 0.56,
+          "previous_price": 0.56
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 201.55,
+        "volume_total_contracts": 534.82,
+        "open_interest_contracts": 534.82
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct27torcom"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct28acmbfc",
+      "title": "Milan vs Bologna",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-28T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Milan",
+          "probability": 0.6,
+          "market_id": "KXSERIEAGAME-26OCT28ACMBFC-ACM",
+          "best_bid": 0.59,
+          "best_ask": 0.61,
+          "best_bid_size": 3485.65,
+          "best_ask_size": 8921.93,
+          "last_price": 0.61,
+          "previous_price": 0.61
+        },
+        {
+          "name": "平局",
+          "probability": 0.225,
+          "market_id": "KXSERIEAGAME-26OCT28ACMBFC-TIE",
+          "best_bid": 0.22,
+          "best_ask": 0.23,
+          "best_bid_size": 4194.81,
+          "best_ask_size": 7629.0,
+          "last_price": 0.69,
+          "previous_price": 0.69
+        },
+        {
+          "name": "Bologna",
+          "probability": 0.165,
+          "market_id": "KXSERIEAGAME-26OCT28ACMBFC-BFC",
+          "best_bid": 0.16,
+          "best_ask": 0.17,
+          "best_bid_size": 3374.22,
+          "best_ask_size": 26.0,
+          "last_price": 0.16,
+          "previous_price": 0.16
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 186.67,
+        "volume_total_contracts": 2007.57,
+        "open_interest_contracts": 1849.57
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct28acmbfc"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct28parudi",
+      "title": "Parma Calcio vs Udinese",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-28T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Parma Calcio",
+          "probability": 0.315,
+          "market_id": "KXSERIEAGAME-26OCT28PARUDI-PAR",
+          "best_bid": 0.31,
+          "best_ask": 0.32,
+          "best_bid_size": 897.22,
+          "best_ask_size": 2363.0,
+          "last_price": 0.33,
+          "previous_price": 0.33
+        },
+        {
+          "name": "平局",
+          "probability": 0.305,
+          "market_id": "KXSERIEAGAME-26OCT28PARUDI-TIE",
+          "best_bid": 0.3,
+          "best_ask": 0.31,
+          "best_bid_size": 694.76,
+          "best_ask_size": 4606.0,
+          "last_price": 0.29
+        },
+        {
+          "name": "Udinese",
+          "probability": 0.38,
+          "market_id": "KXSERIEAGAME-26OCT28PARUDI-UDI",
+          "best_bid": 0.37,
+          "best_ask": 0.39,
+          "best_bid_size": 1032.92,
+          "best_ask_size": 4802.21
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 18.85,
+        "volume_total_contracts": 177.75,
+        "open_interest_contracts": 177.75
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct28parudi"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct28venint",
+      "title": "Venezia vs Inter",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-28T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Venezia",
+          "probability": 0.11,
+          "market_id": "KXSERIEAGAME-26OCT28VENINT-VEN",
+          "best_bid": 0.1,
+          "best_ask": 0.12,
+          "best_bid_size": 9818.45,
+          "best_ask_size": 9090.37,
+          "last_price": 0.11,
+          "previous_price": 0.1
+        },
+        {
+          "name": "平局",
+          "probability": 0.155,
+          "market_id": "KXSERIEAGAME-26OCT28VENINT-TIE",
+          "best_bid": 0.15,
+          "best_ask": 0.16,
+          "best_bid_size": 2341.63,
+          "best_ask_size": 8276.0,
+          "last_price": 0.15,
+          "previous_price": 0.15
+        },
+        {
+          "name": "Inter",
+          "probability": 0.73,
+          "market_id": "KXSERIEAGAME-26OCT28VENINT-INT",
+          "best_bid": 0.72,
+          "best_ask": 0.74,
+          "best_bid_size": 10228.57,
+          "best_ask_size": 8266.21,
+          "last_price": 0.75,
+          "previous_price": 0.75
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 231.58,
+        "volume_total_contracts": 1468.58,
+        "open_interest_contracts": 1454.48
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct28venint"
+    },
+    {
+      "id": "kalshi-kxserieagame-26oct28genjuv",
+      "title": "Genoa vs Juventus",
+      "category": "football",
+      "league": "意甲",
+      "start_time": "2026-10-28T22:45:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Genoa",
+          "probability": 0.16,
+          "market_id": "KXSERIEAGAME-26OCT28GENJUV-GEN",
+          "best_bid": 0.15,
+          "best_ask": 0.17,
+          "best_bid_size": 1978.04,
+          "best_ask_size": 3474.04,
+          "last_price": 0.17
+        },
+        {
+          "name": "平局",
+          "probability": 0.255,
+          "market_id": "KXSERIEAGAME-26OCT28GENJUV-TIE",
+          "best_bid": 0.25,
+          "best_ask": 0.26,
+          "best_bid_size": 3.32,
+          "best_ask_size": 4177.0
+        },
+        {
+          "name": "Juventus",
+          "probability": 0.59,
+          "market_id": "KXSERIEAGAME-26OCT28GENJUV-JUV",
+          "best_bid": 0.58,
+          "best_ask": 0.6,
+          "best_bid_size": 590.0,
+          "best_ask_size": 3481.06,
+          "last_price": 0.59,
+          "previous_price": 0.58
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 13.78,
+        "volume_total_contracts": 67.26,
+        "open_interest_contracts": 54.29
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxserieagame/event/kxserieagame-26oct28genjuv"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251200yawtdkg",
+      "title": "Yawara Esports vs. Tropa do KinGui",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Yawara Esports",
+          "probability": 0.225,
+          "market_id": "KXCS2GAME-26OCT251200YAWTDKG-YAW",
+          "best_bid": 0.2,
+          "best_ask": 0.25,
+          "best_bid_size": 74.0,
+          "best_ask_size": 5.0,
+          "last_price": 0.26
+        },
+        {
+          "name": "Tropa do KinGui",
+          "probability": 0.77,
+          "market_id": "KXCS2GAME-26OCT251200YAWTDKG-TDKG",
+          "best_bid": 0.76,
+          "best_ask": 0.78,
+          "best_bid_size": 10.0,
+          "best_ask_size": 57.0,
+          "last_price": 0.75
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 3784.72,
+        "volume_total_contracts": 4636.52,
+        "open_interest_contracts": 4158.96
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251200yawtdkg"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251230ttgmnte",
+      "title": "TTG Esports vs. Monte",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T20:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "TTG Esports",
+          "probability": 0.03,
+          "market_id": "KXCS2GAME-26OCT251230TTGMNTE-TTG",
+          "best_bid": 0.01,
+          "best_ask": 0.05,
+          "best_bid_size": 201.0,
+          "best_ask_size": 102.0,
+          "last_price": 0.02
+        },
+        {
+          "name": "Monte",
+          "probability": 0.955,
+          "market_id": "KXCS2GAME-26OCT251230TTGMNTE-MNTE",
+          "best_bid": 0.95,
+          "best_ask": 0.96,
+          "best_bid_size": 47.0,
+          "best_ask_size": 2.0,
+          "last_price": 0.95
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 1201.87,
+        "volume_total_contracts": 1355.41,
+        "open_interest_contracts": 675.77
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251230ttgmnte"
+    },
+    {
+      "id": "kalshi-kxdota2game-26oct251300bbpari",
+      "title": "BetBoom Team vs. PARIVISION",
+      "category": "esports",
+      "league": "Dota 2",
+      "start_time": "2026-10-25T21:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "BetBoom Team",
+          "probability": 0.08,
+          "market_id": "KXDOTA2GAME-26OCT251300BBPARI-BB",
+          "best_bid": 0.06,
+          "best_ask": 0.1,
+          "best_bid_size": 1114.0,
+          "best_ask_size": 190.0,
+          "last_price": 0.1
+        },
+        {
+          "name": "PARIVISION",
+          "probability": 0.915,
+          "market_id": "KXDOTA2GAME-26OCT251300BBPARI-PARI",
+          "best_bid": 0.91,
+          "best_ask": 0.92,
+          "best_bid_size": 383.0,
+          "best_ask_size": 10.0,
+          "last_price": 0.93,
+          "previous_price": 0.89
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 34213.72,
+        "volume_total_contracts": 43434.32,
+        "open_interest_contracts": 42808.24
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxdota2game/event/kxdota2game-26oct251300bbpari"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251315aceexz",
+      "title": "Acend vs. ex-Zero Tenacity",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T21:15:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Acend",
+          "probability": 0.09,
+          "market_id": "KXCS2GAME-26OCT251315ACEEXZ-ACE",
+          "best_bid": 0.06,
+          "best_ask": 0.12,
+          "best_bid_size": 88.0,
+          "best_ask_size": 5.0,
+          "last_price": 0.02
+        },
+        {
+          "name": "ex-Zero Tenacity",
+          "probability": 0.915,
+          "market_id": "KXCS2GAME-26OCT251315ACEEXZ-EXZ",
+          "best_bid": 0.89,
+          "best_ask": 0.94,
+          "best_bid_size": 4.0,
+          "best_ask_size": 105.0,
+          "last_price": 0.94
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 1298.2,
+        "volume_total_contracts": 1298.21,
+        "open_interest_contracts": 897.0
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251315aceexz"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251400exrforzer",
+      "title": "ex-RUSTEC vs. FORZE Reload",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T22:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "ex-RUSTEC",
+          "probability": 0.645,
+          "market_id": "KXCS2GAME-26OCT251400EXRFORZER-EXR",
+          "best_bid": 0.64,
+          "best_ask": 0.65,
+          "best_bid_size": 367.0,
+          "best_ask_size": 10.0,
+          "last_price": 0.59
+        },
+        {
+          "name": "FORZE Reload",
+          "probability": 0.335,
+          "market_id": "KXCS2GAME-26OCT251400EXRFORZER-FORZER",
+          "best_bid": 0.33,
+          "best_ask": 0.34,
+          "best_bid_size": 150.0,
+          "best_ask_size": 90.0,
+          "last_price": 0.45
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 1366.95,
+        "volume_total_contracts": 1366.95,
+        "open_interest_contracts": 1238.01
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251400exrforzer"
+    },
+    {
+      "id": "kalshi-kxvalorantgame-26oct251400flfegen",
+      "title": "FENNEL Female vs. Gen.G GC",
+      "category": "esports",
+      "league": "Valorant",
+      "start_time": "2026-10-25T22:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "FENNEL Female",
+          "probability": 0.655,
+          "market_id": "KXVALORANTGAME-26OCT251400FLFEGEN-FLFE",
+          "best_bid": 0.64,
+          "best_ask": 0.67,
+          "best_bid_size": 212.0,
+          "best_ask_size": 5.96,
+          "last_price": 0.67,
+          "previous_price": 0.45
+        },
+        {
+          "name": "Gen.G GC",
+          "probability": 0.325,
+          "market_id": "KXVALORANTGAME-26OCT251400FLFEGEN-GEN",
+          "best_bid": 0.31,
+          "best_ask": 0.34,
+          "best_bid_size": 198.01,
+          "best_ask_size": 17.38,
+          "last_price": 0.32,
+          "previous_price": 0.61
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 6376.32,
+        "volume_total_contracts": 6713.29,
+        "open_interest_contracts": 5858.09
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxvalorantgame/event/kxvalorantgame-26oct251400flfegen"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251500bstpain",
+      "title": "BESTIA Academy vs. paiN",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T23:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "BESTIA Academy",
+          "probability": 0.375,
+          "market_id": "KXCS2GAME-26OCT251500BSTPAIN-BST",
+          "best_bid": 0.35,
+          "best_ask": 0.4,
+          "best_bid_size": 62.0,
+          "best_ask_size": 7.69,
+          "last_price": 0.35
+        },
+        {
+          "name": "paiN",
+          "probability": 0.62,
+          "market_id": "KXCS2GAME-26OCT251500BSTPAIN-PAIN",
+          "best_bid": 0.61,
+          "best_ask": 0.63,
+          "best_bid_size": 80.0,
+          "best_ask_size": 236.0,
+          "last_price": 0.62
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 9991.94,
+        "volume_total_contracts": 10390.88,
+        "open_interest_contracts": 8639.93
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251500bstpain"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251515nemesb",
+      "title": "Team Nemesis Academy vs. eSuba",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T23:15:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Team Nemesis Academy",
+          "probability": 0.4,
+          "market_id": "KXCS2GAME-26OCT251515NEMESB-NEM",
+          "best_bid": 0.38,
+          "best_ask": 0.42,
+          "best_bid_size": 231.0,
+          "best_ask_size": 231.0,
+          "last_price": 0.51
+        },
+        {
+          "name": "eSuba",
+          "probability": 0.58,
+          "market_id": "KXCS2GAME-26OCT251515NEMESB-ESB",
+          "best_bid": 0.57,
+          "best_ask": 0.59,
+          "best_bid_size": 440.0,
+          "best_ask_size": 2.0,
+          "last_price": 0.59
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 11.1,
+        "volume_total_contracts": 11.1,
+        "open_interest_contracts": 11.1
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251515nemesb"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251515wintsab",
+      "title": "Winx vs. Spirit Academy Black",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-25T23:15:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Winx",
+          "probability": 0.61,
+          "market_id": "KXCS2GAME-26OCT251515WINTSAB-WIN",
+          "best_bid": 0.59,
+          "best_ask": 0.63,
+          "best_bid_size": 410.0,
+          "best_ask_size": 93.0,
+          "last_price": 0.66
+        },
+        {
+          "name": "Spirit Academy Black",
+          "probability": 0.42,
+          "market_id": "KXCS2GAME-26OCT251515WINTSAB-TSAB",
+          "best_bid": 0.41,
+          "best_ask": 0.43,
+          "best_bid_size": 1.38,
+          "best_ask_size": 514.1,
+          "last_price": 0.41
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 164.02,
+        "volume_total_contracts": 164.02,
+        "open_interest_contracts": 151.02
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251515wintsab"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251630chivoc",
+      "title": "Chicken Coop Esports vs. Voca",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-26T00:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Chicken Coop Esports",
+          "probability": 0.18,
+          "market_id": "KXCS2GAME-26OCT251630CHIVOC-CHI",
+          "best_bid": 0.16,
+          "best_ask": 0.2,
+          "best_bid_size": 241.0,
+          "best_ask_size": 393.0,
+          "last_price": 0.2
+        },
+        {
+          "name": "Voca",
+          "probability": 0.81,
+          "market_id": "KXCS2GAME-26OCT251630CHIVOC-VOC",
+          "best_bid": 0.8,
+          "best_ask": 0.82,
+          "best_bid_size": 532.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.75
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 16.26,
+        "volume_total_contracts": 16.26,
+        "open_interest_contracts": 16.26
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251630chivoc"
+    },
+    {
+      "id": "kalshi-kxcs2game-26oct251630lagmar",
+      "title": "LAG Gaming vs. Marsborne",
+      "category": "esports",
+      "league": "CS2",
+      "start_time": "2026-10-26T00:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "LAG Gaming",
+          "probability": 0.38,
+          "market_id": "KXCS2GAME-26OCT251630LAGMAR-LAG",
+          "best_bid": 0.36,
+          "best_ask": 0.4,
+          "best_bid_size": 1231.0,
+          "best_ask_size": 395.0
+        },
+        {
+          "name": "Marsborne",
+          "probability": 0.645,
+          "market_id": "KXCS2GAME-26OCT251630LAGMAR-MAR",
+          "best_bid": 0.64,
+          "best_ask": 0.65,
+          "best_bid_size": 1.75,
+          "best_ask_size": 1291.0,
+          "last_price": 0.63
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 1.0,
+        "volume_total_contracts": 1.0,
+        "open_interest_contracts": 1.0
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxcs2game/event/kxcs2game-26oct251630lagmar"
+    },
+    {
+      "id": "kalshi-kxvalorantgame-26oct251700negctl",
+      "title": "Nova Esports GC vs. Team Liquid Brazil",
+      "category": "esports",
+      "league": "Valorant",
+      "start_time": "2026-10-26T01:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Nova Esports GC",
+          "probability": 0.11,
+          "market_id": "KXVALORANTGAME-26OCT251700NEGCTL-NEGC",
+          "best_bid": 0.1,
+          "best_ask": 0.12,
+          "best_bid_size": 218.0,
+          "best_ask_size": 469.76,
+          "last_price": 0.12,
+          "previous_price": 0.14
+        },
+        {
+          "name": "Team Liquid Brazil",
+          "probability": 0.885,
+          "market_id": "KXVALORANTGAME-26OCT251700NEGCTL-TL",
+          "best_bid": 0.87,
+          "best_ask": 0.9,
+          "best_bid_size": 327.01,
+          "best_ask_size": 1193.9,
+          "last_price": 0.9,
+          "previous_price": 0.91
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 2406.47,
+        "volume_total_contracts": 2429.61,
+        "open_interest_contracts": 2426.74
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxvalorantgame/event/kxvalorantgame-26oct251700negctl"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25cinbal",
+      "title": "Cincinnati vs Baltimore",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Baltimore",
+          "probability": 0.775,
+          "market_id": "KXNFLGAME-26OCT25CINBAL-BAL",
+          "best_bid": 0.77,
+          "best_ask": 0.78,
+          "best_bid_size": 87478.24,
+          "best_ask_size": 238910.7,
+          "last_price": 0.78,
+          "previous_price": 0.48
+        },
+        {
+          "name": "Cincinnati",
+          "probability": 0.225,
+          "market_id": "KXNFLGAME-26OCT25CINBAL-CIN",
+          "best_bid": 0.22,
+          "best_ask": 0.23,
+          "best_bid_size": 151033.05,
+          "best_ask_size": 75781.91,
+          "last_price": 0.23,
+          "previous_price": 0.53
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 6402339.57,
+        "volume_total_contracts": 7303093.67,
+        "open_interest_contracts": 4841787.55
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25cinbal"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25cleten",
+      "title": "Cleveland vs Tennessee",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Tennessee",
+          "probability": 0.315,
+          "market_id": "KXNFLGAME-26OCT25CLETEN-TEN",
+          "best_bid": 0.31,
+          "best_ask": 0.32,
+          "best_bid_size": 205592.29,
+          "best_ask_size": 1103554.74,
+          "last_price": 0.32,
+          "previous_price": 0.46
+        },
+        {
+          "name": "Cleveland",
+          "probability": 0.685,
+          "market_id": "KXNFLGAME-26OCT25CLETEN-CLE",
+          "best_bid": 0.68,
+          "best_ask": 0.69,
+          "best_bid_size": 356598.27,
+          "best_ask_size": 821037.24,
+          "last_price": 0.68,
+          "previous_price": 0.55
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 4782000.07,
+        "volume_total_contracts": 4977982.46,
+        "open_interest_contracts": 3080683.1
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25cleten"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25indmin",
+      "title": "Indianapolis vs Minnesota",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Minnesota",
+          "probability": 0.555,
+          "market_id": "KXNFLGAME-26OCT25INDMIN-MIN",
+          "best_bid": 0.55,
+          "best_ask": 0.56,
+          "best_bid_size": 52486.82,
+          "best_ask_size": 54384.77,
+          "last_price": 0.55,
+          "previous_price": 0.71
+        },
+        {
+          "name": "Indianapolis",
+          "probability": 0.435,
+          "market_id": "KXNFLGAME-26OCT25INDMIN-IND",
+          "best_bid": 0.43,
+          "best_ask": 0.44,
+          "best_bid_size": 83844.11,
+          "best_ask_size": 92105.82,
+          "last_price": 0.44,
+          "previous_price": 0.29
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 5117571.18,
+        "volume_total_contracts": 5841698.69,
+        "open_interest_contracts": 3942185.52
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25indmin"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25mianyj",
+      "title": "Miami vs New York J",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "New York J",
+          "probability": 0.225,
+          "market_id": "KXNFLGAME-26OCT25MIANYJ-NYJ",
+          "best_bid": 0.22,
+          "best_ask": 0.23,
+          "best_bid_size": 9429.43,
+          "best_ask_size": 178010.47,
+          "last_price": 0.23,
+          "previous_price": 0.67
+        },
+        {
+          "name": "Miami",
+          "probability": 0.775,
+          "market_id": "KXNFLGAME-26OCT25MIANYJ-MIA",
+          "best_bid": 0.77,
+          "best_ask": 0.78,
+          "best_bid_size": 93733.75,
+          "best_ask_size": 52438.69,
+          "last_price": 0.78,
+          "previous_price": 0.34
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 2602659.18,
+        "volume_total_contracts": 2985829.84,
+        "open_interest_contracts": 1822726.47
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25mianyj"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25nyghou",
+      "title": "New York G vs Houston",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Houston",
+          "probability": 0.585,
+          "market_id": "KXNFLGAME-26OCT25NYGHOU-HOU",
+          "best_bid": 0.58,
+          "best_ask": 0.59,
+          "best_bid_size": 12996.08,
+          "best_ask_size": 25072.71,
+          "last_price": 0.59,
+          "previous_price": 0.81
+        },
+        {
+          "name": "New York G",
+          "probability": 0.415,
+          "market_id": "KXNFLGAME-26OCT25NYGHOU-NYG",
+          "best_bid": 0.41,
+          "best_ask": 0.42,
+          "best_bid_size": 7193.64,
+          "best_ask_size": 61595.46,
+          "last_price": 0.42,
+          "previous_price": 0.2
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 7492783.18,
+        "volume_total_contracts": 9055961.71,
+        "open_interest_contracts": 6648752.34
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25nyghou"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25sfatl",
+      "title": "San Francisco vs Atlanta",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Atlanta",
+          "probability": 0.455,
+          "market_id": "KXNFLGAME-26OCT25SFATL-ATL",
+          "best_bid": 0.45,
+          "best_ask": 0.46,
+          "best_bid_size": 56375.93,
+          "best_ask_size": 67540.84,
+          "last_price": 0.46,
+          "previous_price": 0.42
+        },
+        {
+          "name": "San Francisco",
+          "probability": 0.545,
+          "market_id": "KXNFLGAME-26OCT25SFATL-SF",
+          "best_bid": 0.54,
+          "best_ask": 0.55,
+          "best_bid_size": 24280.41,
+          "best_ask_size": 213059.05,
+          "last_price": 0.55,
+          "previous_price": 0.58
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 8637424.1,
+        "volume_total_contracts": 9889490.63,
+        "open_interest_contracts": 7952594.41
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25sfatl"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25tbcar",
+      "title": "Tampa Bay vs Carolina",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T20:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Carolina",
+          "probability": 0.025,
+          "market_id": "KXNFLGAME-26OCT25TBCAR-CAR",
+          "best_bid": 0.02,
+          "best_ask": 0.03,
+          "best_bid_size": 237520.99,
+          "best_ask_size": 738239.62,
+          "last_price": 0.03,
+          "previous_price": 0.6
+        },
+        {
+          "name": "Tampa Bay",
+          "probability": 0.975,
+          "market_id": "KXNFLGAME-26OCT25TBCAR-TB",
+          "best_bid": 0.97,
+          "best_ask": 0.98,
+          "best_bid_size": 562086.27,
+          "best_ask_size": 531598.15,
+          "last_price": 0.98,
+          "previous_price": 0.41
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 3594478.47,
+        "volume_total_contracts": 3944167.65,
+        "open_interest_contracts": 2878092.0
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25tbcar"
+    },
+    {
+      "id": "kalshi-kxnhlgame-26oct25flachi",
+      "title": "Florida vs Chicago",
+      "category": "other",
+      "league": "NHL",
+      "start_time": "2026-10-25T22:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Chicago",
+          "probability": 0.365,
+          "market_id": "KXNHLGAME-26OCT25FLACHI-CHI",
+          "best_bid": 0.36,
+          "best_ask": 0.37,
+          "best_bid_size": 29230.06,
+          "best_ask_size": 290527.48,
+          "last_price": 0.37,
+          "previous_price": 0.38
+        },
+        {
+          "name": "Florida",
+          "probability": 0.635,
+          "market_id": "KXNHLGAME-26OCT25FLACHI-FLA",
+          "best_bid": 0.63,
+          "best_ask": 0.64,
+          "best_bid_size": 8672.73,
+          "best_ask_size": 157232.1,
+          "last_price": 0.64,
+          "previous_price": 0.63
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 52843.79,
+        "volume_total_contracts": 55165.72,
+        "open_interest_contracts": 54253.03
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnhlgame/event/kxnhlgame-26oct25flachi"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25denari",
+      "title": "Denver vs Arizona",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T23:05:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Arizona",
+          "probability": 0.335,
+          "market_id": "KXNFLGAME-26OCT25DENARI-ARI",
+          "best_bid": 0.33,
+          "best_ask": 0.34,
+          "best_bid_size": 164428.11,
+          "best_ask_size": 3296553.87,
+          "last_price": 0.34,
+          "previous_price": 0.34
+        },
+        {
+          "name": "Denver",
+          "probability": 0.665,
+          "market_id": "KXNFLGAME-26OCT25DENARI-DEN",
+          "best_bid": 0.66,
+          "best_ask": 0.67,
+          "best_bid_size": 537329.16,
+          "best_ask_size": 309880.75,
+          "last_price": 0.67,
+          "previous_price": 0.68
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 251604.61,
+        "volume_total_contracts": 413255.17,
+        "open_interest_contracts": 372367.21
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25denari"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25gbdet",
+      "title": "Green Bay vs Detroit",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T23:25:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Detroit",
+          "probability": 0.645,
+          "market_id": "KXNFLGAME-26OCT25GBDET-DET",
+          "best_bid": 0.64,
+          "best_ask": 0.65,
+          "best_bid_size": 356715.57,
+          "best_ask_size": 1889666.09,
+          "last_price": 0.64,
+          "previous_price": 0.63
+        },
+        {
+          "name": "Green Bay",
+          "probability": 0.355,
+          "market_id": "KXNFLGAME-26OCT25GBDET-GB",
+          "best_bid": 0.35,
+          "best_ask": 0.36,
+          "best_bid_size": 11032.15,
+          "best_ask_size": 2667098.78,
+          "last_price": 0.36,
+          "previous_price": 0.38
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 977610.34,
+        "volume_total_contracts": 1443398.58,
+        "open_interest_contracts": 1315364.3
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25gbdet"
+    },
+    {
+      "id": "kalshi-kxnflgame-26oct25larlv",
+      "title": "Los Angeles R vs Las Vegas",
+      "category": "other",
+      "league": "NFL",
+      "start_time": "2026-10-25T23:25:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Las Vegas",
+          "probability": 0.385,
+          "market_id": "KXNFLGAME-26OCT25LARLV-LV",
+          "best_bid": 0.38,
+          "best_ask": 0.39,
+          "best_bid_size": 241792.71,
+          "best_ask_size": 1764417.55,
+          "last_price": 0.39,
+          "previous_price": 0.4
+        },
+        {
+          "name": "Los Angeles R",
+          "probability": 0.615,
+          "market_id": "KXNFLGAME-26OCT25LARLV-LAR",
+          "best_bid": 0.61,
+          "best_ask": 0.62,
+          "best_bid_size": 377919.45,
+          "best_ask_size": 1798056.48,
+          "last_price": 0.62,
+          "previous_price": 0.61
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 732439.53,
+        "volume_total_contracts": 1367028.6,
+        "open_interest_contracts": 1260646.51
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnflgame/event/kxnflgame-26oct25larlv"
+    },
+    {
+      "id": "kalshi-kxnhlgame-26oct25nyidal",
+      "title": "New York I vs Dallas",
+      "category": "other",
+      "league": "NHL",
+      "start_time": "2026-10-26T01:00:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Dallas",
+          "probability": 0.625,
+          "market_id": "KXNHLGAME-26OCT25NYIDAL-DAL",
+          "best_bid": 0.62,
+          "best_ask": 0.63,
+          "best_bid_size": 14360.81,
+          "best_ask_size": 118637.31,
+          "last_price": 0.63,
+          "previous_price": 0.65
+        },
+        {
+          "name": "New York I",
+          "probability": 0.375,
+          "market_id": "KXNHLGAME-26OCT25NYIDAL-NYI",
+          "best_bid": 0.37,
+          "best_ask": 0.38,
+          "best_bid_size": 20046.34,
+          "best_ask_size": 72623.92,
+          "last_price": 0.38,
+          "previous_price": 0.38
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 23953.09,
+        "volume_total_contracts": 25493.47,
+        "open_interest_contracts": 25291.4
+      },
+      "checked_at": "2026-10-25T18:35:23Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnhlgame/event/kxnhlgame-26oct25nyidal"
+    }
+  ],
+  "notes": "Kalshi is a prediction exchange. Contract volume and open interest are counts, not US dollars. Market close is not necessarily kickoff."
 }
