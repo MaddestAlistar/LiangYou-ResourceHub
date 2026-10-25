@@ -82,4 +82,109 @@ assert(html.includes('id="sportsSourceHint"') && html.includes('data-sports-t="r
 const sportsStyles = readFileSync('sports.css','utf8');
 assert(sportsStyles.includes('.sports-match-rich') && sportsStyles.includes('.sports-quote-row'));
 assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sports-metric'));
+
+// Runtime smoke test: execute sports.js against a minimal DOM so early
+// initialization errors (including temporal dead-zone errors) fail CI.
+{
+  const UI = readFileSync('sports.js', 'utf8');
+  const now = Date.now();
+  const future = new Date(now + 2 * 86400000).toISOString();
+  const timestamp = new Date(now).toISOString();
+  const ids = new Map();
+  function element(id) {
+    const e = {
+      id, dataset:{}, hidden:false, innerHTML:'', textContent:'', value:'',
+      listeners:{}, attributes:{},
+      classList:{toggle(){},add(){},remove(){}},
+      addEventListener(type,fn){this.listeners[type]=fn;},
+      setAttribute(name,val){this.attributes[name]=val;},
+      querySelectorAll(){return [];},
+      dispatch(type){assert(this.listeners[type],'Missing '+type+' listener for '+id);this.listeners[type]();}
+    };
+    ids.set(id,e);
+    return e;
+  }
+  for(const id of ['sportsGrid','sportsStatus','sportsCount','sportsListActions',
+    'sportsMore','sportsCollapse','sportsShowing','sports','sportsLanguage',
+    'sportsSearch','sportsSort','sportsSourceHint']) element(id);
+  const names=['all','lol','basketball','football','other'];
+  const tabs=names.map(name=>Object.assign(element('tab-'+name),{dataset:{sportFilter:name}}));
+  const sources=['all','predict','polymarket','kalshi'].map(name=>
+    Object.assign(element('source-'+name),{dataset:{sourceFilter:name}}));
+  const languages=['zh','en'].map(name=>
+    Object.assign(element('lang-'+name),{dataset:{sportsLang:name}}));
+  ids.get('sports').querySelectorAll=selector=>
+    selector==='[data-sport-filter]'?tabs:
+    selector==='[data-source-filter]'?sources:[];
+  ids.get('sportsLanguage').querySelectorAll=selector=>
+    selector==='[data-sports-lang]'?languages:[];
+  ids.get('sportsSort').options=[
+    {dataset:{sportsT:'sortTime'},textContent:''},
+    {dataset:{sportsT:'sortActivity'},textContent:''}
+  ];
+  function fixture(id, category, names, provider, title, vol=100) {
+    return {
+      id,title,category,league:category==='basketball'?'NBA':category,
+      provider,verification:'open_match_winner_market',start_time:future,
+      checked_at:timestamp,source_url:provider==='kalshi'?
+      'https://kalshi.com/markets/kxsample/sample-game/kxsample-26abc':
+      provider==='predict'?'https://predict.fun/market/sample-game':
+      'https://polymarket.com/event/sample-game',
+      stats:provider==='kalshi'?{volume_24h_contracts:vol}:{volume_24h_usd:vol},
+      outcomes:names.map((name,i)=>({name,market_id:id+'-'+i,probability:i?0.45:0.55,
+        best_bid:i?0.44:0.54,best_ask:i?0.46:0.56}))
+    };
+  }
+  const samples={
+    polymarket:[fixture('a','basketball',['Solar Bears','Moon Otters'],'polymarket','Solar Bears vs Moon Otters',500)],
+    predict:[fixture('b','esports',['Falcons','Furia'],'predict','CS2: Falcons vs Furia',120)],
+    kalshi:[fixture('c','other',['Red Hawks','Blue Tigers'],'kalshi','UFC: Red Hawks vs Blue Tigers',400)]
+  };
+  const doc={hidden:false,
+    getElementById:id=>ids.get(id)||null,
+    addEventListener(){}
+  };
+  const win={
+    LiangYouSportsI18n:tr,matchMedia:()=>({matches:true}),setInterval(){}
+  };
+  const webFetch=async path=>{
+    const provider=path.includes('predict-sports.json')?'predict':
+      path.includes('kalshi-sports.json')?'kalshi':'polymarket';
+    return {ok:true,json:async()=>({
+      schema:1,source_type:'prediction_market',status:'ok',
+      generated_at:timestamp,events:samples[provider]
+    })};
+  };
+  vm.runInNewContext(UI,{
+    window:win, document:doc, localStorage:{getItem:()=>null,setItem(){}},
+    fetch:webFetch, AbortSignal, console
+  },{timeout:2000});
+  // Promise.allSettled and fetch callbacks execute on the next microtask turn.
+  await new Promise(resolve=>setImmediate(resolve));
+  assert(ids.get('sportsGrid').innerHTML.includes('sports-match'),
+    'Sports runtime failed to initialize and render feed cards');
+  tabs.find(t=>t.dataset.sportFilter==='other').dispatch('click');
+  let markup=ids.get('sportsGrid').innerHTML;
+  assert(markup.includes('Falcons')&&markup.includes('Red Hawks'),
+    '"Other" tab should include esports and other sports');
+  ids.get('sportsSearch').value='ufc';
+  ids.get('sportsSearch').dispatch('input');
+  assert(ids.get('sportsGrid').innerHTML.includes('Red Hawks'));
+  assert(!ids.get('sportsGrid').innerHTML.includes('Falcons'),
+    'Keyword search must filter other entries locally');
+  ids.get('sportsSearch').value='';
+  ids.get('sportsSearch').dispatch('input');
+  sources.find(s=>s.dataset.sourceFilter==='kalshi').dispatch('click');
+  markup=ids.get('sportsGrid').innerHTML;
+  assert(markup.includes('Red Hawks')&&!markup.includes('Falcons'),
+    'Selecting Kalshi should filter to that provider');
+  assert(markup.includes('sports-metrics'),'Selected provider details missing');
+  ids.get('sportsSort').value='activity';
+  ids.get('sportsSort').dispatch('change');
+  languages.find(l=>l.dataset.sportsLang==='en').dispatch('click');
+  assert.equal(ids.get('sports').lang,'en');
+  assert(ids.get('sportsSearch').placeholder.includes('Search'));
+  console.log('PASS: Sports DOM startup, unified other tab, keyword search, source filter, sorting, and language toggle.');
+}
+
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');

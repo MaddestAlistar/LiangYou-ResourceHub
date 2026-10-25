@@ -315,7 +315,7 @@
         (ranks.get(a.id+'|'+(a.provider||'polymarket'))||0) ||
         Date.parse(a.start_time)-Date.parse(b.start_time));
     } else {
-      ordered = active === 'all' ? arrange(visible) : [...visible].sort((a,b)=>
+      ordered = [...visible].sort((a,b)=>
         Date.parse(a.start_time)-Date.parse(b.start_time));
     }
     const display = ordered.slice(0, visibleLimit);
