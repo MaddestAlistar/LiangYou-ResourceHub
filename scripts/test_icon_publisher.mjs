@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {publishIcon, serialize, chooseName, encode, decode, CATALOGS, OFFICIAL, PublishError} from '../workers/icon-publisher.mjs';
+import {publishIcon, withdrawIcon, serialize, chooseName, encode, decode, CATALOGS, OFFICIAL, PublishError} from '../workers/icon-publisher.mjs';
 const meta={id:'20261025190000000-abc12345',name:'云海 PRON',kind:'动态',filename:'pending/icon-test.gif',status:'pending'};
 const pinned=Array.from({length:5},(_,i)=>({name:'Pinned '+i,url:'https://example.com/'+i}));
 const base=()=>({description:'更新时间：2026-10-24｜良友',icons:[...pinned,{name:'alpha 动态 01',url:'https://example.com/a'},{name:'99 Numeric',url:'https://example.com/n'}]});
@@ -41,7 +41,7 @@ function fixture({failAt, conflict=false, malformed=false, large=false}={}){
   }
   throw new Error('unexpected '+path);
  };
- return {gh,calls,get head(){return head},get writes(){return refWrites},files:()=>commits.get(head).files};
+ return {gh,calls,setConflict(){conflict=true},get head(){return head},get writes(){return refWrites},files:()=>commits.get(head).files};
 }
 const image=async()=>({encoding:'base64',content:btoa('image')});
 test('exact output is JSON; UTF-8 survives and literal backslash-n fails',()=>{
@@ -83,4 +83,73 @@ test('real regexes handle Chinese prefixes and English dynamic suffixes',()=>{
  const c=base();c.icons.push({name:'yunhai｜云海动态 01',url:'https://example.com/y'});
  assert.equal(chooseName({...meta,name:'云海 动态 01'},[c,c]),'yunhai｜云海动态 02');
  assert.equal(chooseName({...meta,name:'Alpha Dynamic 01'},[c,c]),'Alpha 动态 02');
+});
+
+test('withdraw removes exact URL from both catalogs atomically, retaining image and same-name alternatives',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);
+ for(const p of CATALOGS){const c=JSON.parse(f.files()[p]);c.icons.push({name:r.publishedName,url:'https://example.com/other-version'});f.files()[p]=serialize(c)}
+ const result=await withdrawIcon({...meta,status:'approved',...r},f.gh);
+ assert.equal(result.status,'withdrawn');assert.equal(f.writes,2);assert(f.files()[r.publishedFilename]);
+ for(const p of CATALOGS){const c=JSON.parse(f.files()[p]);assert.deepEqual(c.icons.slice(0,5),pinned);assert(!c.icons.some(x=>x.url===r.publishedUrl));assert(c.icons.some(x=>x.url==='https://example.com/other-version'))}
+ const writes=f.calls.filter(x=>x.path==='git/trees');assert.equal(writes.at(-1).options.body.tree.length,3);
+});
+test('withdraw retry after lost response is idempotent; stale approval cannot re-publish',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);const stale={...meta,...r,status:'approved'};
+ const one=await withdrawIcon(stale,f.gh);const two=await withdrawIcon(stale,f.gh);
+ assert.equal(two.recovered,true);assert.equal(one.withdrawnAt,two.withdrawnAt);assert.equal(f.writes,2);
+ await assert.rejects(publishIcon(stale,f.gh,image),/已下架/);assert.equal(f.writes,2);
+});
+test('legacy approved record without receipt supports withdrawal',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);delete f.files()['maintenance/published-submissions/'+meta.id+'.json'];
+ const result=await withdrawIcon({...meta,status:'approved',publishedUrl:r.publishedUrl},f.gh);
+ assert.equal(result.status,'withdrawn');assert(f.files()[r.publishedFilename]);
+});
+test('withdraw preserves concurrent edits',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);f.setConflict();await withdrawIcon({...meta,...r,status:'approved'},f.gh);
+ for(const p of CATALOGS){const c=JSON.parse(f.files()[p]);assert(c.icons.some(x=>x.name==='Concurrent edit'));assert(!c.icons.some(x=>x.url===r.publishedUrl))}
+});
+for(const path of ['git/trees','git/commits','git/refs/heads/main'])test('withdraw failure at '+path+' leaves both subscriptions unchanged',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);const before=f.head;
+ const failing=(p,o)=>p===path?Promise.reject(new PublishError('failed',503)):f.gh(p,o);
+ await assert.rejects(withdrawIcon({...meta,...r,status:'approved'},failing));assert.equal(f.head,before);
+ for(const p of CATALOGS)assert(JSON.parse(f.files()[p]).icons.some(x=>x.url===r.publishedUrl));
+});
+test('unpublished item cannot be withdrawn',async()=>{
+ const f=fixture();await assert.rejects(withdrawIcon(meta,f.gh),/没有可核对/);assert.equal(f.writes,0);
+});
+test('pinned five are protected from withdrawal',async()=>{
+ const f=fixture();const url='https://raw.githubusercontent.com/'+OFFICIAL+'/main/icons/liangyou/pinned.png';
+ for(const p of CATALOGS){const c=JSON.parse(f.files()[p]);c.icons[0].url=url;f.files()[p]=serialize(c)}
+ await assert.rejects(withdrawIcon({...meta,status:'approved',publishedUrl:url},f.gh),/置顶/);assert.equal(f.writes,0);
+});
+test('withdraw repairs a partially removed target without affecting other entries',async()=>{
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);
+ const c=JSON.parse(f.files()[CATALOGS[1]]);c.icons=c.icons.filter(x=>x.url!==r.publishedUrl);f.files()[CATALOGS[1]]=serialize(c);
+ await withdrawIcon({...meta,...r,status:'approved'},f.gh);
+ for(const p of CATALOGS)assert(!JSON.parse(f.files()[p]).icons.some(x=>x.url===r.publishedUrl));
+});
+test('Worker withdrawal metadata failure is safe to retry and yields withdrawn status',async()=>{
+ const {default:worker}=await import('../workers/icon-review-worker.js');
+ const f=fixture();const r=await publishIcon(meta,f.gh,image);const stale={...meta,...r,status:'approved'};
+ const previous=globalThis.fetch;let failSave=true;
+ globalThis.fetch=async(raw,options={})=>{
+  const url=new URL(raw),path=url.pathname;
+  if(path.startsWith('/repos/test/queue/contents/')){
+   if(options.method==='PUT'){
+    const saved=JSON.parse(decode(JSON.parse(options.body).content));assert.equal(saved.status,'withdrawn');assert(saved.withdrawalVerifiedAt);
+    return Response.json({}, {status:failSave?409:200});
+   }
+   return Response.json({sha:'meta',content:encode(serialize(stale))});
+  }
+  const p=path.slice(('/repos/'+OFFICIAL+'/').length)+url.search;
+  const result=await f.gh(p,{method:options.method,body:options.body?JSON.parse(options.body):undefined,missing:true});
+  return result===null?Response.json({}, {status:404}):Response.json(result);
+ };
+ const key='test-only-key-at-least-24-characters';
+ const env={ADMIN_KEY:key,GITHUB_TOKEN:'fake',PUBLISH_GITHUB_TOKEN:'fake',REVIEW_REPO:'test/queue'};
+ const request=()=>new Request('https://example.test/admin',{method:'POST',headers:{Origin:'https://maddestalistar.github.io','X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify({path:'pending/icon-test.json',status:'withdrawn'})});
+ try{
+  const failed=await worker.fetch(request(),env);assert.equal(failed.status,502);assert.match((await failed.json()).error,/正式库已下架.*审核状态未保存/);
+  failSave=false;const done=await worker.fetch(request(),env);assert.equal(done.status,200);const out=await done.json();assert.equal(out.withdrawalVerified,true);assert.equal(out.item.status,'withdrawn');assert.equal(f.writes,2);
+ }finally{globalThis.fetch=previous}
 });

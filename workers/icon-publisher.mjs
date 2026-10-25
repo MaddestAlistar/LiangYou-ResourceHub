@@ -1,7 +1,7 @@
 // One main-branch commit publishes image, both catalogs and an idempotency receipt.
 export const OFFICIAL = 'MaddestAlistar/LiangYou-IconLibrary';
 export const CATALOGS = ['LiangYou-Original-Icons.json', 'LiangYou-Emby-Icons.json'];
-export const VERSION = '2026-10-25.atomic-v1';
+export const VERSION = '2026-10-25.withdraw-v2';
 export class PublishError extends Error {
   constructor(message, status = 502) { super(message); this.status = status; }
 }
@@ -83,6 +83,7 @@ async function readJSON(gh, path, ref, missing = false) {
   catch { throw new PublishError(path + ' 不是有效 JSON；已停止发布，请先修复订阅文件'); }
 }
 export async function publishIcon(meta, gh, readImage) {
+  if (meta.status === 'withdrawn') throw new PublishError('该图标已下架，不能通过旧审核操作重新发布', 409);
   if (!/^[a-zA-Z0-9-]{8,100}$/.test(meta.id || '') || !/^pending\/[^/]+\.(png|webp|gif)$/i.test(meta.filename || '')) throw new PublishError('投稿编号或图片路径无效', 400);
   const receiptPath = 'maintenance/published-submissions/' + meta.id + '.json';
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -91,6 +92,7 @@ export async function publishIcon(meta, gh, readImage) {
     const catalogs = await Promise.all(CATALOGS.map(path => readJSON(gh, path, head)));
     validatePair(catalogs);
     const receipt = await readJSON(gh, receiptPath, head, true);
+    if (receipt?.status === 'withdrawn') throw new PublishError('该图标已下架，请刷新审核记录；不会自动重新发布', 409);
     // Recover a successful official commit even when queue metadata write failed.
     const published = receipt || (meta.publishedUrl ? meta : null);
     if (published) {
@@ -130,6 +132,66 @@ export async function publishIcon(meta, gh, readImage) {
     validatePair(actual);
     if (actual.some(c => !c.icons.some(x => x.url === publishedUrl && x.name === label))) throw new PublishError('发布后的订阅核对失败，请刷新后重试');
     return {...record, publishedCommit: nextCommit.sha, recovered: false};
+  }
+  throw new PublishError('同时有其他更新，未覆盖已有内容，请稍后重试', 409);
+}
+
+// Delist the exact published URL. Keep image bytes and receipt for audit/recovery.
+export async function withdrawIcon(meta, gh) {
+  if (!/^[a-zA-Z0-9-]{8,100}$/.test(meta.id || '')) throw new PublishError('投稿编号无效', 400);
+  const receiptPath = 'maintenance/published-submissions/' + meta.id + '.json';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const head = (await gh('git/ref/heads/main')).object.sha;
+    const commit = await gh('git/commits/' + head);
+    const catalogs = await Promise.all(CATALOGS.map(path => readJSON(gh, path, head)));
+    catalogs.forEach(validateCatalog);
+    const receipt = await readJSON(gh, receiptPath, head, true);
+    const published = receipt || (meta.publishedUrl ? meta : null);
+    if (!published || (receipt && receipt.id !== meta.id)) throw new PublishError('没有可核对的正式发布记录，不能下架', 409);
+    const prefix = 'https://raw.githubusercontent.com/' + OFFICIAL + '/main/icons/liangyou/';
+    const target = published.publishedUrl;
+    if (typeof target !== 'string' || !target.startsWith(prefix) || /[?#]/.test(target)) throw new PublishError('正式图标地址无效，已停止下架', 400);
+    const file = decodeURIComponent(target.slice(prefix.length));
+    if (!file || file.includes('/') || file.includes('..')) throw new PublishError('正式图标路径无效', 400);
+    if (catalogs.some(c => c.icons.slice(0, 5).some(x => x.url === target))) throw new PublishError('前五个置顶专属图标受保护，不能通过投稿后台下架', 409);
+    const count = catalogs.map(c => c.icons.filter(x => x.url === target).length);
+    if (receipt?.status === 'withdrawn' && count.every(n => n === 0)) {
+      validatePair(catalogs);
+      return {...receipt, recovered: true};
+    }
+    const next = catalogs.map(c => {
+      const copy = structuredClone(c);
+      copy.icons = copy.icons.filter(x => x.url !== target);
+      const date = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+      copy.description = String(copy.description || '').replace(/更新时间：[^｜]+/, '更新时间：' + date);
+      return copy;
+    });
+    validatePair(next);
+    const entry = catalogs.flatMap(c => c.icons).find(x => x.url === target);
+    const record = {id: meta.id, status: 'withdrawn', publishedUrl: target,
+      publishedFilename: 'icons/liangyou/' + file,
+      publishedName: published.publishedName || entry?.name || meta.name,
+      ...(published.publishedAt ? {publishedAt: published.publishedAt} : {}),
+      ...(published.imageSha ? {imageSha: published.imageSha} : {}),
+      withdrawnAt: published.withdrawnAt || new Date().toISOString(),
+      publisherVersion: VERSION, removedCounts: Object.fromEntries(CATALOGS.map((p, i) => [p, count[i]]))};
+    const tree = await gh('git/trees', {method: 'POST', body: {base_tree: commit.tree.sha, tree: [
+      ...CATALOGS.map((path, i) => ({path, mode: '100644', type: 'blob', content: serialize(next[i])})),
+      {path: receiptPath, mode: '100644', type: 'blob', content: serialize(record)}
+    ]}});
+    const nextCommit = await gh('git/commits', {method: 'POST', body: {
+      message: 'Withdraw reviewed icon: ' + record.publishedName + ' [' + meta.id + ']', tree: tree.sha, parents: [head]
+    }});
+    try {
+      await gh('git/refs/heads/main', {method: 'PATCH', body: {sha: nextCommit.sha, force: false}});
+    } catch (error) {
+      if ([409, 422].includes(error.status) && attempt < 2) continue;
+      throw error;
+    }
+    const actual = await Promise.all(CATALOGS.map(path => readJSON(gh, path, nextCommit.sha)));
+    validatePair(actual);
+    if (actual.some(c => c.icons.some(x => x.url === target))) throw new PublishError('下架后的索引核对失败，请刷新后重试');
+    return {...record, withdrawnCommit: nextCommit.sha, recovered: false};
   }
   throw new PublishError('同时有其他更新，未覆盖已有内容，请稍后重试', 409);
 }

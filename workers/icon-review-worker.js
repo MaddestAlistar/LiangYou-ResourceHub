@@ -1,4 +1,4 @@
-import { publishIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
+import { publishIcon, withdrawIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
 // Cloudflare Worker · Icon Review Queue
 // Secrets: GITHUB_TOKEN (fine-grained Contents: Read and write, restricted to review repository)
 // Vars: REVIEW_REPO = MaddestAlistar/Icon-Review-Queue; ALLOWED_ORIGIN = https://maddestalistar.github.io
@@ -36,10 +36,10 @@ export default {async fetch(request,env){
   if(request.method==="POST"){
    let body;try{body=await request.json()}catch{return reply({error:"Invalid JSON"},400,origin)}
    const path=String(body.path||"");const status=String(body.status||"");
-   if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending"].includes(status))return reply({error:"Invalid request"},400,origin);
+   if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending","withdrawn"].includes(status))return reply({error:"Invalid request"},400,origin);
    const current=await gh(path);if(!current.ok)return reply({error:"Metadata not found"},404,origin);
    const item=await current.json();let meta;try{meta=JSON.parse(decode(item.content))}catch{return reply({error:"Bad metadata"},502,origin)}
-   if(status!=="approved"&&(meta.publishedUrl||meta.status==="approved"))return reply({error:"已发布图标不能改回待审核或拒绝；如需下架，须同步移除正式库索引"},409,origin);
+   if(!["approved","withdrawn"].includes(status)&&(meta.publishedUrl||["approved","withdrawn"].includes(meta.status)))return reply({error:"已发布图标不能改回待审核或拒绝；如需下架，须同步移除正式库索引"},409,origin);
    if(status==="approved"){
     if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式图标库发布权限未配置"},503,origin);
     try {
@@ -54,11 +54,19 @@ export default {async fetch(request,env){
       meta.publicationVerifiedAt=new Date().toISOString();
     } catch(error){return reply({error:error.message||"发布失败，请刷新后重试"},502,origin)}
    }
+   if(status==="withdrawn"){
+    if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式图标库发布权限未配置"},503,origin);
+    try {
+      const result=await withdrawIcon(meta,githubClient("MaddestAlistar/LiangYou-IconLibrary",env.PUBLISH_GITHUB_TOKEN));
+      for(const key of ["publishedName","publishedFilename","publishedUrl","publishedAt","withdrawnAt","withdrawnCommit","publisherVersion"])if(result[key])meta[key]=result[key];
+      meta.withdrawalVerifiedAt=new Date().toISOString();
+    } catch(error){return reply({error:error.message||"下架失败，请刷新后重试"},502,origin)}
+   }
    meta.status=status;meta.reviewedAt=new Date().toISOString();
    const content=encode(JSON.stringify(meta,null,2)+"\n");
    const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: "+status+" "+meta.name,content,sha:item.sha})});
-   if(!saved.ok)return reply({error:status==="approved"?"正式库已发布，但审核状态未保存。请刷新后再次点击通过，系统会核对已有发布，不会重复入库":"审核状态保存失败，请刷新后重试",status:saved.status},502,origin);
-   return reply({ok:true,status,item:meta,publicationVerified:status==="approved"},200,origin);
+   if(!saved.ok)return reply({error:status==="approved"?"正式库已发布，但审核状态未保存。请刷新后再次点击通过，系统会核对已有发布，不会重复入库":status==="withdrawn"?"正式库已下架，但审核状态未保存。请刷新后再次点击下架，系统会核对已有结果":"审核状态保存失败，请刷新后重试",status:saved.status},502,origin);
+   return reply({ok:true,status,item:meta,publicationVerified:status==="approved",withdrawalVerified:status==="withdrawn"},200,origin);
   }
   return reply({error:"Method not allowed"},405,origin);
  }
