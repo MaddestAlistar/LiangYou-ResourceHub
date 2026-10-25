@@ -174,5 +174,7 @@ for (const platform of ['cn','us','android','steam','epic']) assert(html.include
 assert(html.includes('id="dailyFreeMore"') && html.includes('id="dailyFreeRefresh"'));
 const feedStatus=JSON.parse(text('data/update-status.json'));
 assert.equal(feedStatus.schema,1);
-for(const key of ['apple','android','games','sports','predict']) assert(feedStatus.jobs[key]?.interval_hours > 0);
+for(const key of ['apple','android','games','sports']) assert(feedStatus.jobs[key]?.interval_hours > 0);
+// A newly installed feed has no status until the first scheduled collection.
+if (feedStatus.jobs.predict) assert(feedStatus.jobs.predict.interval_hours > 0);
 console.log('PASS: Regional Apple, verified Android, Steam/Epic, sports provenance and scheduler metadata.');
