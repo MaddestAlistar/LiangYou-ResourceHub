@@ -114,6 +114,10 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(row["stats"]["liquidity_usd"], 840)
         self.assertEqual(row["outcomes"][0]["_clob_token"], "12345678901234567890")
         self.assertNotIn("best_bid", row["outcomes"][0])
+        market["volumeNum"] = 1000
+        row = sports.normalize(event, "lol", "League of Legends", NOW)
+        self.assertEqual(row["stats"]["volume_24h_usd"], 1280.5)
+        self.assertNotIn("volume_total_usd", row["stats"])
 
     def test_polymarket_orderbook_filters_invalid_prices_and_selects_best(self):
         raw = {"bids": [{"price":"0.4","size":"11"}, {"price":"0.49","size":"22"}],

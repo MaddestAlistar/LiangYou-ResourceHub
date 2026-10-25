@@ -174,6 +174,10 @@ const predict = JSON.parse(text('data/predict-sports.json'));
 assert.equal(predict.source_type,'prediction_market');
 assert(Array.isArray(predict.events));
 for (const event of [...sports.events,...predict.events]) {
+  if(event.stats?.volume_total_usd && event.stats?.volume_24h_usd) {
+    assert(event.stats.volume_24h_usd <= event.stats.volume_total_usd,
+      'Market cumulative volume cannot be less than last-24h volume');
+  }
   if (event.stats) for(const name of ['volume_24h_usd','volume_total_usd','liquidity_usd']) {
     if(name in event.stats) assert(Number.isFinite(event.stats[name]) && event.stats[name] > 0);
   }

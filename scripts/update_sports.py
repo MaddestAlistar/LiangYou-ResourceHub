@@ -128,6 +128,11 @@ def market_stats(markets):
             values.append(value)
         if len(values) == len(markets):
             out[name] = round(sum(values), 2)
+    # Gamma indexes can momentarily disagree. Do not show an impossible
+    # lifetime volume lower than the selected market's last-24h volume.
+    if (out.get("volume_24h_usd") and out.get("volume_total_usd") and
+            out["volume_24h_usd"] > out["volume_total_usd"]):
+        out.pop("volume_total_usd", None)
     return out
 
 
