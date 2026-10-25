@@ -266,6 +266,12 @@ def main():
                 "market_keys": list(m)[:30],
                 "market_type": m.get("marketType"),
                 "market_team": m.get("team"), "market_resolution": m.get("resolution"),
+                "market_outcomes": m.get("outcomes"),
+                "market_title": m.get("title"), "market_question": m.get("question"),
+                "market_trading": m.get("tradingStatus"),
+                "market_variant_data": m.get("variantData"),
+                "market_variant_details": m.get("variantDetails"),
+                "top_bid": m.get("bestBid"), "top_ask": m.get("bestAsk"),
             }, ensure_ascii=False, default=str)[:2200])
     snapshot = {
         "schema": 1, "source": "Predict.fun API", "source_type": "prediction_market",
