@@ -6,6 +6,7 @@ on:
     paths:
       - 'workers/**'
       - 'scripts/test_icon*.mjs'
+      - 'scripts/check_icon_worker.mjs'
       - 'workers/wrangler.jsonc'
       - '.github/workflows/deploy-icon-review.yml'
 concurrency:
@@ -30,18 +31,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --config workers/wrangler.jsonc
       - name: Verify deployed version and admin authentication
-        run: |
-          python3 - <<'PYCODE'
-          import json, urllib.request, urllib.error
-          base = 'https://liangyou-icon-review.maddestalistar.workers.dev'
-          headers = {'Origin': 'https://maddestalistar.github.io'}
-          with urllib.request.urlopen(urllib.request.Request(base+'/health', headers=headers), timeout=30) as r:
-              data = json.load(r)
-          assert data['version'] == '2026-10-25.atomic-v1', data
-          try:
-              urllib.request.urlopen(urllib.request.Request(base+'/admin', headers=headers), timeout=30)
-              raise AssertionError('Admin endpoint must reject unauthenticated requests')
-          except urllib.error.HTTPError as e:
-              assert e.code == 401, e.code
-          print('PASS: deployed version and admin authentication')
-          PYCODE
+        run: node scripts/check_icon_worker.mjs

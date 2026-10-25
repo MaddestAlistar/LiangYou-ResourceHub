@@ -8,10 +8,10 @@ export default {async fetch(request,env){
  const allowed=env.ALLOWED_ORIGIN||"https://maddestalistar.github.io";
  try {
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, X-Admin-Key","Access-Control-Max-Age":"600"}});
- if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
-
  const url=new URL(request.url);
- if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin);
+ // Public liveness/version only; no credentials, configuration or queue data.
+ if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin===allowed?origin:"");
+ if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
  if(url.pathname==="/admin"){
   if(!env.ADMIN_KEY)return reply({error:"Admin not configured"},503,origin);
   const key=request.headers.get("X-Admin-Key")||"";

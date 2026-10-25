@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {VERSION} from '../workers/icon-publisher.mjs';
+const base = 'https://liangyou-icon-review.maddestalistar.workers.dev';
+const headers = {Origin: 'https://maddestalistar.github.io'};
+const health = await fetch(base + '/health', {headers, signal: AbortSignal.timeout(30000)});
+assert.equal(health.status, 200, 'Worker health endpoint HTTP ' + health.status);
+const data = await health.json();
+assert.equal(data.version, VERSION, 'Deployment has not reached the checked endpoint');
+const admin = await fetch(base + '/admin', {headers, signal: AbortSignal.timeout(30000)});
+assert.equal(admin.status, 401, 'Admin endpoint must reject unauthenticated requests');
+console.log('PASS: deployed version ' + VERSION + ' and admin authentication');
