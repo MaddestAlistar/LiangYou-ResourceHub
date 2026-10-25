@@ -43,3 +43,16 @@ test('published icons cannot be falsely marked rejected without unpublishing',as
  const previous=globalThis.fetch;globalThis.fetch=async()=>json({sha:'x',content:encode(serialize({status:'approved',publishedUrl:'https://example.com/icon'}))});
  try{assert.equal((await worker.fetch(request({path:'pending/test.json',status:'rejected'}),env)).status,409)}finally{globalThis.fetch=previous}
 });
+test('large review directories fall back to Git trees and keep pagination beyond Contents API limit',async()=>{
+ const previous=globalThis.fetch;
+ globalThis.fetch=async(url)=>{
+  if(url.endsWith('/contents/pending'))return json(Array.from({length:1000},(_,i)=>({type:'file',name:i+'.gif'})));
+  if(url.endsWith('/git/trees/main'))return json({tree:[{path:'pending',type:'tree',sha:'pending-tree'}]});
+  if(url.endsWith('/git/trees/pending-tree'))return json({tree:Array.from({length:1500},(_,i)=>({type:'blob',path:'batch-'+String(i).padStart(4,'0')+'.json'}))});
+  return json({sha:'metadata',content:encode(JSON.stringify({id:'example',name:'Example',status:'pending',filename:'pending/example.gif',batchId:'group-id'}))});
+ };
+ try{
+  const res=await worker.fetch(new Request('https://example.test/admin?cursor=1000',{headers:{Origin:origin,'X-Admin-Key':key}}),env);
+  const out=await res.json();assert.equal(res.status,200);assert.equal(out.total,1500);assert.equal(out.items.length,30);assert.equal(out.nextCursor,1030);assert.equal(out.items[0].batchId,'group-id');
+ }finally{globalThis.fetch=previous}
+});

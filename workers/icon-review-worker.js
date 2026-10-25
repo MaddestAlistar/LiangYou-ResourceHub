@@ -1,3 +1,5 @@
+import { inspectImage } from "../icon-image.mjs";
+import { isUUID, submitBatchItem } from "./icon-batch-submission.mjs";
 import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
 import { publishIcon, withdrawIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
 // Cloudflare Worker · Icon Review Queue
@@ -25,7 +27,18 @@ export default {async fetch(request,env){
   if(request.method==="GET"){
    const listing=await gh("pending");
    if(!listing.ok)return reply({error:"Failed to list pending files",status:listing.status},502,origin);
-   const entries=await listing.json();
+   let entries=await listing.json();
+   // Contents API caps a directory at 1,000 entries (images + metadata).
+   // Large batch queues must not silently hide later submissions.
+   if(entries.length>=1000){
+    const treeClient=githubClient(env.REVIEW_REPO,env.GITHUB_TOKEN);
+    const rootTree=await treeClient('git/trees/main');
+    const pending=rootTree.tree.find(x=>x.path==='pending'&&x.type==='tree');
+    if(!pending)return reply({error:'审核目录不存在，请刷新后重试'},502,origin);
+    const tree=await treeClient('git/trees/'+pending.sha);
+    if(tree.truncated)return reply({error:'审核目录过大，请先归档历史记录，避免遗漏投稿'},502,origin);
+    entries=tree.tree.map(x=>({name:x.path,type:x.type==='blob'?'file':x.type}));
+   }
    const all=entries.filter(x=>x.type==="file"&&x.name.endsWith(".json")).sort((a,b)=>a.name.localeCompare(b.name));
    const offset=Math.max(0,Number.parseInt(url.searchParams.get("cursor")||"0",10)||0);
    const metas=all.slice(offset,offset+30);
@@ -82,17 +95,17 @@ export default {async fetch(request,env){
  if(!(file instanceof File)||!name||name.length>60||!author||author.length>100)return reply({error:"Missing or invalid fields"},400,origin);
  if(file.size>10*1024*1024||file.size===0)return reply({error:"Maximum file size is 10 MB"},413,origin);
  const ext=(file.name.split(".").pop()||"").toLowerCase();if(!["png","webp","gif"].includes(ext)||((kind==="动态")!==(ext==="gif")))return reply({error:"Invalid image type"},400,origin);
- const bytes=new Uint8Array(await file.arrayBuffer());let w=0,h=0,valid=false;
- const be=(p)=>((bytes[p]<<24)>>>0)+(bytes[p+1]<<16)+(bytes[p+2]<<8)+bytes[p+3];
- if(ext==="png"&&bytes.length>24&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71){w=be(16);h=be(20);valid=true}
- if(ext==="gif"&&bytes.length>10&&String.fromCharCode(...bytes.slice(0,3))==="GIF"){w=bytes[6]+bytes[7]*256;h=bytes[8]+bytes[9]*256;valid=true}
- if(ext==="webp"&&bytes.length>30&&String.fromCharCode(...bytes.slice(0,4))==="RIFF"&&String.fromCharCode(...bytes.slice(8,12))==="WEBP"){
- const typ=String.fromCharCode(...bytes.slice(12,16));
- if(typ==="VP8X"){w=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16);h=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16);valid=true}
- else if(typ==="VP8 "&&bytes.length>30){w=(bytes[26]|bytes[27]<<8)&16383;h=(bytes[28]|bytes[29]<<8)&16383;valid=true}
- else if(typ==="VP8L"&&bytes.length>25){const v=(bytes[21]|bytes[22]<<8|bytes[23]<<16|bytes[24]<<24)>>>0;w=(v&16383)+1;h=((v>>>14)&16383)+1;valid=true}
+ const bytes=new Uint8Array(await file.arrayBuffer());let imageInfo;
+ try{imageInfo=inspectImage(bytes,file.name)}catch(error){return reply({error:error.message},400,origin)}
+ const {width:w,height:h}=imageInfo;
+ const submissionKey=String(form.get("submissionKey")||""),batchId=String(form.get("batchId")||"");
+ if(submissionKey||batchId){
+  if(!isUUID(submissionKey)||!isUUID(batchId))return reply({error:"Invalid batch identifier"},400,origin);
+  try{
+   const result=await submitBatchItem({submissionKey,batchId,name,author,notes,kind,ext,width:w,height:h},email,bytes,env,githubClient(env.REVIEW_REPO,env.GITHUB_TOKEN));
+   return reply({ok:true,...result},result.recovered?200:201,origin);
+  }catch(error){return reply({error:error.message||"批量投稿未能确认完成，请使用原批次重试"},502,origin)}
  }
- if(!valid||(ext==="gif"?(w!==h||w<320||w>480):(w!==720||h!==720)))return reply({error:ext==="gif"?"GIF must be square, 320–480 px":"Static icon must be 720 × 720 px"},400,origin);
  const safe=name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g,"-").slice(0,48)||"icon";
  const id=new Date().toISOString().replace(/[-:.TZ]/g,"")+"-"+crypto.randomUUID().slice(0,8);
  let contactEmailEncrypted;

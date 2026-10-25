@@ -1,7 +1,7 @@
 // One main-branch commit publishes image, both catalogs and an idempotency receipt.
 export const OFFICIAL = 'MaddestAlistar/LiangYou-IconLibrary';
 export const CATALOGS = ['LiangYou-Original-Icons.json', 'LiangYou-Emby-Icons.json'];
-export const VERSION = '2026-10-25.contact-preview-v3';
+export const VERSION = '2026-10-25.batch-v4';
 export class PublishError extends Error {
   constructor(message, status = 502) { super(message); this.status = status; }
 }
