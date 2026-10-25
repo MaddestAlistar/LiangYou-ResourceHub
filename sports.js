@@ -188,7 +188,7 @@
     const sourcePattern = provider === 'predict'
       ? /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i
       : provider === 'kalshi'
-        ? /^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+\/event\/[a-z0-9-]+$/i
+        ? /^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+(?:\/[a-z0-9-]+\/[a-z0-9-]+)?$/i
         : /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i;
     const url = typeof event.source_url === 'string' && sourcePattern.test(event.source_url)
       ? event.source_url : '';

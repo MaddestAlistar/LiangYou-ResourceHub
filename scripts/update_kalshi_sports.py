@@ -119,6 +119,20 @@ def fetch_series(series, pages=2):
     return results
 
 
+def series_slug(series):
+    """Use the exchange's series title for the canonical public event deep link."""
+    try:
+        info = get_json(BASE + "/series/" + series)
+        record = info.get("series") if isinstance(info, dict) else None
+        title = str(record.get("title") or "") if isinstance(record, dict) else ""
+        slug = re.sub(r"[^a-z0-9]+","-",title.lower()).strip("-")
+        if 3 <= len(slug) <= 90:
+            return slug
+    except Exception:
+        pass
+    return None
+
+
 def is_open(market):
     return market.get("status") in ("active","open") and not market.get("result")
 
@@ -149,7 +163,7 @@ def selected_time(event, markets, now):
     return None, None
 
 
-def normalize(event, series, now):
+def normalize(event, series, now, page_slug=None):
     if not isinstance(event, dict):
         return None
     ticker = str(event.get("event_ticker") or "")
@@ -238,7 +252,9 @@ def normalize(event, series, now):
         "competition":competition, "outcomes":[o for _,o in parsed],
         "stats":stats, "checked_at":checked,
         "verification":"open_match_winner_market", "provider":"kalshi",
-        "source_url":"https://kalshi.com/markets/" + series.lower() + "/event/" + ticker.lower()
+        "source_url": ("https://kalshi.com/markets/" + series.lower() + "/" +
+                       page_slug + "/" + ticker.lower()) if page_slug
+                      else ("https://kalshi.com/markets/" + series.lower())
     }
 
 
@@ -250,18 +266,19 @@ def main():
         category, series = entry
         try:
             rows = fetch_series(series)
-            return (category,series,rows,None)
+            slug = series_slug(series) if rows else None
+            return (category,series,rows,slug,None)
         except Exception as exc:
-            return (category,series,[],str(exc)[:110])
+            return (category,series,[],None,str(exc)[:110])
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(collect, all_series))
     found = {}
-    for category,series,rows,error in results:
+    for category,series,rows,slug,error in results:
         health.append({"tag":series,"status":"unavailable" if error else "ok","received":len(rows)})
         if error:
             print("Kalshi series unavailable: %s" % series,flush=True)
         for raw in rows:
-            event = normalize(raw,series,now)
+            event = normalize(raw,series,now,slug)
             if event:
                 found[event["id"]] = event
     if not any(h["status"]=="ok" for h in health):

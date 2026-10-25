@@ -178,7 +178,7 @@ for(const e of kalshi.events){
   assert(e.provider==='kalshi' && e.verification==='open_match_winner_market');
   assert(['market_close','kickoff'].includes(e.time_kind));
   assert([2,3].includes(e.outcomes.length));
-  assert(/^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+\/event\/[a-z0-9-]+$/.test(e.source_url));
+  assert(/^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+(?:\/[a-z0-9-]+\/[a-z0-9-]+)?$/.test(e.source_url));
   for(const o of e.outcomes) assert(o.market_id && Number.isFinite(o.probability) && o.probability>0 && o.probability<1 &&
     o.best_bid>0 && o.best_ask<1 && o.best_bid<=o.best_ask);
   for(const n of ['volume_24h_contracts','volume_total_contracts','open_interest_contracts'])

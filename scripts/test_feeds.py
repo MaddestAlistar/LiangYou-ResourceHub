@@ -178,6 +178,8 @@ class FeedRules(unittest.TestCase):
         self.assertEqual([o["name"] for o in answer["outcomes"]],
                          ["Team Alpha","平局","Team Beta"])
         self.assertEqual(answer["time_kind"],"kickoff")
+        self.assertEqual(kalshi.normalize(event,"KXEPLGAME",now,"english-premier-league-game")["source_url"],
+                         "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26oct25ab")
         self.assertEqual(answer["stats"]["volume_24h_contracts"],90)
         self.assertNotIn("volume_24h_usd",answer["stats"])
         self.assertEqual(answer["outcomes"][0]["best_bid_size"],10.5)
