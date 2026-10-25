@@ -173,6 +173,7 @@ for(const event of sports.events) {
 const kalshi = JSON.parse(text('data/kalshi-sports.json'));
 assert.equal(kalshi.schema,1);
 assert.equal(kalshi.source_type,'prediction_market');
+if(kalshi.link_schema_version != null) assert.equal(kalshi.link_schema_version,2);
 assert(Array.isArray(kalshi.events));
 for(const e of kalshi.events){
   assert(e.provider==='kalshi' && e.verification==='open_match_winner_market');

@@ -46,7 +46,9 @@ def main():
         attempted = date(entry.get('last_attempt_at'))
         if entry.get('status') == 'failed' and previous and attempted and previous > attempted:
             entry['status'] = 'ok'
-        if args.force or entry.get('status') == 'failed' or is_due(previous, instant, hours):
+        snapshot = read_json(path) if name == 'kalshi' else {}
+        kalshi_link_upgrade = name == 'kalshi' and snapshot.get('link_schema_version') != 2
+        if args.force or kalshi_link_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
             entry['last_attempt_at'] = iso()
             try:
                 result = subprocess.run([sys.executable, '-u', str(ROOT / 'scripts' / script)], cwd=ROOT, timeout=900)

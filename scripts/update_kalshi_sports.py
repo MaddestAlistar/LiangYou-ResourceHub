@@ -296,6 +296,7 @@ def main():
         "source_type":"prediction_market","generated_at":iso(now),
         "interval_hours":2,
         "status":"ok" if all(h["status"]=="ok" for h in health) else "partial",
+        "link_schema_version":2,
         "sources":health,"events":events,
         "notes":"Kalshi is a prediction exchange. Contract volume and open interest are counts, not US dollars. Market close is not necessarily kickoff."
     }
