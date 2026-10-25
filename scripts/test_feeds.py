@@ -115,8 +115,12 @@ class FeedRules(unittest.TestCase):
             "teams": [{"name": "Team Alpha"}, {"name": "Team Beta"}],
             "markets": [{
                 "id": 100, "marketType": "SPORTS_MONEYLINE", "tradingStatus": "OPEN",
-                "team": {"name": "Team Alpha"},
-                "resolution": {"bestBid": {"price": .60}, "bestAsk": {"price": .62}}
+                "outcomes": [
+                    {"name": "TA", "variantDetails": {"sports": {"team": {"name": "Team Alpha"}}},
+                     "bestBid": {"price": .60}, "bestAsk": {"price": .62}},
+                    {"name": "TB", "variantDetails": {"sports": {"team": {"name": "Team Beta"}}},
+                     "bestBid": {"price": .38}, "bestAsk": {"price": .40}}
+                ]
             }]
         }
         record = predict.normalize(category, NOW)
@@ -126,9 +130,9 @@ class FeedRules(unittest.TestCase):
         category["markets"][0]["marketType"] = "SPORTS_SPREAD"
         self.assertIsNone(predict.normalize(category, NOW))
         category["markets"][0]["marketType"] = "SPORTS_MONEYLINE"
-        category["markets"][0]["resolution"]["bestAsk"]["price"] = 1
+        category["markets"][0]["outcomes"][0]["bestAsk"]["price"] = 1
         self.assertIsNone(predict.normalize(category, NOW))
-        category["markets"][0]["resolution"]["bestAsk"]["price"] = .62
+        category["markets"][0]["outcomes"][0]["bestAsk"]["price"] = .62
         category.pop("startsAt")
         self.assertIsNone(predict.normalize(category, NOW))
 
