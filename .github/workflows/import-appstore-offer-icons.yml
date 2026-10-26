@@ -11,18 +11,25 @@ on:
 permissions:
   contents: write
 
+# Avoid parallel manual runs publishing the same artwork files.
+concurrency:
+  group: import-appstore-offer-icons
+  cancel-in-progress: false
+
 jobs:
   import:
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    timeout-minutes: 12
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
+          fetch-depth: 0
           persist-credentials: true
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install icon optimizer
@@ -36,5 +43,9 @@ jobs:
           git add assets/offer-icons/*.webp assets/offer-icons/appstore-sources.json
           if ! git diff --cached --quiet; then
             git commit -m "Import eight official App Store artwork icons for benefits"
-            git push origin HEAD:main
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = "3" ]; then exit 1; fi
+            done
           fi
