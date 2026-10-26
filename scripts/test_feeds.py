@@ -2,6 +2,7 @@
 import json
 import unittest
 from datetime import datetime, timezone, timedelta
+import datetime as dt
 from unittest.mock import patch
 import update_daily_free as apple
 import update_android_free as android
@@ -336,5 +337,49 @@ class FeedRules(unittest.TestCase):
             "markets": []
         }
         self.assertIsNone(predict.normalize(category, NOW))
+
+
+    def test_official_football_and_basketball_status_scores(self):
+        import update_real_sports as real
+        now = dt.datetime(2026,10,27,12,0,tzinfo=dt.timezone.utc)
+        football={"fixture":{"id":12,"date":"2026-10-27T15:00:00+00:00",
+                   "status":{"short":"FT","long":"Match Finished"}},
+                  "league":{"name":"Premier League","round":"Regular Season - 10"},
+                  "teams":{"home":{"name":"Team A"},"away":{"name":"Team B"}},
+                  "goals":{"home":2,"away":1}}
+        event=real.football_row(football,now)
+        self.assertEqual(event["status"],"finished")
+        self.assertEqual((event["score_home"],event["score_away"]),(2,1))
+        football["fixture"]["status"]["short"]="NS"
+        self.assertIsNone(real.football_row(football,now)["score_home"])
+        basketball={"id":99,"date":"2026-10-27T15:00:00Z","league":{"name":"NBA"},
+                    "teams":{"home":{"name":"Lakers"},"away":{"name":"Warriors"}},
+                    "status":{"short":"Q3"},"scores":{"home":{"total":55},"away":{"total":51}}}
+        parsed=real.basketball_row(basketball,now)
+        self.assertEqual(parsed["status"],"live")
+        self.assertEqual(parsed["score_away"],51)
+
+    def test_pandascore_only_real_teams_scores_and_schedule(self):
+        import update_real_sports as real
+        now = dt.datetime(2026,10,27,12,0,tzinfo=dt.timezone.utc)
+        raw={"id":52,"scheduled_at":"2026-10-29T12:00:00Z","status":"finished",
+             "videogame":{"slug":"league-of-legends","name":"LoL"},
+             "league":{"name":"Worlds"},"tournament":{"name":"Playoffs"},
+             "opponents":[{"opponent":{"id":2,"name":"TES"}},{"opponent":{"id":3,"name":"T1"}}],
+             "results":[{"team_id":2,"score":2},{"team_id":3,"score":3}],
+             "number_of_games":5}
+        row=real.pandascore_row(raw,now)
+        self.assertEqual(row["sport"],"lol")
+        self.assertEqual((row["score_home"],row["score_away"]),(2,3))
+        self.assertEqual(row["best_of"],5)
+        raw["opponents"]=[]
+        self.assertIsNone(real.pandascore_row(raw,now))
+
+    def test_official_collectors_rate_budget(self):
+        import update_real_sports as real
+        self.assertEqual(len(real.FOOTBALL),5)
+        self.assertEqual(len(real.PANDA_ENDPOINTS),3)
+        self.assertEqual(5+4+len(real.PANDA_ENDPOINTS),12)
+
 
 if __name__ == '__main__': unittest.main()

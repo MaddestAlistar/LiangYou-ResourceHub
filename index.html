@@ -22,12 +22,14 @@
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=20261025.1">
   <link rel="stylesheet" href="./sports.css?v=20261026.4">
+  <link rel="stylesheet" href="./fixtures.css?v=20261027.1">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=6" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=20261024.4" defer></script>
   <script src="./sports-i18n.js?v=20261026.4" defer></script>
   <script src="./sports.js?v=20261026.4" defer></script>
+  <script src="./fixtures.js?v=20261027.1" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
 .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
@@ -120,6 +122,39 @@
             </div>
           </div>
         </header>
+        <section class="fixtures-panel" id="officialFixtures" aria-labelledby="officialFixturesTitle">
+          <div class="fixtures-heading">
+            <div><p class="eyebrow">OFFICIAL SCHEDULES · RESULTS</p>
+              <h3 id="officialFixturesTitle">真实赛程与比分</h3>
+              <p id="officialFixturesIntro">API-Sports · PandaScore 提供真实赛程、赛制、比赛状态及已发布比分；非实时比分直播。</p>
+            </div>
+            <span id="officialFixturesCount" class="fixtures-total" role="status">等待同步</span>
+          </div>
+          <div class="fixtures-tools">
+            <div class="fixtures-filters" role="group" aria-label="比赛状态">
+              <button class="fixtures-tab is-active" type="button" data-fixtures-state="all" aria-pressed="true">全部赛程</button>
+              <button class="fixtures-tab" type="button" data-fixtures-state="live" aria-pressed="false">进行中</button>
+              <button class="fixtures-tab" type="button" data-fixtures-state="scheduled" aria-pressed="false">即将开始</button>
+              <button class="fixtures-tab" type="button" data-fixtures-state="finished" aria-pressed="false">已结束</button>
+            </div>
+            <div class="fixtures-inputrow">
+              <input type="search" id="officialFixturesSearch" maxlength="90" placeholder="搜索球队、联赛、游戏名称" aria-label="搜索真实赛事">
+              <select id="officialFixturesCategory" aria-label="真实赛事分类">
+                <option value="all">全部项目</option><option value="lol">英雄联盟</option>
+                <option value="esports">其他电竞</option><option value="basketball">篮球</option>
+                <option value="football">足球</option>
+              </select>
+            </div>
+          </div>
+          <p id="officialFixturesStatus" class="fixtures-update" aria-live="polite">尚未收到实际数据，首次采集完成后自动展示。</p>
+          <div class="fixtures-grid" id="officialFixturesGrid" aria-live="polite"><p class="fixtures-empty">首次同步前不显示模拟比赛或虚构比分。</p></div>
+          <div class="fixtures-actions">
+            <span id="officialFixturesShowing"></span>
+            <button id="officialFixturesMore" class="fixtures-more" type="button" hidden>加载更多赛事</button>
+          </div>
+          <p class="fixtures-footnote" id="officialFixturesNote">赛程和比分来自 API-Sports、PandaScore；约每 6 小时定时校验一次。实际比分可能延迟，不代表实时赛况；预测市场报价独立显示在下方。</p>
+        </section>
+        <div class="fixtures-market-heading"><strong id="fixturesMarketTitle">赛前预测市场</strong><span id="fixturesMarketSubtitle">Polymarket · Predict.fun · Kalshi</span></div>
         <div class="sports-tabs" role="group" aria-label="赛事分类">
           <button class="sports-tab is-active" type="button" data-sport-filter="all" aria-pressed="true">全部赛事</button>
           <button class="sports-tab" type="button" data-sport-filter="lol" aria-pressed="false">🎮 英雄联盟</button>

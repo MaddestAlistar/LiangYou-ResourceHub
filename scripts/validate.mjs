@@ -206,10 +206,34 @@ for (const event of [...sports.events,...predict.events]) {
 }
 for (const platform of ['cn','us','android','steam','epic']) assert(html.includes('data-daily-region="' + platform + '"'));
 assert(html.includes('id="dailyFreeMore"') && html.includes('id="dailyFreeRefresh"'));
+
+// Official fixture snapshots are independent of prediction market odds.
+const fixtureSnapshot = JSON.parse(text('data/real-sports.json'));
+assert.equal(fixtureSnapshot.schema,1);
+assert.equal(fixtureSnapshot.source_type,'official_fixtures');
+assert(Array.isArray(fixtureSnapshot.events));
+const fixtureIds=new Set();
+for(const match of fixtureSnapshot.events){
+  assert(typeof match.id==='string'&&!fixtureIds.has(match.id),'Duplicate fixture ID');
+  fixtureIds.add(match.id);
+  assert(['api-sports','pandascore'].includes(match.provider));
+  assert(['lol','esports','football','basketball'].includes(match.sport));
+  assert(['scheduled','live','finished'].includes(match.status));
+  assert(match.home&&match.away&&Number.isFinite(Date.parse(match.start_time)));
+  for(const key of ['score_home','score_away'])
+    assert(match[key]===null||(Number.isInteger(match[key])&&match[key]>=0&&match[key]<1000));
+  if(match.status==='scheduled')assert(match.score_home===null&&match.score_away===null);
+}
+for(const target of ['officialFixtures','officialFixturesGrid','officialFixturesStatus',
+  'officialFixturesSearch','officialFixturesCategory','officialFixturesMore'])
+  assert(html.includes('id="'+target+'"'),'Missing real fixture UI target: '+target);
+for(const file of ['fixtures.js','fixtures.css'])assert(existsSync(file),'Missing fixture asset');
+
 const feedStatus=JSON.parse(text('data/update-status.json'));
 assert.equal(feedStatus.schema,1);
 for(const key of ['apple','android','games','sports']) assert(feedStatus.jobs[key]?.interval_hours > 0);
 // A newly installed feed has no status until the first scheduled collection.
 if (feedStatus.jobs.predict) assert(feedStatus.jobs.predict.interval_hours > 0);
 if (feedStatus.jobs.kalshi) assert(feedStatus.jobs.kalshi.interval_hours > 0);
+if (feedStatus.jobs.fixtures) assert.equal(feedStatus.jobs.fixtures.interval_hours,6);
 console.log('PASS: Regional Apple, verified Android, Steam/Epic, sports provenance and scheduler metadata.');
