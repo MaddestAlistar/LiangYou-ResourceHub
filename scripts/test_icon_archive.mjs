@@ -13,6 +13,16 @@ for(const ext of ['zip','rar'])test(ext+' extracts nested images unchanged and r
  assert.throws(()=>inspectImage(result.files.find(x=>x.path==='bad-size.png').bytes,'bad-size.png'),/720/);
  assert.throws(()=>inspectImage(png.bytes,'renamed.gif'),/真实格式/);
 });
+test('JPEG headers recognize static sizes, including APP markers and jpeg extension',()=>{
+ const jpeg=size=>new Uint8Array([255,216,255,224,0,4,1,2,255,192,0,17,8,size>>8,size&255,size>>8,size&255,3,1,17,0,2,17,0,3,17,0,255,217]);
+ for(const size of [720,1024])for(const ext of ['jpg','jpeg']){
+  const info=inspectImage(jpeg(size),'example.'+ext);
+  assert.equal(info.width,size);assert.equal(info.height,size);assert.equal(info.mime,'image/jpeg');assert.equal(info.kind,'静态');
+ }
+ assert.throws(()=>inspectImage(jpeg(800),'wrong.jpg'),/720/);
+ assert.throws(()=>inspectImage(jpeg(720),'wrong.png'),/真实格式/);
+ assert.throws(()=>inspectImage(jpeg(720),'wrong.webp'),/仅支持/);
+});
 test('ZIP and RAR produce identical original image bytes',async()=>{
  const a=await unpackArchive(fixture('zip'),'zip'),b=await unpackArchive(fixture('rar'),'rar',wasm);
  for(const image of a.files)assert.deepEqual(image.bytes,b.files.find(x=>x.path===image.path).bytes);

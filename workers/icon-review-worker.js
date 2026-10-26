@@ -106,7 +106,7 @@ export default {async fetch(request,env){
  const file=form.get("file"),name=String(form.get("name")||"").trim(),author=String(form.get("author")||"").trim(),notes=String(form.get("notes")||"").slice(0,600),kind=String(form.get("kind")||"");
  if(!(file instanceof File)||!name||name.length>60||!author||author.length>100)return reply({error:"Missing or invalid fields"},400,origin);
  if(file.size>10*1024*1024||file.size===0)return reply({error:"Maximum file size is 10 MB"},413,origin);
- const ext=(file.name.split(".").pop()||"").toLowerCase();if(!["png","webp","gif"].includes(ext)||((kind==="动态")!==(ext==="gif")))return reply({error:"Invalid image type"},400,origin);
+ const ext=(file.name.split(".").pop()||"").toLowerCase();if(!["png","jpg","jpeg","gif"].includes(ext)||((kind==="动态")!==(ext==="gif")))return reply({error:"Invalid image type"},400,origin);
  const bytes=new Uint8Array(await file.arrayBuffer());let imageInfo;
  try{imageInfo=inspectImage(bytes,file.name)}catch(error){return reply({error:error.message},400,origin)}
  const {width:w,height:h}=imageInfo;

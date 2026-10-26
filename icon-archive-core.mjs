@@ -10,7 +10,7 @@ export function archivePlan(){
   let reason='';
   if(path.startsWith('/')||/^[a-z]:/i.test(path)||path.split('/').some(p=>p==='..')||/[\u0000-\u001f]/.test(path))reason='路径不安全，已跳过';
   else if(path.split('/').some(p=>p.startsWith('.'))||path.startsWith('__MACOSX/'))reason='系统隐藏文件，已跳过';
-  else if(!/\.(png|webp|gif)$/i.test(path))reason=/\.(zip|rar|7z)$/i.test(path)?'不展开嵌套压缩包':'非 PNG / WebP / GIF 文件';
+  else if(!/\.(png|jpe?g|gif)$/i.test(path))reason=/\.(zip|rar|7z)$/i.test(path)?'不展开嵌套压缩包':'非 PNG / JPG / JPEG / GIF 文件';
   else if(seen.has(path))throw Error('压缩包中有重复路径，请整理后重新打包');
   else if(encrypted)reason='加密文件不支持，请先解密';
   else if(!size||size>10*1024*1024)reason='单张图片需大于 0 且不超过 10 MB';

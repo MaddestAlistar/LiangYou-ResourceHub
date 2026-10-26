@@ -34,6 +34,13 @@ test('reduced motion starts static, allows manual play, switching to PNG clears 
  x.get('preview-play').events.click();assert(x.get('preview').src);
  x.choose('still.png',720);assert.equal(x.get('kind').value,'静态');assert.equal(x.get('preview-controls').hidden,true);assert.equal(x.get('preview-still').hidden,true);
 });
+test('static PNG, JPG and JPEG accept 720 and 1024; reject other dimensions',()=>{
+ const x=ui();
+ for(const [name,size] of [['regular.png',720],['photo.jpg',720],['large.png',1024],['large.jpeg',1024]]){
+  x.choose(name,size);assert.equal(x.get('kind').value,'静态');assert.equal(x.get('file-error').hidden,true);assert.match(x.get('status').textContent,/检查通过/);
+ }
+ x.choose('wrong.jpg',900);assert.equal(x.get('file-error').hidden,false);assert.match(x.get('status').textContent,/720/);
+});
 test('late image validation cannot replace a newer chosen file',()=>{
  const x=ui();x.get('file').files=[new File(['old'],'old.gif')];x.get('file').events.change();const old=x.images.at(-1);
  x.choose('new.png',720);const url=x.get('preview').src;old.load(320);assert.equal(x.get('preview').src,url);assert.equal(x.get('preview-controls').hidden,true);

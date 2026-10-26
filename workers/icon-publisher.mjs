@@ -84,7 +84,7 @@ async function readJSON(gh, path, ref, missing = false) {
 }
 export async function publishIcon(meta, gh, readImage) {
   if (meta.status === 'withdrawn') throw new PublishError('该图标已下架，不能通过旧审核操作重新发布', 409);
-  if (!/^[a-zA-Z0-9-]{8,100}$/.test(meta.id || '') || !/^pending\/[^/]+\.(png|webp|gif)$/i.test(meta.filename || '')) throw new PublishError('投稿编号或图片路径无效', 400);
+  if (!/^[a-zA-Z0-9-]{8,100}$/.test(meta.id || '') || !/^pending\/[^/]+\.(png|webp|jpe?g|gif)$/i.test(meta.filename || '')) throw new PublishError('投稿编号或图片路径无效', 400);
   const receiptPath = 'maintenance/published-submissions/' + meta.id + '.json';
   for (let attempt = 0; attempt < 3; attempt++) {
     const head = (await gh('git/ref/heads/main')).object.sha;
