@@ -23,6 +23,10 @@ PANDA_ROOT = "https://api.pandascore.co"
 # Fixed budget for each complete run: 5 football + 4 basketball + 3 PandaScore.
 # At 6-hour intervals, at most 36 requests/day to API-Sports, 12 to PandaScore.
 PANDA_ENDPOINTS = ("upcoming", "running", "past")
+
+class UnavailableSeason(RuntimeError):
+    """Current season inaccessible under the provider plan; do not retry all leagues."""
+
 CURRENT_STATUSES = {"1H","2H","HT","ET","BT","P","Q1","Q2","Q3","Q4","OT","LIVE","IN"}
 DONE_STATUSES = {"FT","AET","PEN","AOT","AFTER_OT","FINISHED"}
 CANCELED_STATUSES = {"PST","CANC","SUSP","INT","ABD","AWD","POST"}
@@ -86,7 +90,13 @@ def sports_request(root,path,query,key):
         raise ValueError("Invalid API-Sports format")
     errors=payload.get("errors")
     if isinstance(errors,dict) and errors or isinstance(errors,list) and errors:
-        raise RuntimeError("API-Sports key, subscription or quota rejected")
+        details=" ".join(str(v) for v in (errors.values() if isinstance(errors,dict) else errors)).lower()
+        # Free football plans may not include the current season. One attempt
+        # is enough to establish that; never spend 5 calls repeating denial.
+        if "season" in details and any(x in details for x in
+                ("plan","access","available","subscription","not allowed","not permitted")):
+            raise UnavailableSeason("Current season not included in subscription")
+        raise RuntimeError("API-Sports access, subscription or quota rejected")
     return payload["response"]
 
 
@@ -191,6 +201,10 @@ def retrieve_api_sports(key,now):
             for raw in rows:
                 match=football_row(raw,now)
                 if match:results.append(match)
+        except UnavailableSeason:
+            failures.extend("football-"+k for k in FOOTBALL if "football-"+k not in failures)
+            print("API-Sports football: current season unavailable on subscribed plan; skipping remaining leagues",flush=True)
+            break
         except Exception:
             failures.append("football-"+league_id)
     for offset in (-1,0,1,2):
@@ -251,15 +265,20 @@ def main():
             print("Official fixtures: "+provider+" unavailable; credentials not logged",flush=True)
     if all(src["status"]=="unavailable" for src in sources):
         raise RuntimeError("No verified official fixture source; previous snapshot preserved")
-    ordered=sorted(events.values(),key=lambda x:(0 if x["status"]=="live" else 1 if x["status"]=="scheduled" else 2,
-                                                      x["start_time"],x["id"]))
-    # Keep bounded total and per-sport display, no fake fillers.
-    by_sport={}
-    selected=[]
+    # Bound by sport AND match state, so live activity cannot crowd out the
+    # upcoming schedule or the recent finished scores.
+    ranked={"live":0,"scheduled":1,"finished":2}
+    ordered=sorted(events.values(),key=lambda x:(ranked.get(x["status"],3),
+                  x["start_time"] if x["status"]!="finished" else
+                  iso(dt.datetime(1970,1,1,tzinfo=UTC)+
+                    (dt.datetime(2100,1,1,tzinfo=UTC)-timestamp(x["start_time"]))),
+                  x["id"]))
+    status_limits={"live":18,"scheduled":26,"finished":16}
+    by_bucket={};selected=[]
     for event in ordered:
-        cat=event["sport"]
-        by_sport[cat]=by_sport.get(cat,0)+1
-        if by_sport[cat]<=55:
+        key=(event["sport"],event["status"])
+        by_bucket[key]=by_bucket.get(key,0)+1
+        if by_bucket[key]<=status_limits[event["status"]]:
             selected.append(event)
     output={"schema":1,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,"status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
