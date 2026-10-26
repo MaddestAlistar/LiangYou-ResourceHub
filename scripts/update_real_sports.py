@@ -269,9 +269,8 @@ def main():
     # upcoming schedule or the recent finished scores.
     ranked={"live":0,"scheduled":1,"finished":2}
     ordered=sorted(events.values(),key=lambda x:(ranked.get(x["status"],3),
-                  x["start_time"] if x["status"]!="finished" else
-                  iso(dt.datetime(1970,1,1,tzinfo=UTC)+
-                    (dt.datetime(2100,1,1,tzinfo=UTC)-timestamp(x["start_time"]))),
+                  -timestamp(x["start_time"]).timestamp() if x["status"]=="finished"
+                  else timestamp(x["start_time"]).timestamp(),
                   x["id"]))
     status_limits={"live":18,"scheduled":26,"finished":16}
     by_bucket={};selected=[]
