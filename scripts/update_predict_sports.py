@@ -321,8 +321,16 @@ def market_statistics(api_key, market_id):
         fields = {"volume_24h_usd": "volume24hUsd",
                   "volume_total_usd": "volumeTotalUsd",
                   "liquidity_usd": "totalLiquidityUsd"}
-        return {out: valid_usd(data[key]) for out, key in fields.items()
-                if valid_usd(data.get(key)) is not None}
+        values = {out: valid_usd(data[key]) for out, key in fields.items()
+                  if valid_usd(data.get(key)) is not None}
+        # Some provider snapshots update lifetime totals after their rolling
+        # 24-hour counter. Never show an impossible lifetime<24h comparison,
+        # but keep the valid rolling volume and independent liquidity.
+        day = values.get("volume_24h_usd")
+        lifetime = values.get("volume_total_usd")
+        if day is not None and lifetime is not None and day > lifetime:
+            values.pop("volume_total_usd", None)
+        return values
     except Exception:
         return {}
 

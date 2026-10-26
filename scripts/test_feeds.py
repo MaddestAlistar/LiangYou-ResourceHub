@@ -153,6 +153,32 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(stats, {"volume_24h_usd":123.4,"volume_total_usd":2345.0})
         self.assertEqual(predict.market_statistics("dummy", "oops"), {})
 
+    def test_predict_stats_keep_valid_fields_when_24h_exceeds_lifetime(self):
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self):
+                return json.dumps({"success": True, "data": {
+                    "volume24hUsd": 1250, "volumeTotalUsd": 975,
+                    "totalLiquidityUsd": 4200
+                }}).encode()
+        with patch.object(predict, "urlopen", return_value=Resp()):
+            stats = predict.market_statistics("dummy", "12345")
+        self.assertEqual(stats["volume_24h_usd"], 1250.0)
+        self.assertEqual(stats["liquidity_usd"], 4200.0)
+        self.assertNotIn("volume_total_usd", stats)
+
+    def test_predict_stats_allow_consistent_equal_volumes(self):
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self):
+                return json.dumps({"success": True, "data": {
+                    "volume24hUsd": 100, "volumeTotalUsd": 100
+                }}).encode()
+        with patch.object(predict, "urlopen", return_value=Resp()):
+            stats = predict.market_statistics("dummy", "12345")
+        self.assertEqual(stats["volume_total_usd"], 100.0)
 
     def test_kalshi_three_way_moneyline_and_units(self):
         now = NOW
