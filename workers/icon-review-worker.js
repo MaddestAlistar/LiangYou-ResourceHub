@@ -1,7 +1,7 @@
 import { inspectImage } from "../icon-image.mjs";
 import { isUUID, submitBatchItem } from "./icon-batch-submission.mjs";
 import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
-import { publishIcon, withdrawIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
+import { publishIcon, withdrawIcon, renameIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
 // Cloudflare Worker · Icon Review Queue
 // Secrets: GITHUB_TOKEN (fine-grained Contents: Read and write, restricted to review repository)
 // Vars: REVIEW_REPO = MaddestAlistar/Icon-Review-Queue; ALLOWED_ORIGIN = https://maddestalistar.github.io
@@ -49,10 +49,22 @@ export default {async fetch(request,env){
   }
   if(request.method==="POST"){
    let body;try{body=await request.json()}catch{return reply({error:"Invalid JSON"},400,origin)}
-   const path=String(body.path||"");const status=String(body.status||"");
-   if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||!["approved","rejected","pending","withdrawn"].includes(status))return reply({error:"Invalid request"},400,origin);
+   const path=String(body.path||"");const status=String(body.status||"");const renaming=body.action==="rename";
+   if(!/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.json$/.test(path)||(!renaming&&!["approved","rejected","pending","withdrawn"].includes(status)))return reply({error:"Invalid request"},400,origin);
    const current=await gh(path);if(!current.ok)return reply({error:"Metadata not found"},404,origin);
    const item=await current.json();let meta;try{meta=JSON.parse(decode(item.content))}catch{return reply({error:"Bad metadata"},502,origin)}
+   if(renaming){
+    const name=String(body.name||"").trim();
+    if(!name||name.length>60||/[\u0000-\u001f\u007f]/.test(name))return reply({error:"名称须为 1–60 个字符，不能包含控制字符"},400,origin);
+    if((meta.status==="approved"||meta.publishedUrl)&&!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式库权限未配置"},503,origin);
+    let renamed;
+    try{if(env.PUBLISH_GITHUB_TOKEN)renamed=await renameIcon(meta,name,githubClient("MaddestAlistar/LiangYou-IconLibrary",env.PUBLISH_GITHUB_TOKEN))}catch(e){return reply({error:e.message},502,origin)}
+    meta.originalSubmittedName??=meta.name;meta.name=name;meta.renamedAt=new Date().toISOString();
+    if(renamed){meta.publishedName=renamed.publishedName;meta.publishedUrl=renamed.publishedUrl}
+    const saved=await gh(path,{method:"PUT",body:JSON.stringify({message:"review: rename "+meta.id,sha:item.sha,content:encode(JSON.stringify(meta,null,2)+"\n")})});
+    if(!saved.ok)return reply({error:"名称保存未能确认，请刷新后用相同名称重试；正式库修改可安全核对"},502,origin);
+    return reply({ok:true,item:await adminMetadata(meta,env),renamed:true},200,origin);
+   }
    if(!["approved","withdrawn"].includes(status)&&(meta.publishedUrl||["approved","withdrawn"].includes(meta.status)))return reply({error:"已发布图标不能改回待审核或拒绝；如需下架，须同步移除正式库索引"},409,origin);
    if(status==="approved"){
     if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式图标库发布权限未配置"},503,origin);
@@ -100,6 +112,7 @@ export default {async fetch(request,env){
  const {width:w,height:h}=imageInfo;
  const submissionKey=String(form.get("submissionKey")||""),batchId=String(form.get("batchId")||"");
  if(submissionKey||batchId){
+  if(form.get("namesConfirmed")!=="true")return reply({error:"请确认打包文件中的单独图片都有命名"},400,origin);
   if(!isUUID(submissionKey)||!isUUID(batchId))return reply({error:"Invalid batch identifier"},400,origin);
   try{
    const result=await submitBatchItem({submissionKey,batchId,name,author,notes,kind,ext,width:w,height:h},email,bytes,env,githubClient(env.REVIEW_REPO,env.GITHUB_TOKEN));

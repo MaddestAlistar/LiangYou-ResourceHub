@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {publishIcon, withdrawIcon, serialize, chooseName, encode, decode, CATALOGS, OFFICIAL, PublishError} from '../workers/icon-publisher.mjs';
+import {renameIcon,publishIcon, withdrawIcon, serialize, chooseName, encode, decode, CATALOGS, OFFICIAL, PublishError} from '../workers/icon-publisher.mjs';
 const meta={id:'20261025190000000-abc12345',name:'云海 PRON',kind:'动态',filename:'pending/icon-test.gif',status:'pending'};
 const pinned=Array.from({length:5},(_,i)=>({name:'Pinned '+i,url:'https://example.com/'+i}));
 const base=()=>({description:'更新时间：2026-10-24｜良友',icons:[...pinned,{name:'alpha 动态 01',url:'https://example.com/a'},{name:'99 Numeric',url:'https://example.com/n'}]});
@@ -152,4 +152,17 @@ test('Worker withdrawal metadata failure is safe to retry and yields withdrawn s
   const failed=await worker.fetch(request(),env);assert.equal(failed.status,502);assert.match((await failed.json()).error,/正式库已下架.*审核状态未保存/);
   failSave=false;const done=await worker.fetch(request(),env);assert.equal(done.status,200);const out=await done.json();assert.equal(out.withdrawalVerified,true);assert.equal(out.item.status,'withdrawn');assert.equal(f.writes,2);
  }finally{globalThis.fetch=previous}
+});
+
+test('published rename changes both catalogs atomically, retains image URL and is retry-safe',async()=>{
+ const f=fixture();const result=await publishIcon(meta,f.gh,async()=>({encoding:'base64',content:'aW1hZ2U='}));const m={...meta,...result,status:'approved'};
+ const renamed=await renameIcon(m,'New display name',f.gh);assert.equal(renamed.publishedUrl,result.publishedUrl);
+ for(const p of CATALOGS)assert.equal(JSON.parse(f.files()[p]).icons.find(x=>x.url===result.publishedUrl).name,'New display name');
+ const writes=f.writes;await renameIcon(m,'New display name',f.gh);assert.equal(f.writes,writes);
+ await assert.rejects(renameIcon(m,'alpha 动态 01',f.gh),/同名/);
+});
+test('rename respects concurrent writes and never restores a withdrawn icon',async()=>{
+ const f=fixture();const result=await publishIcon(meta,f.gh,async()=>({encoding:'base64',content:'aW1hZ2U='}));const m={...meta,...result,status:'approved'};
+ f.setConflict();await renameIcon(m,'Changed',f.gh);assert(JSON.parse(f.files()[CATALOGS[1]]).icons.some(x=>x.name==='Concurrent edit'));
+ await withdrawIcon(m,f.gh);const writes=f.writes;assert.equal(await renameIcon(m,'Do not restore',f.gh),null);assert.equal(f.writes,writes);
 });

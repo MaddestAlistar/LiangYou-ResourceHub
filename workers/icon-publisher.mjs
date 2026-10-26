@@ -1,7 +1,7 @@
 // One main-branch commit publishes image, both catalogs and an idempotency receipt.
 export const OFFICIAL = 'MaddestAlistar/LiangYou-IconLibrary';
 export const CATALOGS = ['LiangYou-Original-Icons.json', 'LiangYou-Emby-Icons.json'];
-export const VERSION = '2026-10-25.batch-v4';
+export const VERSION = '2026-10-26.rename-v5';
 export class PublishError extends Error {
   constructor(message, status = 502) { super(message); this.status = status; }
 }
@@ -194,4 +194,30 @@ export async function withdrawIcon(meta, gh) {
     return {...record, withdrawnCommit: nextCommit.sha, recovered: false};
   }
   throw new PublishError('同时有其他更新，未覆盖已有内容，请稍后重试', 409);
+}
+
+// Rename catalog labels while preserving stable image URLs and publication receipts.
+export async function renameIcon(meta, name, gh) {
+ if(!/^[a-zA-Z0-9-]{8,100}$/.test(meta.id||''))throw new PublishError('投稿编号无效',400);
+ const receiptPath='maintenance/published-submissions/'+meta.id+'.json';
+ for(let attempt=0;attempt<3;attempt++){
+  const head=(await gh('git/ref/heads/main')).object.sha;
+  const receipt=await readJSON(gh,receiptPath,head,true);
+  if(receipt?.id&&receipt.id!==meta.id)throw new PublishError('发布记录不匹配');
+  if(receipt?.status==='withdrawn'||meta.status==='withdrawn')return null;
+  const target=receipt?.publishedUrl||meta.publishedUrl;
+  if(!target){if(meta.status==='approved')throw new PublishError('已通过记录缺少发布地址，请先核对发布');return null}
+  const catalogs=await Promise.all(CATALOGS.map(p=>readJSON(gh,p,head)));validatePair(catalogs);
+  if(catalogs.some(c=>c.icons.slice(0,5).some(x=>x.url===target)))throw new PublishError('前五个置顶图标受保护');
+  if(catalogs.some(c=>!c.icons.some(x=>x.url===target)))throw new PublishError('正式库记录不完整，请先核对发布');
+  if(catalogs.some(c=>c.icons.some(x=>x.url!==target&&x.name.toLowerCase()===name.toLowerCase())))throw new PublishError('正式库已有同名图标，请换一个名称');
+  if(receipt?.publishedName===name&&catalogs.every(c=>c.icons.filter(x=>x.url===target).every(x=>x.name===name)))return receipt;
+  const next=catalogs.map(c=>{const copy=structuredClone(c);copy.icons=copy.icons.map(x=>x.url===target?{...x,name}:x);copy.icons=[...copy.icons.slice(0,5),...copy.icons.slice(5).sort((a,b)=>{const an=/^[0-9]/.test(a.name),bn=/^[0-9]/.test(b.name);return an!==bn?(an?1:-1):nameCollator.compare(a.name,b.name)})];return copy});validatePair(next);
+  const record={...(receipt||{id:meta.id,publishedUrl:target,publishedFilename:meta.publishedFilename,publishedAt:meta.publishedAt}),publishedName:name,renamedAt:new Date().toISOString(),publisherVersion:VERSION};
+  const commit=await gh('git/commits/'+head);
+  const tree=await gh('git/trees',{method:'POST',body:{base_tree:commit.tree.sha,tree:[...CATALOGS.map((path,i)=>({path,mode:'100644',type:'blob',content:serialize(next[i])})),{path:receiptPath,mode:'100644',type:'blob',content:serialize(record)}]}});
+  const created=await gh('git/commits',{method:'POST',body:{message:'Rename reviewed icon ['+meta.id+']',tree:tree.sha,parents:[head]}});
+  try{await gh('git/refs/heads/main',{method:'PATCH',body:{sha:created.sha,force:false}})}catch(e){if([409,422].includes(e.status)&&attempt<2)continue;throw e}
+  return record;
+ }
 }

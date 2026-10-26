@@ -47,7 +47,7 @@ test('public Worker route validates a batch file and writes Git API objects, the
   const path=new URL(url).pathname.split('/test/queue/')[1]+new URL(url).search;
   try{return Response.json(await f.gh(path,{...options,body:options.body?JSON.parse(options.body):undefined}))}catch(e){return Response.json({}, {status:e.status||500})}
  };
- const request=()=>{const form=new FormData();for(const key of ['name','author','notes','kind','submissionKey','batchId'])form.set(key,fields[key]);form.set('file',new File([data],'test.gif',{type:'image/gif'}));return new Request('https://example.test',{method:'POST',headers:{Origin:'https://maddestalistar.github.io'},body:form})};
+ const request=()=>{const form=new FormData();form.set('namesConfirmed','true');for(const key of ['name','author','notes','kind','submissionKey','batchId'])form.set(key,fields[key]);form.set('file',new File([data],'test.gif',{type:'image/gif'}));return new Request('https://example.test',{method:'POST',headers:{Origin:'https://maddestalistar.github.io'},body:form})};
  try{
   const environment={...env,GITHUB_TOKEN:'dummy',REVIEW_REPO:'test/queue'};
   const first=await worker.fetch(request(),environment);assert.equal(first.status,201);

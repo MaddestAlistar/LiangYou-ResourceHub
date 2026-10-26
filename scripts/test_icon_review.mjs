@@ -56,3 +56,11 @@ test('large review directories fall back to Git trees and keep pagination beyond
   const out=await res.json();assert.equal(res.status,200);assert.equal(out.total,1500);assert.equal(out.items.length,30);assert.equal(out.nextCursor,1030);assert.equal(out.items[0].batchId,'group-id');
  }finally{globalThis.fetch=previous}
 });
+test('admin renames an unpublished item without changing image path or review state',async()=>{
+ const previous=globalThis.fetch;let saved;
+ globalThis.fetch=async(url,options={})=>{
+  if(options.method==='PUT'){saved=JSON.parse(decode(JSON.parse(options.body).content));return json({})}
+  return json({sha:'old',content:encode(JSON.stringify({id:'rename-test-123',name:'Old',status:'pending',filename:'pending/original.gif'}))});
+ };
+ try{const res=await worker.fetch(request({path:'pending/test.json',action:'rename',name:'New'}),{...env,PUBLISH_GITHUB_TOKEN:''});assert.equal(res.status,200);assert.equal(saved.name,'New');assert.equal(saved.originalSubmittedName,'Old');assert.equal(saved.filename,'pending/original.gif');assert.equal(saved.status,'pending')}finally{globalThis.fetch=previous}
+});

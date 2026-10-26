@@ -1,5 +1,6 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>良友图标审核后台</title><style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b101a;color:#f5f1e8}main{max-width:1100px;margin:auto;padding:24px 16px 80px}h1{font-size:28px;margin:20px 0 6px}.muted{color:#a6afbd;line-height:1.7}.panel,.item{background:#151e2c;border:1px solid #354153;border-radius:20px;padding:20px;margin:16px 0}input,select{background:#0c1420;border:1px solid #596578;color:white;border-radius:12px;padding:14px;font-size:16px;max-width:100%;width:100%}button{background:#e5c98e;border:0;color:#211b13;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer}button:disabled{opacity:.45}.secondary{background:#344257;color:white}.danger{background:#a95058;color:white}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}#items{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}.item{margin:0}.item img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#080d15;border-radius:15px}.item h2{font-size:21px;overflow-wrap:anywhere}.item p{overflow-wrap:anywhere}.tag{font-size:12px;color:#ebd39b}.hidden{display:none}a{color:#ebd39b}</style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div></main><script>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b101a;color:#f5f1e8}main{max-width:1100px;margin:auto;padding:24px 16px 80px}h1{font-size:28px;margin:20px 0 6px}.muted{color:#a6afbd;line-height:1.7}.panel,.item{background:#151e2c;border:1px solid #354153;border-radius:20px;padding:20px;margin:16px 0}input,select{background:#0c1420;border:1px solid #596578;color:white;border-radius:12px;padding:14px;font-size:16px;max-width:100%;width:100%}button{background:#e5c98e;border:0;color:#211b13;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer}button:disabled{opacity:.45}.secondary{background:#344257;color:white}.danger{background:#a95058;color:white}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}#items{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}.item{margin:0}.item img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#080d15;border-radius:15px}.item h2{font-size:21px;overflow-wrap:anywhere}.item p{overflow-wrap:anywhere}.tag{font-size:12px;color:#ebd39b}.hidden{display:none}a{color:#ebd39b}.item{display:flex;flex-direction:column;gap:8px}.item p{margin:3px 0;font-size:13px;line-height:1.7}.item h2{margin:8px 0}.item img{max-height:240px}.card-tools,.review-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card-tools{padding-top:12px;margin-top:auto;border-top:1px solid #354153}.review-actions{padding-top:8px}.review-actions button:first-child{grid-column:1/-1}.card-tools button,.review-actions button{min-height:44px;padding:10px;font-size:14px}.rename-editor{padding:12px;border:1px solid #596578;border-radius:12px;margin:8px 0}.rename-editor .row{margin-top:10px}.rename-editor[hidden]{display:none}.tag{align-self:flex-start;background:#e5c98e15;border:1px solid #e5c98e40;padding:4px 10px;border-radius:99px}button:disabled{cursor:not-allowed}@media(max-width:420px){main{padding:16px 12px}.panel,.item{padding:16px}.panel .row{display:grid;grid-template-columns:1fr}}
+</style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div></main><script>
 const API="https://liangyou-icon-review.maddestalistar.workers.dev/admin";
 const $=id=>document.getElementById(id);let entries=[],busy=false;
 const statusName={pending:"待审核",approved:"已通过",rejected:"已拒绝",withdrawn:"已下架"};
@@ -12,6 +13,7 @@ function render(){
   const card=el("article",undefined,"item"),img=el("img");img.src=x.imageUrl;img.alt=x.name||"投稿图标";img.loading="lazy";
   card.append(img,el("h2",x.name),el("p","作者："+(x.author||"未知")),el("p","类型："+(x.kind||"未知")+" · "+(x.width||"?")+"×"+(x.height||"?")),el("p","说明："+(x.notes||"无")),el("p","状态："+(statusName[x.status]||x.status),"tag"),el("p","编号："+x.id));
   if(x.batchId)card.append(el("p","批次："+x.batchId,"muted"));
+  const utility=el("div",undefined,"card-tools");
   const email=typeof x.email==="string"?x.email.trim():"";
   card.append(el("p",x.emailUnavailable?"联系邮箱：暂时无法解密，请检查邮箱加密密钥配置":"联系邮箱："+(email||"未填写")));
   if(email){
@@ -20,7 +22,7 @@ function render(){
     try{await navigator.clipboard.writeText(email);$("message").textContent="邮箱已复制"}
     catch{$("message").textContent="浏览器未允许复制，请长按或选中邮箱手动复制："+email}
    };
-   card.append(copy);
+   utility.append(copy);
   }
   if(x.status==="approved"){
    card.append(el("p",x.publicationVerifiedAt?"正式库核对成功："+new Date(x.publicationVerifiedAt).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})+" 北京时间":"旧审核记录：可点击「核对发布」确认图片及两份订阅均有效。","muted"));
@@ -30,8 +32,22 @@ function render(){
    }
   }
   if(x.status==="withdrawn")card.append(el("p","已从两份正式订阅移除。客户端刷新订阅后生效；原图片保留用于追溯。"+(x.withdrawnAt?" 下架时间："+new Date(x.withdrawnAt).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})+" 北京时间":""),"muted"));
-  const actions=el("div",undefined,"row");
-  const choices=x.status==="withdrawn"?[["withdrawn","核对下架","secondary"]]:[["approved",x.status==="approved"?"核对发布":"通过并发布",""],["rejected","拒绝","danger"],["pending","恢复待审核","secondary"],...(x.status==="approved"||x.publishedUrl?[["withdrawn","下架","danger"]]:[])];
+  const rename=el("button","重命名","secondary");rename.disabled=busy;
+  const editor=el("div",undefined,"rename-editor");editor.hidden=true;
+  const input=el("input");input.value=x.publishedName||x.name||"";input.maxLength=60;input.placeholder="输入图标显示名称";
+  const label=el("label","图标显示名称（图片链接保持不变）");label.append(input);editor.append(label);
+  const editActions=el("div",undefined,"row"),save=el("button","保存名称"),cancel=el("button","取消","secondary");
+  rename.onclick=()=>{editor.hidden=!editor.hidden};cancel.onclick=()=>{editor.hidden=true};
+  save.onclick=async()=>{
+   if(busy)return;const name=input.value.trim();if(!name||name.length>60){$("message").textContent="请输入 1–60 个字符的名称";return}
+   busy=true;$("load").disabled=true;render();$("message").textContent="正在保存名称，已发布图标会同步两份正式订阅…";
+   try{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Key":$("key").value},body:JSON.stringify({path:x.metaPath,action:"rename",name}),signal:AbortSignal.timeout(120000)});const data=await r.json();if(!r.ok||!data.ok)throw Error(data.error||"保存失败");Object.assign(x,data.item);$("message").textContent="名称已更新，图片链接保持不变"}
+   catch(e){$("message").textContent=e.message+"。请刷新记录后重试"}
+   finally{busy=false;$("load").disabled=false;render()}
+  };
+  editActions.append(save,cancel);editor.append(editActions);utility.append(rename);card.append(utility,editor);
+  const actions=el("div",undefined,"review-actions");
+  const choices=x.status==="withdrawn"?[["withdrawn","核对下架","secondary"]]:x.status==="approved"||x.publishedUrl?[["approved","核对发布",""],["withdrawn","下架","danger"]]:[["approved","通过并发布",""],...(x.status==="rejected"?[["pending","恢复待审核","secondary"]]:[["rejected","拒绝","danger"]])];
   for(const [state,label,cls] of choices){
    const btn=el("button",label,cls);btn.disabled=busy||(!["approved","withdrawn"].includes(state)&&(x.status===state||x.status==="approved"||!!x.publishedUrl));
    btn.onclick=async()=>{

@@ -20,6 +20,6 @@ function ui(){
 }
 for(const ext of ['zip','rar'])test(ext+' batch UI displays each result, selects only valid images and resumes after failure without duplicate success',async()=>{
  const x=ui();await x.load(ext);assert.match(x.get('batch-count').textContent,/合格 2 张/);assert.equal(x.get('batch-items').children.length,4);
- await x.get('batch-submit').onclick();assert.equal(x.requests.length,2);assert.equal(x.requests[0].kind,'静态');assert.equal(x.requests[1].kind,'动态');assert.equal(x.requests[0].batchId,x.requests[1].batchId);assert.notEqual(x.requests[0].submissionKey,x.requests[1].submissionKey);assert.match(x.get('batch-status').textContent,/重试/);
+ await x.get('batch-submit').onclick();assert.equal(x.requests.length,0);x.get('batch-names-confirmed').checked=true;await x.get('batch-submit').onclick();assert.equal(x.requests.length,2);assert.equal(x.requests[0].kind,'静态');assert.equal(x.requests[1].kind,'动态');assert.equal(x.requests[0].batchId,x.requests[1].batchId);assert.notEqual(x.requests[0].submissionKey,x.requests[1].submissionKey);assert.match(x.get('batch-status').textContent,/重试/);
  await x.get('batch-submit').onclick();assert.equal(x.requests.length,3);assert.equal(x.requests[2].submissionKey,x.requests[1].submissionKey);assert.match(x.get('batch-count').textContent,/已提交 2 张/);assert.equal(x.get('batch-submit').disabled,true);
 });

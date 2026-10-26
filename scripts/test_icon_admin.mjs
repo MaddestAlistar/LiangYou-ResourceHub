@@ -24,7 +24,7 @@ test('down button requires confirmation; cancel sends no write',async()=>{
 test('confirmed down sends correct action and renders withdrawn-only controls',async()=>{
  const x=ui(true);await x.nodes.load.onclick();await x.buttons().find(x=>x.textContent==='下架').onclick();
  assert.equal(x.posts.length,1);assert.deepEqual(x.posts[0],{path:'pending/test.json',status:'withdrawn'});
- assert.deepEqual(x.buttons().map(x=>x.textContent),['核对下架']);assert.match(x.nodes.message.textContent,/下架成功/);
+ assert.deepEqual(x.buttons().map(x=>x.textContent),['重命名','保存名称','取消','核对下架']);assert.match(x.nodes.message.textContent,/下架成功/);
  assert(html.includes('<option value="withdrawn">已下架</option>'));
 });
 

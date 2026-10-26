@@ -5,6 +5,7 @@ const element=(tag,text)=>{const e=document.createElement(tag);if(text!==undefin
 const notice=text=>{$('batch-status').textContent=text};
 function selected(){return rows.filter(r=>r.file&&r.check.checked&&r.state!=='done')}
 function update(){
+ $('batch-names-confirmed').disabled=busy||!!snapshot;
  const valid=rows.filter(r=>r.file).length,done=rows.filter(r=>r.state==='done').length;
  $('batch-count').textContent=`共 ${rows.length} 项 · 合格 ${valid} 张 · 不合格 / 跳过 ${rows.length-valid} 项 · 已提交 ${done} 张`;
  $('batch-submit').textContent=`提交选中的合格图片（${selected().length}）`;
@@ -16,7 +17,7 @@ function update(){
 }
 function cleanup(){
  for(const r of rows)if(r.url)URL.revokeObjectURL(r.url);
- rows=[];$('batch-items').replaceChildren();snapshot=null;
+ rows=[];$('batch-items').replaceChildren();snapshot=null;$('batch-names-confirmed').checked=false;
 }
 function setMode(batch){
  if(busy)return;
@@ -97,6 +98,7 @@ $('batch-stop').onclick=()=>{stop=true;activeWorker?.cancel();notice('将停止�
 $('batch-submit').onclick=async()=>{
  if(busy)return;
  const pending=selected();if(!pending.length)return;
+ if(!$('batch-names-confirmed').checked){notice('请先勾选「已确认」：确认打包文件中的单独图片都有命名');$('batch-names-confirmed').focus();return}
  if(pending.some(r=>!r.nameInput.value.trim())){notice('请填写所有选中图片的图标名称');return}
  const author=$('author').value.trim(),email=$('email').value.trim(),notes=$('notes').value.trim();
  if(!author){notice('请填写上方作者或来源');$('author').focus();return}
@@ -107,7 +109,7 @@ $('batch-submit').onclick=async()=>{
   if(stop)break;
   row.sent??={...snapshot,name:row.nameInput.value.trim()};row.nameInput.disabled=true;
   row.state='sending';row.status.textContent='正在提交…';notice('正在逐张提交，请保持页面打开。已成功的图片不会重复提交。');
-  const form=new FormData();form.set('file',row.file);form.set('kind',row.info.kind);form.set('submissionKey',row.key);form.set('batchId',batchId);
+  const form=new FormData();form.set('namesConfirmed','true');form.set('file',row.file);form.set('kind',row.info.kind);form.set('submissionKey',row.key);form.set('batchId',batchId);
   for(const [key,value] of Object.entries(row.sent))form.set(key,value);
   try{
    const res=await fetch(API,{method:'POST',body:form,signal:AbortSignal.timeout(120000)}),out=await res.json();

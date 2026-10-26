@@ -5,7 +5,7 @@ const base64=bytes=>{let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.f
 export async function submitBatchItem(fields,email,bytes,env,gh){
  const id='batch-'+fields.submissionKey,filename='pending/'+id+'.'+fields.ext,path='pending/'+id+'.json';
  const imageDigest=hex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
- const meta={id,name:fields.name,author:fields.author,notes:fields.notes,kind:fields.kind,filename,bytes:bytes.length,width:fields.width,height:fields.height,batchId:fields.batchId,imageDigest,status:'pending',submittedAt:new Date().toISOString()};
+ const meta={id,name:fields.name,author:fields.author,notes:fields.notes,kind:fields.kind,filename,bytes:bytes.length,width:fields.width,height:fields.height,batchId:fields.batchId,namesConfirmed:true,imageDigest,status:'pending',submittedAt:new Date().toISOString()};
  const contact=await sealEmail(email,id,env);if(contact)meta.contactEmailEncrypted=contact;
  let imageBlob;
  for(let attempt=0;attempt<3;attempt++){
@@ -15,7 +15,7 @@ export async function submitBatchItem(fields,email,bytes,env,gh){
   if(existing){
    const saved=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(existing.content.replace(/\s/g,'')),c=>c.charCodeAt(0))));
    const decoded=await adminMetadata(saved,env);
-   const same=['id','name','author','notes','kind','filename','bytes','width','height','batchId','imageDigest'].every(k=>saved[k]===meta[k])&&decoded.email===email&&!decoded.emailUnavailable;
+   const same=['id','name','author','notes','kind','filename','bytes','width','height','batchId','imageDigest'].every(k=>(k==='name'?(saved.originalSubmittedName||saved.name):saved[k])===meta[k])&&decoded.email===email&&!decoded.emailUnavailable;
    if(!same)throw Error('该投稿编号已用于不同内容，请保留原资料重试，或重新选择文件开始新批次');
    return {id,recovered:true};
   }
