@@ -274,10 +274,12 @@ function updateLabels(){
   when(new Date(Math.max(...checks)).toISOString()):
   (lang()==='zh'?'等待数据核验':'Waiting for data verification');
 }
-function showFixtureDetail(id){
- detailId=id;
+function showFixtureDetail(id,scroll=false){
+ const button=[...refs.grid.querySelectorAll('[data-fixture-id]')]
+  .find(node=>node.dataset.fixtureId===String(id));
+ detailId=String(id);
  const x=data.events.find(row=>String(row.id)===String(id));
- if(!x){refs.detail.hidden=true;refs.detail.innerHTML='';return;}
+ if(!x||!button){hideFixtureDetail();return;}
  // Match detail must obey the same quote-age ceiling as the market panel.
  // Never surface old odds just because a fixture record is still available.
  const freshMarkets=(window.LiangYouMarketRecords||[]).filter(m=>{
@@ -317,10 +319,9 @@ function showFixtureDetail(id){
     (label?'在晋级图中查看':'View bracket')+'</button>':'')+
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
     (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+
-  (group.length?'<button type="button" data-fixture-market="'+safe(x.id)+'">'+
-    (label?'查看赛前市场卡片':'Open market cards')+'</button>':'')+'</div>'+
+  '</div>'+
   '<div class="fixtures-detail-markets"><strong>'+
-    (label?'已关联的赛前预测市场':'Matched prediction-market snapshots')+'</strong>'+
+    (label?'赛前预测 · 市场隐含概率（非官方胜率）':'Market-implied probabilities (not official odds)')+'</strong>'+
     (group.length?group.map(g=>{
        const site=g.provider==='predict'?'Predict.fun':g.provider==='kalshi'?'Kalshi':'Polymarket';
        const probabilities=(g.outcomes||[]).map(o=>team(o.name,x.sport)+' '+
@@ -331,6 +332,26 @@ function showFixtureDetail(id){
     }).join(''):
      '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
   '</div>';
+ // Detail follows the tapped card; it no longer jumps to the top of the fixture list.
+ button.closest('.fixtures-card').insertAdjacentElement('afterend',refs.detail);
+ refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
+  const selected=node===button;
+  node.setAttribute('aria-expanded',String(selected));
+  node.textContent=selected?(label?'收起详情':'Hide details'):(label?'查看详情':'Details');
+  node.closest('.fixtures-card')?.classList.toggle('is-selected',selected);
+ });
+ if(scroll)requestAnimationFrame(()=>refs.detail.scrollIntoView({
+  behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',
+  block:'nearest'
+ }));
+}
+function hideFixtureDetail(){
+ detailId=null;refs.detail.hidden=true;refs.detail.innerHTML='';
+ refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
+  node.setAttribute('aria-expanded','false');
+  node.textContent=lang()==='zh'?'查看详情':'Details';
+  node.closest('.fixtures-card')?.classList.remove('is-selected');
+ });
 }
 function calendar(){
  const copy=t(),now=Date.now(),until=now+7*86400000,state=refs.state.value||'scheduled';
@@ -376,7 +397,7 @@ function calendar(){
     x.provider==='football-data'?'football-data.org':'API-Sports')+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
-    '<button type="button" class="fixtures-detail-btn" data-fixture-id="'+safe(x.id)+'">'+
+    '<button type="button" class="fixtures-detail-btn" data-fixture-id="'+safe(x.id)+'" aria-expanded="false">'+
       (lang()==='zh'?'查看详情':'Details')+'</button></div></article>';
  }).join(''):empty(data.generated_at?copy.empty:copy.first);
  const total=matches.length;
@@ -694,20 +715,16 @@ refs.more.addEventListener('click',()=>{limit+=6;render();});
 refs.state.addEventListener('change',()=>{detailId=null;refs.detail.hidden=true;limit=6;render();});
 refs.grid.addEventListener('click',event=>{
  const button=event.target.closest?.('[data-fixture-id]');
- if(button)showFixtureDetail(button.dataset.fixtureId);
+ if(button){if(detailId===String(button.dataset.fixtureId))hideFixtureDetail();
+  else showFixtureDetail(button.dataset.fixtureId,true);}
 });
 refs.detail.addEventListener('click',event=>{
  const close=event.target.closest?.('[data-close-fixture]');
- if(close){detailId=null;refs.detail.hidden=true;refs.detail.innerHTML='';return;}
+ if(close){hideFixtureDetail();return;}
  const bracket=event.target.closest?.('[data-fixture-bracket]');
  if(bracket){view='brackets';refs.bracketStage.value='knockout';
    refs.bracketSport.value='all';refs.bracketSelect.value='brk:'+bracket.dataset.fixtureBracket;render();
    refs.bracket.scrollIntoView?.({behavior:'smooth',block:'start'});return;}
- const marketButton=event.target.closest?.('[data-fixture-market]');
- if(marketButton&&typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function'){
-   window.dispatchEvent(new CustomEvent('liangyou:open-market',{detail:{id:marketButton.dataset.fixtureMarket}}));
-   return;
- }
  const standings=event.target.closest?.('[data-fixture-standings]');
  if(standings){view='standings';refs.standingSport.value='all';
    refs.standingSelect.value=standings.dataset.fixtureStandings;render();
@@ -718,7 +735,7 @@ if(typeof window.addEventListener==='function'){
   const id=event.detail?.id;if(!id)return;
   view='calendar';const match=data.events.find(x=>String(x.id)===String(id));
   refs.state.value=match?.status||'scheduled';date='week';limit=6;render();showFixtureDetail(id);
-  refs.detail.scrollIntoView?.({behavior:'smooth',block:'start'});
+  refs.detail.scrollIntoView?.({behavior:'smooth',block:'nearest'});
  });
  window.addEventListener('liangyou:markets-updated',()=>{if(detailId)showFixtureDetail(detailId);});
 }
