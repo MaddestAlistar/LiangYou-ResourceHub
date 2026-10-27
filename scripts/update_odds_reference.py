@@ -95,7 +95,9 @@ def main():
             print("::warning::Odds availability check:",type(exc).__name__,flush=True)
             active=set()
     else:active=set()
-    remaining=safe_int(previous.get("provider_remaining"),100000)
+    # A billing-month change must not inherit an exhausted local guard.
+    # The first paid response will report the provider’s actual remainder.
+    remaining=safe_int(previous.get("provider_remaining"),100000) if previous.get("quota_month")==month else 100000
     for sport,hours in SPORTS:
         checked=date(last_checks.get(sport))
         if not token:status="not_configured"
