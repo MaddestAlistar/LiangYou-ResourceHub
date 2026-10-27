@@ -21,6 +21,7 @@
   const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sourceHint = document.getElementById('sportsSourceHint');
   const healthPanel = document.getElementById('sportsProviderHealth');
+  const focusBar = document.getElementById('sportsFocusBar');
   const linker = window.LiangYouSportsLinks;
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
   const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 6 : 8;
@@ -42,6 +43,7 @@
   let refreshPending = false;
   let sourcePartial = false;
   let feedHealth = [];
+  let focusedFixtureId = null;
   const copy = () => translation.ui[language];
 
   function time(value) {
@@ -255,7 +257,9 @@
     const matchButton=event.official?
       '<button type="button" class="sports-view-fixture" data-fixture-target="'+esc(event.official.id)+'">'+
       esc(language==='zh'?'查看关联赛程与战绩':'Open verified schedule and result')+'</button>':'';
-    return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') + '"><div class="sports-match-top"><span>' +
+    const linkedIdentity=linker?.matchIdentity(event,event.official?[event.official]:[])||'';
+    return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') +
+      '" data-match-identity="'+esc(linkedIdentity)+'"><div class="sports-match-top"><span>' +
       esc(league || labels.match) + '</span><span>' +
       (event.time_kind === 'market_close' ? esc(labels.marketDeadline) + ' ' : '') + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
@@ -319,7 +323,18 @@
       updateStatus();
       return;
     }
+    const officialTarget=(window.LiangYouOfficialSportsEvents||[]).find(x=>
+      String(x.id)===String(focusedFixtureId));
+    if(focusedFixtureId&&!officialTarget)focusedFixtureId=null;
+    if(focusBar){
+      focusBar.hidden=!focusedFixtureId;
+      focusBar.innerHTML=focusedFixtureId?
+        '<strong>'+esc(language==='zh'?'仅查看已核验匹配的赛事市场':'Showing verified matching markets')+'</strong>'+
+        '<button type="button" data-reset-market-focus>'+
+        esc(language==='zh'?'返回全部市场':'All markets')+'</button>':'';
+    }
     const filtered = matches.filter(m =>
+      (!focusedFixtureId||(linker&&officialTarget&&linker.pairs(m,officialTarget,45)))&&
       (active === 'all' || (active === 'other' ? ['other','esports'].includes(m.category) : m.category === active)) &&
       (activeSource === 'all' || (m.provider || 'polymarket') === activeSource) &&
       (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now()) &&
@@ -476,8 +491,27 @@
     if(typeof CustomEvent==='function' && typeof window.dispatchEvent==='function')
       window.dispatchEvent(new CustomEvent('liangyou:open-fixture',{detail:{id}}));
   });
-  if(typeof window.addEventListener==='function')
+  if(focusBar)focusBar.addEventListener('click',event=>{
+    if(!event.target.closest?.('[data-reset-market-focus]'))return;
+    focusedFixtureId=null;render();
+  });
+  if(typeof window.addEventListener==='function'){
     window.addEventListener('liangyou:fixtures-updated',()=>{if(matches.length)render();});
+    window.addEventListener('liangyou:open-market',event=>{
+      focusedFixtureId=String(event.detail?.id||'')||null;
+      active='all';activeSource='all';visibleLimit=initialLimit();searchTerms='';search.value='';
+      tabs.forEach(button=>{
+        const yes=button.dataset.sportFilter==='all';
+        button.classList.toggle('is-active',yes);button.setAttribute('aria-pressed',String(yes));
+      });
+      sourceButtons.forEach(button=>{
+        const yes=button.dataset.sourceFilter==='all';
+        button.classList.toggle('is-active',yes);button.setAttribute('aria-pressed',String(yes));
+      });
+      render();
+      focusBar?.scrollIntoView?.({behavior:'smooth',block:'start'});
+    });
+  }
   renderStatic();
   refresh();
   window.setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
