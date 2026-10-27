@@ -293,7 +293,21 @@ function brackets(){
   .map(x=>({...x,_key:'brk:'+x.tournament_id,_visual:'knockout'}));
  const phases=data.standings.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length)
   .map(x=>({...x,_key:'phase:'+x.id,_visual:viz.stageOf(x)})).filter(x=>x._visual==='swiss'||x._visual==='group');
- const available=[...knockout,...phases].filter(x=>kind==='all'||viz.game(x)===kind);
+ // When the provider has matches but no published standings, retain the
+ // real Swiss fixture diagram without inventing a standings position.
+ const knownIds=new Set(phases.map(x=>String(x.id).replace(/^panda-/,'')));
+ const fixtureStages=new Map();
+ for(const e of data.events){
+  if(e.provider!=='pandascore'||!Number.isInteger(e.tournament_id)||!e.home||!e.away)continue;
+  const name=[e.league,e.stage].filter(Boolean).join(' · ');
+  const candidate={title:name,sport:e.sport};
+  if(viz.stageOf(candidate)!=='swiss'||knownIds.has(String(e.tournament_id)))continue;
+  if(!fixtureStages.has(e.tournament_id))fixtureStages.set(e.tournament_id,{
+    id:'event-'+e.tournament_id,tournament_id:e.tournament_id,title:name,
+    sport:e.sport,provider:'pandascore',groups:[],
+    _visual:'swiss',_key:'fixture:'+e.tournament_id,prominence:e.prominence||0});
+ }
+ const available=[...knockout,...phases,...fixtureStages.values()].filter(x=>kind==='all'||viz.game(x)===kind);
  const priority={knockout:0,swiss:1,group:2};
  available.sort((a,b)=>(priority[a._visual]-priority[b._visual])||popularity(b)-popularity(a));
  let stage=refs.bracketStage.value;
