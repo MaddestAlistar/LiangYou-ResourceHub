@@ -55,7 +55,7 @@ function knockout(record,opt={}){
   .filter(x=>x.matches.length).sort((a,b)=>roundInfo(a.label)-roundInfo(b.label));
  if(!all.length)return '';
  const cw=236,gap=56,margin=16,ch=98,space=16;
- const count=Math.min(7,all.length);
+ const count=Math.min(10,all.length);
  const cols=all.slice(0,count);
  const peak=Math.max(...cols.map(r=>r.matches.length));
  const height=Math.max(178,peak*(ch+space)+38);
@@ -115,16 +115,29 @@ function swiss(record,opt={}){
  const showTeam=t=>'<div class="lyb-pool-team"><span>'+html(team(t.team))+'</span><b>'+
   num(t.wins)+':'+num(t.losses)+'</b></div>';
  const columnNames=[z('起点','Start',lang),z('首轮','Round 2',lang),z('第二轮','Round 3',lang),z('关键轮','Deciding',lang),z('晋级结果','Outcomes',lang)];
- const display=slots.map((col,i)=>'<div class="lyb-swiss-column"><h4><small>ROUND '+(i+1)+'</small>'+html(columnNames[i])+'</h4>'+
-   col.map(slot=>'<div class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
-    '<header><b>'+html(slot.name)+'</b><small>'+(
-      slot.advanced?z('晋级','Qualified',lang):slot.eliminated?z('淘汰','Eliminated',lang):
-      z('战绩池','Record pool',lang))+'</small></header>'+
-    (slot.teams.length?slot.teams.map(showTeam).join(''):
-      '<div class="lyb-pool-empty">—</div>')+'</div>').join('')+'</div>').join('');
  const matches=events.filter(e=>Number(e.tournament_id)===tournamentId&&e.home&&e.away&&
-  ['scheduled','live','finished'].includes(e.status)).sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
- const fixtureList=matches.slice(0,10).map(m=>{
+   ['scheduled','live','finished'].includes(e.status))
+   .filter((e,i,list)=>list.findIndex(x=>String(x.id).replace(/^(?:stage|panda)-/,'')===String(e.id).replace(/^(?:stage|panda)-/,''))===i)
+   .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
+ const matchCard=m=>{
+   const scored=Number.isInteger(m.score_home)&&Number.isInteger(m.score_away)&&m.status==='finished';
+   const title=html(team(m.home))+' <strong>'+(scored?num(m.score_home)+' : '+num(m.score_away):'VS')+'</strong> '+html(team(m.away));
+   return '<div class="lyb-round-match">'+title+'</div>';
+ };
+ const display=slots.map((col,i)=>{
+   const games=matches.filter(m=>m.round===i+1).slice(0,12);
+   return '<div class="lyb-swiss-column"><h4><small>ROUND '+(i+1)+'</small>'+html(columnNames[i])+'</h4>'+
+    col.map(slot=>'<div class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
+     '<header><b>'+html(slot.name)+'</b><small>'+(
+       slot.advanced?z('晋级','Qualified',lang):slot.eliminated?z('淘汰','Eliminated',lang):
+       z('战绩池','Record pool',lang))+'</small></header>'+
+     (slot.teams.length?slot.teams.map(showTeam).join(''):
+       '<div class="lyb-pool-empty">—</div>')+'</div>').join('')+
+     (games.length?'<div class="lyb-round-results"><strong>'+z('本轮对阵','Round matchups',lang)+'</strong>'+
+      games.map(matchCard).join('')+'</div>':'')+'</div>';
+ }).join('');
+ const loose=matches.filter(m=>!Number.isInteger(m.round)||m.round<1||m.round>5);
+ const fixtureList=loose.slice(0,10).map(m=>{
    const done=m.status==='finished',score=done&&Number.isInteger(m.score_home)&&Number.isInteger(m.score_away)?
     num(m.score_home)+' : '+num(m.score_away):'VS';
    const dt=Date.parse(m.start_time);
@@ -146,10 +159,6 @@ function groups(record,opt={}){
  const all=(record.groups||[]).filter(x=>x&&x.team&&Number.isInteger(x.rank));
  const bins=new Map();
  for(const row of all){const key=row.group||z('赛段','Stage',lang);if(!bins.has(key))bins.set(key,[]);bins.get(key).push(row);}
- const panels=[...bins].map(([name,rows])=>'<section class="lyb-group"><h4>'+html(name)+'</h4>'+
-  rows.sort((a,b)=>a.rank-b.rank).map(row=>'<div class="lyb-group-team"><span>'+html(team(row.team))+
-  '</span><b>'+Number.isInteger(row.wins)&&Number.isInteger(row.losses)?'': ''+'</b></div>').join('')+
-  '</section>');
  // Build with records only, not an invented A/B/C group or qualification slot.
  const content=[...bins].map(([name,rows])=>'<section class="lyb-group"><h4>'+html(name)+'</h4>'+
   rows.sort((a,b)=>a.rank-b.rank).map(row=>'<div class="lyb-group-team"><span>'+
