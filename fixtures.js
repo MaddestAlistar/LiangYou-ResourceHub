@@ -27,6 +27,7 @@ zh:{title:'赛事日历与赛事资料',
  bracketCount:n=>'已核验 '+n+' 个晋级图',
  rankingCount:n=>'已核验 '+n+' 份排名资料',
  noNba:'NBA 排名暂不可用，等待数据源恢复',
+ nbaNote:'按胜率排序，同战绩并列；未采用 NBA 官方复杂决胜规则。',
  points:'积分',played:'场',draws:'平',winRate:'胜率',
  esportsKind:['英雄联盟','其他电竞'],
  first:'正在等待官方赛事资料首次同步，不显示模拟比赛。',
@@ -53,6 +54,7 @@ en:{title:'Calendar & tournament intelligence',
  bracketCount:n=>n+' verified brackets',
  rankingCount:n=>n+' published rankings',
  noNba:'NBA standings unavailable until the data provider recovers',
+ nbaNote:'Sorted by win rate; tied records share a rank. Official tiebreakers are not applied.',
  points:'Pts',played:'P',draws:'D',winRate:'Win%',
  esportsKind:['League of Legends','Other esports'],
  first:'Waiting for official fixture data. No sample results.',
@@ -223,7 +225,8 @@ function updateLabels(){
  const copy=t();el('officialFixturesTitle').textContent=copy.title;
  const viz=window.LiangYouBracketViz;
  el('officialFixturesIntro').textContent=copy.intro;
- el('officialFixturesNote').textContent=copy.note;
+ el('officialFixturesNote').innerHTML=safe(copy.note).replace('football-data.org',
+  '<a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer">football-data.org</a>');
  el('fixturesMarketTitle').textContent=copy.market;
  views.forEach((x,i)=>{x.textContent=copy.views[i];
   const yes=x.dataset.fixturesView===view;x.classList.toggle('is-active',yes);x.setAttribute('aria-pressed',String(yes));});
@@ -242,7 +245,8 @@ function updateLabels(){
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
  const node=data.generated_at?Date.parse(data.generated_at):NaN;
- refs.status.textContent=Number.isFinite(node)?(lang()==='zh'?'更新 ':'Updated ')+when(data.generated_at):'';
+ refs.status.textContent=(Number.isFinite(node)?(lang()==='zh'?'更新 ':'Updated ')+when(data.generated_at):'')+
+  (data.extraStatus&&data.extraStatus!=='ok'?(lang()==='zh'?' · 篮球/足球部分来源暂不可用':' · Some basketball/soccer sources unavailable'):'');
 }
 function calendar(){
  const copy=t(),now=Date.now(),until=now+7*86400000;
@@ -365,6 +369,7 @@ function standings(){
   }
   if(!groups.size)return '';
   const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
+  const orderNote=selected.order_method==='win_pct'?'<p class="fixtures-ranking-note">'+safe(copy.nbaNote)+'</p>':'';
   const tables=[...groups.entries()].map(([group,list])=>{
    const headers=football?[copy.rank,copy.team,copy.points,copy.played,copy.wins,copy.draws,copy.losses]:
        nba?[copy.rank,copy.team,copy.wins,copy.losses,copy.winRate]:
@@ -387,7 +392,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+orderNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
