@@ -76,7 +76,7 @@ en:{title:'Calendar & tournament intelligence',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
-let view='calendar',date='week',limit=6,leagueFilter='all';
+let view='calendar',date='week',limit=6;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
@@ -326,13 +326,6 @@ function consolidatedStandings(records){
  }
  return out;
 }
-function standingsLeague(x){
- const title=String(x.title||'').toLowerCase();
- if(/\blck\b/.test(title)&&!/challenger|academy|youth/.test(title))return 'lck';
- if(/\blpl\b/.test(title))return 'lpl';
- if(/worlds|world championship/.test(title))return 'worlds';
- return 'other';
-}
 function options(select,items,includeAll=false){
  const current=select.value;
  select.innerHTML=(includeAll?'<option value="all">'+safe(t().selectAllStandings)+'</option>':'')+
@@ -397,19 +390,9 @@ function brackets(){
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
- const nav=[...document.querySelectorAll('#officialStandingLeagues [data-standing-league]')];
- nav.forEach(button=>{
-  const active=button.dataset.standingLeague===leagueFilter;
-  button.classList.toggle('is-active',active);
-  button.setAttribute('aria-pressed',String(active));
-  const key=button.dataset.standingLeague;
-  button.textContent=lang()==='en'?({all:'All leagues',lck:'LCK',lpl:'LPL',worlds:'Worlds'}[key]||key):
-   ({all:'全部联赛',lck:'LCK',lpl:'LPL',worlds:'全球总决赛'}[key]||key);
- });
  const records=consolidatedStandings(data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
     (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))))
-    .filter(x=>(kind==='all'||kindOf(x)===kind)&&
-       (leagueFilter==='all'||standingsLeague(x)===leagueFilter))
+    .filter(x=>(kind==='all'||kindOf(x)===kind))
     .sort((a,b)=>popularity(b)-popularity(a));
  if(!records.length){
   refs.standingSelect.hidden=true;refs.standingQuick.innerHTML='';
@@ -543,13 +526,7 @@ refs.bracketQuick.addEventListener('click',e=>{
  refs.bracketSelect.value=btn.dataset.fixturesTournament;
  render();
 });
-document.querySelectorAll('#officialStandingLeagues [data-standing-league]').forEach(button=>
- button.addEventListener('click',()=>{
-  leagueFilter=button.dataset.standingLeague;
-  refs.standingSport.value='all';
-  render();
- }));
-refs.standingSport.addEventListener('change',()=>{leagueFilter='all';render();});
+refs.standingSport.addEventListener('change',render);
 refs.standingSelect.addEventListener('change',render);
 refs.standingQuick.addEventListener('click',event=>{
  const button=event.target.closest('[data-fixtures-standing]');
