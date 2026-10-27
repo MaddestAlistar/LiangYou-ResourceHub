@@ -274,6 +274,9 @@ function updateLabels(){
  const extra=Number.isFinite(Date.parse(data.extraGeneratedAt||''))?
   (lang()==='zh'?'NBA/足球 ':'NBA/soccer ')+when(data.extraGeneratedAt):'';
  const issues=[];
+ if(data.status==='partial')issues.push(lang()==='zh'?'部分赛事接口采集不完整':'Some official providers returned incomplete data');
+ if(Number.isFinite(Date.parse(data.generated_at||''))&&Date.now()-Date.parse(data.generated_at)>18*3600000)
+  issues.push(copy.stale);
  if(data.extraStatus&&data.extraStatus!=='ok')issues.push(lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified');
  if(data.status==='failed')issues.push(lang()==='zh'?'最新快照读取失败，保留上次数据':'Latest check failed; showing previously verified data');
  const note=issues.join(' · ');
@@ -287,11 +290,14 @@ function dataHealth(){
  ];
  refs.health.innerHTML=badges.map(x=>{
   const whenAt=Number.isFinite(Date.parse(x.checked||''))?when(x.checked):'—';
-  const stale=x.status!=='ok'||Date.now()-Date.parse(x.checked||'')>18*3600000;
+  const expired=!Number.isFinite(Date.parse(x.checked||''))||
+    Date.now()-Date.parse(x.checked)>18*3600000;
+  const stale=x.status!=='ok'||expired;
   const name=({'api-sports':'API-Sports','pandascore':'PandaScore',
     'football-data':'football-data.org','dunkapi':'DunkAPI'})[x.tag]||x.tag;
   return '<span class="fixtures-source-state'+(stale?' is-stale':'')+'">'+safe(name)+
-    ' · '+safe(x.status==='ok'?(langZH?'已核验':'Verified'):(langZH?'部分缺失 / 上次数据':'Partial / previous'))+
+    ' · '+safe(expired?(langZH?'数据待更新':'Stale snapshot'):
+      x.status==='ok'?(langZH?'已核验':'Verified'):(langZH?'部分缺失 / 上次数据':'Partial / previous'))+
     ' · '+safe(whenAt)+'</span>';
  }).join('');
 }
@@ -778,9 +784,16 @@ refs.standingQuick.addEventListener('click',event=>{
  render();
 });
 document.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(x=>x.addEventListener('click',()=>setTimeout(render,0)));
-render();fetchData();if(typeof window.setInterval==='function')window.setInterval(()=>{
- if(!document.hidden)fetchData();
-},30*60*1000);
+render();fetchData();if(typeof window.setInterval==='function'){
+ window.setInterval(()=>{if(!document.hidden)fetchData();},30*60*1000);
+ // Advance date-window cards without a network request or a costly
+ // bracket reflow when data has not changed.
+ window.setInterval(()=>{
+   if(document.hidden)return;
+   updateLabels();dataHealth();
+   if(view==='calendar')calendar();
+ },60*1000);
+}
 if(typeof document.addEventListener==='function')
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetchData();});
 let mobileBracket=typeof window.innerWidth==='number'&&window.innerWidth<=680;
