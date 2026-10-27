@@ -192,7 +192,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
     const e = {
       id, dataset:{}, hidden:false, innerHTML:'', textContent:'', value:'',
       listeners:{}, attributes:{},
-      classList:{toggle(){},add(){},remove(){}},
+      classList:{toggle(){return false;},add(){},remove(){},contains(){return false;}},
       addEventListener(type,fn){this.listeners[type]=fn;},
       setAttribute(name,val){this.attributes[name]=val;},
       querySelectorAll(){return [];},
@@ -326,7 +326,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
    const edges=[...markup.matchAll(/<path class="lyb-bracket-edge [^"]+" data-from="([^"]+)" data-to="([^"]+)"/g)];
    assert.equal(edges.length,knownLinks,
      'Only provider-connected predecessors may produce lines: '+board.title);
-   const positioned=[...markup.matchAll(/<article class="lyb-match" data-match-id="([^"]+)" style="left:(\d+)px;/g)];
+   const positioned=[...markup.matchAll(/<article class="lyb-match"[^>]*data-match-id="([^"]+)"[^>]*style="left:(\d+)px;/g)];
    const coords=new Map(positioned.map(m=>[m[1],Number(m[2])]));
    for(const edge of edges){
      const before=coords.get(edge[1]),after=coords.get(edge[2]);
@@ -399,7 +399,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  function node(id){
   const e = {id,dataset:{},value:'',hidden:false,textContent:'',placeholder:'',
    listeners:{},options:[],attributes:{},_markup:'',
-   classList:{toggle(){},add(){},remove(){}},
+   classList:{toggle(){return false;},add(){},remove(){},contains(){return false;}},
    addEventListener(ev,handler){this.listeners[ev]=handler;},
    setAttribute(k,v){this.attributes[k]=v;},
    getAttribute(k){return this.attributes[k];},
