@@ -1,24 +1,25 @@
 {
   "schema": 1,
+  "extra_sports_version": 2,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-27T07:05:19Z",
+  "generated_at": "2026-10-27T07:08:36Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-27T07:05:19Z"
+      "verified_at": "2026-10-27T07:08:36Z"
     },
     {
       "tag": "football-data",
-      "status": "ok",
+      "status": "partial",
       "count": 138,
-      "standings": 5,
-      "verified_at": "2026-10-27T07:05:19Z"
+      "standings": 4,
+      "verified_at": "2026-10-27T07:08:36Z"
     }
   ],
-  "status": "ok",
+  "status": "partial",
   "events": [
     {
       "id": "football-data-567331",
@@ -2529,7 +2530,7 @@
           "losses": 0,
           "played": 3,
           "win_pct": 1.0,
-          "rank": 4
+          "rank": 1
         },
         {
           "team": "Los Angeles Lakers",
@@ -2538,7 +2539,7 @@
           "losses": 0,
           "played": 3,
           "win_pct": 1.0,
-          "rank": 2
+          "rank": 1
         },
         {
           "team": "Detroit Pistons",
@@ -2556,7 +2557,7 @@
           "losses": 0,
           "played": 3,
           "win_pct": 1.0,
-          "rank": 3
+          "rank": 1
         },
         {
           "team": "Oklahoma City Thunder",
@@ -2565,7 +2566,7 @@
           "losses": 0,
           "played": 3,
           "win_pct": 1.0,
-          "rank": 5
+          "rank": 1
         },
         {
           "team": "Houston Rockets",
@@ -2601,7 +2602,7 @@
           "losses": 1,
           "played": 3,
           "win_pct": 0.6667,
-          "rank": 6
+          "rank": 3
         },
         {
           "team": "Indiana Pacers",
@@ -2610,7 +2611,7 @@
           "losses": 1,
           "played": 3,
           "win_pct": 0.6667,
-          "rank": 5
+          "rank": 3
         },
         {
           "team": "Washington Wizards",
@@ -2619,7 +2620,7 @@
           "losses": 1,
           "played": 3,
           "win_pct": 0.6667,
-          "rank": 7
+          "rank": 3
         },
         {
           "team": "Charlotte Hornets",
@@ -2628,7 +2629,7 @@
           "losses": 1,
           "played": 3,
           "win_pct": 0.6667,
-          "rank": 4
+          "rank": 3
         },
         {
           "team": "Boston Celtics",
@@ -2646,7 +2647,7 @@
           "losses": 1,
           "played": 2,
           "win_pct": 0.5,
-          "rank": 9
+          "rank": 8
         },
         {
           "team": "Denver Nuggets",
@@ -2664,7 +2665,7 @@
           "losses": 1,
           "played": 2,
           "win_pct": 0.5,
-          "rank": 8
+          "rank": 7
         },
         {
           "team": "LA Clippers",
@@ -2673,7 +2674,7 @@
           "losses": 2,
           "played": 3,
           "win_pct": 0.3333,
-          "rank": 10
+          "rank": 9
         },
         {
           "team": "San Antonio Spurs",
@@ -2682,7 +2683,7 @@
           "losses": 2,
           "played": 3,
           "win_pct": 0.3333,
-          "rank": 11
+          "rank": 9
         },
         {
           "team": "Dallas Mavericks",
@@ -2700,7 +2701,7 @@
           "losses": 2,
           "played": 3,
           "win_pct": 0.3333,
-          "rank": 11
+          "rank": 10
         },
         {
           "team": "Utah Jazz",
@@ -2709,7 +2710,7 @@
           "losses": 2,
           "played": 3,
           "win_pct": 0.3333,
-          "rank": 12
+          "rank": 9
         },
         {
           "team": "Chicago Bulls",
@@ -2727,7 +2728,7 @@
           "losses": 3,
           "played": 3,
           "win_pct": 0.0,
-          "rank": 14
+          "rank": 13
         },
         {
           "team": "New York Knicks",
@@ -2736,7 +2737,7 @@
           "losses": 3,
           "played": 3,
           "win_pct": 0.0,
-          "rank": 15
+          "rank": 12
         },
         {
           "team": "Milwaukee Bucks",
@@ -2745,7 +2746,7 @@
           "losses": 3,
           "played": 3,
           "win_pct": 0.0,
-          "rank": 14
+          "rank": 12
         },
         {
           "team": "Golden State Warriors",
@@ -2772,7 +2773,7 @@
           "losses": 3,
           "played": 3,
           "win_pct": 0.0,
-          "rank": 15
+          "rank": 13
         },
         {
           "team": "Miami Heat",
@@ -2781,9 +2782,10 @@
           "losses": 3,
           "played": 3,
           "win_pct": 0.0,
-          "rank": 13
+          "rank": 12
         }
       ],
+      "order_method": "win_pct",
       "prominence": 440
     },
     {
@@ -2801,7 +2803,7 @@
           "draws": 0,
           "points": 21,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 2,
@@ -2811,7 +2813,7 @@
           "draws": 0,
           "points": 21,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 3,
@@ -2821,7 +2823,7 @@
           "draws": 1,
           "points": 16,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 4,
@@ -2831,7 +2833,7 @@
           "draws": 3,
           "points": 15,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 5,
@@ -2841,7 +2843,7 @@
           "draws": 1,
           "points": 13,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 6,
@@ -2851,7 +2853,7 @@
           "draws": 5,
           "points": 11,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 7,
@@ -2861,7 +2863,7 @@
           "draws": 5,
           "points": 11,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 8,
@@ -2871,7 +2873,7 @@
           "draws": 2,
           "points": 11,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 9,
@@ -2881,7 +2883,7 @@
           "draws": 2,
           "points": 11,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 10,
@@ -2891,7 +2893,7 @@
           "draws": 4,
           "points": 10,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 11,
@@ -2901,7 +2903,7 @@
           "draws": 4,
           "points": 10,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 12,
@@ -2911,7 +2913,7 @@
           "draws": 1,
           "points": 10,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 13,
@@ -2921,7 +2923,7 @@
           "draws": 3,
           "points": 9,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 14,
@@ -2931,7 +2933,7 @@
           "draws": 3,
           "points": 9,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 15,
@@ -2941,7 +2943,7 @@
           "draws": 2,
           "points": 8,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 16,
@@ -2951,7 +2953,7 @@
           "draws": 4,
           "points": 7,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 17,
@@ -2961,7 +2963,7 @@
           "draws": 1,
           "points": 7,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 18,
@@ -2971,7 +2973,7 @@
           "draws": 3,
           "points": 6,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 19,
@@ -2981,7 +2983,7 @@
           "draws": 0,
           "points": 6,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 20,
@@ -2991,7 +2993,7 @@
           "draws": 2,
           "points": 5,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         }
       ],
       "prominence": 170
@@ -3011,7 +3013,7 @@
           "draws": 0,
           "points": 27,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 2,
@@ -3021,7 +3023,7 @@
           "draws": 1,
           "points": 25,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 3,
@@ -3031,7 +3033,7 @@
           "draws": 0,
           "points": 24,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 4,
@@ -3041,7 +3043,7 @@
           "draws": 2,
           "points": 20,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 5,
@@ -3051,7 +3053,7 @@
           "draws": 1,
           "points": 19,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 6,
@@ -3061,7 +3063,7 @@
           "draws": 2,
           "points": 17,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 7,
@@ -3071,7 +3073,7 @@
           "draws": 3,
           "points": 12,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 8,
@@ -3081,7 +3083,7 @@
           "draws": 3,
           "points": 12,
           "played": 9,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 9,
@@ -3091,7 +3093,7 @@
           "draws": 6,
           "points": 12,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 10,
@@ -3101,7 +3103,7 @@
           "draws": 3,
           "points": 12,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 11,
@@ -3111,7 +3113,7 @@
           "draws": 5,
           "points": 11,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 12,
@@ -3121,7 +3123,7 @@
           "draws": 2,
           "points": 11,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 13,
@@ -3131,7 +3133,7 @@
           "draws": 2,
           "points": 11,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 14,
@@ -3141,7 +3143,7 @@
           "draws": 4,
           "points": 10,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 15,
@@ -3151,7 +3153,7 @@
           "draws": 4,
           "points": 10,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 16,
@@ -3161,7 +3163,7 @@
           "draws": 3,
           "points": 9,
           "played": 9,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 17,
@@ -3171,7 +3173,7 @@
           "draws": 3,
           "points": 9,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 18,
@@ -3181,7 +3183,7 @@
           "draws": 2,
           "points": 8,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 19,
@@ -3191,7 +3193,7 @@
           "draws": 3,
           "points": 6,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 20,
@@ -3201,7 +3203,7 @@
           "draws": 5,
           "points": 5,
           "played": 10,
-          "group": "Group y"
+          "group": ""
         }
       ],
       "prominence": 170
@@ -3221,7 +3223,7 @@
           "draws": 2,
           "points": 17,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 2,
@@ -3231,7 +3233,7 @@
           "draws": 2,
           "points": 17,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 3,
@@ -3241,7 +3243,7 @@
           "draws": 1,
           "points": 13,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 4,
@@ -3251,7 +3253,7 @@
           "draws": 1,
           "points": 13,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 5,
@@ -3261,7 +3263,7 @@
           "draws": 0,
           "points": 12,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 6,
@@ -3271,7 +3273,7 @@
           "draws": 3,
           "points": 12,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 7,
@@ -3281,7 +3283,7 @@
           "draws": 1,
           "points": 10,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 8,
@@ -3291,7 +3293,7 @@
           "draws": 1,
           "points": 10,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 9,
@@ -3301,7 +3303,7 @@
           "draws": 3,
           "points": 9,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 10,
@@ -3311,7 +3313,7 @@
           "draws": 0,
           "points": 9,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 11,
@@ -3321,7 +3323,7 @@
           "draws": 0,
           "points": 9,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 12,
@@ -3331,7 +3333,7 @@
           "draws": 2,
           "points": 8,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 13,
@@ -3341,7 +3343,7 @@
           "draws": 2,
           "points": 8,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 14,
@@ -3351,7 +3353,7 @@
           "draws": 2,
           "points": 8,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 15,
@@ -3361,7 +3363,7 @@
           "draws": 0,
           "points": 6,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 16,
@@ -3371,7 +3373,7 @@
           "draws": 3,
           "points": 6,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 17,
@@ -3381,7 +3383,7 @@
           "draws": 3,
           "points": 6,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 18,
@@ -3391,7 +3393,7 @@
           "draws": 0,
           "points": 3,
           "played": 7,
-          "group": "Group y"
+          "group": ""
         }
       ],
       "prominence": 170
@@ -3411,7 +3413,7 @@
           "draws": 1,
           "points": 22,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 2,
@@ -3421,7 +3423,7 @@
           "draws": 1,
           "points": 22,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 3,
@@ -3431,7 +3433,7 @@
           "draws": 3,
           "points": 18,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 4,
@@ -3441,7 +3443,7 @@
           "draws": 3,
           "points": 18,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 5,
@@ -3451,7 +3453,7 @@
           "draws": 2,
           "points": 17,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 6,
@@ -3461,7 +3463,7 @@
           "draws": 2,
           "points": 14,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 7,
@@ -3471,7 +3473,7 @@
           "draws": 2,
           "points": 14,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 8,
@@ -3481,7 +3483,7 @@
           "draws": 1,
           "points": 13,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 9,
@@ -3491,7 +3493,7 @@
           "draws": 1,
           "points": 13,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 10,
@@ -3501,7 +3503,7 @@
           "draws": 2,
           "points": 11,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 11,
@@ -3511,7 +3513,7 @@
           "draws": 1,
           "points": 10,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 12,
@@ -3521,7 +3523,7 @@
           "draws": 0,
           "points": 9,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 13,
@@ -3531,7 +3533,7 @@
           "draws": 2,
           "points": 8,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 14,
@@ -3541,7 +3543,7 @@
           "draws": 2,
           "points": 8,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 15,
@@ -3551,7 +3553,7 @@
           "draws": 1,
           "points": 7,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 16,
@@ -3561,7 +3563,7 @@
           "draws": 1,
           "points": 7,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 17,
@@ -3571,7 +3573,7 @@
           "draws": 1,
           "points": 4,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 18,
@@ -3581,7 +3583,7 @@
           "draws": 1,
           "points": 4,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 19,
@@ -3591,7 +3593,7 @@
           "draws": 1,
           "points": 4,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         },
         {
           "rank": 20,
@@ -3601,7 +3603,7 @@
           "draws": 0,
           "points": 3,
           "played": 8,
-          "group": "Group y"
+          "group": ""
         }
       ],
       "prominence": 170
