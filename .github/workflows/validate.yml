@@ -28,6 +28,8 @@ jobs:
           node --check daily-free.js
           node --check sports-i18n.js
           node --check sports.js
+          node --check sports-link.js
+          node --check sports-personal.js
           node --check fixtures.js
           python3 -m py_compile scripts/*.py
       - name: Verify icon publisher regressions
@@ -37,6 +39,8 @@ jobs:
       - name: Verify source filtering regressions
         run: python3 -m unittest discover -s scripts -p 'test_feeds.py'
       - name: Verify Chinese and English sports translations
-        run: node scripts/test_sports_i18n.mjs
+        run: |
+          node scripts/test_sports_i18n.mjs
+          node scripts/test_sports_personal.mjs
       - name: Validate catalog and web structure
         run: node scripts/validate.mjs
