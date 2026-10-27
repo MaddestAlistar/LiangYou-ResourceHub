@@ -19,7 +19,7 @@ const strings={
 zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
- placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
+ placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球','国际象棋','围棋'],
  sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','无畏契约','CS2','其他电竞'],stages:['淘汰赛','瑞士轮','小组赛'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球','足球'],
  bracketSubtitle:'电竞阶段与晋级对阵',
@@ -49,7 +49,7 @@ zh:{title:'赛事日历与赛事资料',
 en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
  views:['Calendar','Esports brackets','Standings'],dates:['Today','Tomorrow','Next 7 days'],
- placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
+ placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football','Chess','Go'],
  sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','VALORANT','CS2','Other esports'],stages:['Knockout','Swiss stage','Group stage'],
  ranks:['All standings','League of Legends','Other esports','Basketball','Football'],
  bracketSubtitle:'Esports stages and brackets',
@@ -172,6 +172,7 @@ const localize=(v,category='')=>{
  .replace(/Lower Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'败者组第'+n+'轮'+(m?' 第'+m+'场':''))
  .replace(/\bRound (\d+)\b/gi,'第$1轮');
 };
+const providerName=id=>({pandascore:'PandaScore','football-data':'football-data.org',lichess:'Lichess',nihonkiin:'日本棋院',baduk:'韩国棋院','weiqi-association':'中国围棋协会'})[id]||'API-Sports';
 const team=(v,sport)=>{
  const raw=String(v??'').trim();
  if(lang()==='en')return raw;
@@ -267,7 +268,7 @@ function updateLabels(){
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
  // Only show a single public verification timestamp; preserve diagnostics in data.
- const checks=[data.generated_at,data.extraGeneratedAt].map(x=>Date.parse(x||''))
+ const checks=[data.generated_at,data.extraGeneratedAt,data.boardGeneratedAt].map(x=>Date.parse(x||''))
   .filter(Number.isFinite);
  refs.status.textContent=checks.length?
   (lang()==='zh'?'最近数据核验：':'Last data check: ')+
@@ -340,13 +341,13 @@ function showFixtureDetail(id,scroll=false){
  const market=linker?.marketsFor(x,freshMarkets)||[];
  const group=market.flatMap(g=>g.sources);
  const label=lang()==='zh';
- const whenAt=when(x.start_time);
+ const whenAt=x.time_precision==='date'?(lang()==='zh'?'日期：':'Date: ')+(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time);
  const complete=x.status==='finished';
  const score=complete&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
   safe(String(x.score_home)+' : '+String(x.score_away)):(label?'暂无已核验终场比分':'No verified final score');
  const state=x.status==='finished'?(label?'已完赛':'Finished'):
   x.status==='live'?(label?'进行中（上次核验）':'In progress (snapshot)'):(label?'尚未开始':'Upcoming');
- const source=x.provider==='pandascore'?'PandaScore':x.provider==='football-data'?'football-data.org':'API-Sports';
+ const source=providerName(x.provider);
  const bracket=data.brackets.find(b=>Number(b.tournament_id)===Number(x.tournament_id) &&
   b.rounds?.some(r=>r.matches?.some(m=>linker?.pairs(x,{
      sport:x.sport,home:m.home,away:m.away,start_time:m.start_time||x.start_time
@@ -360,7 +361,8 @@ function showFixtureDetail(id,scroll=false){
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
   '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+' · '+safe(state)+
   ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+
-  (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
+  (complete?'<div class="fixtures-detail-score">'+(x.sport==='go'?(label?'胜 · 负':'Win · Loss'):score)+'</div>':'')+
+  (x.result_detail?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
    (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
   '<div class="fixtures-detail-actions">'+
@@ -369,6 +371,10 @@ function showFixtureDetail(id,scroll=false){
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
     (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+
   '</div>'+
+  (['chess','go'].includes(x.sport)?'<p class="fixtures-detail-caution">'+
+      (label?'棋类赛程和赛果按来源定时核验，并非实时对局。':'Board-game fixtures are periodically verified, not live move updates.')+
+      (x.source_url&&/^https:\/\/(?:lichess\.org|www\.nihonkiin\.or\.jp|www\.baduk\.or\.kr)\//.test(x.source_url)?
+       ' <a href="'+safe(x.source_url)+'" target="_blank" rel="noopener noreferrer">'+(label?'官方来源':'Original source')+'</a>':'')+'</p>':
   '<section class="fixtures-detail-markets" aria-label="'+
     (label?'赛前预测':'Pre-match prediction')+'">'+
     '<div class="fixtures-predictions-head"><strong>'+
@@ -379,7 +385,7 @@ function showFixtureDetail(id,scroll=false){
       '<p class="fixtures-predict-empty">'+
        (label?'本场暂无可核验的赛前预测数据':'No verified prediction data for this fixture')+
       '</p>')+
-  '</section>';
+  '</section>');
  // Detail follows the tapped card; it no longer jumps to the top of the fixture list.
  button.closest('.fixtures-card').insertAdjacentElement('afterend',refs.detail);
  refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
@@ -411,7 +417,7 @@ function calendar(){
   const instant=Date.parse(x.start_time);
   if(!Number.isFinite(instant))return false;
   if(state==='scheduled'){
-   if(instant<now-120000||instant>until)return false;
+   if((instant<now-120000&&!(x.time_precision==='date'&&dayKey(new Date(instant))===today))||instant>until)return false;
    if(date==='today'&&dayKey(new Date(instant))!==today)return false;
    if(date==='tomorrow'&&dayKey(new Date(instant))!==tomorrow)return false;
   }else if(instant<now-(state==='live'?24:48)*3600000||instant>now+3600000)return false;
@@ -433,16 +439,16 @@ function calendar(){
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
   const title=[localize(x.league,x.sport),localize(x.stage,x.sport),
      Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
-  const score=x.status==='finished'&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
+  const score=x.sport==='go'&&x.status==='finished'?'<span class="fixtures-score">'+(lang()==='zh'?'胜 · 负':'Win · Loss')+'</span>':
+    x.status==='finished'&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
     '<span class="fixtures-score">'+safe(x.score_home)+' : '+safe(x.score_away)+'</span>':'';
   const status=x.status==='live'?(lang()==='zh'?'进行中 · 非实时':'Live status · delayed'):
     x.status==='finished'?(lang()==='zh'?'已结束':'Final'):null;
   return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
-    '</strong><span>'+safe(when(x.start_time))+'</span></div>'+
+    '</strong><span>'+safe(x.time_precision==='date'?(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span></div>'+
     '<div class="fixtures-versus">'+safe(team(x.home,x.sport))+' <em>'+safe(copy.vs)+'</em> '+
     safe(team(x.away,x.sport))+'</div>'+score+
-    '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(x.provider==='pandascore'?'PandaScore':
-    x.provider==='football-data'?'football-data.org':'API-Sports')+'</span>'+
+    '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
     (linker?.marketsFor(x,(window.LiangYouMarketRecords||[]).filter(m=>
@@ -455,7 +461,7 @@ function calendar(){
  }).join(''):empty(data.generated_at?copy.empty:copy.first);
  const total=matches.length;
  refs.count.textContent=state==='scheduled'?copy.total(data.events.filter(x=>x.status==='scheduled'&&
-  Date.parse(x.start_time)>=now&&Date.parse(x.start_time)<=until).length):
+  (Date.parse(x.start_time)>=now||(x.time_precision==='date'&&dayKey(new Date(x.start_time))===today))&&Date.parse(x.start_time)<=until).length):
   (lang()==='zh'?'当前筛选 '+total+' 场':'Filtered '+total+' matches');
  refs.showing.textContent=copy.shown(Math.min(matches.length,limit),matches.length);
  refs.more.hidden=matches.length<=limit;
@@ -702,11 +708,12 @@ async function fetchData(){
   };
   // Concurrent fetches avoid three sequential 16-second waits on slow networks.
   // The completed 2026 archive is immutable for this browsing session.
-  const [base,extraRaw,archiveRaw]=await Promise.all([
+  const [base,extraRaw,archiveRaw,boardRaw]=await Promise.all([
     fetchJson('./data/real-sports.json'),
     fetchJson('./data/extra-sports.json').catch(()=>null),
     archiveCache?Promise.resolve(archiveCache):
-      fetchJson('./data/verified-lol-2026.json').catch(()=>null)
+      fetchJson('./data/verified-lol-2026.json').catch(()=>null),
+    fetchJson('./data/board-games.json').catch(()=>null)
   ]);
   if(base.schema!==1||base.source_type!=='official_fixtures'||!Array.isArray(base.events))
    throw Error('Invalid official snapshot schema');
@@ -723,13 +730,15 @@ async function fetchData(){
     archiveRaw.standings.every(x=>x.historical_final&&Array.isArray(x.groups)&&x.source_url)?
     archiveRaw.standings:[];
   if(historic.length)archiveCache=archiveRaw;
+  const board=boardRaw?.schema===1&&boardRaw.source_type==='board_game_fixtures'&&Array.isArray(boardRaw.events)?boardRaw:null;
+  const boardEvents=board?board.events.filter(x=>x&&['chess','go'].includes(x.sport)&&['scheduled','live','finished'].includes(x.status)&&x.home&&x.away&&x.start_time):[];
   const signature=[base.generated_at,base.status,usableExtra?.generated_at||'',
-    extra?.status||'stale',archiveCache?.generated_at||''].join('|');
+    extra?.status||'stale',archiveCache?.generated_at||'',board?.generated_at||''].join('|');
   // An earlier transient fetch failure must clear on the next successful
   // request even if the server returned an unchanged snapshot.
   if(signature===lastSnapshotSignature&&data.status!=='failed')return;
   lastSnapshotSignature=signature;
-  const events=usableExtra?[...base.events,...usableExtra.events]:base.events;
+  const events=[...base.events,...(usableExtra?.events||[]),...boardEvents];
   const dedupe=items=>{
    const seen=new Set();
    return items.filter(x=>{
@@ -746,7 +755,8 @@ async function fetchData(){
       (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
        /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
       ...published,...historic]).slice(0,24),
-    sources:[...(base.sources||[]),...(usableExtra?.sources||[])],
+    sources:[...(base.sources||[]),...(usableExtra?.sources||[]),...(board?.sources||[])],
+    boardGeneratedAt:board?.generated_at||null,
     extraStatus:extra?.status||(usableExtra?'stale':'unavailable'),
     extraGeneratedAt:usableExtra?.generated_at||null,
     generated_at:base.generated_at,officialSources:base.sources||[],
