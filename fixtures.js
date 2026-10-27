@@ -451,18 +451,22 @@ function highlightBracket(id){
  const paths=[...root.querySelectorAll('.lyb-bracket-edge[data-from][data-to]')];
  const target=cards.find(m=>m.dataset.matchId===String(id));
  if(!target){selectedBracketMatch=null;refs.bracketFocus.hidden=true;return;}
- const keep=new Set([String(id)]);
- // Follow only provider-confirmed predecessor relationships in both directions.
+ // Follow verified predecessors backwards and descendants forwards, separately.
+ // Undirected traversal would incorrectly highlight unrelated sibling paths.
+ const ancestors=new Set([String(id)]),descendants=new Set([String(id)]);
  for(let repeat=0;repeat<cards.length;repeat++){
   let changed=false;
-  for(const path of paths){
-   if(keep.has(path.dataset.from)||keep.has(path.dataset.to)){
-    if(!keep.has(path.dataset.from)){keep.add(path.dataset.from);changed=true;}
-    if(!keep.has(path.dataset.to)){keep.add(path.dataset.to);changed=true;}
+  for(const line of paths){
+   if(ancestors.has(line.dataset.to)&&!ancestors.has(line.dataset.from)){
+    ancestors.add(line.dataset.from);changed=true;
+   }
+   if(descendants.has(line.dataset.from)&&!descendants.has(line.dataset.to)){
+    descendants.add(line.dataset.to);changed=true;
    }
   }
   if(!changed)break;
  }
+ const keep=new Set([...ancestors,...descendants]);
  for(const card of cards){
   const selected=card.dataset.matchId===String(id);
   card.classList.toggle('is-path',keep.has(card.dataset.matchId));
@@ -471,7 +475,8 @@ function highlightBracket(id){
   card.setAttribute('aria-pressed',String(selected));
  }
  for(const path of paths){
-  const linked=keep.has(path.dataset.from)&&keep.has(path.dataset.to);
+  const linked=(ancestors.has(path.dataset.from)&&ancestors.has(path.dataset.to))||
+   (descendants.has(path.dataset.from)&&descendants.has(path.dataset.to));
   path.classList.toggle('is-path',linked);
   path.classList.toggle('is-muted',!linked);
  }
@@ -714,6 +719,12 @@ refs.bracketExpand.addEventListener('click',()=>{
  render();
 });
 refs.bracket.addEventListener('click',event=>{
+ if(event.target.closest?.('[data-exit-bracket]')){
+   refs.bracket.classList.remove('is-expanded');
+   refs.bracketExpand.setAttribute('aria-pressed','false');
+   render();
+   return;
+ }
  const match=event.target.closest?.('.lyb-match[data-match-id]');
  if(match)highlightBracket(match.dataset.matchId);
 });
