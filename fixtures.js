@@ -82,8 +82,9 @@ const localize=(v,category='')=>{
  .replace(/\bSemifinals?\b/gi,'半决赛')
  .replace(/\bGrand Finals?\b/gi,'总决赛')
  .replace(/\bFinals?\b/gi,'决赛')
- .replace(/\bUpper Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'胜者组第'+n+'轮'+(m?' 第'+m+'场':''))
- .replace(/\bLower Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'败者组第'+n+'轮'+(m?' 第'+m+'场':''));
+ .replace(/Upper Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'胜者组第'+n+'轮'+(m?' 第'+m+'场':''))
+ .replace(/Lower Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'败者组第'+n+'轮'+(m?' 第'+m+'场':''))
+ .replace(/\bRound (\d+)\b/gi,'第$1轮');
 };
 const team=(v,sport)=>{
  const raw=String(v??'');
@@ -169,6 +170,7 @@ function calendar(){
 }
 function kindOf(v){
  if(v.sport)return v.sport;
+ if(v.kind==='basketball')return 'basketball';
  return /worlds|\blol\b|lpl|lck|lgc|lec|msi/i.test(v.title||'')?'lol':'esports';
 }
 function options(select,items){

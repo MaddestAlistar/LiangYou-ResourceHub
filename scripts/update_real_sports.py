@@ -421,7 +421,15 @@ def tournament_extras(matches,key,discoveries=None):
             candidates[tid]["ranking"] |= regular
     order=lambda tid:(-candidates[tid]["priority"],tid)
     bracket_choices=sorted((tid for tid,v in candidates.items() if v["bracket"]),key=order)[:MAX_BRACKET_REQUESTS]
-    rank_choices=sorted(candidates,key=order)[:MAX_STANDINGS_REQUESTS]
+    # Retain other esports coverage: otherwise six higher-profile LoL
+    # candidates consume every standings call during international events.
+    ranked_candidates=sorted(candidates,key=order)
+    lol_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]=="lol"]
+    other_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]!="lol"]
+    rank_choices=(lol_rank[:4]+other_rank[:2])[:MAX_STANDINGS_REQUESTS]
+    for tid in ranked_candidates:
+        if len(rank_choices)>=MAX_STANDINGS_REQUESTS:break
+        if tid not in rank_choices:rank_choices.append(tid)
     # Ensure other esports retain some representation even in Worlds season.
     if all(candidates[tid]["sport"]=="lol" for tid in bracket_choices) and len(bracket_choices)>2:
         extras=sorted((tid for tid,v in candidates.items() if v["bracket"] and v["sport"]=="esports"),key=order)
