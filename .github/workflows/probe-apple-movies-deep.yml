@@ -1,0 +1,48 @@
+name: Deep check Apple iTunes movie catalog availability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-apple-movies-deep.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare movie search, TV search and ID lookup
+        run: |
+          python - <<'PY'
+          import json, urllib.request, urllib.parse, urllib.error, time
+          checks=[
+            ('movie_media', 'search', {'term':'Inception','media':'movie','country':'us','limit':'4'}),
+            ('movie_entity', 'search', {'term':'Inception','entity':'movie','country':'us','limit':'4'}),
+            ('movie_attribute', 'search', {'term':'Inception','media':'movie','attribute':'movieTerm','country':'us','limit':'4'}),
+            ('movie_all_entity', 'search', {'term':'Inception','media':'all','entity':'movie','country':'us','limit':'4'}),
+            ('tvshow_search', 'search', {'term':'Friends','media':'tvShow','country':'us','limit':'4'}),
+            ('movie_amg_lookup','lookup',{'amgVideoId':'17120','country':'us'}),
+            ('known_app_lookup','lookup',{'id':'284910350','country':'us'}),
+            ('music_control','search',{'term':'Taylor Swift','media':'music','country':'us','limit':'2'})
+          ]
+          for name,endpoint,params in checks:
+            url='https://itunes.apple.com/'+endpoint+'?'+urllib.parse.urlencode(params,quote_via=urllib.parse.quote)
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 LiangYouResourceHubAPIProbe/1.0','Accept':'application/json'})
+            status=None; error=None; data={}
+            try:
+              with urllib.request.urlopen(req,timeout=16) as resp:
+                status=resp.status
+                data=json.load(resp)
+            except urllib.error.HTTPError as e: status=e.code;error='HTTPError'
+            except Exception as e: error=type(e).__name__
+            rows=data.get('results',[]) if isinstance(data,dict) else []
+            result={'endpoint':name,'http':status,'result_count':data.get('resultCount') if isinstance(data,dict) else None,
+              'first_title':(rows[0].get('trackName') or rows[0].get('collectionName')) if rows else None,
+              'first_kind':rows[0].get('kind') if rows else None,'error_type':error}
+            print('APPLE_MOVIE_DEEP '+json.dumps(result,ensure_ascii=False),flush=True)
+            time.sleep(3)
+          PY
