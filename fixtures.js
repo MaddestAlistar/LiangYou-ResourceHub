@@ -296,7 +296,15 @@ function showFixtureDetail(id){
  detailId=id;
  const x=data.events.find(row=>String(row.id)===String(id));
  if(!x){refs.detail.hidden=true;refs.detail.innerHTML='';return;}
- const market=linker?.marketsFor(x,window.LiangYouMarketRecords||[])||[];
+ // Match detail must obey the same quote-age ceiling as the market panel.
+ // Never surface old odds just because a fixture record is still available.
+ const freshMarkets=(window.LiangYouMarketRecords||[]).filter(m=>{
+  const verified=Date.parse(m.checked_at||'');
+  const start=Date.parse(m.start_time||'');
+  return Number.isFinite(verified)&&Date.now()-verified<=6*3600000&&
+    verified<=Date.now()+3600000&&Number.isFinite(start)&&start>Date.now();
+ });
+ const market=linker?.marketsFor(x,freshMarkets)||[];
  const group=market.flatMap(g=>g.sources);
  const label=lang()==='zh';
  const whenAt=when(x.start_time);
