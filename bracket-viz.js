@@ -106,19 +106,82 @@ const swissNodes=[
  [{name:'2-2',index:'R5',wins:2,losses:2}],
  [{name:'ADVANCES',index:'OUT',advanced:true},{name:'ELIMINATED',index:'OUT',eliminated:true}]
 ];
+/**
+ * Recover a match's Swiss round only when an entire 16-team opening round is
+ * present and both opponents' verified appearance counts agree. Incomplete
+ * histories retain null rounds; no dates or standings are used to invent them.
+ */
+function inferRounds(source){
+ const matches=(source||[]).filter(m=>m&&m.home&&m.away&&
+  (String(m.id||'').startsWith('stage-')))
+  .slice().sort((a,b)=>String(a.start_time||'').localeCompare(String(b.start_time||''))||
+    String(a.id).localeCompare(String(b.id)));
+ const first=matches.slice(0,8);
+ const entrants=new Set(first.flatMap(m=>[norm(m.home),norm(m.away)]));
+ if(first.length!==8||entrants.size!==16||first.some(m=>m.status!=='finished'||
+   !m.winner||![norm(m.home),norm(m.away)].includes(norm(m.winner))))return null;
+ const played=new Map([...entrants].map(t=>[t,0]));
+ const record=new Map([...entrants].map(t=>[t,{wins:0,losses:0}]));
+ const stages=[new Map([...record].map(([t,v])=>[t,{...v}]))];
+ const ordered=[];
+ for(const m of matches){
+  const a=norm(m.home),b=norm(m.away);
+  if(!played.has(a)||!played.has(b)||a===b)return null;
+  const countA=played.get(a),countB=played.get(b);
+  if(countA!==countB||countA>=5)return null;
+  const round=countA+1;
+  if(Number.isInteger(m.round)&&m.round!==round)return null;
+  const stA=record.get(a),stB=record.get(b);
+  if(stA.wins>=3||stA.losses>=3||stB.wins>=3||stB.losses>=3)return null;
+  const done=m.status==='finished';
+  const winner=norm(m.winner);
+  if(done&&winner!==a&&winner!==b)return null;
+  ordered.push({...m,round,round_source:Number.isInteger(m.round)?'provider':'verified_sequence'});
+  if(done){
+   if(winner===a){stA.wins++;stB.losses++;}
+   else{stB.wins++;stA.losses++;}
+   played.set(a,round);played.set(b,round);
+  }
+ }
+ // A stage snapshot contains only games concluded through that round.
+ const totals=new Map([...entrants].map(t=>[t,{wins:0,losses:0,games:0}]));
+ for(let round=1;round<=5;round++){
+  for(const m of ordered.filter(v=>v.round===round&&v.status==='finished')){
+   const a=norm(m.home),b=norm(m.away),winner=norm(m.winner);
+   const tA=totals.get(a),tB=totals.get(b);
+   if(!tA||!tB)return null;
+   tA.games++;tB.games++;
+   if(winner===a){tA.wins++;tB.losses++;}
+   else{tB.wins++;tA.losses++;}
+  }
+  stages.push(new Map([...totals].map(([t,v])=>[t,{...v}])));
+ }
+ const names=new Map(matches.flatMap(m=>[[norm(m.home),m.home],[norm(m.away),m.away]]));
+ return {matches:ordered,stages,names,entrants:[...entrants]};
+}
 function swiss(record,opt={}){
  const lang=opt.lang||'zh',team=opt.team||(v=>v),events=Array.isArray(opt.events)?opt.events:[],
   tournamentId=Number(record.tournament_id||String(record.id||'').replace('panda-',''));
+ const history=inferRounds(events.filter(m=>Number(m.tournament_id)===tournamentId));
  const ranked=(record.groups||[]).filter(r=>r&&r.team&&Number.isInteger(r.wins)&&Number.isInteger(r.losses));
- const slots=swissNodes.map(col=>col.map(node=>({...node,teams:ranked.filter(r=>
-  node.advanced?r.wins>=3:node.eliminated?r.losses>=3:r.wins===node.wins&&r.losses===node.losses)})));
- const count=ranked.length;
+ const historical=(i,node)=>{
+  const snapshot=history.stages[Math.min(i,5)];
+  return [...snapshot].filter(([t,st])=>node.advanced?st.wins>=3:
+   node.eliminated?st.losses>=3:
+   st.games===i&&st.wins===node.wins&&st.losses===node.losses)
+   .map(([t,st])=>({team:history.names.get(t)||t,wins:st.wins,losses:st.losses}));
+ };
+ const slots=swissNodes.map((col,i)=>col.map(node=>({...node,teams:history?
+  historical(i,node):ranked.filter(r=>node.advanced?r.wins>=3:
+   node.eliminated?r.losses>=3:r.wins===node.wins&&r.losses===node.losses)})));
+ const count=history?history.entrants.length:ranked.length;
  const showTeam=t=>'<div class="lyb-pool-team"><span>'+html(team(t.team))+'</span><b>'+
   num(t.wins)+':'+num(t.losses)+'</b></div>';
  const columnNames=[z('初始赛程','Opening',lang),z('第一轮后','After R1',lang),z('第二轮后','After R2',lang),z('第三轮后','After R3',lang),z('决胜轮','Decider',lang),z('晋级结果','Outcomes',lang)];
- const matches=events.filter(e=>Number(e.tournament_id)===tournamentId&&e.home&&e.away&&
-   ['scheduled','live','finished'].includes(e.status))
-   .filter((e,i,list)=>list.findIndex(x=>String(x.id).replace(/^(?:stage|panda)-/,'')===String(e.id).replace(/^(?:stage|panda)-/,''))===i)
+ const matches=(history?history.matches:events.filter(e=>Number(e.tournament_id)===tournamentId&&e.home&&e.away&&
+   ['scheduled','live','finished'].includes(e.status)))
+   .filter((e,i,list)=>list.findIndex(x=>String(x.id).replace(/^(?:stage|panda)-/,'')===
+    String(e.id).replace(/^(?:stage|panda)-/,''))===i)
    .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
  const matchCard=m=>{
    const scored=Number.isInteger(m.score_home)&&Number.isInteger(m.score_away)&&m.status==='finished';
@@ -165,7 +228,7 @@ function swiss(record,opt={}){
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('瑞士轮晋级路线图','Swiss stage progression',lang)+'">'+
   '<div class="lyb-swiss-track"><svg class="lyb-swiss-links" aria-hidden="true"></svg>'+display+'</div></div>'+
   (fixtureList?'<section class="lyb-upcoming"><h4>'+z('赛程对阵时间线','Match timeline',lang)+'</h4><div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('按日期排列的已核验对阵','Verified fixtures by date',lang)+'"><div class="lyb-timeline-track">'+fixtureList+'</div></div></section>':'')+
-  (count?'<p class="lyb-caption">'+z('战队显示已核验战绩，虚线代表赛制可能路线。','Teams show verified current records; pathways illustrate the format, not historical advancement.',lang)+'</p>':'')+
+  (count?'<p class="lyb-caption">'+history?z('根据已核验比赛顺序还原历轮战绩；虚线表示可能的晋级方向。','Round records reconstructed from verified match chronology; dashed lines show possible advancement.',lang):z('战队显示当前战绩；虚线是赛制路线。','Verified current records; dashed lines show the tournament format.',lang)+'</p>':'')+
   '</div>';
 }
 function groups(record,opt={}){
@@ -212,5 +275,5 @@ function connect(root){
  svg.innerHTML=coords.join('');
 }
 
-window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups,connect};
+window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups,connect,inferRounds};
 })();
