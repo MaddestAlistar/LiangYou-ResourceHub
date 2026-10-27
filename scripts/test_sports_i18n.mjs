@@ -5,6 +5,7 @@ import vm from 'node:vm';
 const read=name=>readFileSync(name,'utf8');
 const html=read('index.html');
 const fixtures=read('fixtures.js');
+const siteI18n=read('site-i18n.js');
 const market=read('sports.js');
 const linker=read('sports-link.js');
 const styles=read('fixtures.css');
@@ -80,6 +81,9 @@ const boardHost={};
 vm.runInNewContext(read('board-i18n.js'),{window:boardHost},{timeout:2000});
 const bt=boardHost.LiangYouBoardI18n;
 
+assert(siteI18n.includes('[data-site-lang],#officialFixtures'), 'Global translation must not override local fixture language');
+assert(fixtures.includes("if(event.sport!=='chess'&&event.sport!=='go')return team(event[which],event.sport);"),
+ 'Football, NBA and esports must not be processed by Go/chess translator');
 const teamStart=fixtures.indexOf('const team=(v,sport)=>{');
 const teamEnd=fixtures.indexOf('const chessOutcome=',teamStart);
 assert(teamStart>=0&&teamEnd>teamStart,'Cannot locate real calendar participant rendering functions');
