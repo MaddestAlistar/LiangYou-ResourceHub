@@ -230,3 +230,18 @@
 .lyb-swiss-links path{fill:none;stroke:#aebfd4;stroke-width:1.4;stroke-opacity:.5;stroke-dasharray:5 5;stroke-linejoin:round;stroke-linecap:round}
 .lyb-swiss-column{z-index:1}
 .lyb-swiss-column:not(:last-child):after{display:none}
+
+/* Verified Swiss match timeline, dated rather than inventing round labels */
+.lyb-upcoming{padding:12px 0 14px}
+.lyb-upcoming h4{margin:0 12px 9px}
+.lyb-timeline-track{display:flex;align-items:stretch;gap:10px;padding:2px 12px 10px;width:max-content;min-width:100%}
+.lyb-date-column{width:228px;flex:0 0 228px;border:1px solid rgba(140,171,205,.23);border-radius:12px;padding:10px;background:rgba(15,33,55,.67)}
+.lyb-date-column h5{margin:0 0 10px;color:#e9d3a5;font-size:13px;letter-spacing:.04em}
+.lyb-date-match{border:1px solid rgba(132,161,190,.25);border-radius:9px;padding:7px 8px;margin-bottom:8px;background:rgba(18,41,65,.68)}
+.lyb-date-match:last-child{margin-bottom:0}
+.lyb-date-match>small{display:block;color:#87a3be;font-size:10px;margin-bottom:3px}
+.lyb-date-team{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;font-size:11px;color:#c4d7e7}
+.lyb-date-team span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.lyb-date-team b{color:#adbdcc;font-size:12px;flex:none;min-width:19px;text-align:right}
+.lyb-date-team.is-winner,.lyb-date-team.is-winner b{font-weight:750;color:#f2ce8e}
+@media(max-width:700px){.lyb-date-column{width:210px;flex-basis:210px}.lyb-timeline-track{gap:8px;padding-inline:10px}}
