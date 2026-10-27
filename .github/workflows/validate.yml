@@ -25,6 +25,8 @@ jobs:
         run: |
           node --check app.js
           node --check design.js
+          node --check navigation.js
+          node --check bookmark.js
           node --check daily-free.js
           node --check sports-i18n.js
           node --check sports.js
