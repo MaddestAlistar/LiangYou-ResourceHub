@@ -1,15 +1,15 @@
 {
   "schema": 1,
   "source_type": "board_game_fixtures",
-  "generated_at": "2026-10-27T11:20:47Z",
+  "generated_at": "2026-10-27T11:30:57Z",
   "interval_hours": 6,
-  "board_source_revision": 2,
+  "board_source_revision": 3,
   "status": "ok",
   "sources": [
     {
       "tag": "lichess",
       "status": "ok",
-      "count": 56
+      "count": 62
     },
     {
       "tag": "nihonkiin",
@@ -19,12 +19,21 @@
     {
       "tag": "baduk",
       "status": "ok",
-      "count": 5
+      "count": 4
     },
     {
       "tag": "weiqi-association",
       "status": "pending_api_validation",
       "count": 0
+    },
+    {
+      "tag": "u-go",
+      "status": "unavailable"
+    },
+    {
+      "tag": "go-ratings",
+      "status": "ok",
+      "players": 875
     }
   ],
   "events": [
@@ -781,21 +790,6 @@
       "result_detail": "*"
     },
     {
-      "id": "go-kr-bf140a1be424",
-      "provider": "baduk",
-      "sport": "go",
-      "league": "10회 해성 여자기성전 16강",
-      "stage": "16강",
-      "home": "오유진",
-      "away": "이슬주",
-      "start_time": "2026-10-27T10:00:00Z",
-      "status": "scheduled",
-      "score_home": null,
-      "score_away": null,
-      "prominence": 180,
-      "source_url": "https://www.baduk.or.kr/record/schedule_in.asp"
-    },
-    {
       "id": "chess-01f94900af91",
       "provider": "lichess",
       "sport": "chess",
@@ -873,6 +867,102 @@
       "score_away": null,
       "prominence": 185,
       "source_url": "https://lichess.org/broadcast/G5JF01hD",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-25e03a5c9a2b",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Sviridov, Valery",
+      "away": "Torosyan, Volodya",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-68840cbd826a",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Gasparyan, Erik R.",
+      "away": "Davtyan, Arsen",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-886507568c94",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Barseghyan, Armen Ar.",
+      "away": "Babujian, Levon",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-97489cce6f98",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Davtyan, Davit M.",
+      "away": "Agasarov, Benik",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-bf8a184abf5e",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Poormosavi, Seyed Kian",
+      "away": "Ghimoyan, Narek",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
+      "result_detail": "*"
+    },
+    {
+      "id": "chess-cba0f690ad73",
+      "provider": "lichess",
+      "sport": "chess",
+      "league": "Tsaghkadzor Open 2026",
+      "stage": "Round 6",
+      "home": "Chaqryan, Erik",
+      "away": "Petukhov, Dmitriy",
+      "start_time": "2026-10-27T11:45:00Z",
+      "status": "live",
+      "score_home": null,
+      "score_away": null,
+      "prominence": 185,
+      "source_url": "https://lichess.org/broadcast/MIdYkUE2",
       "result_detail": "*"
     },
     {
