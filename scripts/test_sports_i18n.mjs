@@ -279,6 +279,21 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const swissHost={};
  vm.runInNewContext(actualVizSource,{window:swissHost,Intl,Date},{timeout:2000});
  const swissAPI=swissHost.LiangYouBracketViz;
+ // Every rendered knockout connector must come from a pair of real match IDs.
+ for(const board of snapshot.brackets){
+   const all=(board.rounds||[]).flatMap(round=>round.matches||[]);
+   const ids=new Set(all.map(m=>String(m.match_id)).filter(Boolean));
+   const knownLinks=all.flatMap(m=>m.previous_matches||[])
+       .filter(previous=>ids.has(String(previous.match_id))).length;
+   const markup=swissAPI.knockout(board,{lang:'zh'});
+   assert(markup.includes('lyb-knockout-map'),'Verified knockout map missing: '+board.title);
+   assert.equal((markup.match(/class="lyb-bracket-edge /g)||[]).length,knownLinks,
+     'Only provider-connected predecessors may produce lines: '+board.title);
+   if(all.some(m=>m.bracket_side==='lower')&&all.some(m=>m.bracket_side==='upper')){
+     assert(markup.includes('胜者组')&&markup.includes('败者组'),
+       'Double-elimination lanes must stay distinct: '+board.title);
+   }
+ }
  if(Array.isArray(snapshot.stage_matches)&&snapshot.stage_matches.length>=20){
    const timeline=swissAPI.inferRounds(snapshot.stage_matches);
    assert(timeline,'Worlds Swiss full history should yield a verified nonfabricated round timeline');
