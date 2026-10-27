@@ -16,6 +16,7 @@ JOBS = {
     'predict': ('update_predict_sports.py', 'predict-sports.json', 2),
     'kalshi': ('update_kalshi_sports.py', 'kalshi-sports.json', 2),
     'fixtures': ('update_real_sports.py', 'real-sports.json', 6),
+    'extras': ('update_extra_sports.py', 'extra-sports.json', 6),
 }
 
 def verified_time(name, snapshot):
@@ -75,7 +76,7 @@ def main():
         jobs = dict(pool.map(refresh, JOBS))
     write_json(ROOT / 'data/update-status.json', {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai', 'watchdog_minutes': 30, 'jobs': jobs})
     # Optional official fixtures must not break the six established working feeds.
-    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k != 'fixtures'))
+    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras')))
 
 if __name__ == '__main__':
     raise SystemExit(main())
