@@ -61,14 +61,19 @@
 
   function renderHealth(){
     if(!healthPanel)return;
-    const label=language==='zh'?{ok:'已核验',missing:'暂不可用',old:'已过期',minute:'分钟前',at:'核验'}:
-      {ok:'Verified',missing:'Unavailable',old:'Expired',minute:'m ago',at:'Checked'};
+    const labels=language==='zh'?{
+      ok:'已核验',partial:'部分数据',missing:'暂不可用',old:'已过期',minute:'分钟前'
+    }:{ok:'Verified',partial:'Partial',missing:'Unavailable',old:'Expired',minute:'m ago'};
     healthPanel.innerHTML=feedHealth.map(item=>{
-      const age=Number.isFinite(item.timestamp)?Math.max(0,Math.floor((Date.now()-item.timestamp)/60000)):null;
-      const bad=!Number.isFinite(item.timestamp)||age>360;
-      return '<span class="sports-provider-state'+(bad?' is-stale':'')+'">'+esc(item.name)+
-        ' · '+esc(bad?(item.timestamp?label.old:label.missing):label.ok)+
-        (age!==null?' · '+esc(String(age))+label.minute:'')+'</span>';
+      const age=Number.isFinite(item.timestamp)?
+        Math.max(0,Math.floor((Date.now()-item.timestamp)/60000)):null;
+      const expired=age===null||age>360;
+      const incomplete=item.state==='partial';
+      const word=expired?(item.timestamp?labels.old:labels.missing):
+        incomplete?labels.partial:labels.ok;
+      return '<span class="sports-provider-state'+(expired||incomplete?' is-stale':'')+'">'+
+        esc(item.name)+' · '+esc(word)+
+        (age!==null?' · '+esc(String(age))+labels.minute:'')+'</span>';
     }).join('');
   }
   function updateStatus() {
@@ -246,14 +251,28 @@
 
     const platformName=p=>p==='predict'?'Predict.fun':p==='kalshi'?'Kalshi':'Polymarket';
     const sourceRows=(event.linkedSources||[event]);
+    // Each market keeps its own original source; a merged card never claims
+    // one provider's probabilities or link belong to another provider.
+    const verifiedSource=item=>{
+      const raw=String(item.source_url||'');
+      const allowed=item.provider==='predict'?
+        /^https:\/\/predict\.fun\/market\/[a-z0-9-]+$/i:
+        item.provider==='kalshi'?
+        /^https:\/\/kalshi\.com\/markets\/[a-z0-9-]+(?:\/[a-z0-9-]+\/[a-z0-9-]+)?$/i:
+        /^https:\/\/polymarket\.com\/event\/[a-z0-9-]+$/i;
+      return allowed.test(raw)?raw:null;
+    };
     const aggregated=sourceRows.length>1 && activeSource==='all'?
       '<div class="sports-compare"><strong>'+esc(language==='zh'?'同场不同来源（非实时）':'Same match, independent market snapshots')+'</strong>'+
       sourceRows.map(item=>{
         const numbers=item.outcomes.map(o=>
           translation.team(o.name,item.category,language)+' '+
           (Number.isFinite(o.probability)?(o.probability*100).toFixed(1)+'%':'—')).join(' · ');
+        const href=verifiedSource(item);
         return '<div class="sports-compare-row"><span>'+esc(platformName(item.provider))+
-          '</span><b>'+esc(numbers)+'</b></div>';
+          '</span><b>'+esc(numbers)+'</b>'+
+          (href?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+
+            esc(language==='zh'?'来源':'Source')+'</a>':'')+'</div>';
       }).join('')+'</div>':'';
     const matchButton=event.official?
       '<button type="button" class="sports-view-fixture" data-fixture-target="'+esc(event.official.id)+'">'+
