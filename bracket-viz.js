@@ -302,10 +302,9 @@ function groups(record,opt={}){
  const rule=(name,rank)=>{
   if(lck&&name==='Legend Group')return rank<=2?z('季后赛第2轮','Playoff R2',lang):
    rank<=4?z('季后赛第1轮','Playoff R1',lang):z('入围赛','Play-in',lang);
-  if(lck&&name==='Rise Group')return rank<=3?z('入围赛','Play-in',lang):z('淘汰','Eliminated',lang);
-  if(lpl&&name==='Group Ascend')return rank<=2?z('胜者组半决赛','Upper SF',lang):
-   rank<=6?z('胜者组八强赛','Upper QF',lang):z('骑士之路','Knights Rivals',lang);
-  if(lpl&&name==='Group Nirvana')return rank<=2?z('骑士之路','Knights Rivals',lang):z('淘汰','Eliminated',lang);
+  if(lck&&name==='Rise Group')return rank===1?z('入围赛首轮','Play-in R1',lang):rank<=3?z('入围赛次轮','Play-in R2',lang):z('淘汰','Eliminated',lang);
+  if(lpl&&name==='Group Ascend')return rank<=6?z('季后赛','Playoffs',lang):z('骑士之路','Knights Path',lang);
+  if(lpl&&name==='Group Nirvana')return rank<=2?z('骑士之路','Knights Path',lang):z('淘汰','Eliminated',lang);
   return '';
  };
  const content=[...bins].map(([name,rows])=>'<section class="lyb-group"><h4>'+html(nameOf(name))+'</h4>'+
