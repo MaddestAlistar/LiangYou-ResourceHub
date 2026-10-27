@@ -36,6 +36,7 @@ zh:{title:'赛事日历与赛事资料',
  unavailable:'暂无该阶段的赛事数据',
  noStanding:'暂无该赛事积分榜',
  rankingOnly:'当前仅有名次数据，数据源未提供胜负记录；“—”不代表 0。',
+ lckStageNote:'当前仅收录 LCK 第3—4轮传奇组的阶段排名（5支队伍），不是全年总积分榜；崛起组未收录。',
  updated:'最近核验',partial:'部分接口暂不可用，仅展示已核验资料。',
  stale:'当前快照超过18小时，请以赛事官方公告为准。',time:'北京时间',
  total:n=>'已收录未来7天 '+n+' 场',shown:(n,t)=>'已显示 '+n+' / '+t+' 场',
@@ -65,6 +66,7 @@ en:{title:'Calendar & tournament intelligence',
  unavailable:'No event data for this stage',
  noStanding:'No standings for this event',
  rankingOnly:'Only rank positions are available; the source did not supply wins or losses. Dashes do not mean zero.',
+ lckStageNote:'This is the Legend Group table for LCK rounds 3–4 (five teams), not complete season standings. Rise Group is not included.',
  updated:'Last checked',partial:'Some providers unavailable. Verified records only.',
  stale:'Data more than 18 hours old. Check the organizer for updates.',time:'UTC+8',
  total:n=>n+' upcoming this week',shown:(n,t)=>'Showing '+n+' of '+t,
@@ -79,6 +81,9 @@ const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
  const raw=String(v??'').trim();
+ if(raw==='LCK · Round 3-4 Legend Group')return lang()==='zh'
+  ?'LCK 常规赛 · 第3—4轮 · 传奇组（阶段榜）'
+  :'LCK Regular Season · Rounds 3–4 · Legend Group (stage standings)';
  if(!raw||lang()==='en')return raw;
  const translated=translations?.league?.(raw,category,'zh');
  const specials={
@@ -355,6 +360,9 @@ function brackets(){
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
  const records=data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
+    // Hide rank-only tables (e.g. Worlds Play-In) when the source has no W/L records.
+    // Retain raw data for the bracket and group-stage diagrams.
+    (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))&&
     (kind==='all'||kindOf(x)===kind))
     .sort((a,b)=>popularity(b)-popularity(a));
  if(!records.length){
@@ -378,6 +386,7 @@ function standings(){
   if(!groups.size)return '';
   const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
   const orderNote=selected.order_method==='win_pct'?'<p class="fixtures-ranking-note">'+safe(copy.nbaNote)+'</p>':'';
+  const stageNote=selected.title==='LCK · Round 3-4 Legend Group'?'<p class="fixtures-ranking-note">'+safe(copy.lckStageNote)+'</p>':'';
   const staleNote=selected.status==='stale'?'<p class="fixtures-ranking-note is-stale">'+
     safe(copy.staleBoard)+(selected.verified_at?' · '+safe(when(selected.verified_at)):'')+'</p>':'';
   const tables=[...groups.entries()].map(([group,list])=>{
@@ -404,7 +413,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+staleNote+orderNote+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
