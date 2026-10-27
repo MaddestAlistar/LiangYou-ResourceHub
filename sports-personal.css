@@ -1,0 +1,32 @@
+/* Mobile-first, compact personal tracking and feed transparency. */
+.sports-personal{display:grid;gap:10px;padding:14px;margin:8px 0 13px;border:1px solid rgba(202,170,112,.35);border-radius:16px;background:linear-gradient(120deg,rgba(54,49,60,.55),rgba(14,28,48,.72))}
+.sports-personal-title{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.sports-personal-title strong{font-size:15px;color:#e9d1a8}
+.sports-personal-title p{font-size:11px;line-height:1.6;color:#9eafbf;margin:4px 0 0}
+.sports-personal-count{font-size:11px;color:#eccb91;white-space:nowrap}
+.sports-personal-actions{display:flex;flex-wrap:wrap;gap:7px}
+.sports-personal-actions button{border:1px solid rgba(180,184,196,.35);background:rgba(13,27,43,.7);border-radius:10px;color:#dce5ee;padding:8px 11px;font-size:12px;min-height:38px;cursor:pointer}
+.sports-personal-actions button[aria-pressed=true]{color:#f6ddb1;border-color:#dcb775;background:rgba(156,115,47,.18)}
+.sports-personal-actions button:disabled{opacity:.4;cursor:not-allowed}
+.sports-personal-tags{display:flex;flex-wrap:wrap;gap:7px}
+.sports-personal-tags button{font-size:11px;color:#ebd7b0;background:rgba(37,51,66,.76);border:1px solid rgba(203,171,116,.27);border-radius:18px;padding:5px 10px;cursor:pointer}
+.sports-personal-tags span{color:#a8b2bd;margin-left:5px}
+.sports-personal-next,.sports-personal-empty{font-size:11px;line-height:1.65;color:#a8b9cb;margin:0}
+.sports-personal-next strong{color:#e4ca9b}.sports-personal-next span{color:#ecce97}
+.sports-health{margin:0 0 16px;color:#9aaec0;font-size:11px}
+.sports-health details{border:1px solid rgba(147,166,182,.22);border-radius:11px;padding:9px 12px;background:rgba(12,26,43,.55)}
+.sports-health summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px;list-style:none}
+.sports-health summary::-webkit-details-marker{display:none}
+.sports-health summary span:last-child{color:#e2bc79}
+.sports-health-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:10px 0}
+.sports-health-list>div{display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border-radius:7px;background:rgba(18,36,57,.7)}
+.sports-health-list strong{overflow-wrap:anywhere;color:#cbdbe6}.sports-health-list span{font-size:10px;color:#d9c193}
+.sports-health p{margin:8px 0 0}
+.fixtures-team-follow{display:inline-flex;align-items:center;gap:4px;min-width:0}
+.fixtures-follow-button{border:0;background:transparent;color:#9bacc0;cursor:pointer;padding:3px;font-size:16px;line-height:1;flex:0 0 auto}
+.fixtures-follow-button[aria-pressed=true]{color:#ecc78a}
+.fixtures-follow-button:focus-visible,.sports-personal button:focus-visible{outline:2px solid #eac587;outline-offset:2px}
+.fixtures-archive-toggle{font-size:12px;min-height:36px;color:#d7dce4;border:1px solid rgba(157,173,191,.4);background:rgba(13,26,43,.8);border-radius:9px;padding:7px 11px;cursor:pointer}
+.fixtures-archive-toggle[aria-pressed=true]{border-color:#d9b579;color:#f2d7a8;background:rgba(158,113,52,.17)}
+@media(max-width:700px){.sports-personal{padding:11px;margin:5px 0 12px;gap:8px}.sports-health-list{grid-template-columns:1fr}.sports-personal-title strong{font-size:13px}.sports-personal-title p{font-size:10px}.sports-personal-actions button{flex:1;min-width:90px;font-size:11px;padding:7px 8px}.fixtures-team-follow{gap:1px}.fixtures-follow-button{font-size:15px}}
+@media(max-width:390px){.sports-personal-title{flex-wrap:wrap}.sports-personal-count{margin-left:auto}.sports-personal-actions button{min-width:75px}}
