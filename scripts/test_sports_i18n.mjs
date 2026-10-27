@@ -205,4 +205,86 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
   console.log('PASS: Sports DOM startup, unified other tab, keyword search, source filter, sorting, and language toggle.');
 }
 
+
+// Regression smoke test for the REAL fixture board: four LoL knockout
+// tournaments, multiple ranking tables, bilingual controls and hot-first order.
+{
+ const raw = readFileSync('data/real-sports.json','utf8');
+ const snapshot = JSON.parse(raw);
+ assert(Array.isArray(snapshot.brackets) && Array.isArray(snapshot.standings));
+ const localeSource = readFileSync('fixtures.js','utf8');
+ const html = readFileSync('index.html','utf8');
+ for(const id of ['officialBracketQuick','officialStandingSummary',
+                  'officialBracketSubtitle','officialStandingSubtitle','fixturesSortHint'])
+  assert(html.includes('id="'+id+'"'),'Missing new fixture control '+id);
+ const ui = new Map();
+ function node(id){
+  const e = {id,dataset:{},value:'',hidden:false,textContent:'',placeholder:'',
+   listeners:{},options:[],attributes:{},_markup:'',
+   classList:{toggle(){},add(){},remove(){}},
+   addEventListener(ev,handler){this.listeners[ev]=handler;},
+   setAttribute(k,v){this.attributes[k]=v;},
+   getAttribute(k){return this.attributes[k];},
+   dispatch(type){assert(this.listeners[type],this.id+' missing '+type);this.listeners[type]({target:this});}
+  };
+  Object.defineProperty(e,'innerHTML',{get(){return this._markup;},set(v){
+   this._markup=v;
+   if(id.endsWith('Select')){
+    this.options=[...v.matchAll(/<option value="([^"]+)"/g)].map(m=>({value:m[1]}));
+    this.value=this.options[0]?.value||'';
+   }
+  }});
+  ui.set(id,e);return e;
+ }
+ const ids=['officialFixtures','officialFixturesGrid','officialFixturesCount',
+ 'officialFixturesStatus','officialFixturesSearch','officialFixturesCategory',
+ 'officialFixturesSort','officialFixturesMore','officialFixturesShowing',
+ 'officialBracketGrid','officialBracketQuick','officialBracketSelect','officialBracketSport',
+ 'officialStandingGrid','officialStandingSummary','officialStandingSelect','officialStandingSport',
+ 'officialFixturesTitle','officialFixturesIntro','officialFixturesNote',
+ 'fixturesMarketTitle','fixtureCalendarPanel','fixtureBracketsPanel',
+ 'fixtureStandingsPanel','fixturesSortHint','officialBracketSubtitle','officialStandingSubtitle'];
+ ids.forEach(node);
+ const modes=['calendar','brackets','standings'].map(v=>Object.assign(node('mode_'+v),{dataset:{fixturesView:v}}));
+ const dates=['today','tomorrow','week'].map(v=>Object.assign(node('date_'+v),{dataset:{fixturesDate:v}}));
+ const section={getAttribute:()=> 'zh-CN'};
+ ui.get('officialFixtures').closest=()=>section;
+ ui.get('officialFixtures').querySelectorAll=sel=>sel==='[data-fixtures-view]'?modes:dates;
+ ui.get('officialFixturesCategory').value='all';
+ ui.get('officialFixturesSort').options=[{value:'popular'},{value:'time'}];
+ ui.get('officialFixturesSort').value='popular';
+ ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'esports'}];
+ ui.get('officialBracketSport').value='lol';
+ ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
+ ui.get('officialStandingSport').value='all';
+ const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
+ const win={LiangYouSportsI18n:tr,setInterval(){}};
+ const fetch=async()=>({ok:true,json:async()=>snapshot});
+ vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
+ await new Promise(resolve=>setImmediate(resolve));
+ modes[1].dispatch('click');
+ const lol=snapshot.brackets.filter(x=>x.sport==='lol'&&x.rounds?.length);
+ if(lol.length){
+  assert((ui.get('officialBracketQuick').innerHTML.match(/data-fixtures-tournament=/g)||[]).length===lol.length,
+    'All available LoL brackets should be visible, not just one dropdown option');
+  assert(ui.get('officialBracketQuick').innerHTML.includes('英雄联盟'));
+  assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'));
+ }
+ modes[2].dispatch('click');
+ const count=snapshot.standings.filter(x=>x.groups?.length).length;
+ if(count){
+  assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===Math.min(count,8),
+    'Multiple rankings should appear on first visit');
+  assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
+  assert(ui.get('officialStandingSelect').value==='all');
+ }
+ section.getAttribute=()=> 'en';
+ modes[0].dispatch('click');
+ assert(ui.get('officialFixturesTitle').textContent==='Calendar & tournament intelligence');
+ assert(ui.get('fixturesSortHint').textContent.includes('Editorial prominence'));
+ modes[1].dispatch('click');
+ assert(ui.get('officialBracketSubtitle').textContent.includes('Verified'));
+ console.log('PASS: Fixture board bilingual rendering, LoL brackets, and multiple ranking cards.');
+}
+
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');
