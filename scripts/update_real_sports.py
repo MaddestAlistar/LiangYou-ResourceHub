@@ -247,7 +247,8 @@ def official_bracket(raw,tournament_id,label):
                          node.get("stage") or node.get("name") or parent_round)
         # PandaScore nodes often use individual match titles such as
         # "Semifinal 2: A vs B". Group by actual knockout round instead.
-        lower=round_label.lower()
+        raw_round=round_label.lower()
+        lower=raw_round
         if "grand final" in lower or re.search(r"\bfinal\b",lower):
             round_label="Final"
         elif "semifinal" in lower or "semi-final" in lower:
@@ -258,6 +259,11 @@ def official_bracket(raw,tournament_id,label):
             round_label="Round of 16"
         elif isinstance(node.get("round_number"),int) and not round_label:
             round_label="Round "+str(node["round_number"])
+        # Do not collapse upper/lower semifinals or finals into a single column.
+        if re.search(r"lower|loser|败者",raw_round):
+            round_label="Lower Bracket / "+round_label
+        elif re.search(r"upper|winner|胜者",raw_round):
+            round_label="Upper Bracket / "+round_label
         opponents=node.get("opponents")
         if not isinstance(opponents,list):
             opponents=node.get("teams") if isinstance(node.get("teams"),list) else None
