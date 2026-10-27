@@ -6,7 +6,9 @@ const el=id=>document.getElementById(id);
 const refs={grid:el('officialFixturesGrid'),status:el('officialFixturesStatus'),count:el('officialFixturesCount'),
  search:el('officialFixturesSearch'),category:el('officialFixturesCategory'),sort:el('officialFixturesSort'),
  more:el('officialFixturesMore'),showing:el('officialFixturesShowing'),
+ state:el('officialFixturesState'),health:el('officialFixturesHealth'),detail:el('officialFixtureDetail'),
  bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),bracketStage:el('officialBracketStage'),
+ bracketRound:el('officialBracketRound'),bracketFocus:el('officialBracketFocus'),bracketExpand:el('officialBracketExpand'),
  standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
 if(Object.values(refs).some(v=>!v))return;
 const views=[...panel.querySelectorAll('[data-fixtures-view]')];
@@ -76,7 +78,8 @@ en:{title:'Calendar & tournament intelligence',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
-let view='calendar',date='week',limit=6;
+let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
+const linker=window.LiangYouSportsLinks;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
@@ -237,7 +240,13 @@ function topPriority(records){
   Date.parse(a.start_time||'')-Date.parse(b.start_time||''));
 }
 function updateLabels(){
- const copy=t();el('officialFixturesTitle').textContent=copy.title;
+ const copy=t();
+ const modes=lang()==='zh'?['即将开始','进行中（上次核验）','最近完赛']:
+   ['Upcoming','In progress (snapshot)','Recent results'];
+ [...refs.state.options].forEach((option,i)=>{option.textContent=modes[i]||option.textContent;});
+ refs.bracketExpand.textContent=lang()==='zh'?(refs.bracket.classList.contains('is-expanded')?'关闭全屏':'全屏查看'):
+  (refs.bracket.classList.contains('is-expanded')?'Close fullscreen':'Fullscreen');
+ el('officialBracketRoundLabel').textContent=lang()==='zh'?'快速定位轮次':'Jump to round';el('officialFixturesTitle').textContent=copy.title;
  const viz=window.LiangYouBracketViz;
  el('officialFixturesIntro').textContent=copy.intro;
  el('officialFixturesNote').innerHTML=safe(copy.note).replace('football-data.org',
@@ -267,35 +276,110 @@ function updateLabels(){
   (lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified'):'';
  refs.status.textContent=[basic,extra,note].filter(Boolean).join(' · ');
 }
+function dataHealth(){
+ const langZH=lang()==='zh';
+ const badges=[
+  ...((data.officialSources||[]).map(x=>({...x,checked:data.generated_at}))),
+  ...((data.extraSources||[]).map(x=>({...x,checked:x.verified_at||data.extraGeneratedAt})))
+ ];
+ refs.health.innerHTML=badges.map(x=>{
+  const whenAt=Number.isFinite(Date.parse(x.checked||''))?when(x.checked):'—';
+  const stale=x.status!=='ok'||Date.now()-Date.parse(x.checked||'')>18*3600000;
+  const name=({'api-sports':'API-Sports','pandascore':'PandaScore',
+    'football-data':'football-data.org','dunkapi':'DunkAPI'})[x.tag]||x.tag;
+  return '<span class="fixtures-source-state'+(stale?' is-stale':'')+'">'+safe(name)+
+    ' · '+safe(x.status==='ok'?(langZH?'已核验':'Verified'):(langZH?'部分缺失 / 上次数据':'Partial / previous'))+
+    ' · '+safe(whenAt)+'</span>';
+ }).join('');
+}
+function showFixtureDetail(id){
+ detailId=id;
+ const x=data.events.find(row=>String(row.id)===String(id));
+ if(!x){refs.detail.hidden=true;refs.detail.innerHTML='';return;}
+ const market=linker?.marketsFor(x,window.LiangYouMarketRecords||[])||[];
+ const group=market.flatMap(g=>g.sources);
+ const label=lang()==='zh';
+ const whenAt=when(x.start_time);
+ const complete=x.status==='finished';
+ const score=complete&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
+  safe(String(x.score_home)+' : '+String(x.score_away)):(label?'暂无已核验终场比分':'No verified final score');
+ const state=x.status==='finished'?(label?'已完赛':'Finished'):
+  x.status==='live'?(label?'进行中（上次核验）':'In progress (snapshot)'):(label?'尚未开始':'Upcoming');
+ const source=x.provider==='pandascore'?'PandaScore':x.provider==='football-data'?'football-data.org':'API-Sports';
+ const bracket=data.brackets.find(b=>Number(b.tournament_id)===Number(x.tournament_id) &&
+  b.rounds?.some(r=>r.matches?.some(m=>linker?.pairs(x,{
+     sport:x.sport,home:m.home,away:m.away,start_time:m.start_time||x.start_time
+  },90))));
+ const table=data.standings.find(b=>
+   b.sport===x.sport && String(b.title||'').toLowerCase().includes(String(x.league||'').toLowerCase()) &&
+   x.league);
+ refs.detail.hidden=false;
+ refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+safe(team(x.home,x.sport))+
+  ' · '+safe(team(x.away,x.sport))+'</strong><button type="button" data-close-fixture aria-label="'+
+  (label?'关闭详情':'Close detail')+'">×</button></div>'+
+  '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+' · '+safe(state)+
+  ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+
+  (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
+  (x.status==='live'?'<p class="fixtures-detail-caution">'+
+   (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
+  '<div class="fixtures-detail-actions">'+
+  (bracket?'<button type="button" data-fixture-bracket="'+safe(bracket.tournament_id)+'">'+
+    (label?'在晋级图中查看':'View bracket')+'</button>':'')+
+  (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
+    (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+'</div>'+
+  '<div class="fixtures-detail-markets"><strong>'+
+    (label?'已关联的赛前预测市场':'Matched prediction-market snapshots')+'</strong>'+
+    (group.length?group.map(g=>'<span>'+safe(g.provider==='predict'?'Predict.fun':
+        g.provider==='kalshi'?'Kalshi':'Polymarket')+'</span>').join(''):
+     '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
+  '</div>';
+}
 function calendar(){
- const copy=t(),now=Date.now(),until=now+7*86400000;
+ const copy=t(),now=Date.now(),until=now+7*86400000,state=refs.state.value||'scheduled';
  const today=dayKey(new Date()),tomorrow=dayKey(new Date(now+86400000));
  const query=refs.search.value.trim().normalize('NFKC').toLocaleLowerCase();
+ dates.forEach(node=>{node.hidden=state!=='scheduled'});
  let matches=data.events.filter(x=>{
-   if(x.status!=='scheduled')return false;
-   const time=Date.parse(x.start_time);
-   if(!Number.isFinite(time)||time<now-120000||time>until)return false;
-   if(date==='today'&&dayKey(new Date(time))!==today)return false;
-   if(date==='tomorrow'&&dayKey(new Date(time))!==tomorrow)return false;
-   if(refs.category.value!=='all'&&x.sport!==refs.category.value)return false;
-   return !query||[x.home,x.away,x.league,x.stage,x.sport,
-     team(x.home,x.sport),team(x.away,x.sport),
-     localize(x.league,x.sport),localize(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
+  if(x.status!==state)return false;
+  const instant=Date.parse(x.start_time);
+  if(!Number.isFinite(instant))return false;
+  if(state==='scheduled'){
+   if(instant<now-120000||instant>until)return false;
+   if(date==='today'&&dayKey(new Date(instant))!==today)return false;
+   if(date==='tomorrow'&&dayKey(new Date(instant))!==tomorrow)return false;
+  }else if(instant<now-(state==='live'?24:48)*3600000||instant>now+3600000)return false;
+  if(refs.category.value!=='all'&&x.sport!==refs.category.value)return false;
+  return !query||[x.home,x.away,x.league,x.stage,x.sport,
+    team(x.home,x.sport),team(x.away,x.sport),
+    localize(x.league,x.sport),localize(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
  });
- matches=refs.sort.value==='time'?[...matches].sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time)):topPriority(matches);
+ matches=refs.sort.value==='time'?[...matches].sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time)):
+  topPriority(matches);
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
-   const title=[localize(x.league,x.sport),localize(x.stage,x.sport),Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
-   return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
-     '</strong><span>'+safe(when(x.start_time))+'</span></div>'+
-     '<div class="fixtures-versus">'+safe(team(x.home,x.sport))+' <em>'+safe(copy.vs)+'</em> '+safe(team(x.away,x.sport))+'</div>'+
-     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(x.provider==='pandascore'?'PandaScore':x.provider==='football-data'?'football-data.org':'API-Sports')+
-     '</span>'+ (popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
-     '<span>'+safe(copy.time)+'</span></div></article>';
+  const title=[localize(x.league,x.sport),localize(x.stage,x.sport),
+     Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
+  const score=x.status==='finished'&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
+    '<span class="fixtures-score">'+safe(x.score_home)+' : '+safe(x.score_away)+'</span>':'';
+  const status=x.status==='live'?(lang()==='zh'?'进行中 · 非实时':'Live status · delayed'):
+    x.status==='finished'?(lang()==='zh'?'已结束':'Final'):null;
+  return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
+    '</strong><span>'+safe(when(x.start_time))+'</span></div>'+
+    '<div class="fixtures-versus">'+safe(team(x.home,x.sport))+' <em>'+safe(copy.vs)+'</em> '+
+    safe(team(x.away,x.sport))+'</div>'+score+
+    '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(x.provider==='pandascore'?'PandaScore':
+    x.provider==='football-data'?'football-data.org':'API-Sports')+'</span>'+
+    (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
+    popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
+    '<button type="button" class="fixtures-detail-btn" data-fixture-id="'+safe(x.id)+'">'+
+      (lang()==='zh'?'查看详情':'Details')+'</button></div></article>';
  }).join(''):empty(data.generated_at?copy.empty:copy.first);
- const total=data.events.filter(x=>x.status==='scheduled'&&Date.parse(x.start_time)>=now&&Date.parse(x.start_time)<=until).length;
- refs.count.textContent=copy.total(total);
+ const total=matches.length;
+ refs.count.textContent=state==='scheduled'?copy.total(data.events.filter(x=>x.status==='scheduled'&&
+  Date.parse(x.start_time)>=now&&Date.parse(x.start_time)<=until).length):
+  (lang()==='zh'?'当前筛选 '+total+' 场':'Filtered '+total+' matches');
  refs.showing.textContent=copy.shown(Math.min(matches.length,limit),matches.length);
  refs.more.hidden=matches.length<=limit;
+ if(detailId)showFixtureDetail(detailId);
 }
 function kindOf(v){
  if(v.sport)return v.sport;
