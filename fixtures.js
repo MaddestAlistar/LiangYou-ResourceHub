@@ -534,7 +534,10 @@ function showFixtureDetail(id,scroll=false){
       '<p class="fixtures-predict-empty">'+
        (label?'本场暂无可核验的赛前预测数据':'No verified prediction data for this fixture')+
       '</p>')+
-  '</section>'+renderOddsReference(x,label));
+  '</section>'+(group.length?'<div class="fixtures-trend"><button type="button" data-trend-open="'+
+    safe(x.id)+'">'+(label?'查看概率历史走势':'View historical probability trend')+'</button>'+
+    '<div data-trend-content hidden aria-live="polite"></div></div>':'')+
+    renderOddsReference(x,label));
  // Detail follows the tapped card; it no longer jumps to the top of the fixture list.
  button.closest('.fixtures-card').insertAdjacentElement('afterend',refs.detail);
  refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
