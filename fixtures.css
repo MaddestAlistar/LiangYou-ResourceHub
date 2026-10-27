@@ -110,3 +110,23 @@
 @media(max-width:430px){.fixtures-standing-quick .fixtures-quick-btn{font-size:10px;text-align:left}
 .fixtures-standing-card summary{gap:6px;flex-wrap:wrap}
 .fixtures-standing-num{white-space:normal}}
+
+/* Compact verified esports stage controls. Mobile: category + stage, then tournament. */
+.fixtures-quick[hidden],.fixtures-record-summary[hidden]{display:none!important}
+.fixtures-subhead .fixtures-multiselect{max-width:100%;flex:1 1 520px;gap:7px}
+.fixtures-subhead .fixtures-multiselect select:first-child,
+.fixtures-subhead .fixtures-multiselect select:nth-child(2){flex:0 1 135px}
+.fixtures-subhead .fixtures-multiselect select:last-child{flex:1 1 240px}
+.fixtures-sortbar{justify-content:flex-end}
+.fixtures-brackets.is-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));overflow:visible;gap:10px}
+.fixtures-brackets.is-groups>.fixtures-standing-group{min-width:0}
+@media(max-width:680px){
+ .fixtures-subhead{margin:8px 0 12px}
+ .fixtures-subhead .fixtures-multiselect{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+ .fixtures-subhead .fixtures-multiselect select:first-child,
+ .fixtures-subhead .fixtures-multiselect select:nth-child(2),
+ .fixtures-subhead .fixtures-multiselect select:last-child{width:100%;max-width:100%;min-width:0}
+ .fixtures-subhead .fixtures-multiselect select:last-child:nth-child(3){grid-column:1/-1}
+ .fixtures-brackets.is-groups{grid-template-columns:1fr}
+ .fixtures-standing-card summary{font-size:11px}
+}
