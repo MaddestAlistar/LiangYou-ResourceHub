@@ -259,6 +259,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  if(Array.isArray(snapshot.stage_matches)&&snapshot.stage_matches.length>=20){
    const timeline=swissAPI.inferRounds(snapshot.stage_matches);
    assert(timeline,'Worlds Swiss full history should yield a verified nonfabricated round timeline');
+   const official=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
    const links=swissAPI.verifiedTransitions(timeline);
    assert(links.has('0-0|1-0')&&links.has('2-0|ADVANCES'),
     'Confirmed Swiss win/loss paths must derive from actual results');
@@ -279,7 +280,6 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
    }
    const counts=timeline.matches.reduce((m,x)=>(m[x.round]=(m[x.round]||0)+1,m),{});
    assert(counts[1]===8&&counts[2]===8&&counts[3]===8,'First three Swiss rounds must be complete');
-   const official=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
    if(official){
      assert(swissAPI.inferRounds(snapshot.stage_matches,official.groups),
       'Verified match records must match official current Swiss standings');
