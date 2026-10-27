@@ -354,7 +354,7 @@ function renderChessProfiles(x,zh){
  [[zh?'FIDE':'FIDE',p.fide],[zh?'快棋':'Rapid',p.rapid],[zh?'超快棋':'Blitz',p.blitz]]
  .map(([n,v])=>'<span>'+safe(n)+' <b>'+safe(Number.isInteger(v)?v:'—')+'</b></span>').join('')+
  '</div><a href="'+safe(p.source_url)+'" target="_blank" rel="noopener noreferrer">Chess.com</a></div>').join('')+'</div>'+
- '<small>'+(zh?'等级分体系不同，资料非实时。':'Rating systems differ; cached data.')+'</small></section>';
+ '<small>'+(zh?'等级分体系不同，资料非实时；本站与 Chess.com 无官方关联。':'Rating systems differ; cached data. This site is not affiliated with Chess.com.')+'</small></section>';
 }
 function oddsForFixture(x){
  if(x.status!=='scheduled'||!['basketball','football'].includes(x.sport))return null;
