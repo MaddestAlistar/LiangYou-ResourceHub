@@ -44,59 +44,89 @@ function roundInfo(label){
  return 15;
 }
 function knockout(record,opt={}){
- const language=opt.lang||'zh',translate=opt.translate||((v)=>v),team=opt.team||((v)=>v);
- const combined=new Map();
- for(const r of record.rounds||[]){
-  const key=String(r.round||z('对阵','Matches',language));
-  if(!combined.has(key))combined.set(key,[]);
-  combined.get(key).push(...(r.matches||[]));
- }
- const all=[...combined].map(([label,matches])=>({label,matches:cleanMatches({matches})}))
-  .filter(x=>x.matches.length).sort((a,b)=>roundInfo(a.label)-roundInfo(b.label));
- if(!all.length)return '';
- const cw=236,gap=56,margin=16,ch=98,space=16;
- const count=Math.min(10,all.length);
- const cols=all.slice(0,count);
- const peak=Math.max(...cols.map(r=>r.matches.length));
- const height=Math.max(178,peak*(ch+space)+38);
- const width=count*cw+(count-1)*gap+2*margin;
- const centers=cols.map(col=>{
-  const n=col.matches.length;
-  const total=n*ch+(n-1)*space;
-  const top=30+(Math.max(0,height-30-total))/2;
-  return col.matches.map((_,i)=>top+i*(ch+space));
- });
- const paths=[];
- for(let k=0;k<cols.length-1;k++){
-  const cur=cols[k].matches,next=cols[k+1].matches;
-  for(let i=0;i<cur.length;i++){
-   const winner=cur[i].winner;
-   if(!winner)continue;
-   const matches=next.map((m,j)=>(norm(m.home)===norm(winner)||norm(m.away)===norm(winner))?j:-1).filter(n=>n>=0);
-   if(matches.length!==1)continue;
-   const j=matches[0],x1=margin+k*(cw+gap)+cw,x2=margin+(k+1)*(cw+gap);
-   const y1=centers[k][i]+ch/2,y2=centers[k+1][j]+ch/2,mid=(x1+x2)/2;
-   paths.push('<path d="M'+x1+' '+y1+' H'+mid+' V'+y2+' H'+x2+'" />');
+ const lang=opt.lang||'zh', team=opt.team||(v=>v),translate=opt.translate||(v=>v);
+ const all=[];
+ for(const stage of record.rounds||[]){
+  for(const m of cleanMatches(stage)){
+   const title=String(stage.round||'');
+   const side=m.bracket_side||(/lower|loser|败者/i.test(title)?'lower':
+                    /upper|winner|胜者/i.test(title)?'upper':'final');
+   all.push({...m,_stage:title,_side:side});
   }
  }
- const cards=cols.map((col,k)=>{
-  const x=margin+k*(cw+gap);
-  return '<div class="lyb-round-name" style="left:'+x+'px;width:'+cw+'px">'+
-   html(translate(col.label))+'</div>'+
-   col.matches.map((m,i)=>{
-    const y=centers[k][i],win=norm(m.winner);
-    const side=(who,score)=>'<div class="lyb-team'+(win&&norm(who)===win?' is-winner':'')+'"><span>'+
-      html(team(who))+'</span><b>'+num(score)+'</b></div>';
-    return '<article class="lyb-match" style="left:'+x+'px;top:'+y+'px;width:'+cw+'px">'+
-      side(m.home,m.score_home)+side(m.away,m.score_away)+'</article>';
-   }).join('');
- }).join('');
+ if(!all.length)return '';
+ // Each lane is independently positioned; do not merge upper/lower finals.
+ const upper=all.filter(m=>m._side==='upper');
+ const lower=all.filter(m=>m._side==='lower');
+ const main=all.filter(m=>m._side==='final');
+ const lanes=[{title:z('胜者组','Upper bracket',lang),kind:'upper',games:upper},
+              {title:z('败者组','Lower bracket',lang),kind:'lower',games:lower},
+              {title:z('决赛 / 其他官方轮次','Finals / other official rounds',lang),kind:'final',games:main}]
+             .filter(l=>l.games.length);
+ const cw=226,gap=56,cardH=95,step=109,sideMargin=16,top=45;
+ const places=new Map(),panels=[],layers=[];
+ let yOffset=0,maxCols=1;
+ for(const lane of lanes){
+  const groups=new Map();
+  lane.games.forEach(m=>{if(!groups.has(m._stage))groups.set(m._stage,[]);
+                          groups.get(m._stage).push(m);});
+  const columns=[...groups].sort((a,b)=>roundInfo(a[0])-roundInfo(b[0]));
+  maxCols=Math.max(maxCols,columns.length);
+  const longest=Math.max(1,...columns.map(x=>x[1].length));
+  const laneH=Math.max(178,top+longest*step+20);
+  panels.push('<div class="lyb-lane-label" style="top:'+(yOffset+3)+'px">'+html(lane.title)+'</div>');
+  columns.forEach(([round,matches],ci)=>{
+   const x=sideMargin+ci*(cw+gap),sp=(longest-matches.length)*step/2;
+   panels.push('<div class="lyb-round-name" style="left:'+x+'px;top:'+(yOffset+25)+'px;width:'+cw+'px">'+html(translate(round))+'</div>');
+   matches.forEach((m,mi)=>{
+    const y=yOffset+top+sp+mi*step;
+    if(m.match_id)places.set(String(m.match_id),{x,y,side:lane.kind,match:m});
+    const won=norm(m.winner);
+    const fmt=(who,score)=>'<div class="lyb-team'+(won&&norm(who)===won?' is-winner':'')+
+      '"><span>'+html(team(who))+'</span><b>'+num(score)+'</b></div>';
+    const detail=m.best_of?'BO'+m.best_of:'';
+    const state=m.winner?z('已结束','Final',lang):z('未确认结果','Pending',lang);
+    panels.push('<article class="lyb-match" style="left:'+x+'px;top:'+y+'px;width:'+cw+'px">'+
+      '<div class="lyb-match-meta">'+html(detail)+' <span>'+html(state)+'</span></div>'+
+      fmt(m.home,m.score_home)+fmt(m.away,m.score_away)+'</article>');
+   });
+  });
+  layers.push({lane,columns,yOffset});
+  yOffset+=laneH+24;
+ }
+ const width=maxCols*cw+(maxCols-1)*gap+2*sideMargin;
+ const height=yOffset+12,paths=[];
+ let edges=0,unknown=0;
+ for(const m of all){
+  const target=m.match_id?places.get(String(m.match_id)):null;
+  if(!target)continue;
+  const refs=Array.isArray(m.previous_matches)?m.previous_matches:[];
+  if(!refs.length){unknown++;continue;}
+  for(const predecessor of refs){
+   const prior=places.get(String(predecessor.match_id));
+   if(!prior)continue;
+   // Only PandaScore's verified predecessor match IDs may create an edge.
+   const isLoser=predecessor.type==='loser';
+   const mid=prior.x+cw+Math.max(6,(target.x-(prior.x+cw))/2);
+   const d='M'+(prior.x+cw)+' '+(prior.y+cardH/2)+' H'+mid+
+           ' V'+(target.y+cardH/2)+' H'+target.x;
+   const cls='lyb-bracket-edge '+(isLoser?'is-loser':'is-winner');
+   paths.push('<path class="'+cls+'" d="'+d+'" />');edges++;
+  }
+ }
+ const explanation=edges?
+   z('实线连接来自 PandaScore 已核验的上一场比赛 ID；败者转入败者组以虚线区分。',
+     'Match connections use verified provider predecessor IDs; loser transitions are dashed.',lang):
+   z('数据源暂未返回足够的前驱关系，因此只展示真实对阵，不绘制推测连线。',
+     'No confirmed predecessor data is available; only verified matchups are shown.',lang);
  return '<div class="lyb-visual"><div class="lyb-visual-top"><strong>PLAYOFF BRACKET</strong><span>'+
-  z('淘汰赛 · 对阵路径','Knockout · match tree',language)+'</span></div>'+
-  '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('淘汰赛晋级图，横向滑动查看','Knockout bracket, horizontally scrollable',language)+'">'+
-  '<div class="lyb-knockout-map" style="width:'+width+'px;height:'+(height+8)+'px">'+
-  '<svg class="lyb-lines" aria-hidden="true" width="'+width+'" height="'+(height+8)+'" viewBox="0 0 '+width+' '+(height+8)+'">'+paths.join('')+'</svg>'+
-  cards+'</div></div></div>';
+  z('真实双败 / 淘汰赛对阵','Verified knockout & double elimination',lang)+'</span></div>'+
+  '<p class="lyb-bracket-disclaimer">'+html(explanation)+'</p>'+
+  '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+
+  z('左右滑动查看晋级图','Swipe horizontally to view brackets',lang)+'">'+
+  '<div class="lyb-knockout-map lyb-multi-lane" style="width:'+width+'px;height:'+height+'px">'+
+  '<svg class="lyb-lines" aria-hidden="true" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'">'+
+  paths.join('')+'</svg>'+panels.join('')+'</div></div></div>';
 }
 const swissNodes=[
  [{name:'0-0',index:'R1',wins:0,losses:0}],
