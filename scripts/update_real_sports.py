@@ -334,6 +334,89 @@ def official_bracket(raw,tournament_id,label):
             "provider":"pandascore"}
 
 
+
+def recover_bracket_predecessors(record,key):
+    """Complete missing official bracket nodes from the SAME PandaScore tournament.
+
+    Bounded to a single tournament matches request, and never construct
+    opponent names, scores or match IDs from downstream paths.
+    """
+    if not isinstance(record,dict) or not isinstance(record.get("rounds"),list):
+        return record,0
+    tournament_id=record.get("tournament_id")
+    if type(tournament_id) is not int:return record,0
+    games=[m for row in record["rounds"] for m in row.get("matches",[])
+           if isinstance(m,dict)]
+    ids={str(m.get("match_id")) for m in games if m.get("match_id")}
+    missing={str(p["match_id"]) for m in games for p in m.get("previous_matches",[])
+             if isinstance(p,dict) and p.get("match_id") and str(p["match_id"]) not in ids}
+    if not missing:return record,0
+    headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
+    url=PANDA_ROOT+"/tournaments/"+str(tournament_id)+"/matches?"+urlencode({
+        "page[size]":100,"page[number]":1})
+    raw=json_request(url,headers)
+    if not isinstance(raw,list):return record,0
+    added=0
+    for match in raw[:100]:
+        if not isinstance(match,dict) or type(match.get("id")) is not int:continue
+        ident=str(match["id"])
+        if ident not in missing:continue
+        parent=match.get("tournament") or {}
+        if isinstance(parent,dict) and isinstance(parent.get("id"),int):
+            if parent["id"]!=tournament_id:continue
+        # The match details endpoint is scoped to the tournament, so these
+        # teams, scores and winner are independently confirmed by PandaScore.
+        source_title=name(match.get("round_name") or match.get("name") or
+                          match.get("stage") or "")
+        bracket_type=name(match.get("bracket_type") or match.get("bracket") or "")
+        # Infer the bracket SIDE only from provider predecessor-link types,
+        # never a round number or team result.
+        if not re.search(r"upper|lower|winner|loser",source_title+" "+bracket_type,re.I):
+            destinations=[(g,p["type"]) for g in games for p in g.get("previous_matches",[])
+                          if isinstance(p,dict) and str(p.get("match_id"))==ident
+                          and p.get("type") in ("winner","loser")]
+            upper=any(k=="winner" and g.get("bracket_side")=="upper"
+                      for g,k in destinations)
+            lower=any(k=="loser" and g.get("bracket_side")=="lower"
+                      for g,k in destinations)
+            if upper and lower:bracket_type="upper"
+        if not source_title:
+            source_title="Verified predecessor"
+        # If no round title was returned, avoid claiming a semifinal.
+        if not re.search(r"round|quarter|semi|final|upper|lower|bracket",
+                         source_title,re.I):
+            source_title="Verified predecessor"
+        item=dict(match)
+        item["round_name"]=source_title
+        if bracket_type and not item.get("bracket_type"):
+            item["bracket_type"]=bracket_type
+        part=official_bracket(item,tournament_id,record.get("title",""))
+        if not part:continue
+        for round_data in part.get("rounds",[]):
+            for m in round_data.get("matches",[]):
+                if m.get("match_id")!=ident or not m.get("home") or not m.get("away"):
+                    continue
+                if ident in ids:break
+                stage_name=round_data["round"]
+                if m.get("bracket_side")=="upper" and not stage_name.startswith("Upper Bracket"):
+                    stage_name="Upper Bracket / "+stage_name
+                elif m.get("bracket_side")=="lower" and not stage_name.startswith("Lower Bracket"):
+                    stage_name="Lower Bracket / "+stage_name
+                dest=next((r for r in record["rounds"] if r["round"]==stage_name),None)
+                if dest is None:
+                    dest={"round":stage_name,"matches":[]}
+                    record["rounds"].append(dest)
+                m["verified_from"]="pandascore-tournament-matches"
+                dest["matches"].append(m)
+                ids.add(ident)
+                added+=1
+    if added:
+        # Keep the original provider's order, with new rounds sorted by the
+        # browser's explicit predecessor IDs. Never guess a missing link.
+        record["rounds"]=record["rounds"][:12]
+    return record,added
+
+
 def panda_standings(raw,tournament_id,label):
     if not isinstance(raw,list):return None
     entries=[]
@@ -716,6 +799,19 @@ def main():
             for event in matches:events[event["id"]]=event
             if provider=="pandascore":
                 b,t=tournament_extras(matches,secret,discover_lol_tournaments(secret,now))
+                # One extra bounded request for a high-priority LPL bracket with
+                # dangling upstream references; other providers remain untouched.
+                repairs=0
+                for bracket in b:
+                    if repairs>=1:break
+                    if not re.search(r"\blpl\b",bracket.get("title",""),re.I):continue
+                    try:
+                        _,completed=recover_bracket_predecessors(bracket,secret)
+                        repairs+=1
+                        print("PandaScore verified LPL predecessor matches added: %d" % completed,flush=True)
+                    except Exception:
+                        print("PandaScore predecessor lookup unavailable; retaining verified partial bracket",flush=True)
+                        repairs+=1
                 brackets.extend(b);standings.extend(t)
                 # One supplementary Swiss history request at most per cycle.
                 focus=next((x for x in t if
