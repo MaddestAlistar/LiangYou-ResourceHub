@@ -264,6 +264,19 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
     'Confirmed Swiss win/loss paths must derive from actual results');
    assert(!links.has('2-2|ADVANCES'),
     'Unplayed fifth-round progress must not be marked confirmed');
+   if(official){
+     const svg={innerHTML:'',setAttribute(name,value){this[name]=value;}};
+     const box=(key,x)=>({dataset:{pool:key},getBoundingClientRect(){
+       return {left:x,right:x+100,top:30,bottom:85};}});
+     const track={scrollWidth:580,scrollHeight:280,getBoundingClientRect(){
+       return {left:0,top:0,right:580,bottom:280};},
+       querySelector(q){return q==='.lyb-swiss-links'?svg:null;},
+       querySelectorAll(){return [box('0-0',10),box('1-0',260)];}};
+     swissAPI.connect({querySelector(){return track;}},official,snapshot.stage_matches);
+     assert(svg.innerHTML.includes('lyb-link-confirmed'),
+       'First-round verified pathway should be highlighted in the real SVG');
+     assert(svg.viewBox==='0 0 580 280','SVG routes must use measured container space');
+   }
    const counts=timeline.matches.reduce((m,x)=>(m[x.round]=(m[x.round]||0)+1,m),{});
    assert(counts[1]===8&&counts[2]===8&&counts[3]===8,'First three Swiss rounds must be complete');
    const official=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
