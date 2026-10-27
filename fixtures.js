@@ -7,7 +7,7 @@ const refs={grid:el('officialFixturesGrid'),status:el('officialFixturesStatus'),
  search:el('officialFixturesSearch'),category:el('officialFixturesCategory'),sort:el('officialFixturesSort'),
  more:el('officialFixturesMore'),showing:el('officialFixturesShowing'),
  bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),
- standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
+ standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
 if(Object.values(refs).some(v=>!v))return;
 const views=[...panel.querySelectorAll('[data-fixtures-view]')];
 const dates=[...panel.querySelectorAll('[data-fixtures-date]')];
@@ -20,8 +20,8 @@ zh:{title:'赛事日历与赛事资料',
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
  sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球'],
- bracketSubtitle:'电竞晋级图 · 英雄联盟世界赛和 LCK 等赛事优先',
- standingSubtitle:'可核验的多个官方排名，点击展开查看',
+ bracketSubtitle:'电竞晋级图 · 英雄联盟世界赛、LCK 与其他电竞淘汰赛',
+ standingSubtitle:'多个联赛榜单可选择查看，点击榜单名称或展开卡片',
  hotHint:'按赛事知名度优先：世界赛、LPL/LCK、NBA 等；不代表真实观众人数',
  selectAllStandings:'全部可用榜单',
  bracketCount:n=>'已核验 '+n+' 个晋级图',
@@ -45,8 +45,8 @@ en:{title:'Calendar & tournament intelligence',
  placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
  sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],
  ranks:['All standings','League of Legends','Other esports','Basketball'],
- bracketSubtitle:'Verified brackets · LoL Worlds and LCK first',
- standingSubtitle:'Published league and tournament rankings · expand to explore',
+ bracketSubtitle:'Verified LoL Worlds, LCK and other esports knockout brackets',
+ standingSubtitle:'Select a league or expand published ranking cards',
  hotHint:'Editorial prominence: Worlds, LPL/LCK, NBA, not live viewership',
  selectAllStandings:'All available rankings',
  bracketCount:n=>n+' verified brackets',
@@ -83,6 +83,16 @@ const localize=(v,category='')=>{
  'PGL Masters':'PGL 大师赛','VCT':'无畏契约冠军巡回赛 VCT',
  'VCT Game Changers':'VCT 改变者赛','PGL Masters Bucharest':'PGL 布加勒斯特大师赛',
  'NBA':'NBA 美国职业篮球联赛','NBA W':'WNBA 美国女子职业篮球联赛',
+ 'National Basketball Association':'NBA 美国职业篮球联赛',
+ 'World Championship 2026':'2026 全球总决赛',
+ 'League of Legends World Championship':'英雄联盟全球总决赛',
+ 'Worlds 2026':'2026 英雄联盟全球总决赛',
+ 'League of Legends':'英雄联盟',
+ 'Counter-Strike 2':'反恐精英 2（CS2）',
+ 'Valorant':'无畏契约','Dota 2':'刀塔 2',
+ 'Swiss':'瑞士轮','Main Event':'正赛',
+ 'Upper Bracket':'胜者组','Lower Bracket':'败者组',
+ 'Elimination Stage':'淘汰赛','Group A':'A组','Group B':'B组',
  'Eastern Conference':'东部联盟','Western Conference':'西部联盟',
  'Group Stage':'小组赛','Playoffs':'淘汰赛','Play-In':'入围赛','Play-Ins':'入围赛','Regular Season':'常规赛',
  'Swiss Stage':'瑞士轮','Quarterfinals':'四分之一决赛',
@@ -106,6 +116,13 @@ const localize=(v,category='')=>{
  if(raw==='League of Legends')return '英雄联盟';
  // Only translate known competitive terms; unknown proper names stay original.
  return raw.replace(/\bWorlds\b/g,'全球总决赛').replace(/\bMSI\b/g,'季中冠军赛')
+ .replace(/\bLeague of Legends\b/gi,'英雄联盟')
+ .replace(/\bCounter-Strike\s*2\b/gi,'CS2（反恐精英2）')
+ .replace(/\bValorant\b/gi,'无畏契约')
+ .replace(/\bDota\s*2\b/gi,'刀塔2')
+ .replace(/\bUpper Bracket\b/gi,'胜者组')
+ .replace(/\bLower Bracket\b/gi,'败者组')
+ .replace(/\bKnockout\b/gi,'淘汰赛')
  .replace(/\bLCK Challengers League\b/gi,'LCK 次级联赛')
  .replace(/\bLGC Rising\b/gi,'英雄联盟 LGC 新星赛')
  .replace(/\bEPL World Series\b/gi,'EPL 世界系列赛')
@@ -147,6 +164,14 @@ const team=(v,sport)=>{
  };
  Object.assign(known,{
   'Movistar KOI':'KOI','Gen.G':'GEN','Cloud9':'C9','Karmine Corp':'KC（卡尔明）',
+  "Anyone's Legend":'AL','Dplus KIA':'DK',
+  'Team Secret Whales':'TSW','LOS':'LOS','MVK Esports':'MVK',
+  'FURIA':'FURIA','Fnatic':'FNC','Weibo Gaming':'WBG',
+  'EDward Gaming':'EDG','LNG Esports':'LNG','JD Gaming':'JDG',
+  'Ninjas in Pyjamas':'NIP','DRX':'DRX',
+  'DN SOOPers Challengers':'DN SOOPers 二队',
+  'Hanwha Life Esports Challengers':'HLE 二队',
+  'BNK FearX Youth':'FOX 青训',
   'FURIA Esports':'FURIA','Team Liquid':'TL（液体）','LYON':'LYON',
   'Nongshim Red Force':'NS（农心红力）','BNK FEARX':'FOX',
   'T1 Academy':'T1 二队','KT Rolster':'KT','Kiwoom DRX Challengers':'DRX 二队',
@@ -177,7 +202,8 @@ function popularity(row){
  let base=row.sport==='lol'?290:row.sport==='basketball'?220:row.sport==='football'?160:90;
  if(/\bworlds\b|world championship/.test(text))base=500;
  else if(/\bmsi\b|mid.season/.test(text))base=460;
- else if(/\blpl\b|\blck\b/.test(text))base=430;
+ else if(/\blpl\b|\blck\b/.test(text))
+   base=/challenger|academy|youth|次级|青训/.test(text)?275:430;
  else if(/\bnba\b/.test(text))base=410;
  else if(/champions league|premier league/.test(text))base=390;
  else if(/vct|major|masters|international/.test(text))base=325;
@@ -302,7 +328,7 @@ function standings(){
     (kind==='all'||kindOf(x)===kind))
     .sort((a,b)=>popularity(b)-popularity(a));
  if(!records.length){
-  refs.standingSelect.hidden=true;
+  refs.standingSelect.hidden=true;refs.standingQuick.innerHTML='';
   refs.standingSummary.textContent=kind==='basketball'?copy.noNba:copy.noStanding;
   refs.standing.innerHTML=empty(kind==='basketball'?copy.noNba:copy.noStanding);return;
  }
@@ -312,6 +338,16 @@ function standings(){
   records.filter(x=>String(x.id)===selectedId).slice(0,1);
  refs.standingSummary.textContent=copy.rankingCount(records.length)+
    (kind==='all'&&!records.some(x=>kindOf(x)==='basketball')?' · '+copy.noNba:'');
+ refs.standingQuick.innerHTML='<span class="fixtures-quick-label">'+safe(copy.rankingCount(records.length))+'</span>'+
+   '<button type="button" class="fixtures-quick-btn'+(selectedId==='all'?' is-active':'')+
+   '" data-fixtures-standing="all" aria-pressed="'+(selectedId==='all')+'">'+safe(copy.selectAllStandings)+'</button>'+
+   records.map(x=>{
+     const key=String(x.id);
+     return '<button type="button" class="fixtures-quick-btn'+(selectedId===key?' is-active':'')+
+       '" data-fixtures-standing="'+safe(key)+'" aria-pressed="'+(selectedId===key)+'">'+
+       '<span>'+safe(kindOf(x)==='lol'?copy.esportsKind[0]:kindOf(x)==='esports'?copy.esportsKind[1]:copy.ranks[3])+'</span> · '+
+       safe(localize(x.title,kindOf(x)))+'</button>';
+   }).join('');
  refs.standing.innerHTML=selection.map((selected,i)=>{
   const groups=new Map();
   for(const item of selected.groups){
@@ -328,7 +364,7 @@ function standings(){
     safe(team(x.team,kindOf(selected)))+'</td><td>'+safe(Number.isInteger(x.wins)?x.wins:'—')+
     '</td><td>'+safe(Number.isInteger(x.losses)?x.losses:'—')+'</td></tr>').join('')+
    '</tbody></table></section>').join('');
-  return '<details class="fixtures-standing-card"'+(i<2||selection.length===1?' open':'')+'>'+
+  return '<details class="fixtures-standing-card"'+(i<3||selection.length===1?' open':'')+'>'+
    '<summary><span>'+safe(kindOf(selected)==='lol'?copy.esportsKind[0]:
      kindOf(selected)==='esports'?copy.esportsKind[1]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
@@ -364,6 +400,12 @@ refs.bracketQuick.addEventListener('click',e=>{
 });
 refs.standingSport.addEventListener('change',render);
 refs.standingSelect.addEventListener('change',render);
+refs.standingQuick.addEventListener('click',event=>{
+ const button=event.target.closest('[data-fixtures-standing]');
+ if(!button)return;
+ refs.standingSelect.value=button.dataset.fixturesStanding;
+ render();
+});
 document.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(x=>x.addEventListener('click',()=>setTimeout(render,0)));
 render();fetchData();if(typeof window.setInterval==='function')window.setInterval(fetchData,15*60*1000);
 })();

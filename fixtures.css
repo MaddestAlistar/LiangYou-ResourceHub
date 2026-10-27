@@ -101,3 +101,12 @@
 @media(max-width:720px){.fixtures-standing{grid-template-columns:1fr}.fixtures-quick-btn{font-size:10px}
  .fixtures-quick-label{font-size:10px}.fixtures-standing-card summary{padding:10px}}
 @media(prefers-reduced-motion:reduce){.fixtures-quick-btn{transition:none}}
+
+/* Clearly discoverable multi-league standings, including narrow screens. */
+.fixtures-standing-quick{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 15px}
+.fixtures-standing-quick .fixtures-quick-btn{max-width:100%;min-height:36px}
+.fixtures-standing-quick .fixtures-quick-label{color:#e0c69c}
+.fixtures-brackets .fixtures-round:first-child{border-color:rgba(216,176,103,.47)}
+@media(max-width:430px){.fixtures-standing-quick .fixtures-quick-btn{font-size:10px;text-align:left}
+.fixtures-standing-card summary{gap:6px;flex-wrap:wrap}
+.fixtures-standing-num{white-space:normal}}

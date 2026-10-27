@@ -86,6 +86,15 @@ const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
+assert(fixtureJS.includes("data-fixtures-standing") && fixtureJS.includes("officialStandingQuick"),
+  'Every published standings table must be selectable by name');
+assert(fixtureJS.includes("data-fixtures-tournament") && fixtureJS.includes("kindOf(x)==='lol'"),
+  'League of Legends bracket tabs must remain available');
+assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
+  'Featured calendar ordering missing');
+assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
+assert(html.includes('fixtures.js?v=20261027.11') && html.includes('fixtures.css?v=20261027.5'),
+  'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
 assert(html.includes('id="officialBracketGrid"') && html.includes('id="officialStandingGrid"'));

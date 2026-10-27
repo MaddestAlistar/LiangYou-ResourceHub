@@ -38,7 +38,8 @@ def popularity(league, stage="", sport=""):
         base=100
         if re.search(r"worlds|world championship|全球总决赛",s):return 500
         if re.search(r"mid.season|\bmsi\b",s):return 460
-        if re.search(r"\blpl\b|\blck\b",s):return 430
+        if re.search(r"\blpl\b|\blck\b",s):
+            return 275 if re.search(r"challenger|academy|youth|次级|青训",s) else 430
         if re.search(r"\blec\b|\blcs\b|\blcp\b|\bfirst stand\b",s):return 385
         return 290
     if re.search(r"\bnba\b",s):return 410
