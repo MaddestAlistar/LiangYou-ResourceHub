@@ -36,11 +36,12 @@ function cleanMatches(round){
 }
 function roundInfo(label){
  const v=String(label||'').toLowerCase();
+ const numbered=v.match(/\bround\s+(\d+)\b/);
+ if(numbered)return 5+Math.min(Number(numbered[1]),20);
  if(/round of 16|十六|1\/8/.test(v))return 10;
  if(/quarter|八强|1\/4/.test(v))return 20;
  if(/semi|半决/.test(v))return 30;
  if(/\bfinal\b|决赛/.test(v)&&!/semi|quarter/.test(v))return 40;
- if(/lower|败者/.test(v))return 50;
  return 15;
 }
 function knockout(record,opt={}){
