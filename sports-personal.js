@@ -37,7 +37,7 @@ const L=()=>isEn()?{
  empty:'Tap ☆ beside a team in the match calendar to follow it.',
  none:'No upcoming fixtures for followed teams in the available snapshot.',
  next:'Next followed fixture',notAvailable:'No verified time',removed:'Remove',
- health:'Data source status',verified:'Verified',partial:'Partial',failed:'Unavailable',unknown:'Unknown',
+ health:'Data source status',verified:'Verified',partial:'Partial',failed:'Unavailable',stale:'Old snapshot',unknown:'Unknown',
  archived:'Data is a periodic snapshot, not live scores.',exportEmpty:'There are no dated upcoming matches to export.'
 }:{
  title:'我的赛事',help:'关注喜欢的球队和战队，一键筛选未来赛程。收藏只保存在当前浏览器。',
@@ -45,7 +45,7 @@ const L=()=>isEn()?{
  empty:'在赛事日历中点击队伍旁的 ☆ 即可关注。',
  none:'当前数据快照暂无关注队伍的未来赛事。',
  next:'下一场关注赛事',notAvailable:'时间未核验',removed:'取消关注',
- health:'数据源状态',verified:'已核验',partial:'部分缺失',failed:'不可用',unknown:'状态未知',
+ health:'数据源状态',verified:'已核验',partial:'部分缺失',failed:'不可用',stale:'历史快照',unknown:'状态未知',
  archived:'数据为定时采集快照，不代表实时比分。',exportEmpty:'当前没有可导出的已确认开赛时间赛事。'
 };
 function dateLabel(iso){
@@ -57,17 +57,19 @@ function render(){
  const t=L(),upcoming=events.filter(x=>x.status==='scheduled'&&Date.parse(x.start_time)>Date.now()&&followsEvent(x))
  .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
  const first=upcoming[0];
+ const now=Date.now();
+ const canExport=upcoming.some(x=>x.time_precision!=='date'&&Date.parse(x.start_time)<now+45*86400000);
  shelf.innerHTML='<div class="sports-personal-title"><div><strong>★ '+t.title+'</strong>'+
   '<p>'+t.help+'</p></div><span class="sports-personal-count">'+t.follow+' '+followed.length+'</span></div>'+
   '<div class="sports-personal-actions"><button type="button" data-personal-action="mine" aria-pressed="'+followingOnly+'">'+t.mine+'</button>'+
   '<button type="button" data-personal-action="all" aria-pressed="'+(!followingOnly)+'">'+t.all+'</button>'+
-  '<button type="button" data-personal-action="export"'+(!upcoming.length?' disabled':'')+'>'+t.export+'</button></div>'+
+  '<button type="button" data-personal-action="export"'+(!canExport?' disabled':'')+'>'+t.export+'</button></div>'+
   (followed.length?'<div class="sports-personal-tags">'+followed.map(x=>
    '<button type="button" data-follow-team="'+safe(x.name)+'" data-follow-sport="'+safe(x.sport)+'" aria-label="'+
    safe(t.removed+': '+x.name)+'">'+safe(x.name)+' <span aria-hidden="true">×</span></button>').join('')+'</div>':
    '<p class="sports-personal-empty">'+t.empty+'</p>')+
   (followed.length?'<p class="sports-personal-next">'+(first?
-   '<strong>'+t.next+'：</strong>'+safe(first.home)+' · '+safe(first.away)+' <span>'+safe(dateLabel(first.start_time))+'</span>':
+   '<strong>'+t.next+'：</strong>'+safe(first.home)+' · '+safe(first.away)+' <span>'+safe(first.time_precision==='date'?(first.display_date||String(first.start_time||'').slice(0,10))+' · '+t.notAvailable:dateLabel(first.start_time))+'</span>':
    t.none)+'</p>':'');
 }
 function fold(text){return String(text||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n')
@@ -110,7 +112,7 @@ function updateHealth(sources,generated){
   safe(main)+' · '+unique.size+'</span></summary><div class="sports-health-list">'+
   [...unique.values()].map(s=>{
    const status=s.status==='ok'?t.verified:s.status==='partial'?t.partial:
-    s.status==='failed'?t.failed:t.unknown;
+    s.status==='failed'?t.failed:s.status==='stale'?t.stale:t.unknown;
    const extra=Number.isInteger(s.failed_groups)&&s.failed_groups>0?
     (isEn()?' · failed groups ':' · 异常数据组 ')+s.failed_groups:'';
    return '<div><strong>'+safe(s.tag)+'</strong><span>'+safe(status)+extra+'</span></div>';
