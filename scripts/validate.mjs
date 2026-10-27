@@ -222,6 +222,31 @@ for(const board of (fixtureSnapshot.standings||[])){
   assert(['pandascore','api-sports'].includes(board.provider)&&Array.isArray(board.groups));
   for(const row of board.groups)assert(Number.isInteger(row.rank)&&row.rank>=0&&row.team);
 }
+// New external sources have an independent provider-verified snapshot. They
+// must never affect PandaScore's existing bracket history or expose credentials.
+const extras = JSON.parse(text('data/extra-sports.json'));
+assert.equal(extras.schema,1);
+assert.equal(extras.source_type,'supplemental_fixtures');
+assert(Array.isArray(extras.events)&&Array.isArray(extras.standings));
+assert(Array.isArray(extras.sources)&&extras.sources.length===2);
+assert(extras.sources.some(x=>x.tag==='dunkapi'));
+assert(extras.sources.some(x=>x.tag==='football-data'));
+const extraIds=new Set();
+for(const match of extras.events){
+  assert(match.provider==='football-data'&&match.sport==='football');
+  assert(['scheduled','live','finished'].includes(match.status));
+  assert(match.home&&match.away&&Number.isFinite(Date.parse(match.start_time)));
+  assert(!extraIds.has(match.id),'Duplicate supplemental fixture id');
+  extraIds.add(match.id);
+  if(match.status==='scheduled') assert(match.score_home===null&&match.score_away===null);
+}
+for(const board of extras.standings){
+  assert(['dunkapi','football-data'].includes(board.provider),'Unknown supplementary ranking provider');
+  assert(['football','basketball'].includes(board.sport));
+  assert(Array.isArray(board.groups));
+  for(const row of board.groups) assert(Number.isInteger(row.rank)&&row.rank>=1&&row.team);
+}
+assert(html.includes('Data provided by football-data.org'));
 assert(html.includes('data-fixtures-view="brackets"')&&html.includes('data-fixtures-view="standings"'));
 const fixtureIds=new Set();
 for(const match of fixtureSnapshot.events){
@@ -247,4 +272,5 @@ for(const key of ['apple','android','games','sports']) assert(feedStatus.jobs[ke
 if (feedStatus.jobs.predict) assert(feedStatus.jobs.predict.interval_hours > 0);
 if (feedStatus.jobs.kalshi) assert(feedStatus.jobs.kalshi.interval_hours > 0);
 if (feedStatus.jobs.fixtures) assert.equal(feedStatus.jobs.fixtures.interval_hours,6);
+if (feedStatus.jobs.extras) assert.equal(feedStatus.jobs.extras.interval_hours,6);
 console.log('PASS: Regional Apple, verified Android, Steam/Epic, sports provenance and scheduler metadata.');
