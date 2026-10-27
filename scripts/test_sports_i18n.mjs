@@ -76,6 +76,41 @@ assert(!html.includes('LICHESS_API_TOKEN')&&!fixtures.includes('LICHESS_API_TOKE
 assert(collector.includes('lichess.org/api/broadcast/top') && collector.includes('www.nihonkiin.or.jp/match/2week.html'),'Collectors must use official sources');
 assert(collector.includes('source_type="board_game_fixtures"')||collector.includes('"source_type":"board_game_fixtures"'),'Collector schema mismatch');
 
+const boardHost={};
+vm.runInNewContext(read('board-i18n.js'),{window:boardHost},{timeout:2000});
+const bt=boardHost.LiangYouBoardI18n;
+assert(bt && typeof bt.league==='function' && typeof bt.player==='function' && typeof bt.stage==='function',
+ 'Board localization interface unavailable');
+assert.equal(bt.league('49기 SG배 한국일보 명인전 패자결승','go','zh'),'第49届 SG杯韩国日报名人战 · 败者组决赛');
+assert.equal(bt.league('2026 Sh수협은행 여자바둑 최강전 결승 3국','go','zh'),'2026 Sh水协银行女子围棋最强战 · 决赛第3局');
+assert.equal(bt.league('名人 挑戦７','go','zh'),'日本名人战 · 挑战赛第7局');
+assert.equal(bt.league('Benidorm Chess Open 2026 | Group A','chess','zh'),'2026 贝尼多姆国际象棋公开赛 · A组');
+assert.equal(bt.stage('Round 6','chess','zh'),'第6轮');
+assert.equal(bt.stage('패자결승','go','zh'),'败者组决赛');
+assert.equal(bt.stage('결승 3국','go','zh'),'决赛第3局');
+assert.equal(bt.player('박정환','go','zh'),'朴廷桓');
+assert.equal(bt.player('스미레','go','zh'),'仲邑堇');
+assert.equal(bt.player('김주아','go','zh'),'金凑笌');
+assert.equal(bt.player('Caruana, Fabiano','chess','zh'),'法比亚诺·卡鲁阿纳');
+assert.equal(bt.player('Unknown, Player','chess','zh'),'Unknown, Player',
+ 'Unknown real player must never be assigned a guessed Chinese identity');
+assert.equal(bt.league('Benidorm Chess Open 2026 | Group A','chess','en'),'Benidorm Chess Open 2026 | Group A');
+assert.equal(bt.stage('Round 6','chess','en'),'Round 6');
+assert.equal(bt.player('김주아','go','en','Kim Jooah'),'Kim Jooah');
+assert(fixtures.includes('const boardTranslations=window.LiangYouBoardI18n')&&
+ fixtures.includes("boardTranslations?.player?.")&&fixtures.includes("boardTranslations?.stage?."),
+ 'Localized league/round/player rendering must be connected');
+assert(html.indexOf('board-i18n.js?')<html.indexOf('fixtures.js?') &&
+ html.includes('./board-i18n.js?'), 'Load board translations before fixture UI');
+for(const row of board.events){
+ if(!['go','chess'].includes(row.sport))continue;
+ assert(bt.league(row.league,row.sport,'zh').trim(),'Empty translated tournament: '+row.id);
+ if(row.stage)assert(bt.stage(row.stage,row.sport,'zh').trim(),'Empty translated round: '+row.id);
+ assert(bt.player(row.home,row.sport,'zh',row.home_zh).trim(),'Empty home player: '+row.id);
+ assert(bt.player(row.away,row.sport,'zh',row.away_zh).trim(),'Empty away player: '+row.id);
+}
+console.log('PASS: Safe Chinese localization for chess/Go tournaments, stages, players and preserved English source labels.');
+
 const vizHost={};
 vm.runInNewContext(read('bracket-viz.js'),{window:vizHost,Date,Intl},{timeout:3000});
 assert(typeof vizHost.LiangYouBracketViz?.knockout==='function','Esports bracket renderer missing');
