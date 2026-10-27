@@ -627,7 +627,7 @@ function calendar(){
     followLabel(x,'home')+' <em>'+safe(copy.vs)+'</em> '+
     (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">黑方</span>':'')+
     followLabel(x,'away')+'</div>'+score+
-    '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
+    '<div class="fixtures-cardfoot">'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
     (linker?.marketsFor(x,(window.LiangYouMarketRecords||[]).filter(m=>
