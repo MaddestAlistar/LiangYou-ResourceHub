@@ -326,11 +326,18 @@ function showFixtureDetail(id){
   (bracket?'<button type="button" data-fixture-bracket="'+safe(bracket.tournament_id)+'">'+
     (label?'在晋级图中查看':'View bracket')+'</button>':'')+
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
-    (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+'</div>'+
+    (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+
+  (group.length?'<button type="button" data-fixture-market="'+safe(x.id)+'">'+
+    (label?'查看赛前市场卡片':'Open market cards')+'</button>':'')+'</div>'+
   '<div class="fixtures-detail-markets"><strong>'+
     (label?'已关联的赛前预测市场':'Matched prediction-market snapshots')+'</strong>'+
-    (group.length?group.map(g=>'<span>'+safe(g.provider==='predict'?'Predict.fun':
-        g.provider==='kalshi'?'Kalshi':'Polymarket')+'</span>').join(''):
+    (group.length?group.map(g=>{
+       const site=g.provider==='predict'?'Predict.fun':g.provider==='kalshi'?'Kalshi':'Polymarket';
+       const sides=(g.outcomes||[]).filter(o=>!['draw','tie','平局'].includes(String(o.name).toLowerCase()));
+       const probabilities=sides.slice(0,2).every(o=>Number.isFinite(o.probability))?
+         sides.slice(0,2).map(o=>(o.probability*100).toFixed(1)+'%').join(' / '):'—';
+       return '<span class="fixtures-market-source">'+safe(site)+' · '+safe(probabilities)+'</span>';
+    }).join(''):
      '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
   '</div>';
 }
@@ -677,6 +684,11 @@ refs.detail.addEventListener('click',event=>{
  if(bracket){view='brackets';refs.bracketStage.value='knockout';
    refs.bracketSport.value='all';refs.bracketSelect.value='brk:'+bracket.dataset.fixtureBracket;render();
    refs.bracket.scrollIntoView?.({behavior:'smooth',block:'start'});return;}
+ const marketButton=event.target.closest?.('[data-fixture-market]');
+ if(marketButton&&typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function'){
+   window.dispatchEvent(new CustomEvent('liangyou:open-market',{detail:{id:marketButton.dataset.fixtureMarket}}));
+   return;
+ }
  const standings=event.target.closest?.('[data-fixture-standings]');
  if(standings){view='standings';refs.standingSport.value='all';
    refs.standingSelect.value=standings.dataset.fixtureStandings;render();
