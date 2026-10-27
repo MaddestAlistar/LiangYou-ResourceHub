@@ -163,7 +163,7 @@
 .lyb-team b{font-size:13px;min-width:20px;text-align:right;font-variant-numeric:tabular-nums}
 .lyb-team.is-winner{color:#f4d18d;font-weight:750}
 .lyb-team.is-winner b{color:#f5d69a}
-.lyb-swiss-track{position:relative;display:grid;grid-template-columns:repeat(5,224px);align-items:stretch;
+.lyb-swiss-track{position:relative;display:grid;grid-template-columns:repeat(6,224px);align-items:stretch;
  width:max-content;min-width:100%;gap:12px;padding:15px 14px 19px;
  background:repeating-linear-gradient(90deg,transparent,transparent 235px,rgba(90,137,192,.08) 235px,rgba(90,137,192,.08) 236px)}
 .lyb-swiss-column{min-width:0;display:flex;flex-direction:column;gap:10px;position:relative}
@@ -214,7 +214,7 @@
  .lyb-visual-top{padding:12px 11px 9px}
  .lyb-visual-top strong{font-size:11px}
  .lyb-visual-top span{font-size:10px}
- .lyb-swiss-track{grid-template-columns:repeat(5,208px);gap:10px;padding:12px 10px 17px}
+ .lyb-swiss-track{grid-template-columns:repeat(6,208px);gap:10px;padding:12px 10px 17px}
  .lyb-fixtures{grid-template-columns:1fr}
  .lyb-group-flow{flex-direction:column;padding:10px}
  .lyb-qualify{width:100%;min-height:70px;gap:4px}
@@ -225,3 +225,8 @@
 .lyb-round-results>strong{display:block;font-size:10px;color:#e0bb78;letter-spacing:.03em;margin-bottom:7px}
 .lyb-round-match{font-size:10px;color:#dae7ed;line-height:1.5;overflow-wrap:anywhere;padding:7px 3px;border-top:1px solid rgba(133,166,200,.13)}
 .lyb-round-match strong{color:#f0ce8e;white-space:nowrap}
+
+.lyb-swiss-links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+.lyb-swiss-links path{fill:none;stroke:#aebfd4;stroke-width:1.4;stroke-opacity:.5;stroke-dasharray:5 5;stroke-linejoin:round;stroke-linecap:round}
+.lyb-swiss-column{z-index:1}
+.lyb-swiss-column:not(:last-child):after{display:none}
