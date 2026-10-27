@@ -50,6 +50,7 @@ const win={
  LiangYouSportsLinks:links,
  addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn)},
  dispatchEvent(event){for(const fn of listeners.get(event.type)||[])fn(event)},
+ setTimeout:()=>{},
  alert(){throw Error('Unexpected no-events alert')}
 };
 const ctx={window:win,document,localStorage:{
