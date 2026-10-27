@@ -215,6 +215,13 @@ const team=(v,sport)=>{
  });
  return known[raw]||translations?.team?.(raw,sport,'zh')||raw;
 };
+const boardPlayer=(event,which)=>{
+ const alias=lang()==='zh'?event[which+'_zh']:event[which+'_en'];
+ return alias||team(event[which],event.sport);
+};
+const boardRating=(event,which)=>Number.isInteger(event[which+'_rating'])?
+ (lang()==='zh'?'世界第':'World #')+(Number.isInteger(event[which+'_world_rank'])?event[which+'_world_rank']:'—')+
+ ' · Elo '+event[which+'_rating']:'';
 const when=v=>{
  const d=new Date(v);
  if(!Number.isFinite(d.getTime()))return '--';
@@ -343,7 +350,8 @@ function showFixtureDetail(id,scroll=false){
  const label=lang()==='zh';
  const whenAt=x.time_precision==='date'?(lang()==='zh'?'日期：':'Date: ')+(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time);
  const complete=x.status==='finished';
- const score=complete&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
+ const score=x.sport==='go'?(label?'以棋院公布的胜负记录为准':'See the Go association result'):
+  complete&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
   safe(String(x.score_home)+' : '+String(x.score_away)):(label?'暂无已核验终场比分':'No verified final score');
  const state=x.status==='finished'?(label?'已完赛':'Finished'):
   x.status==='live'?(label?'进行中（上次核验）':'In progress (snapshot)'):(label?'尚未开始':'Upcoming');
@@ -356,12 +364,16 @@ function showFixtureDetail(id,scroll=false){
    b.sport===x.sport && String(b.title||'').toLowerCase().includes(String(x.league||'').toLowerCase()) &&
    x.league);
  refs.detail.hidden=false;
- refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+safe(team(x.home,x.sport))+
-  ' · '+safe(team(x.away,x.sport))+'</strong><button type="button" data-close-fixture aria-label="'+
+ refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+safe(boardPlayer(x,'home'))+
+  ' · '+safe(boardPlayer(x,'away'))+'</strong><button type="button" data-close-fixture aria-label="'+
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
   '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+' · '+safe(state)+
-  ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+
-  (complete?'<div class="fixtures-detail-score">'+(x.sport==='go'?(label?'胜 · 负':'Win · Loss'):score)+'</div>':'')+
+  ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+ 
+  (x.sport==='go'&&(boardRating(x,'home')||boardRating(x,'away'))?
+   '<div class="fixtures-go-ratings">'+(boardRating(x,'home')?safe(boardPlayer(x,'home'))+'：'+safe(boardRating(x,'home')):'')+
+    (boardRating(x,'away')?' · '+safe(boardPlayer(x,'away'))+'：'+safe(boardRating(x,'away')):'')+
+    ' <a href="https://www.goratings.org/en/" target="_blank" rel="noopener noreferrer">Go Ratings</a></div>':'')+
+  (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
   (x.result_detail?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
    (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
@@ -420,10 +432,10 @@ function calendar(){
    if((instant<now-120000&&!(x.time_precision==='date'&&dayKey(new Date(instant))===today))||instant>until)return false;
    if(date==='today'&&dayKey(new Date(instant))!==today)return false;
    if(date==='tomorrow'&&dayKey(new Date(instant))!==tomorrow)return false;
-  }else if(instant<now-(state==='live'?24:48)*3600000||instant>now+3600000)return false;
+  }else if(instant<now-(x.sport==='chess'||x.sport==='go'?(state==='live'?48:168):(state==='live'?24:48))*3600000||instant>now+3600000)return false;
   if(refs.category.value!=='all'&&x.sport!==refs.category.value)return false;
   return !query||[x.home,x.away,x.league,x.stage,x.sport,
-    team(x.home,x.sport),team(x.away,x.sport),
+    team(x.home,x.sport),team(x.away,x.sport),boardPlayer(x,'home'),boardPlayer(x,'away'),
     localize(x.league,x.sport),localize(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
  });
  // Past results should show the most recently completed matches first;
@@ -439,15 +451,16 @@ function calendar(){
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
   const title=[localize(x.league,x.sport),localize(x.stage,x.sport),
      Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
-  const score=x.sport==='go'&&x.status==='finished'?'<span class="fixtures-score">'+(lang()==='zh'?'胜 · 负':'Win · Loss')+'</span>':
+  const score=x.sport==='go'&&x.status==='finished'&&x.result_detail?
+    '<span class="fixtures-score">'+safe(x.result_detail)+'</span>':
     x.status==='finished'&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
     '<span class="fixtures-score">'+safe(x.score_home)+' : '+safe(x.score_away)+'</span>':'';
   const status=x.status==='live'?(lang()==='zh'?'进行中 · 非实时':'Live status · delayed'):
     x.status==='finished'?(lang()==='zh'?'已结束':'Final'):null;
   return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
     '</strong><span>'+safe(x.time_precision==='date'?(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span></div>'+
-    '<div class="fixtures-versus">'+safe(team(x.home,x.sport))+' <em>'+safe(copy.vs)+'</em> '+
-    safe(team(x.away,x.sport))+'</div>'+score+
+    '<div class="fixtures-versus">'+safe(boardPlayer(x,'home'))+' <em>'+safe(copy.vs)+'</em> '+
+    safe(boardPlayer(x,'away'))+'</div>'+score+
     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
@@ -772,7 +785,23 @@ async function fetchData(){
 views.forEach(x=>x.addEventListener('click',()=>{view=x.dataset.fixturesView;limit=6;render();}));
 dates.forEach(x=>x.addEventListener('click',()=>{date=x.dataset.fixturesDate;limit=6;render();}));
 refs.search.addEventListener('input',()=>{limit=6;render();});
-refs.category.addEventListener('change',()=>{limit=6;render();});
+refs.category.addEventListener('change',()=>{
+ limit=6;detailId=null;refs.detail.hidden=true;
+ // Chess broadcast pairings are often first published as games start, not a week ahead.
+ // If this category has no verified future fixtures, show real live/recent games
+ // instead of an apparently empty schedule. The status selector remains explicit.
+ const sport=refs.category.value;
+ if(['chess','go'].includes(sport)&&refs.state.value==='scheduled'){
+   const now=Date.now(),valid=x=>x.sport===sport&&Number.isFinite(Date.parse(x.start_time));
+   const hasFuture=data.events.some(x=>valid(x)&&x.status==='scheduled'&&
+     Date.parse(x.start_time)>=now-120000&&Date.parse(x.start_time)<=now+7*86400000);
+   if(!hasFuture){
+     if(data.events.some(x=>valid(x)&&x.status==='live'&&Date.parse(x.start_time)>=now-48*3600000))refs.state.value='live';
+     else if(data.events.some(x=>valid(x)&&x.status==='finished'&&Date.parse(x.start_time)>=now-7*86400000))refs.state.value='finished';
+   }
+ }
+ render();
+});
 refs.sort.addEventListener('change',()=>{limit=6;render();});
 refs.more.addEventListener('click',()=>{limit+=6;render();});
 refs.state.addEventListener('change',()=>{detailId=null;refs.detail.hidden=true;limit=6;render();});
