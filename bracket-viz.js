@@ -271,10 +271,30 @@ const swissEdges=[
  ['2-1','2-2'],['2-1','ADVANCES'],['1-2','2-2'],['1-2','ELIMINATED'],
  ['2-2','ADVANCES'],['2-2','ELIMINATED']
 ];
-function connect(root){
+function verifiedTransitions(history){
+ const observed=new Set();
+ if(!history)return observed;
+ for(const m of history.matches){
+  if(m.status!=='finished')continue;
+  const before=history.stages[m.round-1],after=history.stages[m.round];
+  if(!before||!after)continue;
+  for(const who of [m.home,m.away]){
+   const key=norm(who),a=before.get(key),b=after.get(key);
+   if(!a||!b||!Number.isInteger(a.wins)||!Number.isInteger(a.losses))continue;
+   const from=a.wins+'-'+a.losses;
+   const to=b.wins>=3?'ADVANCES':b.losses>=3?'ELIMINATED':b.wins+'-'+b.losses;
+   observed.add(from+'|'+to);
+  }
+ }
+ return observed;
+}
+function connect(root,record,events){
  if(!root||typeof root.querySelector!=='function')return;
  const track=root.querySelector('.lyb-swiss-track'),svg=track?.querySelector('.lyb-swiss-links');
  if(!track||!svg||typeof track.getBoundingClientRect!=='function')return;
+ const id=Number(record?.tournament_id||String(record?.id||'').replace('panda-',''));
+ const history=inferRounds((events||[]).filter(m=>Number(m.tournament_id)===id));
+ const confirmed=verifiedTransitions(history);
  const base=track.getBoundingClientRect(),nodes=new Map();
  track.querySelectorAll('.lyb-pool[data-pool]').forEach(item=>nodes.set(item.dataset.pool,item.getBoundingClientRect()));
  const coords=[];
@@ -283,11 +303,13 @@ function connect(root){
   if(!a||!b)continue;
   const x1=a.right-base.left,x2=b.left-base.left,y1=(a.top+a.bottom)/2-base.top,y2=(b.top+b.bottom)/2-base.top;
   const mid=x1+(x2-x1)*.5;
-  coords.push('<path d="M'+x1+' '+y1+' H'+mid+' V'+y2+' H'+x2+'"/>');
+  const actual=confirmed.has(from+'|'+to);
+  coords.push('<path class="'+(actual?'lyb-link-confirmed':'lyb-link-possible')+
+   '" d="M'+x1+' '+y1+' H'+mid+' V'+y2+' H'+x2+'"/>');
  }
  svg.setAttribute('viewBox','0 0 '+track.scrollWidth+' '+track.scrollHeight);
  svg.innerHTML=coords.join('');
 }
 
-window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups,connect,inferRounds};
+window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups,connect,inferRounds,verifiedTransitions};
 })();
