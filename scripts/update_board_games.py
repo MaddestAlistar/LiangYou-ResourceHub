@@ -171,41 +171,75 @@ def japan():
     return events
 
 def korea():
+    """Read the published calendar, keeping only *named player* pairings.
+
+    Korean calendar cells often split the date, clock and event name across
+    nested tags. Flatten it into token lines before reading; never confuse
+    team-vs-team league fixtures with two confirmed individual players.
+    """
     body=get(KOREA,accept="text/html",timeout=22,limit=2500000)
     soup=BeautifulSoup(body,"html.parser")
-    page=soup.get_text(" ",strip=True)
+    page=soup.get_text("\n",strip=True)
     year_match=re.search(r"(20\d{2})년",page)
-    year=int(year_match.group(1)) if year_match else NOW.astimezone(KST).year
-    # Only trust an exact day and a player-vs-player pairing in the same calendar cell.
-    # Many Korean calendar entries list rounds without identifying any players.
+    current=NOW.astimezone(KST)
+    base_year=int(year_match.group(1)) if year_match else current.year
+    lines=[line.strip() for line in page.splitlines() if line.strip()]
     records=[]
-    for cell in soup.find_all("td"):
-        lines=list(cell.stripped_strings)
-        if not lines:continue
-        daymatch=re.fullmatch(r"\d{1,2}",lines[0])
-        if not daymatch:continue
-        day=int(lines[0])
-        parent_month=NOW.astimezone(KST).month
-        for line in lines[1:]:
-            match=re.search(r"(?P<title>.*?)\(\s*(?:ㅇ)?(?P<home>[^():\s][^():]*?)\s*:\s*(?P<away>[^():\s][^():]*?)\s*\)",line)
-            clock=re.search(r"\b(\d{1,2}):(\d{2})\b",line)
-            if not match or not clock:continue
-            title=match.group("title").strip()
-            if not GO_TITLE.search(title) or AMATEUR.search(title):continue
-            hour,minute=map(int,clock.groups())
-            if hour>23 or minute>59:continue
-            try:when=datetime(year,parent_month,day,hour,minute,tzinfo=KST)
-            except ValueError:continue
-            if not NOW-timedelta(hours=12)<=when<=NOW+timedelta(days=9):continue
-            home=match.group("home").strip("ㅇ ")
-            away=match.group("away").strip("ㅇ ")
-            if not home or not away or home==away:continue
-            key=hashlib.sha1((iso(when)+"|"+title+"|"+home+"|"+away).encode()).hexdigest()[:12]
-            records.append(dict(id="go-kr-"+key,provider="baduk",sport="go",league=title[:110],stage="",
-                home=home,away=away,start_time=iso(when),status="scheduled",
-                score_home=None,score_away=None,prominence=190,source_url=KOREA))
-            if len(records)>=40:return records
-    if not records:raise ValueError("Korean calendar pairing layout not verified")
+    seen=set()
+    active_day=None
+    active_month=current.month
+    for i,line in enumerate(lines):
+        day_match=re.fullmatch(r"(?:(?:일|월|화|수|목|금|토)\s+)?([1-9]|[12]\d|3[01])",line)
+        if day_match:
+            day=int(day_match.group(1))
+            # Calendar may include a few adjacent-month days in the grid.
+            active_month=current.month + (1 if day<current.day-19 else
+                                          -1 if day>current.day+19 else 0)
+            active_year=base_year
+            if active_month==13:active_month,active_year=1,base_year+1
+            if active_month==0:active_month,active_year=12,base_year-1
+            active_day=(active_year,active_month,day)
+            continue
+        if not active_day:continue
+        # Some templates render the clock and event description in different tags.
+        combined=line
+        if re.fullmatch(r"\d{1,2}:\d{2}",line) and i+1<len(lines):
+            combined=line+" "+lines[i+1]
+        match=re.search(r"(?P<hour>[01]?\d|2[0-3]):(?P<minute>[0-5]\d)\s+"
+            r"(?P<title>[^()\n]{2,140}?)\s*\(\s*ㅇ\s*"
+            r"(?P<home>[^():]{1,35}?)\s*:\s*(?P<away>[^():]{1,35}?)\s*\)",combined)
+        if not match:continue
+        title=match.group("title").strip()
+        # The "ㅇ" prefix marks an individual televised pairing. Team fixtures
+        # lack it, and should not be mislabelled as named professional players.
+        if not GO_TITLE.search(title) or AMATEUR.search(title):continue
+        home=match.group("home").strip()
+        away=match.group("away").strip()
+        if not home or not away or home==away:continue
+        try:
+            when=datetime(*active_day,int(match.group("hour")),
+                int(match.group("minute")),tzinfo=KST)
+        except ValueError:continue
+        if when<NOW-timedelta(minutes=90) or when>NOW+timedelta(days=9):continue
+        unique=iso(when)+"|"+title+"|"+home+"|"+away
+        key=hashlib.sha1(unique.encode()).hexdigest()[:12]
+        if key in seen:continue
+        seen.add(key)
+        # Explicit Korean round labels are part of the headline, so their
+        # actual text is preserved, not inferred from the calendar date.
+        stage=(re.search(r"(?:(?:결승|준결승|4강|8강|16강|32강|64강|패자결승|예선|본선|[0-9]+R)"
+              r"(?:\s*\d+국)?)",title) or [None])[0] or ""
+        records.append(dict(id="go-kr-"+key,provider="baduk",sport="go",
+            league=title[:110],stage=stage,home=home,away=away,
+            start_time=iso(when),status="scheduled",score_home=None,
+            score_away=None,prominence=230 if "세계" in title or "월드" in title else 180,
+            source_url=KOREA))
+        if len(records)>=40:break
+    if not records:
+        print("baduk parser diagnostic: tokens",len(lines),"tables",len(soup.find_all("table")),
+            "calendar_days",sum(bool(re.fullmatch(r"(?:(?:일|월|화|수|목|금|토)\s+)?([1-9]|[12]\d|3[01])",x)) for x in lines),
+            "named_pairings",sum("(ㅇ" in x for x in lines),flush=True)
+        raise ValueError("No current Korean professional player pairings could be verified")
     return records
 
 def main():
