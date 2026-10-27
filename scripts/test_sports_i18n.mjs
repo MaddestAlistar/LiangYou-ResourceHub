@@ -299,7 +299,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
      assert((visual.match(/class="lyb-matchup"/g)||[]).length===snapshot.stage_matches.length,
       'Every verified Swiss match must appear in its historical record pool');
      assert(!visual.includes('lyb-timeline-track'), 'Known-round Swiss matchups should not fall into a duplicate timeline');
-     assert(visual.includes('<p class="lyb-caption">'), 'Correctly nested caption must render');
+     assert(visual.includes('<div class="lyb-legend">')&&visual.includes('已确认路线'), 'Compact Swiss route legend should render');
      assert((visual.match(/<div\b/g)||[]).length===(visual.match(/<\/div>/g)||[]).length,
       'Swiss graph must emit balanced DOM nodes');
      assert(visual.includes('0-0')&&visual.includes('2-2')&&visual.includes('ADVANCES'));
