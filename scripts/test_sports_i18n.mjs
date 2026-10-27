@@ -88,6 +88,23 @@ assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json"));
 const visualJS=readFileSync('bracket-viz.js','utf8');
 assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && visualJS.includes("lyb-knockout-map"));
+{
+ const model={};
+ vm.runInNewContext(visualJS,{window:model,Intl,Date},{timeout:2000});
+ const swiss=model.LiangYouBracketViz.swiss({
+  id:'panda-23',title:'Worlds · Group Stage',
+  groups:[{team:'T1',wins:2,losses:1,rank:1,group:''}]
+ },{
+  lang:'zh',events:[{id:'stage-12',tournament_id:23,round:4,
+   status:'finished',home:'T1',away:'BLG',score_home:2,score_away:1,
+   start_time:'2026-10-27T10:00:00Z'}]
+ });
+ assert(swiss.includes('lyb-swiss-track')&&swiss.includes('lyb-round-results'));
+ assert(swiss.includes('T1')&&swiss.includes('BLG')&&swiss.includes('2 : 1'));
+ const group=model.LiangYouBracketViz.groups({title:'PGL Masters · Group Stage',
+  groups:[{team:'Team Liquid',wins:2,losses:1,rank:1}]},{lang:'en'});
+ assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
+}
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
 assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("viz.stageOf"), 'Diagram stage selector missing');
 assert(html.includes('<option value="knockout" selected>'), 'The bracket view should default to playoffs');
@@ -97,7 +114,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.15') && html.includes('bracket-viz.js?v=20261027.1') && html.includes('fixtures.css?v=20261027.8'),
+assert(html.includes('fixtures.js?v=20261027.16') && html.includes('bracket-viz.js?v=20261027.2') && html.includes('fixtures.css?v=20261027.9'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
