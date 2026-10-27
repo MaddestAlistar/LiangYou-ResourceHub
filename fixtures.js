@@ -119,6 +119,10 @@ const localize=(v,category='')=>{
  Object.assign(specials,{
   'Worlds · Play-In':'英雄联盟全球总决赛 · 入围赛',
   'Worlds · Group Stage':'英雄联盟全球总决赛 · 小组赛',
+ 'LCK · Round 3-4':'LCK · 第3—4轮 · 分组阶段榜',
+ 'LPL · Group Stage':'LPL · 登峰组与涅槃组 · 阶段榜',
+ 'Legend Group':'传奇组','Rise Group':'崛起组',
+ 'Group Ascend':'登峰组','Group Nirvana':'涅槃组',
   'LCK Challengers League · Play-In':'LCK 次级联赛 · 入围赛',
   'LCK Challengers League · Playoffs':'LCK 次级联赛 · 淘汰赛',
   'LCK · Play-In':'韩国 LCK 联赛 · 入围赛',
@@ -390,6 +394,15 @@ function brackets(){
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
+ const nav=[...document.querySelectorAll('#officialStandingLeagues [data-standing-league]')];
+ nav.forEach(button=>{
+  const active=button.dataset.standingLeague===leagueFilter;
+  button.classList.toggle('is-active',active);
+  button.setAttribute('aria-pressed',String(active));
+  const key=button.dataset.standingLeague;
+  button.textContent=lang()==='en'?({all:'All leagues',lck:'LCK',lpl:'LPL',worlds:'Worlds'}[key]||key):
+   ({all:'全部联赛',lck:'LCK',lpl:'LPL',worlds:'全球总决赛'}[key]||key);
+ });
  const records=consolidatedStandings(data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
     (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))))
     .filter(x=>(kind==='all'||kindOf(x)===kind)&&
@@ -419,6 +432,11 @@ function standings(){
   const stageNote=selected.is_combined?'<p class="fixtures-ranking-note">'+
    safe(lang()==='zh'?'同赛段分组集中展示，排名与战绩来自已核验数据源；不等同于全年总榜。':'Grouped verified phase records, not full-season standings.')+'</p>':
    selected.title==='LCK · Round 3-4 Legend Group'?'<p class="fixtures-ranking-note">'+safe(copy.lckStageNote)+'</p>':'';
+  const rules=selected.phase_family==='lck-2026-round34'?
+   (lang()==='zh'?'赛制规则：传奇组第1—2名进入季后赛第二轮，第3—4名进入季后赛第一轮，第5名进入入围赛；崛起组第1—3名进入入围赛，第4—5名淘汰。':'Format: Legend top 2 to playoff R2, next 2 to R1, fifth to play-in; Rise top 3 to play-in, bottom 2 eliminated.'):
+   selected.phase_family==='lpl-2026-split3'?
+   (lang()==='zh'?'赛制规则：登峰组前2名进入胜者组半决赛，第3—6名进入胜者组四分之一决赛，第7—8名及涅槃组前2名进入骑士之路；涅槃组后2名淘汰。':'Format: Ascend top 2 to upper semifinals, next 4 to upper quarterfinals; bottom 2 and Nirvana top 2 to qualification. Nirvana bottom 2 eliminated.'):'';
+  const rulesNote=rules?'<p class="fixtures-ranking-note">'+safe(rules+(lang()==='zh'?' 仅说明赛制，当前排名不自动判定已晋级。':' Rules only; published ranks do not automatically confirm qualification.'))+'</p>':'';
   const missingNote=selected.missing_groups?.length?'<p class="fixtures-ranking-note is-stale">'+
    safe((lang()==='zh'?'以下分组暂未获得可靠数据：':'Missing verified groups: ')+selected.missing_groups.join(' / '))+'</p>':'';
   const staleNote=selected.status==='stale'?'<p class="fixtures-ranking-note is-stale">'+
@@ -449,7 +467,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+missingNote+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+missingNote+rulesNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
@@ -504,7 +522,13 @@ refs.bracketQuick.addEventListener('click',e=>{
  refs.bracketSelect.value=btn.dataset.fixturesTournament;
  render();
 });
-refs.standingSport.addEventListener('change',render);
+document.querySelectorAll('#officialStandingLeagues [data-standing-league]').forEach(button=>
+ button.addEventListener('click',()=>{
+  leagueFilter=button.dataset.standingLeague;
+  refs.standingSport.value='all';
+  render();
+ }));
+refs.standingSport.addEventListener('change',()=>{leagueFilter='all';render();});
 refs.standingSelect.addEventListener('change',render);
 refs.standingQuick.addEventListener('click',event=>{
  const button=event.target.closest('[data-fixtures-standing]');
