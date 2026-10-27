@@ -116,6 +116,7 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
 assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("viz.stageOf"), 'Diagram stage selector missing');
+assert(fixtureJS.includes('viz.connect(refs.bracket,chosen,opts.events)'), 'Swiss confirmed edges must connect to verified event history');
 assert(html.includes('<option value="swiss" selected>'), 'Feature verified 2026 Worlds Swiss by default');
 const fixtureStyles=readFileSync('fixtures.css','utf8');
 assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 auto!important'),
@@ -123,7 +124,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.18') && html.includes('bracket-viz.js?v=20261027.4') && html.includes('fixtures.css?v=20261027.11'),
+assert(html.includes('fixtures.js?v=20261027.19') && html.includes('bracket-viz.js?v=20261027.5') && html.includes('fixtures.css?v=20261027.12'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -258,6 +259,11 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  if(Array.isArray(snapshot.stage_matches)&&snapshot.stage_matches.length>=20){
    const timeline=swissAPI.inferRounds(snapshot.stage_matches);
    assert(timeline,'Worlds Swiss full history should yield a verified nonfabricated round timeline');
+   const links=swissAPI.verifiedTransitions(timeline);
+   assert(links.has('0-0|1-0')&&links.has('2-0|ADVANCES'),
+    'Confirmed Swiss win/loss paths must derive from actual results');
+   assert(!links.has('2-2|ADVANCES'),
+    'Unplayed fifth-round progress must not be marked confirmed');
    const counts=timeline.matches.reduce((m,x)=>(m[x.round]=(m[x.round]||0)+1,m),{});
    assert(counts[1]===8&&counts[2]===8&&counts[3]===8,'First three Swiss rounds must be complete');
    assert([...timeline.stages[1].values()].filter(x=>x.wins===1).length===8,'After R1 should have 8 teams at 1-0');
