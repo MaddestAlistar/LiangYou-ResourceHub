@@ -27,7 +27,7 @@ function cleanMatches(round){
   if(!m||!m.home||!m.away)continue;
   const scorePair=[num(m.score_home),num(m.score_away)];
   const order=[norm(m.home),norm(m.away)].sort().join('|');
-  const sig=order+'|'+norm(m.winner)+'|'+[
+  const sig=m.match_id?'id:'+String(m.match_id):order+'|'+norm(m.winner)+'|'+[
     norm(m.home)<norm(m.away)?scorePair.join(':'):scorePair.reverse().join(':')].join('');
   if(set.has(sig))continue;
   set.add(sig);out.push(m);
@@ -287,20 +287,49 @@ function groups(record,opt={}){
  const lang=opt.lang||'zh',team=opt.team||(v=>v);
  const all=(record.groups||[]).filter(x=>x&&x.team&&Number.isInteger(x.rank));
  const bins=new Map();
- for(const row of all){const key=row.group||z('赛段','Stage',lang);if(!bins.has(key))bins.set(key,[]);bins.get(key).push(row);}
- // Build with records only, not an invented A/B/C group or qualification slot.
- const content=[...bins].map(([name,rows])=>'<section class="lyb-group"><h4>'+html(name)+'</h4>'+
-  rows.sort((a,b)=>a.rank-b.rank).map(row=>'<div class="lyb-group-team"><span>'+
-  html(team(row.team))+'</span><b>'+((Number.isInteger(row.wins)&&Number.isInteger(row.losses))?
-  row.wins+'-'+row.losses:'—')+'</b></div>').join('')+'</section>').join('');
+ for(const row of all){
+  const key=row.group||z('赛段','Stage',lang);
+  if(!bins.has(key))bins.set(key,[]);
+  bins.get(key).push(row);
+ }
+ const nameOf=v=>({
+  'Legend Group':z('传奇组','Legend Group',lang),
+  'Rise Group':z('崛起组','Rise Group',lang),
+  'Group Ascend':z('登峰组','Group Ascend',lang),
+  'Group Nirvana':z('涅槃组','Group Nirvana',lang)
+ })[v]||v;
+ const lck=record.phase_family==='lck-2026-round34',lpl=record.phase_family==='lpl-2026-split3';
+ const rule=(name,rank)=>{
+  if(lck&&name==='Legend Group')return rank<=2?z('季后赛第2轮','Playoff R2',lang):
+   rank<=4?z('季后赛第1轮','Playoff R1',lang):z('入围赛','Play-in',lang);
+  if(lck&&name==='Rise Group')return rank<=3?z('入围赛','Play-in',lang):z('淘汰','Eliminated',lang);
+  if(lpl&&name==='Group Ascend')return rank<=2?z('胜者组半决赛','Upper SF',lang):
+   rank<=6?z('胜者组八强赛','Upper QF',lang):z('骑士之路','Knights Rivals',lang);
+  if(lpl&&name==='Group Nirvana')return rank<=2?z('骑士之路','Knights Rivals',lang):z('淘汰','Eliminated',lang);
+  return '';
+ };
+ const content=[...bins].map(([name,rows])=>'<section class="lyb-group"><h4>'+html(nameOf(name))+'</h4>'+
+  rows.sort((a,b)=>a.rank-b.rank).map(row=>{
+   const destination=rule(name,row.rank);
+   return '<div class="lyb-group-team"><span><b class="lyb-group-rank">'+num(row.rank)+'</b> '+
+    html(team(row.team))+'</span><div class="lyb-group-meta"><strong>'+
+    ((Number.isInteger(row.wins)&&Number.isInteger(row.losses))?row.wins+'-'+row.losses:'—')+'</strong>'+
+    (destination?'<small>'+html(destination)+'</small>':'')+'</div></div>';
+  }).join('')+'</section>').join('');
+ const missing=Array.isArray(record.missing_groups)?record.missing_groups:[];
+ const notice=missing.length?'<p class="lyb-group-warning">'+
+  html(z('以下分组尚无已核验数据：','Missing verified groups: ',lang)+missing.map(nameOf).join(' / '))+'</p>':'';
+ const caution=(lck||lpl)?'<p class="lyb-caption">'+
+   z('分组箭头描述2026年赛制规定的名次去向，不等于已确认的晋级结果。',
+   'Position labels describe the 2026 competition format, not confirmed advancement.',lang)+'</p>':'';
  return '<div class="lyb-visual"><div class="lyb-visual-top"><strong>GROUP STAGE</strong><span>'+
-  z('分组赛 · 出线阶段','Group stage',lang)+'</span></div>'+
-  '<div class="lyb-group-flow"><div class="lyb-groups">'+content+'</div>'+
+  z('分组积分与晋级通道','Group standings & qualification routes',lang)+'</span></div>'+
+  notice+'<div class="lyb-group-flow"><div class="lyb-groups">'+content+'</div>'+
   '<div class="lyb-qualify"><div class="lyb-qualify-mark">↗</div><strong>'+
-  z('出线阶段','Qualification',lang)+'</strong><span>'+z('待官方确认','Pending confirmation',lang)+
-  '</span></div></div></div>';
+  z('阶段去向','Stage outcomes',lang)+'</strong><span>'+
+  z('按赛制映射 / 等待最终确认','Rules only / results verified separately',lang)+
+  '</span></div></div>'+caution+'</div>';
 }
-
 const swissEdges=[
  ['0-0','1-0'],['0-0','0-1'],
  ['1-0','2-0'],['1-0','1-1'],['0-1','1-1'],['0-1','0-2'],
