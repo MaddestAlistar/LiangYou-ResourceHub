@@ -287,8 +287,16 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
        .filter(previous=>ids.has(String(previous.match_id))).length;
    const markup=swissAPI.knockout(board,{lang:'zh'});
    assert(markup.includes('lyb-knockout-map'),'Verified knockout map missing: '+board.title);
-   assert.equal((markup.match(/class="lyb-bracket-edge /g)||[]).length,knownLinks,
+   const edges=[...markup.matchAll(/<path class="lyb-bracket-edge [^"]+" data-from="([^"]+)" data-to="([^"]+)"/g)];
+   assert.equal(edges.length,knownLinks,
      'Only provider-connected predecessors may produce lines: '+board.title);
+   const positioned=[...markup.matchAll(/<article class="lyb-match" data-match-id="([^"]+)" style="left:(\\d+)px;/g)];
+   const coords=new Map(positioned.map(m=>[m[1],Number(m[2])]));
+   for(const edge of edges){
+     const before=coords.get(edge[1]),after=coords.get(edge[2]);
+     assert(Number.isFinite(before)&&Number.isFinite(after)&&after>before,
+       'Verified route must always progress rightwards: '+board.title+' '+edge[1]+' -> '+edge[2]);
+   }
    if(all.some(m=>m.bracket_side==='lower')&&all.some(m=>m.bracket_side==='upper')){
      assert(markup.includes('胜者组')&&markup.includes('败者组'),
        'Double-elimination lanes must stay distinct: '+board.title);
