@@ -531,3 +531,8 @@
  .fixtures-predict-percent{font-size:22px}
  .fixtures-predict-foot{font-size:9px}
 }
+
+/* Professionally verified Go player rating metadata, compact on phones. */
+.fixtures-go-ratings{margin:10px 0 7px;padding:9px 11px;color:#becddd;border:1px solid rgba(147,174,196,.22);background:rgba(18,38,57,.4);border-radius:10px;font-size:11px;line-height:1.8;overflow-wrap:anywhere}
+.fixtures-go-ratings a{color:#e6c88d;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:720px){.fixtures-go-ratings{font-size:10px;padding:8px 10px}}
