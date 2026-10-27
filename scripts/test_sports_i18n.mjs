@@ -88,10 +88,14 @@ assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
 assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("_mode:'group'"), 'Group-stage selector missing');
+assert(html.includes('<option value="knockout" selected>'), 'The bracket view should default to playoffs');
+const fixtureStyles=readFileSync('fixtures.css','utf8');
+assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 auto!important'),
+ 'Reset desktop flex-basis for mobile columns to avoid large empty gaps');
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.6'),
+assert(html.includes('fixtures.js?v=20261027.14') && html.includes('fixtures.css?v=20261027.7'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -263,7 +267,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'esports'}];
  ui.get('officialBracketSport').value='all';
   ui.get('officialBracketStage').options=[{value:'all'},{value:'group'},{value:'knockout'}];
-  ui.get('officialBracketStage').value='all';
+  ui.get('officialBracketStage').value='knockout';
  ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
  ui.get('officialStandingSport').value='all';
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
@@ -272,6 +276,9 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
+  assert(ui.get('officialBracketStage').value==='knockout', 'Knockout should be the initial stage');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'),
+    'Esports bracket must initially render genuine knockout matches');
   assert(ui.get('officialBracketQuick').innerHTML==='', 'Redundant tournament buttons still shown');
   assert(ui.get('officialBracketSelect').options.length>=snapshot.brackets.length,
     'Bracket dropdown must contain each collected knockout tournament');
