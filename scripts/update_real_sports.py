@@ -370,6 +370,7 @@ def nba_standings(key,now):
 def discover_lol_tournaments(key,now):
     """Discover authentic LoL knockout and group stages beyond general match pages."""
     found=[]
+    seen=set()
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
     for period in PANDA_LOL_TOURNAMENTS:
         try:
@@ -380,6 +381,7 @@ def discover_lol_tournaments(key,now):
             if not isinstance(payload,list):continue
             for row in payload:
                 if not isinstance(row,dict) or not isinstance(row.get("id"),int):continue
+                if row["id"] in seen:continue
                 stage=name(row.get("name")).lower()
                 is_group=any(word in stage for word in
                              ("group","swiss","regular","round robin","league phase"))
@@ -391,6 +393,7 @@ def discover_lol_tournaments(key,now):
                 league=row.get("league") or {}
                 label=name(league.get("name") if isinstance(league,dict) else "") or "英雄联盟"
                 title=name(row.get("name")) or "淘汰赛"
+                seen.add(row["id"])
                 found.append({"tournament_id":row["id"],"sport":"lol",
                     "league":label,"tournament_name":title,
                     "has_bracket":row.get("has_bracket") is True,
