@@ -250,6 +250,31 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const raw = readFileSync('data/real-sports.json','utf8');
  const snapshot = JSON.parse(raw);
  assert(Array.isArray(snapshot.brackets) && Array.isArray(snapshot.standings));
+ const actualVizSource=readFileSync('bracket-viz.js','utf8');
+ const swissHost={};
+ vm.runInNewContext(actualVizSource,{window:swissHost,Intl,Date},{timeout:2000});
+ const swissAPI=swissHost.LiangYouBracketViz;
+ if(Array.isArray(snapshot.stage_matches)&&snapshot.stage_matches.length>=20){
+   const timeline=swissAPI.inferRounds(snapshot.stage_matches);
+   assert(timeline,'Worlds Swiss full history should yield a verified nonfabricated round timeline');
+   const counts=timeline.matches.reduce((m,x)=>(m[x.round]=(m[x.round]||0)+1,m),{});
+   assert(counts[1]===8&&counts[2]===8&&counts[3]===8,'First three Swiss rounds must be complete');
+   assert([...timeline.stages[1].values()].filter(x=>x.wins===1).length===8,'After R1 should have 8 teams at 1-0');
+   assert([...timeline.stages[2].values()].filter(x=>x.wins===1&&x.losses===1).length===8,
+    'After R2 should have 8 teams at 1-1');
+   assert([...timeline.stages[3].values()].filter(x=>x.wins===3).length===2,
+    'After R3 verified 3-0 teams should be qualified');
+   const worlds=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
+   if(worlds){
+     const visual=swissAPI.swiss(worlds,{lang:'zh',events:snapshot.stage_matches});
+     assert((visual.match(/lyb-round-results/g)||[]).length>=3,
+      'Swiss page must show historical round matchups rather than one generic list');
+     assert(visual.includes('0-0')&&visual.includes('2-2')&&visual.includes('ADVANCES'));
+   }
+   const incomplete=swissAPI.inferRounds(snapshot.stage_matches.slice(0,7));
+   assert(incomplete===null,'Incomplete Swiss history must not be guessed');
+ }
+
  const localeSource = readFileSync('fixtures.js','utf8');
  const html = readFileSync('index.html','utf8');
  for(const id of ['officialBracketQuick','officialStandingSummary',
