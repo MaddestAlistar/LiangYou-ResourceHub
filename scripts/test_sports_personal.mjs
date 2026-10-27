@@ -95,4 +95,7 @@ assert(api.has('go','김주아'));
 assert(api.has('go','박정환'));
 api.toggle('go','박정환');
 assert(!api.has('go','박정환')&&api.has('go','김주아'));
+api.toggle('go','김주아');
+assert(!api.followingOnly(),'Removing the last followed team must reset empty-only filter');
+assert(!shelf.innerHTML.includes('data-personal-action="mine"'),'Empty mobile tracking area should stay compact');
 console.log('PASS: Personal follows, fixture filter signal, iCalendar export, source health, stable matcher guardrails.');
