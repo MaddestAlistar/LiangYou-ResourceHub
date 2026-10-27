@@ -18,6 +18,9 @@ JOBS = {
     'fixtures': ('update_real_sports.py', 'real-sports.json', 6),
     'extras': ('update_extra_sports.py', 'extra-sports.json', 6),
     'board': ('update_board_games.py', 'board-games.json', 6),
+    'nba': ('update_nba_balldontlie.py', 'nba-games.json', 6),
+    'odds': ('update_odds_reference.py', 'sports-odds.json', 6),
+    'chess_profiles': ('update_chess_players.py', 'chess-players.json', 24),
 }
 
 def verified_time(name, snapshot):
@@ -55,7 +58,9 @@ def main():
         fixtures_upgrade = name == 'fixtures' and read_json(path).get('fixture_schema_version') != 11
         extras_upgrade = name == 'extras' and read_json(path).get('extra_sports_version') != 3
         board_upgrade = name == 'board' and read_json(path).get('board_source_revision') != 5
-        if args.force or kalshi_link_upgrade or coverage_upgrade or fixtures_upgrade or extras_upgrade or board_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
+        new_source_upgrade = (name, read_json(path).get({'nba':'nba_source_version','odds':'odds_schema_version','chess_profiles':'chess_profile_version'}.get(name))) if name in ('nba','odds','chess_profiles') else None
+        needs_source_upgrade = bool(new_source_upgrade and new_source_upgrade[1] != 1)
+        if args.force or kalshi_link_upgrade or coverage_upgrade or fixtures_upgrade or extras_upgrade or board_upgrade or needs_source_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
             entry['last_attempt_at'] = iso()
             try:
                 result = subprocess.run([sys.executable, '-u', str(ROOT / 'scripts' / script)], cwd=ROOT, timeout=900)
@@ -79,7 +84,7 @@ def main():
         jobs = dict(pool.map(refresh, JOBS))
     write_json(ROOT / 'data/update-status.json', {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai', 'watchdog_minutes': 30, 'jobs': jobs})
     # Optional official fixtures must not break the six established working feeds.
-    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board')))
+    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles')))
 
 if __name__ == '__main__':
     raise SystemExit(main())
