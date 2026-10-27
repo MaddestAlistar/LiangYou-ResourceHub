@@ -547,9 +547,13 @@ def main():
     # Bound by sport AND match state, so live activity cannot crowd out the
     # upcoming schedule or the recent finished scores.
     ranked={"live":0,"scheduled":1,"finished":2}
-    ordered=sorted(events.values(),key=lambda x:(ranked.get(x["status"],3),
+    ordered=sorted(events.values(),key=lambda x:(
+                  ranked.get(x["status"],3),
+                  # Keep featured matches even when low-profile fixtures fill the page.
+                  -(x.get("prominence") or popularity(x.get("league"),x.get("stage"),x.get("sport")))
+                    if x["status"]=="scheduled" else 0,
                   -timestamp(x["start_time"]).timestamp() if x["status"]=="finished"
-                  else timestamp(x["start_time"]).timestamp(),
+                    else timestamp(x["start_time"]).timestamp(),
                   x["id"]))
     status_limits={"live":18,"scheduled":26,"finished":16}
     by_bucket={};selected=[]
