@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Verify KOBIS box-office API without logging credentials
+      - name: Verify box-office API from GitHub runner (keep key private)
         env:
           KOFIC_API_KEY: ${{ secrets.KOFIC_API_KEY }}
         run: |
@@ -22,51 +22,58 @@ jobs:
           import os, sys, json, urllib.request, urllib.parse, urllib.error
           from datetime import datetime, timedelta
           from zoneinfo import ZoneInfo
-          key = os.environ.get("KOFIC_API_KEY","").strip()
+          import socket
+          key=os.getenv("KOFIC_API_KEY","").strip()
           if not key:
-              print("KOFIC_PROBE "+json.dumps({"result":"failed","reason":"missing_KOFIC_API_KEY"}))
+              print("KOFIC_PROBE "+json.dumps({"result":"failed","reason":"missing_secret"}))
               sys.exit(1)
-          korea_today = datetime.now(ZoneInfo("Asia/Seoul")).date()
-          daily_date = korea_today - timedelta(days=2)
-          days_since_sunday = (korea_today.weekday()+1)%7
-          sunday = korea_today - timedelta(days=days_since_sunday or 7)
-          checks = [
-              ("daily", "searchDailyBoxOfficeList.json", daily_date.strftime("%Y%m%d"), {}),
-              ("weekend", "searchWeeklyBoxOfficeList.json", sunday.strftime("%Y%m%d"), {"weekGb":"1"}),
+          today=datetime.now(ZoneInfo("Asia/Seoul")).date()
+          yesterday=(today-timedelta(days=2)).strftime("%Y%m%d")
+          days_since_sunday=(today.weekday()+1)%7
+          sunday=(today-timedelta(days=days_since_sunday or 7)).strftime("%Y%m%d")
+          endpoints=[
+              ("daily","searchDailyBoxOfficeList.json",yesterday,{}),
+              ("weekend","searchWeeklyBoxOfficeList.json",sunday,{"weekGb":"1"})
           ]
-          all_ok = True
-          for name,endpoint,target,params in checks:
-              query = urllib.parse.urlencode({"key":key,"targetDt":target,**params})
-              url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/"+endpoint+"?"+query
-              http = None
+          hosts=("www.kobis.or.kr","kobis.or.kr")
+          connected=False
+          for host in hosts:
               try:
-                  with urllib.request.urlopen(urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"LiangYouResourceHub/1.0"}),timeout=25) as resp:
-                      http=resp.status
-                      body=json.load(resp)
-              except urllib.error.HTTPError as exc:
-                  http=exc.code
-                  try: body=json.loads(exc.read(16384))
-                  except Exception: body={}
-              except Exception as exc:
-                  body={"exception_type":type(exc).__name__}
-              if not isinstance(body,dict): body={}
-              payload = body.get("boxOfficeResult",{})
-              field = "dailyBoxOfficeList" if name=="daily" else "weeklyBoxOfficeList"
-              rows = payload.get(field,[]) if isinstance(payload,dict) else []
-              err = body.get("faultInfo")
-              ok = http==200 and isinstance(rows,list) and len(rows)>0
-              if not ok: all_ok=False
-              sample = [
-                  {"rank":r.get("rank"),"movie":r.get("movieNm"),"audience":r.get("audiCnt")}
-                  for r in rows[:3] if isinstance(r,dict)
-              ] if isinstance(rows,list) else []
-              # Never log request URL, credentials, or raw server messages.
-              print("KOFIC_PROBE "+json.dumps({
-                  "endpoint":name,"target_date":target,"http_status":http,
-                  "result":"ok" if ok else "failed",
-                  "has_fault_info":bool(err),"response_keys":list(body.keys())[:6],
-                  "count":len(rows) if isinstance(rows,list) else 0,"sample":sample,
-                  "error_type":body.get("exception_type")
-              },ensure_ascii=False))
-          sys.exit(0 if all_ok else 1)
+                  ips=socket.getaddrinfo(host,443,type=socket.SOCK_STREAM)
+                  print("KOFIC_NETWORK "+json.dumps({"host":host,"dns":"ok","address_count":len(ips)}))
+              except Exception as e:
+                  print("KOFIC_NETWORK "+json.dumps({"host":host,"dns":"failed","reason_type":type(e).__name__}))
+          results={}
+          for host in hosts:
+              for name,endpoint,target,extras in endpoints:
+                  if name in results: continue
+                  url="https://"+host+"/kobisopenapi/webservice/rest/boxoffice/"+endpoint+"?"+urllib.parse.urlencode({"key":key,"targetDt":target,**extras})
+                  status=None;body={}
+                  network_problem=None
+                  try:
+                      req=urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"LiangYouResourceHub/1.0"})
+                      with urllib.request.urlopen(req,timeout=14) as response:
+                          status=response.status
+                          body=json.load(response)
+                  except urllib.error.HTTPError as e:
+                      status=e.code
+                      try: body=json.loads(e.read(8000))
+                      except Exception: body={}
+                  except urllib.error.URLError as e:
+                      network_problem=type(e.reason).__name__
+                  except Exception as e:
+                      network_problem=type(e).__name__
+                  data=body.get("boxOfficeResult",{}) if isinstance(body,dict) else {}
+                  field="dailyBoxOfficeList" if name=="daily" else "weeklyBoxOfficeList"
+                  rows=data.get(field,[]) if isinstance(data,dict) else []
+                  ok=status==200 and isinstance(rows,list) and bool(rows)
+                  print("KOFIC_PROBE "+json.dumps({
+                      "host":host,"endpoint":name,"target_date":target,"http_status":status,
+                      "result":"ok" if ok else "failed","network_error_type":network_problem,
+                      "error_response":bool(body.get("faultInfo")) if isinstance(body,dict) else False,
+                      "count":len(rows) if isinstance(rows,list) else 0,
+                      "sample":[{"rank":r.get("rank"),"movie":r.get("movieNm"),"audience":r.get("audiCnt")} for r in rows[:3] if isinstance(r,dict)]
+                  },ensure_ascii=False))
+                  if ok:results[name]=True
+          sys.exit(0 if len(results)==len(endpoints) else 1)
           PY
