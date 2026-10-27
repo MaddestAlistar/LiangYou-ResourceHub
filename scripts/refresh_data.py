@@ -54,7 +54,7 @@ def main():
         coverage_upgrade = name in ('kalshi','sports') and read_json(path).get('coverage_schema_version') != 2
         fixtures_upgrade = name == 'fixtures' and read_json(path).get('fixture_schema_version') != 11
         extras_upgrade = name == 'extras' and read_json(path).get('extra_sports_version') != 3
-        board_upgrade = name == 'board' and read_json(path).get('board_source_revision') != 3
+        board_upgrade = name == 'board' and read_json(path).get('board_source_revision') != 4
         if args.force or kalshi_link_upgrade or coverage_upgrade or fixtures_upgrade or extras_upgrade or board_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
             entry['last_attempt_at'] = iso()
             try:
