@@ -349,7 +349,7 @@ def panda_standings(raw,tournament_id,label):
             if rank is not None:
                 entries.append({"rank":rank,"team":name(team["name"]),
                                 "wins":wins,"losses":losses,
-                                "group":name(value.get("group", ""))})
+                                "group":name(value.get("group", {}).get("name", "") if isinstance(value.get("group"),dict) else value.get("group", ""))})
             return
         for key in ("standings","groups","rows","teams","results","rankings","participants","entries"):
             if isinstance(value.get(key),(list,dict)):
@@ -409,38 +409,48 @@ def nba_standings(key,now):
 
 
 def discover_lol_tournaments(key,now):
-    """Discover authentic LoL knockout and group stages beyond general match pages."""
+    """Discover running and recent historical league phases with bounded pagination.
+
+    PandaScore's general top-match discovery can omit quieter sister groups.
+    Check up to two recent past pages so LCK Rise / LPL Nirvana can be found.
+    """
     found=[]
     seen=set()
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
     for period in PANDA_LOL_TOURNAMENTS:
-        try:
-            url=PANDA_ROOT+"/lol/tournaments/"+period+"?"+urlencode({
-                "page[size]":80,"page[number]":1,
-                "sort":"-end_at" if period=="past" else "-begin_at"})
-            payload=json_request(url,headers)
-            if not isinstance(payload,list):continue
-            for row in payload:
-                if not isinstance(row,dict) or not isinstance(row.get("id"),int):continue
-                if row["id"] in seen:continue
-                stage=name(row.get("name")).lower()
-                is_group=any(word in stage for word in
-                             ("group","swiss","regular","round robin","league phase"))
-                if row.get("has_bracket") is not True and not is_group:continue
-                end=timestamp(row.get("end_at"))
-                start=timestamp(row.get("begin_at"))
-                if end and end < now-dt.timedelta(days=150):continue
-                if start and start > now+dt.timedelta(days=45):continue
-                league=row.get("league") or {}
-                label=name(league.get("name") if isinstance(league,dict) else "") or "英雄联盟"
-                title=name(row.get("name")) or "淘汰赛"
-                seen.add(row["id"])
-                found.append({"tournament_id":row["id"],"sport":"lol",
-                    "league":label,"tournament_name":title,
-                    "has_bracket":row.get("has_bracket") is True,
-                    "source":"tournament"})
-        except Exception:
-            print("PandaScore LoL tournament discovery: %s unavailable" % period,flush=True)
+        for page in range(1,3 if period=="past" else 2):
+            try:
+                url=PANDA_ROOT+"/lol/tournaments/"+period+"?"+urlencode({
+                    "page[size]":100,"page[number]":page,
+                    "sort":"-end_at" if period=="past" else "-begin_at"})
+                payload=json_request(url,headers)
+                if not isinstance(payload,list) or not payload:break
+                historic=0
+                for row in payload:
+                    if not isinstance(row,dict) or not isinstance(row.get("id"),int):continue
+                    if row["id"] in seen:continue
+                    stage=name(row.get("name")).lower()
+                    is_group=any(word in stage for word in
+                                 ("group","swiss","regular","round robin","league phase"))
+                    if row.get("has_bracket") is not True and not is_group:continue
+                    end=timestamp(row.get("end_at"))
+                    start=timestamp(row.get("begin_at"))
+                    if end and end < now-dt.timedelta(days=150):
+                        historic+=1
+                        continue
+                    if start and start > now+dt.timedelta(days=45):continue
+                    league=row.get("league") or {}
+                    label=name(league.get("name") if isinstance(league,dict) else "") or "英雄联盟"
+                    title=name(row.get("name")) or "淘汰赛"
+                    seen.add(row["id"])
+                    found.append({"tournament_id":row["id"],"sport":"lol",
+                        "league":label,"tournament_name":title,
+                        "has_bracket":row.get("has_bracket") is True,
+                        "source":"tournament"})
+                if period=="past" and (len(payload)<100 or historic>60):break
+            except Exception:
+                print("PandaScore LoL tournament discovery: %s page %d unavailable"%(period,page),flush=True)
+                break
     return found
 
 
