@@ -81,6 +81,8 @@ assert(html.includes('data-sports-t="richHint"'));
 assert(html.includes('id="officialFixtures"') && html.includes('id="officialFixturesGrid"'));
 assert(html.includes('fixtures.js?v=20261027.4') && html.includes('fixtures.css?v=20261027.3'));
 const fixtureJS = readFileSync('fixtures.js','utf8');
+assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
+assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));

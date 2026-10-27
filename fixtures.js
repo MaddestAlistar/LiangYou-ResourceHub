@@ -18,7 +18,7 @@ zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
- sorts:['热门优先','时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],
+ sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球'],
  first:'正在等待官方赛事资料首次同步，不显示模拟比赛。',
  empty:'暂未采集到符合条件的比赛，请换个日期、项目或关键词。',
@@ -29,7 +29,7 @@ zh:{title:'赛事日历与赛事资料',
  total:n=>'已收录未来7天 '+n+' 场',shown:(n,t)=>'已显示 '+n+' / '+t+' 场',
  more:'加载更多赛程',round:'轮次',draw:'待定',rank:'排名',
  team:'战队 / 球队',wins:'胜',losses:'负',feature:'重点赛事',vs:'对阵',
- source:'来源',note:'数据来自 API-Sports 与 PandaScore，约每6小时采集。热门优先是按赛事级别设置的编辑排序，不代表实时观看人数；晋级关系、积分只显示实际返回的数据。下方预测市场独立展示。',
+ source:'来源',note:'数据来源：API-Sports 与 PandaScore，约每6小时采集。热门优先按世界赛、LPL/LCK、NBA、知名电竞赛事的重要程度排序，并非真实观众人数；晋级关系和积分仅展示已核验内容。预测市场独立展示。',
  market:'赛前预测市场'},
 en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
@@ -60,11 +60,15 @@ const localize=(v,category='')=>{
  const specials={
  'Worlds':'英雄联盟全球总决赛','World Championship':'全球总决赛',
  'MSI':'季中冠军赛','LPL':'英雄联盟职业联赛 LPL','LCK':'韩国英雄联盟联赛 LCK',
+ 'LCK Challengers League':'LCK 次级联赛','LCP':'太平洋英雄联盟联赛 LCP',
+ 'LGC Rising':'英雄联盟 LGC 新星赛','EPL World Series':'EPL 世界系列赛',
+ 'DFRAG Invitational':'DFRAG 邀请赛',
  'LEC':'欧洲英雄联盟联赛 LEC','LCS':'北美英雄联盟联赛 LCS',
  'PGL Masters':'PGL 大师赛','VCT':'无畏契约冠军巡回赛 VCT',
+ 'VCT Game Changers':'VCT 改变者赛','PGL Masters Bucharest':'PGL 布加勒斯特大师赛',
  'NBA':'NBA 美国职业篮球联赛','NBA W':'WNBA 美国女子职业篮球联赛',
  'Eastern Conference':'东部联盟','Western Conference':'西部联盟',
- 'Group Stage':'小组赛','Playoffs':'淘汰赛','Regular Season':'常规赛',
+ 'Group Stage':'小组赛','Playoffs':'淘汰赛','Play-In':'入围赛','Play-Ins':'入围赛','Regular Season':'常规赛',
  'Swiss Stage':'瑞士轮','Quarterfinals':'四分之一决赛',
  'Semifinals':'半决赛','Final':'决赛','Grand Final':'总决赛',
  'Finals':'决赛','Round of 16':'十六强赛','Ranking':'排名'
@@ -74,6 +78,13 @@ const localize=(v,category='')=>{
  if(raw==='League of Legends')return '英雄联盟';
  // Only translate known competitive terms; unknown proper names stay original.
  return raw.replace(/\bWorlds\b/g,'全球总决赛').replace(/\bMSI\b/g,'季中冠军赛')
+ .replace(/\bLCK Challengers League\b/gi,'LCK 次级联赛')
+ .replace(/\bLGC Rising\b/gi,'英雄联盟 LGC 新星赛')
+ .replace(/\bEPL World Series\b/gi,'EPL 世界系列赛')
+ .replace(/\bDFRAG Invitational\b/gi,'DFRAG 邀请赛')
+ .replace(/\bPGL Masters\b/gi,'PGL 大师赛')
+ .replace(/\bVCT\b/gi,'无畏契约冠军巡回赛 VCT')
+ .replace(/\bPlay.Ins?\b/gi,'入围赛')
  .replace(/\bGroup Stage\b/gi,'小组赛').replace(/\bSwiss Stage\b/gi,'瑞士轮')
  .replace(/\bPlayoffs\b/gi,'淘汰赛').replace(/\bKnockout Stage\b/gi,'淘汰赛')
  .replace(/\bRegular Season\b/gi,'常规赛').replace(/\bQualifiers?\b/gi,'资格赛')
@@ -87,10 +98,23 @@ const localize=(v,category='')=>{
  .replace(/\bRound (\d+)\b/gi,'第$1轮');
 };
 const team=(v,sport)=>{
- const raw=String(v??'');
+ const raw=String(v??'').trim();
  if(lang()==='en')return raw;
- const hit=translations?.team?.(raw,sport,'zh') || raw;
- return hit;
+ // Known Chinese team names only. Unknown brands remain in official spelling.
+ const known={
+  'T1':'T1','Bilibili Gaming':'BLG（哔哩哔哩）','Top Esports':'TES（滔搏）',
+  'Invictus Gaming':'IG','Gen.G Esports':'GEN',
+  'Hanwha Life Esports':'HLE（韩华生命）','CTBC Flying Oyster':'CFO（中信飞牡蛎）',
+  'Karmine Corp':'KC','G2 Esports':'G2',
+  'Boston Celtics':'波士顿凯尔特人','Los Angeles Lakers':'洛杉矶湖人',
+  'Golden State Warriors':'金州勇士','New York Knicks':'纽约尼克斯',
+  'Brooklyn Nets':'布鲁克林篮网','Denver Nuggets':'丹佛掘金',
+  'San Antonio Spurs':'圣安东尼奥马刺','Detroit Pistons':'底特律活塞',
+  'Sacramento Kings':'萨克拉门托国王','Philadelphia 76ers':'费城76人',
+  'Miami Heat':'迈阿密热火','Cleveland Cavaliers':'克利夫兰骑士',
+  'Atlanta Hawks':'亚特兰大老鹰','Toronto Raptors':'多伦多猛龙'
+ };
+ return known[raw]||translations?.team?.(raw,sport,'zh')||raw;
 };
 const when=v=>{
  const d=new Date(v);
@@ -171,7 +195,7 @@ function calendar(){
 function kindOf(v){
  if(v.sport)return v.sport;
  if(v.kind==='basketball')return 'basketball';
- return /worlds|\blol\b|lpl|lck|lgc|lec|msi/i.test(v.title||'')?'lol':'esports';
+ return /worlds|league of legends|\blol\b|\blpl\b|\blck\b|\blcp\b|\blgc\b|\blec\b|\bmsi\b/i.test(v.title||'')?'lol':'esports';
 }
 function options(select,items){
  const current=select.value;

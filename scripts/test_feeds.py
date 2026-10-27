@@ -375,6 +375,29 @@ class FeedRules(unittest.TestCase):
         raw["opponents"]=[]
         self.assertIsNone(real.pandascore_row(raw,now))
 
+    def test_diversified_esports_standings_budget(self):
+        import update_real_sports as real
+        records=[
+          {"tournament_id":i,"sport":"lol","league":"Worlds","tournament_name":"Group Stage"}
+          for i in range(1,9)
+        ]+[
+          {"tournament_id":i,"sport":"esports","league":"PGL Masters","tournament_name":"Group Stage"}
+          for i in range(100,104)
+        ]
+        called=[]
+        def fake_get(url,headers):
+            called.append(url)
+            if "/standings?" in url:
+                ident=int(url.split("/tournaments/")[1].split("/")[0])
+                return [{"team":{"name":"Team"+str(ident)},"rank":1,"wins":2,"losses":0}]
+            return []
+        with patch.object(real,"json_request",side_effect=fake_get):
+            _,standings=real.tournament_extras(records,"dummy")
+        self.assertEqual(len(standings),6)
+        self.assertEqual(sum(s["sport"]=="lol" for s in standings),4)
+        self.assertEqual(sum(s["sport"]=="esports" for s in standings),2)
+        self.assertLessEqual(len(called),real.MAX_STANDINGS_REQUESTS)
+
     def test_official_collectors_rate_budget(self):
         import update_real_sports as real
         self.assertEqual(len(real.FOOTBALL),5)
