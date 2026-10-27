@@ -301,13 +301,6 @@
 .fixtures-ranking-note.is-stale{border:1px solid rgba(224,169,95,.37);background:rgba(210,146,67,.10);color:#f0cf9e;padding:7px 9px;border-radius:8px;margin:5px 3px 10px}
 
 
-/* 2026 competition cockpit: thumb-friendly league navigation */
-.fixtures-league-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding:4px 1px 12px;
- overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
-.fixtures-league-tabs button{flex:0 0 auto;min-height:39px;padding:8px 14px;border:1px solid rgba(145,174,209,.32);
- border-radius:999px;background:rgba(20,41,65,.72);color:#bed0df;font-size:12px;font-weight:700;cursor:pointer}
-.fixtures-league-tabs button.is-active{border-color:#dfbf82;background:rgba(222,185,120,.13);color:#ffe3af}
-.fixtures-league-tabs button:focus-visible{outline:2px solid #e4bf7c;outline-offset:3px}
 .fixtures-standing-card .fixtures-ranking{font-variant-numeric:tabular-nums}
 .fixtures-standing-group h4{overflow-wrap:anywhere}
 .fixtures-standing-tables .fixtures-ranking-note{max-width:900px}
@@ -320,8 +313,6 @@
  font-size:9px;font-weight:700;padding:4px 7px 1px;min-height:17px}
 .lyb-match-meta span{color:#d9bd8d}
 @media(max-width:680px){
- .fixtures-league-tabs{margin-inline:-2px}
- .fixtures-league-tabs button{min-height:42px;font-size:12px}
  .fixtures-subhead .fixtures-multiselect{gap:7px}
  .fixtures-standing-group{max-width:100%;overflow:hidden}
  .fixtures-ranking:not(.is-football){min-width:340px}
@@ -329,7 +320,7 @@
  .lyb-visual-top{padding:12px 12px 9px}
 }
 @media(prefers-reduced-motion:reduce){
- .fixtures-league-tabs,.lyb-scroll{scroll-behavior:auto}
+ .lyb-scroll{scroll-behavior:auto}
 }
 
 /* Group progression is driven by published group ranks, with rule-only destinations. */
@@ -342,3 +333,36 @@
  border-radius:10px;color:#f0d6a9;background:rgba(201,142,66,.1);font-size:11px;line-height:1.6}
 .lyb-group-flow+.lyb-caption{margin-top:0}
 @media(max-width:680px){.lyb-groups{grid-template-columns:1fr}.lyb-group-team{align-items:center}}
+
+/* Compact bracket navigation and swipe affordance for real phone widths. */
+.lyb-knockout-gesture{display:flex;justify-content:space-between;align-items:center;gap:10px;
+ padding:8px 14px 2px;font-size:10px;color:#91a8bd;line-height:1.45}
+.lyb-knockout-gesture span:last-child{white-space:nowrap;color:#d1b783;font-weight:650}
+.lyb-multi-lane .lyb-round-name{font-size:11px;line-height:1.3;font-weight:800;
+ text-align:left;padding-left:2px;color:#dce8f3;overflow:hidden;text-overflow:ellipsis}
+.lyb-multi-lane .lyb-match{min-height:0;height:95px;box-sizing:border-box;
+ border-radius:11px;box-shadow:0 7px 18px rgba(0,0,0,.22)}
+.lyb-multi-lane .lyb-team{min-height:27px;box-sizing:border-box;padding:4px 2px}
+.lyb-multi-lane .lyb-match-meta{min-height:15px;padding:0 2px 3px}
+.lyb-multi-lane .lyb-lane-label{font-size:12px;letter-spacing:.02em}
+.lyb-visual-top{position:relative}
+.lyb-scroll{touch-action:pan-x pan-y;scrollbar-gutter:stable;scroll-padding-inline:14px}
+.lyb-multi-lane{background-size:282px 100%}
+@media(max-width:680px){
+ .fixtures-subpanel>.fixtures-subhead:first-child{margin-top:4px}
+ .fixtures-standing .fixtures-standing-card{max-width:100%}
+ .lyb-visual{border-radius:12px}
+ .lyb-visual-top{gap:3px;padding:11px 10px 7px}
+ .lyb-visual-top strong{font-size:11px;letter-spacing:.07em}
+ .lyb-visual-top span{font-size:10px}
+ .lyb-bracket-disclaimer{padding:8px 11px 4px;line-height:1.5}
+ .lyb-knockout-gesture{padding:6px 11px 2px}
+ .lyb-knockout-map.is-mobile{background-size:214px 100%}
+ .lyb-knockout-map.is-mobile .lyb-match{height:91px;min-height:0;padding:6px 7px}
+ .lyb-knockout-map.is-mobile .lyb-team{font-size:11px;min-height:27px;padding:3px 2px}
+ .lyb-knockout-map.is-mobile .lyb-team b{font-size:12px;min-width:15px}
+ .lyb-knockout-map.is-mobile .lyb-round-name{font-size:10px}
+ .lyb-knockout-map.is-mobile .lyb-lane-label{font-size:11px}
+ .lyb-knockout-map.is-mobile .lyb-match-meta{font-size:9px}
+ .fixtures-standing-group h4{font-size:12px}
+}
