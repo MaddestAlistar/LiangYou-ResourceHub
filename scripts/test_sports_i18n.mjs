@@ -108,6 +108,13 @@ assert.equal(bt.player('Unknown, Player','chess','zh'),'Unknown, Player',
 assert.equal(bt.league('Benidorm Chess Open 2026 | Group A','chess','en'),'Benidorm Chess Open 2026 | Group A');
 assert.equal(bt.stage('Round 6','chess','en'),'Round 6');
 assert.equal(bt.player('김주아','go','en','Kim Jooah'),'Kim Jooah');
+assert(fixtures.includes('function renderGoPlayerRating(x,side,zh)'), 'Go player cards must be structured and independently rendered');
+assert(fixtures.includes('fixtures-go-event-name') && fixtures.includes('fixtures-go-event-meta'), 'Go match title and metadata must have separate hierarchy');
+assert(fixtures.includes('fixtures-go-player-grid') && fixtures.includes("renderGoPlayerRating(x,'home',label)+renderGoPlayerRating(x,'away',label)"), 'Both Go players must have separate rating cards');
+assert(fixtures.includes('fixtures-go-summary-foot') && fixtures.includes('fixtures-go-source-links'), 'Go rating sources and caveat must be in their own footer');
+assert(!fixtures.includes('fixtures-go-ratings'), 'Legacy inline Go rating text must be removed');
+assert(styles.includes('grid-template-columns:repeat(2,minmax(0,1fr))')&&styles.includes('.fixtures-go-player-grid')&&styles.includes('@media(max-width:360px)'),
+ 'Go detail player cards must be mobile responsive');
 assert(fixtures.includes('const boardTranslations=window.LiangYouBoardI18n')&&
  fixtures.includes("boardTranslations?.player?.")&&fixtures.includes("boardTranslations?.stage?."),
  'Localized league/round/player rendering must be connected');
