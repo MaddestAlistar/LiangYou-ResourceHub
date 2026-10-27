@@ -456,6 +456,18 @@ def tournament_extras(matches,key,discoveries=None):
     lol_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]=="lol"]
     other_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]!="lol"]
     rank_choices=spread_by_league(lol_rank,4)+spread_by_league(other_rank,2)
+    # Always retain a true Worlds Swiss/group stage when published.
+    # A high-profile Play-In must not crowd out the main Worlds progression map.
+    worlds_stage=next((tid for tid in lol_rank if
+        re.search(r"worlds|world championship|全球总决赛",candidates[tid]["title"],re.I)
+        and re.search(r"group|swiss|小组|瑞士",candidates[tid]["title"],re.I)),None)
+    if worlds_stage is not None and worlds_stage not in rank_choices:
+        selected_lol=[i for i,tid in enumerate(rank_choices)
+                      if candidates[tid]["sport"]=="lol"]
+        if selected_lol:
+            rank_choices[selected_lol[-1]]=worlds_stage
+        elif len(rank_choices)<MAX_STANDINGS_REQUESTS:
+            rank_choices.append(worlds_stage)
     for tid in ranked_candidates:
         if len(rank_choices)>=MAX_STANDINGS_REQUESTS:break
         if tid not in rank_choices:rank_choices.append(tid)
