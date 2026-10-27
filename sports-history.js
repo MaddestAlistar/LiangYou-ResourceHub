@@ -38,6 +38,7 @@ function load(){
  .catch(error=>{historyPromise=null;throw error;});
  return historyPromise;
 }
+const providerLabel={polymarket:'Polymarket',predict:'Predict.fun',kalshi:'Kalshi'};
 function snapshots(fixture,raw){
  const link=window.LiangYouSportsLinks;
  const markets=link?.marketsFor(fixture,window.LiangYouMarketRecords||[])||[];
@@ -101,7 +102,7 @@ function show(container,records,range='1',selected=null){
   '" aria-pressed="'+(range===value)+'">'+label+'</button>';
  container.innerHTML='<div class="sports-trend-bar"><label>'+encode(t.choose)+
   '<select data-history-provider>'+records.map(item=>'<option value="'+encode(item.key)+'"'+
-  (item.key===chosen.key?' selected':'')+'>'+encode(item.provider)+'</option>').join('')+'</select></label>'+
+  (item.key===chosen.key?' selected':'')+'>'+encode(providerLabel[item.provider]||item.provider)+'</option>').join('')+'</select></label>'+
   '<div>'+button('1',t.day)+button('7',t.week)+'</div></div>'+
   plot(chosen,Number(range))+
   '<p class="sports-trend-note">'+encode(t.note)+'</p>';
