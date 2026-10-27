@@ -214,13 +214,16 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
  'Reset desktop flex-basis for mobile columns to avoid large empty gaps');
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
+assert(fixtureJS.includes("const newest=(a,b)=>Date.parse(b.start_time)-Date.parse(a.start_time)") &&
+       fixtureJS.includes("if(state==='finished')"),
+ 'Verified finished-match calendar must show recent results first');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
 assert(!html.includes('id="officialStandingLeagues"') &&
  !fixtureJS.includes('leagueFilter') && fixtureJS.includes('consolidatedStandings'),
  'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.31') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
+assert(html.includes('fixtures.js?v=20261027.32') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
