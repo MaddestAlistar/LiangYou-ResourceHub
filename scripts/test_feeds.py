@@ -452,7 +452,9 @@ class FeedRules(unittest.TestCase):
             results=real.discover_lol_tournaments("dummy",
                 dt.datetime(2026,10,27,tzinfo=dt.timezone.utc))
         self.assertEqual(len(results),2)
-        self.assertTrue(all(v["tournament_id"]==810 and v["sport"]=="lol" for v in results))
+        self.assertEqual({v["tournament_id"] for v in results},{810,812})
+        self.assertTrue(all(v["sport"]=="lol" for v in results))
+        self.assertTrue(any(not v["has_bracket"] for v in results))
 
     def test_bracket_round_sorting_never_uses_match_title_as_round(self):
         import update_real_sports as real
