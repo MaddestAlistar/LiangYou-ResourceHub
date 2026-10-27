@@ -602,7 +602,8 @@ function calendar(){
   matches=[...matches].sort((a,b)=>refs.sort.value==='time'?newest(a,b):
    popularity(b)-popularity(a)||newest(a,b));
  }else{
-  matches=refs.sort.value==='time'?[...matches].sort((a,b)=>
+  // A personal watchlist is a timeline, not a global popularity leaderboard.
+  matches=(refs.sort.value==='time'||personal?.followingOnly())?[...matches].sort((a,b)=>
    Date.parse(a.start_time)-Date.parse(b.start_time)):topPriority(matches);
  }
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
