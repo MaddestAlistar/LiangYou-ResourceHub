@@ -246,7 +246,20 @@ for(const board of extras.standings){
   assert(Array.isArray(board.groups));
   for(const row of board.groups) assert(Number.isInteger(row.rank)&&row.rank>=1&&row.team);
 }
-assert(html.includes('Data provided by football-data.org'));
+assert(text('fixtures.js').includes('Data provided by football-data.org'), 'Official football attribution must remain in localization');
+const boardGames=JSON.parse(text('data/board-games.json'));
+assert.equal(boardGames.schema,1);
+assert.equal(boardGames.source_type,'board_game_fixtures');
+assert(Array.isArray(boardGames.events)&&Array.isArray(boardGames.sources));
+const boardIds=new Set();
+for(const e of boardGames.events){
+ assert(['lichess','nihonkiin','baduk'].includes(e.provider),'Unsupported verified board-games provider');
+ assert(['chess','go'].includes(e.sport)&&['scheduled','live','finished'].includes(e.status));
+ assert(e.home&&e.away&&Number.isFinite(Date.parse(e.start_time))&&!boardIds.has(e.id));
+ boardIds.add(e.id);
+ if(e.time_precision==='date')assert(/^\d{4}-\d{2}-\d{2}$/.test(e.display_date),'Date-only source must publish an exact date');
+}
+assert(html.includes('<option value="chess">国际象棋</option>') && html.includes('<option value="go">围棋</option>'),'Board-game selectors required');
 assert(html.includes('data-fixtures-view="brackets"')&&html.includes('data-fixtures-view="standings"'));
 const fixtureIds=new Set();
 for(const match of fixtureSnapshot.events){
