@@ -29,6 +29,15 @@ assert(!links.pairs(fixture,{...market,start_time:'2026-10-29T16:00:00Z'},90),
  'Multi-hour mismatch must not be silently merged');
 assert(!links.pairs({...fixture,sport:'esports'},{...market,category:'other'},90),
  'Unknown-sport markets must not become esports fixtures');
+matchWindow.LiangYouOfficialSportsEvents=[{...fixture,id:'f1'}];
+assert.equal(links.marketsFor({...fixture,id:'f1'},[market]).length,1,
+ 'A uniquely verified official fixture may attach one matching market');
+matchWindow.LiangYouOfficialSportsEvents=[{...fixture,id:'f1'},
+ {...fixture,id:'f2',start_time:'2026-10-29T12:35:00Z'}];
+assert.equal(links.marketsFor({...fixture,id:'f1'},[market]).length,0,
+ 'Ambiguous overlapping official schedules must not inherit one prediction market');
+matchWindow.LiangYouOfficialSportsEvents=[];
+
 
 const listeners=new Map();
 const shelf={innerHTML:'',addEventListener(type,fn){this[type]=fn}};
