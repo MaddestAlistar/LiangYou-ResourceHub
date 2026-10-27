@@ -79,7 +79,9 @@ assert(ui.includes("['other','esports'].includes(m.category)"));
 assert(html.includes('data-sports-t="richHint"'));
 
 assert(html.includes('id="officialFixtures"') && html.includes('id="officialFixturesGrid"'));
-assert(html.includes('fixtures.js?v=20261027.4') && html.includes('fixtures.css?v=20261027.3'));
+assert(/src="\.\/fixtures\.js\?v=[0-9.]+"/.test(html), 'Fixture JS must be versioned');
+assert(/href="\.\/fixtures\.css\?v=[0-9.]+"/.test(html), 'Fixture CSS must be versioned');
+assert(html.indexOf('sports-i18n.js?') < html.indexOf('fixtures.js?'), 'Dictionary must load before fixture renderer');
 const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
