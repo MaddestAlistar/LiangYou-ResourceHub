@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "fixture_schema_version": 2,
+  "fixture_schema_version": 3,
   "source_type": "official_fixtures",
-  "generated_at": "2026-10-27T04:18:47Z",
+  "generated_at": "2026-10-27T04:20:50Z",
   "interval_hours": 6,
   "sources": [
     {
@@ -31,7 +31,7 @@
       "status_detail": "Quarter 4",
       "home": "Denver Nuggets",
       "away": "Golden State Warriors",
-      "score_home": 96,
+      "score_home": 99,
       "score_away": 114,
       "source_url": "https://www.api-basketball.com/"
     },
@@ -819,21 +819,43 @@
   "brackets": [
     {
       "tournament_id": 22176,
-      "title": "Playoffs",
+      "title": "LGC Rising · Playoffs",
       "rounds": [
         {
-          "round": "Grand final: RB vs MR",
+          "round": "Quarterfinals",
           "matches": [
             {
+              "home": "SK Gaming Avarosa",
+              "away": "Blue Otter Europe",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "SK Gaming Avarosa"
+            },
+            {
+              "home": "Mental Rush",
+              "away": "Barcząca Esports Babylon",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "Mental Rush"
+            },
+            {
+              "home": "G2 HEL",
+              "away": "AZ Rising Eterna",
+              "score_home": 2,
+              "score_away": 1,
+              "winner": "G2 HEL"
+            },
+            {
               "home": "Vitality Rising Bees",
-              "away": "Mental Rush",
-              "score_home": 0,
-              "score_away": 0
+              "away": "Good Chi Sakura",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "Vitality Rising Bees"
             }
           ]
         },
         {
-          "round": "Semifinal 2: MR vs SK.A",
+          "round": "Semifinals",
           "matches": [
             {
               "home": "Mental Rush",
@@ -841,12 +863,7 @@
               "score_home": 3,
               "score_away": 2,
               "winner": "Mental Rush"
-            }
-          ]
-        },
-        {
-          "round": "Semifinal 1: RB vs G2H",
-          "matches": [
+            },
             {
               "home": "Vitality Rising Bees",
               "away": "G2 HEL",
@@ -857,50 +874,13 @@
           ]
         },
         {
-          "round": "Quarterfinal 4: SK.A vs BLU",
-          "matches": [
-            {
-              "home": "SK Gaming Avarosa",
-              "away": "Blue Otter Europe",
-              "score_home": 2,
-              "score_away": 0,
-              "winner": "SK Gaming Avarosa"
-            }
-          ]
-        },
-        {
-          "round": "Quarterfinal 3: MR vs BCEB",
-          "matches": [
-            {
-              "home": "Mental Rush",
-              "away": "Barcząca Esports Babylon",
-              "score_home": 2,
-              "score_away": 0,
-              "winner": "Mental Rush"
-            }
-          ]
-        },
-        {
-          "round": "Quarterfinal 2: G2H vs AZRE",
-          "matches": [
-            {
-              "home": "G2 HEL",
-              "away": "AZ Rising Eterna",
-              "score_home": 2,
-              "score_away": 1,
-              "winner": "G2 HEL"
-            }
-          ]
-        },
-        {
-          "round": "Quarterfinal 1: RB vs Good Chi Sakura",
+          "round": "Final",
           "matches": [
             {
               "home": "Vitality Rising Bees",
-              "away": "Good Chi Sakura",
-              "score_home": 2,
-              "score_away": 0,
-              "winner": "Vitality Rising Bees"
+              "away": "Mental Rush",
+              "score_home": null,
+              "score_away": null
             }
           ]
         }
@@ -908,116 +888,128 @@
       "provider": "pandascore"
     },
     {
-      "tournament_id": 21935,
-      "title": "Regular Season",
+      "tournament_id": 22225,
+      "title": "VCT · Playoffs",
       "rounds": [
         {
-          "round": "ECS vs st0ny",
+          "round": "Quarterfinals",
           "matches": [
             {
-              "home": "ECSTATIC",
-              "away": "struggletony",
+              "home": "KRÜ Blaze",
+              "away": "Gen.G GC",
+              "score_home": 2,
+              "score_away": 1,
+              "winner": "KRÜ Blaze"
+            },
+            {
+              "home": "Shopify Rebellion Gold",
+              "away": "SK Nebula",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "Shopify Rebellion Gold"
+            },
+            {
+              "home": "Team Liquid Brazil",
+              "away": "Gentle Mates GC",
               "score_home": 0,
-              "score_away": 0
+              "score_away": 2,
+              "winner": "Gentle Mates GC"
+            },
+            {
+              "home": "G2 Gozen",
+              "away": "MIBR GC",
+              "score_home": 0,
+              "score_away": 2,
+              "winner": "MIBR GC"
             }
           ]
         },
         {
-          "round": "XI vs MSC",
+          "round": "Semifinals",
           "matches": [
             {
-              "home": "XI Esport",
-              "away": "MASONIC",
-              "score_home": 0,
-              "score_away": 0
+              "home": "Shopify Rebellion Gold",
+              "away": "KRÜ Blaze",
+              "score_home": null,
+              "score_away": null
+            },
+            {
+              "home": "MIBR GC",
+              "away": "Gentle Mates GC",
+              "score_home": null,
+              "score_away": null
             }
           ]
         },
         {
-          "round": "MSC vs EACE",
+          "round": "Lower Bracket Round 1 Match 1: TL vs NE.GC",
           "matches": [
             {
-              "home": "MASONIC",
-              "away": "EAC Extra",
-              "score_home": 0,
-              "score_away": 0
+              "home": "Team Liquid Brazil",
+              "away": "Nova Esports GC",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "Team Liquid Brazil"
             }
           ]
         },
         {
-          "round": "STA vs MASQ",
+          "round": "Lower Bracket Round 1 Match 2: Gen.G GC vs FL.FE",
           "matches": [
             {
-              "home": "STATE",
-              "away": "MASQ",
-              "score_home": 0,
-              "score_away": 0
+              "home": "Gen.G GC",
+              "away": "FENNEL Female",
+              "score_home": 1,
+              "score_away": 2,
+              "winner": "FENNEL Female"
             }
           ]
         },
         {
-          "round": "XI vs STA",
+          "round": "Lower Bracket Round 2 Match 1: G2 vs TL",
           "matches": [
             {
-              "home": "XI Esport",
-              "away": "STATE",
+              "home": "G2 Gozen",
+              "away": "Team Liquid Brazil",
               "score_home": 0,
-              "score_away": 0
+              "score_away": 2,
+              "winner": "Team Liquid Brazil"
             }
           ]
         },
         {
-          "round": "LLE vs ECS",
+          "round": "Lower Bracket Round 2 Match 2: SK.N vs FL.FE",
           "matches": [
             {
-              "home": "Linx Legacy Esport",
-              "away": "ECSTATIC",
-              "score_home": 0,
-              "score_away": 0
+              "home": "SK Nebula",
+              "away": "FENNEL Female",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "SK Nebula"
             }
           ]
         },
         {
-          "round": "MASQ vs EACE",
+          "round": "Upper Bracket Round 1 Match 1: FL.FE vs MIBR.F",
           "matches": [
             {
-              "home": "MASQ",
-              "away": "EAC Extra",
+              "home": "FENNEL Female",
+              "away": "MIBR GC",
               "score_home": 0,
-              "score_away": 0
+              "score_away": 2,
+              "winner": "MIBR GC"
             }
           ]
         },
         {
-          "round": "MSC vs MASQ",
+          "round": "Upper Bracket Round 1 Match 2: SK.N vs NE.GC",
           "matches": [
             {
-              "home": "MASONIC",
-              "away": "MASQ",
-              "score_home": 0,
-              "score_away": 0
-            }
-          ]
-        },
-        {
-          "round": "st0ny vs STA",
-          "matches": [
-            {
-              "home": "struggletony",
-              "away": "STATE",
-              "score_home": 0,
-              "score_away": 0
-            }
-          ]
-        },
-        {
-          "round": "LLE vs MASQ",
-          "matches": [
-            {
-              "home": "Linx Legacy Esport",
-              "away": "MASQ",
-              "score_home": 0,
-              "score_away": 0
+              "home": "SK Nebula",
+              "away": "Nova Esports GC",
+              "score_home": 2,
+              "score_away": 0,
+              "winner": "SK Nebula"
             }
           ]
         }
@@ -1027,115 +1019,121 @@
   ],
   "standings": [
     {
-      "id": "panda-22176",
-      "title": "Playoffs",
+      "id": "panda-22222",
+      "title": "PGL Masters · Group Stage",
       "kind": "esports",
       "provider": "pandascore",
       "groups": [
         {
           "rank": 1,
-          "team": "G2 HEL",
-          "wins": null,
-          "losses": null,
+          "team": "BetBoom Team",
+          "wins": 3,
+          "losses": 0,
           "group": ""
         },
         {
-          "rank": 2,
-          "team": "SK Gaming Avarosa",
-          "wins": null,
-          "losses": null,
+          "rank": 1,
+          "team": "FUT Esports",
+          "wins": 3,
+          "losses": 0,
           "group": ""
         },
         {
           "rank": 3,
-          "team": "AZ Rising Eterna",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 4,
-          "team": "Blue Otter Europe",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "Good Chi Sakura",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 6,
-          "team": "Barcząca Esports Babylon",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        }
-      ]
-    },
-    {
-      "id": "panda-21935",
-      "title": "Regular Season",
-      "kind": "esports",
-      "provider": "pandascore",
-      "groups": [
-        {
-          "rank": 1,
-          "team": "STATE",
-          "wins": 7,
+          "team": "Aurora Gaming",
+          "wins": 2,
           "losses": 1,
           "group": ""
         },
         {
-          "rank": 2,
-          "team": "XI Esport",
-          "wins": 7,
-          "losses": 3,
+          "rank": 3,
+          "team": "Natus Vincere",
+          "wins": 2,
+          "losses": 1,
           "group": ""
         },
         {
           "rank": 3,
-          "team": "Linx Legacy Esport",
-          "wins": 5,
-          "losses": 4,
+          "team": "Vitality",
+          "wins": 2,
+          "losses": 1,
           "group": ""
         },
         {
-          "rank": 4,
-          "team": "EAC Extra",
-          "wins": 5,
-          "losses": 5,
+          "rank": 3,
+          "team": "Spirit",
+          "wins": 2,
+          "losses": 1,
           "group": ""
         },
         {
-          "rank": 5,
-          "team": "MASONIC",
-          "wins": 5,
-          "losses": 6,
+          "rank": 3,
+          "team": "MOUZ",
+          "wins": 2,
+          "losses": 1,
           "group": ""
         },
         {
-          "rank": 6,
-          "team": "MASQ",
-          "wins": 4,
-          "losses": 6,
+          "rank": 3,
+          "team": "Liquid",
+          "wins": 2,
+          "losses": 1,
           "group": ""
         },
         {
-          "rank": 7,
-          "team": "ECSTATIC",
-          "wins": 3,
-          "losses": 6,
+          "rank": 9,
+          "team": "DENDELE CS",
+          "wins": 1,
+          "losses": 2,
           "group": ""
         },
         {
-          "rank": 8,
-          "team": "struggletony",
-          "wins": 3,
-          "losses": 8,
+          "rank": 9,
+          "team": "TYLOO",
+          "wins": 1,
+          "losses": 2,
+          "group": ""
+        },
+        {
+          "rank": 9,
+          "team": "TheMongolz",
+          "wins": 1,
+          "losses": 2,
+          "group": ""
+        },
+        {
+          "rank": 9,
+          "team": "Nemiga",
+          "wins": 1,
+          "losses": 2,
+          "group": ""
+        },
+        {
+          "rank": 9,
+          "team": "FURIA",
+          "wins": 1,
+          "losses": 2,
+          "group": ""
+        },
+        {
+          "rank": 9,
+          "team": "Legacy",
+          "wins": 1,
+          "losses": 2,
+          "group": ""
+        },
+        {
+          "rank": 15,
+          "team": "9z",
+          "wins": 0,
+          "losses": 3,
+          "group": ""
+        },
+        {
+          "rank": 15,
+          "team": "G2",
+          "wins": 0,
+          "losses": 3,
           "group": ""
         }
       ]
