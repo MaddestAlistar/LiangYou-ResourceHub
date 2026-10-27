@@ -296,3 +296,6 @@
 .fixtures-ranking-note{margin:3px 4px 9px;color:#a8bdd1;font-size:10px;line-height:1.55}
 .fixtures-footnote a{color:#e5cc9c;text-decoration:underline;text-underline-offset:3px}
 .fixtures-footnote a:focus-visible{outline:2px solid #e5cc9c;outline-offset:3px}
+
+/* Freshness notices remain legible inside long mobile standings tables. */
+.fixtures-ranking-note.is-stale{border:1px solid rgba(224,169,95,.37);background:rgba(210,146,67,.10);color:#f0cf9e;padding:7px 9px;border-radius:8px;margin:5px 3px 10px}
