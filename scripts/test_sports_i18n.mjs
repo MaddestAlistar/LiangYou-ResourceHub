@@ -70,7 +70,7 @@ assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(e
 assert(ui.includes("extra.summary") && ui.includes("volume_24h_usd") && ui.includes("quotesUnavailable"));
 assert(ui.includes("volume_24h_contracts") && ui.includes("provider === 'kalshi'"));
 assert(html.includes('data-source-filter="kalshi"'));
-assert(html.includes('sports-link.js?v=20261027.2') &&
+assert(html.includes('sports-link.js?v=20261027.3') &&
  html.indexOf('sports-link.js?') < html.indexOf('sports.js?'), 'Cross-provider linker must load before market UI');
 assert(html.includes('id="sportsProviderHealth"')&&html.includes('id="officialFixturesHealth"'));
 assert(html.includes('id="officialFixturesState"')&&html.includes('id="officialFixtureDetail"'));
@@ -104,6 +104,9 @@ assert.equal(link.matchIdentity(markets[0],[matched]),'official:match-1',
  'Explicit official IDs must anchor linked market cards');
 assert(link.matchIdentity(markets[0],[]).startsWith('market:basketball:'),
  'Market-only IDs must be separate from published official match IDs');
+assert.notEqual(link.matchIdentity(markets[0],[]),
+ link.matchIdentity({...markets[0],start_time:'2026-10-28T02:00:00Z'},[]),
+ 'Repeat matchups on one day must receive different source-only identities');
 const fixtureStylesNew=readFileSync('fixtures.css','utf8');
 assert(fixtureStylesNew.includes('.fixtures-diagrams.is-expanded')&&
  fixtureStylesNew.includes('.lyb-match.is-focused'),
@@ -114,6 +117,9 @@ assert.equal((html.match(/data-sport-filter="/g)||[]).length,5);
 assert(html.indexOf('data-sport-filter="football"') < html.indexOf('data-sport-filter="other"'));
 assert(!html.includes('data-sport-filter="esports"'));
 assert(ui.includes('search.addEventListener') && ui.includes('sortControl.addEventListener'));
+assert(ui.includes("20 * 60 * 1000")&&ui.includes("cache:'no-cache'")&&
+ ui.includes('const strength=entry=>'),
+ 'Rate-aware market feed polling and normalized grouped sorting must be preserved');
 assert(ui.includes("['other','esports'].includes(m.category)"));
 assert(html.includes('data-sports-t="richHint"'));
 
@@ -167,6 +173,12 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
  assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('Promise.all([') && fixtureJS.includes('archiveCache') &&
+ fixtureJS.includes('lastSnapshotSignature') && fixtureJS.includes('fetchPending'),
+ 'Parallel verified feed loading, historical cache and unchanged-result fast path must remain');
+assert(fixtureJS.includes('let mobileBracket=') &&
+ fixtureJS.includes('resetBracketView()'),
+ 'Phone bracket must not rerender for address-bar changes and stage navigation must reset fullscreen');
 assert(fixtureJS.includes('showFixtureDetail') && fixtureJS.includes('refs.state.addEventListener') &&
  fixtureJS.includes('highlightBracket') && fixtureJS.includes('jumpBracketColumn'),
  'Fixture detail, state selector and bracket interactions must remain wired');
