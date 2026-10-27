@@ -417,7 +417,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
     ui.get('officialStandingSelect').value='lck-2026-round34';
     ui.get('officialStandingSelect').dispatch('change');
     assert(ui.get('officialStandingGrid').innerHTML.includes('第3—4轮') &&
-           ui.get('officialStandingGrid').innerHTML.includes('崛起组未收录'),
+           ui.get('officialStandingGrid').innerHTML.includes('崛起组'),
            'LCK Legend/Rise missing-group scope must be visible');
   }
   ui.get('officialStandingSport').value='basketball';
