@@ -255,7 +255,11 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
 {
  const raw = readFileSync('data/real-sports.json','utf8');
  const snapshot = JSON.parse(raw);
+ const extra = JSON.parse(readFileSync('data/extra-sports.json','utf8'));
  assert(Array.isArray(snapshot.brackets) && Array.isArray(snapshot.standings));
+ assert.equal(extra.source_type,'supplemental_fixtures');
+ assert(extra.events.some(x=>x.provider==='football-data')&&extra.standings.some(x=>x.provider==='dunkapi'));
+
  const actualVizSource=readFileSync('bracket-viz.js','utf8');
  const swissHost={};
  vm.runInNewContext(actualVizSource,{window:swissHost,Intl,Date},{timeout:2000});
@@ -357,12 +361,12 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialBracketSport').value='all';
   ui.get('officialBracketStage').options=[{value:'knockout'},{value:'swiss'},{value:'group'}];
   ui.get('officialBracketStage').value='swiss';
- ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
+ ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'},{value:'football'}];
  ui.get('officialStandingSport').value='all';
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
  const win={LiangYouSportsI18n:tr,setInterval(){}};
   vm.runInNewContext(visualJS,{window:win,Intl,Date},{timeout:2000});
- const fetch=async()=>({ok:true,json:async()=>snapshot});
+ const fetch=async(url)=>({ok:true,json:async()=>url.includes('extra-sports.json')?extra:snapshot});
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
@@ -390,19 +394,38 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
   modes[2].dispatch('click');
   if(snapshot.standings.length){
     assert(ui.get('officialStandingQuick').innerHTML==='', 'Redundant standings buttons still shown');
-    assert(ui.get('officialStandingSelect').options.length===snapshot.standings.length,
-      'Dropdown must list all published rankings');
+    assert(ui.get('officialStandingSelect').options.length===snapshot.standings.length+extra.standings.length,
+      'Dropdown must list all esports, basketball, and football rankings');
     assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===1,
       'Only the chosen standings card should render');
     assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
   }
+  ui.get('officialStandingSport').value='basketball';
+  ui.get('officialStandingSport').dispatch('change');
+  assert(ui.get('officialStandingSelect').options.length===1,'DunkAPI NBA standings must be selectable');
+  assert(ui.get('officialStandingGrid').innerHTML.includes('NBA') &&
+         ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'),
+         'Real NBA standings card missing');
+  assert(ui.get('officialStandingGrid').innerHTML.includes('东部联盟') ||
+         ui.get('officialStandingGrid').innerHTML.includes('西部联盟'),
+         'NBA East/West conference rankings missing');
+  ui.get('officialStandingSport').value='football';
+  ui.get('officialStandingSport').dispatch('change');
+  assert(ui.get('officialStandingSelect').options.length===5,'Five football tables must be selectable');
+  assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking is-football') &&
+         ui.get('officialStandingGrid').innerHTML.includes('积分'),
+         'Verified football table and points columns missing');
+  assert(ui.get('officialFixturesNote').innerHTML.includes('href="https://www.football-data.org/"'),
+         'Visible football-data source attribution link missing');
+  ui.get('officialStandingSport').value='all';
+  ui.get('officialStandingSport').dispatch('change');
   section.getAttribute=()=> 'en';
  modes[0].dispatch('click');
  assert(ui.get('officialFixturesTitle').textContent==='Calendar & tournament intelligence');
  assert(ui.get('fixturesSortHint').textContent.includes('Editorial prominence'));
  modes[1].dispatch('click');
  assert(ui.get('officialBracketSubtitle').textContent.includes('Esports stages'));
- console.log('PASS: Official diagrams, Worlds Swiss flow, VCT bracket, PGL group flow, and standings isolation.');
+ console.log('PASS: Worlds Swiss, VCT, CS2, NBA East/West and five official soccer standings.');
 }
 
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');
