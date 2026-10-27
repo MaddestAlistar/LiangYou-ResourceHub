@@ -368,7 +368,7 @@ def nba_standings(key,now):
 
 
 def discover_lol_tournaments(key,now):
-    """Discover real LoL knockout events beyond first page of general matches."""
+    """Discover authentic LoL knockout and group stages beyond general match pages."""
     found=[]
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
     for period in PANDA_LOL_TOURNAMENTS:
@@ -380,7 +380,10 @@ def discover_lol_tournaments(key,now):
             if not isinstance(payload,list):continue
             for row in payload:
                 if not isinstance(row,dict) or not isinstance(row.get("id"),int):continue
-                if row.get("has_bracket") is not True:continue
+                stage=name(row.get("name")).lower()
+                is_group=any(word in stage for word in
+                             ("group","swiss","regular","round robin","league phase"))
+                if row.get("has_bracket") is not True and not is_group:continue
                 end=timestamp(row.get("end_at"))
                 start=timestamp(row.get("begin_at"))
                 if end and end < now-dt.timedelta(days=150):continue
@@ -390,7 +393,8 @@ def discover_lol_tournaments(key,now):
                 title=name(row.get("name")) or "淘汰赛"
                 found.append({"tournament_id":row["id"],"sport":"lol",
                     "league":label,"tournament_name":title,
-                    "has_bracket":True,"source":"tournament"})
+                    "has_bracket":row.get("has_bracket") is True,
+                    "source":"tournament"})
         except Exception:
             print("PandaScore LoL tournament discovery: %s unavailable" % period,flush=True)
     return found
@@ -414,27 +418,44 @@ def tournament_extras(matches,key,discoveries=None):
         # A discovered tournament explicitly marked has_bracket is preferable
         # to a guessed knockout event whose provider might have no bracket.
         value={"priority":priority,"title":label,"sport":m.get("sport"),
-               "bracket":knockout,"ranking":regular}
+               "bracket":knockout,"ranking":regular,"league":league}
         if tid not in candidates or value["priority"]>candidates[tid]["priority"]:
             candidates[tid]=value
         else:
             candidates[tid]["bracket"] |= knockout
             candidates[tid]["ranking"] |= regular
     order=lambda tid:(-candidates[tid]["priority"],tid)
-    bracket_choices=sorted((tid for tid,v in candidates.items() if v["bracket"]),key=order)[:MAX_BRACKET_REQUESTS]
-    # Retain other esports coverage: otherwise six higher-profile LoL
-    # candidates consume every standings call during international events.
     ranked_candidates=sorted(candidates,key=order)
+    def spread_by_league(ids,limit):
+        """Prioritize distinct competitions; fill unused slots with next valid stages."""
+        chosen=[];seen=set()
+        for tid in ids:
+            key=re.sub(r"[^a-z0-9]+","",name(candidates[tid].get("league")).lower())
+            if key not in seen:
+                chosen.append(tid)
+                seen.add(key)
+                if len(chosen)>=limit:return chosen
+        for tid in ids:
+            if tid not in chosen:
+                chosen.append(tid)
+                if len(chosen)>=limit:break
+        return chosen
+    # Keep at least one other-esports bracket when available, even during Worlds.
+    bracket_pool=[tid for tid in ranked_candidates if candidates[tid]["bracket"]]
+    other_bracket=[tid for tid in bracket_pool if candidates[tid]["sport"]=="esports"]
+    lol_bracket=[tid for tid in bracket_pool if candidates[tid]["sport"]=="lol"]
+    bracket_choices=spread_by_league(lol_bracket,MAX_BRACKET_REQUESTS-(1 if other_bracket else 0))
+    if other_bracket:bracket_choices+=spread_by_league(other_bracket,1)
+    if len(bracket_choices)<MAX_BRACKET_REQUESTS:
+        bracket_choices+= [tid for tid in bracket_pool if tid not in bracket_choices][:
+            MAX_BRACKET_REQUESTS-len(bracket_choices)]
+    # Balance the fixed six-table budget across LoL and other esports.
     lol_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]=="lol"]
     other_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]!="lol"]
-    rank_choices=(lol_rank[:4]+other_rank[:2])[:MAX_STANDINGS_REQUESTS]
+    rank_choices=spread_by_league(lol_rank,4)+spread_by_league(other_rank,2)
     for tid in ranked_candidates:
         if len(rank_choices)>=MAX_STANDINGS_REQUESTS:break
         if tid not in rank_choices:rank_choices.append(tid)
-    # Ensure other esports retain some representation even in Worlds season.
-    if all(candidates[tid]["sport"]=="lol" for tid in bracket_choices) and len(bracket_choices)>2:
-        extras=sorted((tid for tid,v in candidates.items() if v["bracket"] and v["sport"]=="esports"),key=order)
-        if extras: bracket_choices[-1]=extras[0]
     brackets=[];standings=[];errors=0
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
     for kind,ids in (("brackets",bracket_choices),("standings",rank_choices)):
