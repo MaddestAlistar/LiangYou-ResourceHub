@@ -56,3 +56,19 @@
 @media(max-width:720px){.fixtures-panel{padding:13px;margin:8px 0 21px}.fixtures-heading h3{font-size:19px}.fixtures-total{font-size:10px}.fixtures-grid{grid-template-columns:1fr}.fixtures-tools{flex-direction:column}.fixtures-inputrow{max-width:100%;flex-basis:auto}.fixtures-market-heading{flex-wrap:wrap}}
 @media(max-width:400px){.fixtures-view{font-size:10px;min-height:39px;padding:8px 3px}.fixtures-views{gap:5px}.fixtures-panel{padding:11px}.fixtures-heading{flex-wrap:wrap}.fixtures-total{padding:5px 9px}.fixtures-subhead{flex-wrap:wrap}.fixtures-subhead select{width:100%;max-width:100%}}
 @media(prefers-reduced-motion:reduce){.fixtures-panel button{transition:none}}
+
+/* Responsive tournament filters and editorial (non-live) popularity ordering. */
+.fixtures-sortbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-basis:100%;color:#94adc0;font-size:10px}
+.fixtures-sortbar select{min-width:105px;min-height:36px;padding:8px 10px;border-radius:9px;border:1px solid rgba(194,160,103,.42);color:#edd1a0;background:rgba(18,33,48,.92);font-size:11px}
+.fixtures-featured{font-size:10px;color:#ecd0a0;background:rgba(201,156,74,.13);border-radius:6px;padding:3px 6px}
+.fixtures-multiselect{display:flex;gap:8px;justify-content:flex-end;max-width:75%;flex:1;min-width:0}
+.fixtures-subhead .fixtures-multiselect select{min-width:0;max-width:none;flex:1}
+.fixtures-subhead .fixtures-multiselect select:first-child{flex:0 1 120px}
+.fixtures-subhead .fixtures-multiselect select:last-child{flex:2 1 230px}
+@media(max-width:680px){
+ .fixtures-subhead{align-items:stretch;flex-direction:column}
+ .fixtures-multiselect{max-width:100%;width:100%}
+ .fixtures-subhead .fixtures-multiselect select:first-child{flex:0 1 110px}
+ .fixtures-subhead .fixtures-multiselect select:last-child{flex:1}
+ .fixtures-sortbar{flex-wrap:wrap;line-height:1.6}
+}

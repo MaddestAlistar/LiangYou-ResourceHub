@@ -79,12 +79,17 @@ assert(ui.includes("['other','esports'].includes(m.category)"));
 assert(html.includes('data-sports-t="richHint"'));
 
 assert(html.includes('id="officialFixtures"') && html.includes('id="officialFixturesGrid"'));
-assert(html.includes('fixtures.js?v=20261027.2') && html.includes('fixtures.css?v=20261027.2'));
+assert(html.includes('fixtures.js?v=20261027.3') && html.includes('fixtures.css?v=20261027.3'));
 const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
 assert(html.includes('id="officialBracketGrid"') && html.includes('id="officialStandingGrid"'));
+assert(html.includes('id="officialBracketSport"') && html.includes('id="officialStandingSport"'));
+assert(html.includes('id="officialFixturesSort"') && html.includes('value="popular"'));
+assert(fixtureJS.includes('function popularity(') && fixtureJS.includes("topPriority(matches)"));
+assert(fixtureJS.includes("translations?.team") && fixtureJS.includes("localize(x.league"));
+assert(fixtureJS.includes("kindOf(x)===kind"));
 assert(!html.includes('真实赛程与比分') && !fixtureJS.includes('Schedules & scores'));
 assert(fixtureJS.includes('data.brackets') && fixtureJS.includes('data.standings'));
 assert(html.includes('id="sportsSourceHint"') && html.includes('data-sports-t="richHint"'));

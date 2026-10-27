@@ -22,14 +22,14 @@
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=20261025.1">
   <link rel="stylesheet" href="./sports.css?v=20261026.4">
-  <link rel="stylesheet" href="./fixtures.css?v=20261027.2">
+  <link rel="stylesheet" href="./fixtures.css?v=20261027.3">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=6" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=20261024.4" defer></script>
   <script src="./sports-i18n.js?v=20261026.4" defer></script>
   <script src="./sports.js?v=20261026.4" defer></script>
-  <script src="./fixtures.js?v=20261027.2" defer></script>
+  <script src="./fixtures.js?v=20261027.3" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
 .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
@@ -151,6 +151,11 @@
                   <option value="football">足球</option>
                 </select>
               </div>
+              <div class="fixtures-sortbar"><span>赛程排序 · 热门按赛事级别排序，并非实时人气</span>
+                <select id="officialFixturesSort" aria-label="赛程排序">
+                  <option value="popular">热门优先</option><option value="time">时间优先</option>
+                </select>
+              </div>
             </div>
             <div class="fixtures-grid" id="officialFixturesGrid" aria-live="polite">
               <p class="fixtures-empty">正在读取真实赛程，不显示模拟比赛。</p>
@@ -162,13 +167,23 @@
           </div>
           <div id="fixtureBracketsPanel" class="fixtures-subpanel" hidden>
             <div class="fixtures-subhead"><span>已核实的电竞淘汰赛轮次与对阵</span>
-              <select id="officialBracketSelect" aria-label="选择晋级图赛事"></select>
+              <div class="fixtures-multiselect">
+                <select id="officialBracketSport" aria-label="晋级图项目">
+                  <option value="all">全部电竞</option><option value="lol" selected>英雄联盟</option><option value="esports">其他电竞</option>
+                </select>
+                <select id="officialBracketSelect" aria-label="选择晋级图赛事"></select>
+              </div>
             </div>
             <div id="officialBracketGrid" class="fixtures-brackets" aria-live="polite"><p class="fixtures-empty">正在核查官方晋级图</p></div>
           </div>
           <div id="fixtureStandingsPanel" class="fixtures-subpanel" hidden>
             <div class="fixtures-subhead"><span>NBA 与电竞赛事官方排名</span>
-              <select id="officialStandingSelect" aria-label="选择联赛积分榜"></select>
+              <div class="fixtures-multiselect">
+                <select id="officialStandingSport" aria-label="积分榜项目">
+                  <option value="all">全部排名</option><option value="lol">英雄联盟</option><option value="esports">其他电竞</option><option value="basketball">篮球</option>
+                </select>
+                <select id="officialStandingSelect" aria-label="选择联赛积分榜"></select>
+              </div>
             </div>
             <div id="officialStandingGrid" class="fixtures-standing" aria-live="polite"><p class="fixtures-empty">正在核查官方积分榜</p></div>
           </div>
