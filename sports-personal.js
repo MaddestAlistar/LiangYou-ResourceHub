@@ -105,23 +105,67 @@ function exportCalendar(){
  document.body.append(anchor);anchor.click();anchor.remove();
  window.setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
+// The same local update-status.json used by the page's scheduled collector.
+// Health is diagnostic metadata; it never acts as a source of scores.
+let latestSources=[],latestGenerated='',jobs=null;
+const jobNames={
+ sports:'Polymarket',predict:'Predict.fun',kalshi:'Kalshi',
+ fixtures:'赛事主数据',extras:'足球与排名',board:'国际象棋 / 围棋',
+ nba:'NBA',odds:'The Odds API',chess_profiles:'棋手资料'
+};
 function updateHealth(sources,generated){
  if(!healthBox)return;
+ if(Array.isArray(sources)){latestSources=sources;latestGenerated=generated||'';}
  const t=L(),unique=new Map();
- for(const x of sources||[]){if(x?.tag&&!unique.has(x.tag))unique.set(x.tag,x);}
- const age=Date.parse(generated||'');
+ for(const x of latestSources){
+  if(x?.tag&&(!unique.has(x.tag)||unique.get(x.tag).status==='ok'&&x.status!=='ok'))
+   unique.set(x.tag,x);
+ }
+ const age=Date.parse(latestGenerated);
  const old=Number.isFinite(age)&&Date.now()-age>18*3600000;
- const incomplete=[...unique.values()].filter(x=>x.status!=='ok');
- const main=old||incomplete.length?t.partial:t.verified;
+ const sourceProblems=[...unique.values()].filter(x=>x.status!=='ok');
+ const rawJobs=jobs?.jobs&&typeof jobs.jobs==='object'?Object.entries(jobs.jobs)
+  .filter(([id])=>Object.hasOwn(jobNames,id)):[];
+ const jobRows=rawJobs.map(([id,entry])=>{
+  const last=Date.parse(entry.last_success_at||'');
+  const frequency=Number(entry.interval_hours)||6;
+  const delayed=!Number.isFinite(last)||Date.now()-last>(frequency*2+1)*3600000;
+  const bad=entry.status!=='ok';
+  return {name:jobNames[id],last,delayed,bad};
+ });
+ const issues=old||sourceProblems.length>0||jobRows.some(x=>x.bad||x.delayed);
+ const main=!(unique.size||jobRows.length)?t.unknown:issues?t.partial:t.verified;
+ const status=x=>x==='ok'?t.verified:x==='partial'?t.partial:
+  x==='failed'||x==='unavailable'?t.failed:x==='stale'?t.stale:t.unknown;
+ const labelAt=timestamp=>{
+  if(!Number.isFinite(timestamp))return '—';
+  try{return new Intl.DateTimeFormat(isEn()?'en-US':'zh-CN',{
+   timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',
+   hour:'2-digit',minute:'2-digit',hour12:false
+  }).format(new Date(timestamp));}catch{return '—';}
+ };
  healthBox.innerHTML='<details><summary><span>◈ '+t.health+'</span><span>'+
-  safe(main)+' · '+unique.size+'</span></summary><div class="sports-health-list">'+
-  [...unique.values()].map(s=>{
-   const status=s.status==='ok'?t.verified:s.status==='partial'?t.partial:
-    s.status==='failed'?t.failed:s.status==='stale'?t.stale:t.unknown;
-   const extra=Number.isInteger(s.failed_groups)&&s.failed_groups>0?
-    (isEn()?' · failed groups ':' · 异常数据组 ')+s.failed_groups:'';
-   return '<div><strong>'+safe(s.tag)+'</strong><span>'+safe(status)+extra+'</span></div>';
-  }).join('')+'</div><p>'+safe(t.archived)+'</p></details>';
+   safe(main)+' · '+unique.size+'</span></summary>'+
+   (unique.size?'<div class="sports-health-list">'+[...unique.values()].map(x=>{
+    const extra=Number.isInteger(x.failed_groups)&&x.failed_groups>0?
+     (isEn()?' · missing groups ':' · 缺失数据组 ')+x.failed_groups:'';
+    return '<div><strong>'+safe(x.tag)+'</strong><span>'+safe(status(x.status)+extra)+'</span></div>';
+   }).join('')+'</div>':'')+
+   (jobRows.length?'<p class="sports-health-subtitle">'+
+    (isEn()?'Scheduled collection · last successful update (UTC+8)':'定时采集 · 最近成功更新时间（北京时间）')+'</p>'+
+    '<div class="sports-health-list">'+jobRows.map(x=>'<div><strong>'+safe(x.name)+'</strong><span>'+
+     safe(x.bad?t.failed:x.delayed?t.stale:labelAt(x.last))+'</span></div>').join('')+'</div>':'')+
+   '<p>'+safe(t.archived)+'</p></details>';
+}
+async function refreshJobHealth(){
+ if(typeof fetch!=='function')return;
+ try{
+  const response=await fetch('./data/update-status.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)});
+  if(!response.ok) return;
+  const data=await response.json();
+  if(data?.schema!==1||!data.jobs||typeof data.jobs!=='object')return;
+  jobs=data;updateHealth();
+ }catch{}
 }
 load();
 shelf.addEventListener('click',ev=>{
@@ -148,7 +192,11 @@ window.addEventListener('liangyou:sports-health',event=>{
  updateHealth(event.detail?.sources,event.detail?.generated_at);
 });
 section.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(button=>
- button.addEventListener('click',()=>window.setTimeout(render,0)));
+ button.addEventListener('click',()=>window.setTimeout(()=>{render();updateHealth();},0)));
+refreshJobHealth();
+if(typeof window.setInterval==='function')window.setInterval(()=>{
+ if(!document.hidden)refreshJobHealth();
+},30*60000);
 window.LiangYouSportsPersonal=Object.freeze({has, followsEvent, followingOnly:()=>followingOnly,
  toggle,refresh:render,updateHealth});
 render();
