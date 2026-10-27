@@ -85,9 +85,11 @@ assert(html.indexOf('sports-i18n.js?') < html.indexOf('fixtures.js?'), 'Dictiona
 const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
-assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
+assert(fixtureJS.includes("real-sports.json"));
+const visualJS=readFileSync('bracket-viz.js','utf8');
+assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && visualJS.includes("lyb-knockout-map"));
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
-assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("_mode:'group'"), 'Group-stage selector missing');
+assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("viz.stageOf"), 'Diagram stage selector missing');
 assert(html.includes('<option value="knockout" selected>'), 'The bracket view should default to playoffs');
 const fixtureStyles=readFileSync('fixtures.css','utf8');
 assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 auto!important'),
@@ -95,7 +97,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.14') && html.includes('fixtures.css?v=20261027.7'),
+assert(html.includes('fixtures.js?v=20261027.15') && html.includes('bracket-viz.js?v=20261027.1') && html.includes('fixtures.css?v=20261027.8'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -264,35 +266,37 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialFixturesCategory').value='all';
  ui.get('officialFixturesSort').options=[{value:'popular'},{value:'time'}];
  ui.get('officialFixturesSort').value='popular';
- ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'esports'}];
+ ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'valorant'},{value:'cs2'},{value:'other'}];
  ui.get('officialBracketSport').value='all';
-  ui.get('officialBracketStage').options=[{value:'all'},{value:'group'},{value:'knockout'}];
+  ui.get('officialBracketStage').options=[{value:'knockout'},{value:'swiss'},{value:'group'}];
   ui.get('officialBracketStage').value='knockout';
  ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
  ui.get('officialStandingSport').value='all';
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
  const win={LiangYouSportsI18n:tr,setInterval(){}};
+  vm.runInNewContext(visualJS,{window:win,Intl,Date},{timeout:2000});
  const fetch=async()=>({ok:true,json:async()=>snapshot});
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
-  assert(ui.get('officialBracketStage').value==='knockout', 'Knockout should be the initial stage');
-  assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'),
-    'Esports bracket must initially render genuine knockout matches');
-  assert(ui.get('officialBracketQuick').innerHTML==='', 'Redundant tournament buttons still shown');
-  assert(ui.get('officialBracketSelect').options.length>=snapshot.brackets.length,
-    'Bracket dropdown must contain each collected knockout tournament');
-  ui.get('officialBracketStage').value='group';
+  assert(ui.get('officialBracketStage').value==='knockout', 'Must begin with knockout diagram');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-knockout-map'), 'Knockout must render visual bracket tree');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-lines'), 'Knockout match diagram missing SVG');
+  assert(ui.get('officialBracketQuick').innerHTML==='', 'Redundant tournament choices shown');
+  assert(ui.get('officialBracketSelect').options.length===snapshot.brackets.length);
+  ui.get('officialBracketStage').value='swiss';
   ui.get('officialBracketStage').dispatch('change');
-  const stages=snapshot.standings.filter(x=>/group|swiss|regular season/i.test(x.title||''));
-  if(stages.length){
-    assert(ui.get('officialBracketSelect').options.length===stages.length,
-      'Published group stages must be selectable');
-    assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-ranking'));
-  }
-  ui.get('officialBracketStage').value='knockout';
-  ui.get('officialBracketStage').dispatch('change');
-  if(snapshot.brackets.length)assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'));
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-swiss-track'), 'Worlds Swiss stage graph missing');
+  assert(!ui.get('officialBracketGrid').innerHTML.includes('fixtures-ranking'), 'A ranking table must not masquerade as diagram');
+  ui.get('officialBracketSport').value='valorant';
+  ui.get('officialBracketSport').dispatch('change');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-knockout-map'), 'VCT bracket must render');
+  ui.get('officialBracketSport').value='cs2';
+  ui.get('officialBracketSport').dispatch('change');
+  assert(ui.get('officialBracketStage').value==='group', 'CS2 must fall back to available group flow');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-group-flow'), 'PGL group flow missing');
+  ui.get('officialBracketSport').value='all';
+  ui.get('officialBracketSport').dispatch('change');
   modes[2].dispatch('click');
   if(snapshot.standings.length){
     assert(ui.get('officialStandingQuick').innerHTML==='', 'Redundant standings buttons still shown');
@@ -308,7 +312,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  assert(ui.get('fixturesSortHint').textContent.includes('Editorial prominence'));
  modes[1].dispatch('click');
  assert(ui.get('officialBracketSubtitle').textContent.includes('Esports stages'));
- console.log('PASS: Fixture board bilingual rendering, group stages and compact rankings.');
+ console.log('PASS: Official diagrams, Worlds Swiss flow, VCT bracket, PGL group flow, and standings isolation.');
 }
 
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');
