@@ -111,7 +111,7 @@ const swissNodes=[
  * present and both opponents' verified appearance counts agree. Incomplete
  * histories retain null rounds; no dates or standings are used to invent them.
  */
-function inferRounds(source){
+function inferRounds(source,officialRows=[]){
  const matches=(source||[]).filter(m=>m&&m.home&&m.away&&
   (String(m.id||'').startsWith('stage-')))
   .slice().sort((a,b)=>String(a.start_time||'').localeCompare(String(b.start_time||''))||
@@ -156,13 +156,21 @@ function inferRounds(source){
   }
   stages.push(new Map([...totals].map(([t,v])=>[t,{...v}])));
  }
+ const official=(officialRows||[]).filter(x=>x&&x.team&&Number.isInteger(x.wins)&&Number.isInteger(x.losses));
+ if(official.length>=8){
+  const end=stages[5];
+  for(const row of official){
+   const actual=end.get(norm(row.team));
+   if(!actual||actual.wins!==row.wins||actual.losses!==row.losses)return null;
+  }
+ }
  const names=new Map(matches.flatMap(m=>[[norm(m.home),m.home],[norm(m.away),m.away]]));
  return {matches:ordered,stages,names,entrants:[...entrants]};
 }
 function swiss(record,opt={}){
  const lang=opt.lang||'zh',team=opt.team||(v=>v),events=Array.isArray(opt.events)?opt.events:[],
   tournamentId=Number(record.tournament_id||String(record.id||'').replace('panda-',''));
- const history=inferRounds(events.filter(m=>Number(m.tournament_id)===tournamentId));
+ const history=inferRounds(events.filter(m=>Number(m.tournament_id)===tournamentId),record.groups);
  const ranked=(record.groups||[]).filter(r=>r&&r.team&&Number.isInteger(r.wins)&&Number.isInteger(r.losses));
  const historical=(i,node)=>{
   const snapshot=history.stages[Math.min(i,5)];
@@ -293,7 +301,7 @@ function connect(root,record,events){
  const track=root.querySelector('.lyb-swiss-track'),svg=track?.querySelector('.lyb-swiss-links');
  if(!track||!svg||typeof track.getBoundingClientRect!=='function')return;
  const id=Number(record?.tournament_id||String(record?.id||'').replace('panda-',''));
- const history=inferRounds((events||[]).filter(m=>Number(m.tournament_id)===id));
+ const history=inferRounds((events||[]).filter(m=>Number(m.tournament_id)===id),record?.groups);
  const confirmed=verifiedTransitions(history);
  const base=track.getBoundingClientRect(),nodes=new Map();
  track.querySelectorAll('.lyb-pool[data-pool]').forEach(item=>nodes.set(item.dataset.pool,item.getBoundingClientRect()));
