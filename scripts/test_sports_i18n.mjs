@@ -115,7 +115,7 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
 assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("viz.stageOf"), 'Diagram stage selector missing');
-assert(html.includes('<option value="knockout" selected>'), 'The bracket view should default to playoffs');
+assert(html.includes('<option value="swiss" selected>'), 'Feature verified 2026 Worlds Swiss by default');
 const fixtureStyles=readFileSync('fixtures.css','utf8');
 assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 auto!important'),
  'Reset desktop flex-basis for mobile columns to avoid large empty gaps');
@@ -319,7 +319,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'valorant'},{value:'cs2'},{value:'other'}];
  ui.get('officialBracketSport').value='all';
   ui.get('officialBracketStage').options=[{value:'knockout'},{value:'swiss'},{value:'group'}];
-  ui.get('officialBracketStage').value='knockout';
+  ui.get('officialBracketStage').value='swiss';
  ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
  ui.get('officialStandingSport').value='all';
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
@@ -329,9 +329,12 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
-  assert(ui.get('officialBracketStage').value==='knockout', 'Must begin with knockout diagram');
-  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-knockout-map'), 'Knockout must render visual bracket tree');
-  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-lines'), 'Knockout match diagram missing SVG');
+  assert(ui.get('officialBracketStage').value==='swiss', 'Current Worlds Swiss stage should be featured');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-swiss-track'), 'Worlds Swiss progression should be visible initially');
+  ui.get('officialBracketStage').value='knockout';
+  ui.get('officialBracketStage').dispatch('change');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-knockout-map'), 'Knockout switch must render visual bracket tree');
+  assert(ui.get('officialBracketGrid').innerHTML.includes('lyb-lines'), 'Knockout diagram missing SVG');
   assert(ui.get('officialBracketQuick').innerHTML==='', 'Redundant tournament choices shown');
   assert(ui.get('officialBracketSelect').options.length===snapshot.brackets.length);
   ui.get('officialBracketStage').value='swiss';
