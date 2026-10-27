@@ -29,7 +29,7 @@ function load(){
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(followed));}catch{}}
 function has(sport,name){return followed.some(x=>x.sport===sport&&norm(x.name)===norm(name));}
 function followsEvent(x){return x&&has(x.sport,x.home)||x&&has(x.sport,x.away);}
-function notify(){save();render();window.dispatchEvent(new CustomEvent('liangyou:personal-change'));}
+function notify(){if(!followed.length)followingOnly=false;save();render();window.dispatchEvent(new CustomEvent('liangyou:personal-change'));}
 function toggle(sport,name){
  if(!allowed.has(sport)||!name||name.length>130)return;
  if(has(sport,name))followed=followed.filter(x=>!(x.sport===sport&&norm(x.name)===norm(name)));
@@ -66,9 +66,9 @@ function render(){
  const canExport=upcoming.some(x=>x.time_precision!=='date'&&Date.parse(x.start_time)<now+45*86400000);
  shelf.innerHTML='<div class="sports-personal-title"><div><strong>★ '+t.title+'</strong>'+
   '<p>'+t.help+'</p></div><span class="sports-personal-count">'+t.follow+' '+followed.length+'</span></div>'+
-  '<div class="sports-personal-actions"><button type="button" data-personal-action="mine" aria-pressed="'+followingOnly+'">'+t.mine+'</button>'+
+  (followed.length?'<div class="sports-personal-actions"><button type="button" data-personal-action="mine" aria-pressed="'+followingOnly+'">'+t.mine+'</button>'+
   '<button type="button" data-personal-action="all" aria-pressed="'+(!followingOnly)+'">'+t.all+'</button>'+
-  '<button type="button" data-personal-action="export"'+(!canExport?' disabled':'')+'>'+t.export+'</button></div>'+
+  '<button type="button" data-personal-action="export"'+(!canExport?' disabled':'')+'>'+t.export+'</button></div>':'')+
   (followed.length?'<div class="sports-personal-tags">'+followed.map(x=>
    '<button type="button" data-follow-team="'+safe(x.name)+'" data-follow-sport="'+safe(x.sport)+'" aria-label="'+
    safe(t.removed+': '+x.name)+'">'+safe(x.name)+' <span aria-hidden="true">×</span></button>').join('')+'</div>':
