@@ -617,7 +617,7 @@ function standings(){
    '<div class="fixtures-standing-tables">'+staleNote+orderNote+archiveNote+sourceUrl+stageNote+missingNote+rulesNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
-function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
+function render(){updateLabels();dataHealth();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
 async function fetchData(){
  try{
   const fetchJson=async url=>{
