@@ -266,6 +266,15 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
     'Unplayed fifth-round progress must not be marked confirmed');
    const counts=timeline.matches.reduce((m,x)=>(m[x.round]=(m[x.round]||0)+1,m),{});
    assert(counts[1]===8&&counts[2]===8&&counts[3]===8,'First three Swiss rounds must be complete');
+   const official=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
+   if(official){
+     assert(swissAPI.inferRounds(snapshot.stage_matches,official.groups),
+      'Verified match records must match official current Swiss standings');
+     const contradictory=official.groups.map(x=>({...x}));
+     contradictory[0].wins+=1;
+     assert(swissAPI.inferRounds(snapshot.stage_matches,contradictory)===null,
+      'Conflicting provider standings must reject historical path reconstruction');
+   }
    assert([...timeline.stages[1].values()].filter(x=>x.wins===1).length===8,'After R1 should have 8 teams at 1-0');
    assert([...timeline.stages[2].values()].filter(x=>x.wins===1&&x.losses===1).length===8,
     'After R2 should have 8 teams at 1-1');
