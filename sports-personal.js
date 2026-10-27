@@ -1,0 +1,148 @@
+/* Personal fixture tracking: local-only preferences and verified calendar export. */
+(()=>{
+'use strict';
+const section=document.getElementById('sports');
+const shelf=document.getElementById('sportsPersonal');
+const healthBox=document.getElementById('sportsHealth');
+if(!section||!shelf)return;
+const STORAGE='liangyou-sports-following-v1';
+const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=v=>window.LiangYouSportsLinks?.keyName?.(v)||String(v||'').toLowerCase().trim();
+const allowed=new Set(['lol','esports','basketball','football','chess','go']);
+let followed=[];
+let followingOnly=false;
+let events=[];
+const isEn=()=>section.getAttribute('lang')==='en';
+function load(){
+ try{
+  const data=JSON.parse(localStorage.getItem(STORAGE)||'[]');
+  if(!Array.isArray(data))return;
+  followed=data.filter(x=>x&&allowed.has(x.sport)&&typeof x.name==='string'&&
+   x.name.length>0&&x.name.length<130).slice(0,40).map(x=>({sport:x.sport,name:x.name}));
+ }catch{}
+}
+function save(){try{localStorage.setItem(STORAGE,JSON.stringify(followed));}catch{}}
+function has(sport,name){return followed.some(x=>x.sport===sport&&norm(x.name)===norm(name));}
+function followsEvent(x){return x&&has(x.sport,x.home)||x&&has(x.sport,x.away);}
+function notify(){save();render();window.dispatchEvent(new CustomEvent('liangyou:personal-change'));}
+function toggle(sport,name){
+ if(!allowed.has(sport)||!name||name.length>130)return;
+ if(has(sport,name))followed=followed.filter(x=>!(x.sport===sport&&norm(x.name)===norm(name)));
+ else if(followed.length<40)followed.push({sport,name});
+ notify();
+}
+const L=()=>isEn()?{
+ title:'My fixtures',help:'Follow teams to filter upcoming matches. Saved only in this browser.',
+ follow:'Following',mine:'Following',all:'All matches',export:'Add to calendar',
+ empty:'Tap ☆ beside a team in the match calendar to follow it.',
+ none:'No upcoming fixtures for followed teams in the available snapshot.',
+ next:'Next followed fixture',notAvailable:'No verified time',removed:'Remove',
+ health:'Data source status',verified:'Verified',partial:'Partial',failed:'Unavailable',unknown:'Unknown',
+ archived:'Data is a periodic snapshot, not live scores.',exportEmpty:'There are no dated upcoming matches to export.'
+}:{
+ title:'我的赛事',help:'关注喜欢的球队和战队，一键筛选未来赛程。收藏只保存在当前浏览器。',
+ follow:'已关注',mine:'只看关注',all:'全部赛事',export:'加入手机日历',
+ empty:'在赛事日历中点击队伍旁的 ☆ 即可关注。',
+ none:'当前数据快照暂无关注队伍的未来赛事。',
+ next:'下一场关注赛事',notAvailable:'时间未核验',removed:'取消关注',
+ health:'数据源状态',verified:'已核验',partial:'部分缺失',failed:'不可用',unknown:'状态未知',
+ archived:'数据为定时采集快照，不代表实时比分。',exportEmpty:'当前没有可导出的已确认开赛时间赛事。'
+};
+function dateLabel(iso){
+ try{return new Intl.DateTimeFormat(isEn()?'en-US':'zh-CN',{
+ timeZone:'Asia/Shanghai',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false
+ }).format(new Date(iso));}catch{return L().notAvailable;}
+}
+function render(){
+ const t=L(),upcoming=events.filter(x=>x.status==='scheduled'&&Date.parse(x.start_time)>Date.now()&&followsEvent(x))
+ .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
+ const first=upcoming[0];
+ shelf.innerHTML='<div class="sports-personal-title"><div><strong>★ '+t.title+'</strong>'+
+  '<p>'+t.help+'</p></div><span class="sports-personal-count">'+t.follow+' '+followed.length+'</span></div>'+
+  '<div class="sports-personal-actions"><button type="button" data-personal-action="mine" aria-pressed="'+followingOnly+'">'+t.mine+'</button>'+
+  '<button type="button" data-personal-action="all" aria-pressed="'+(!followingOnly)+'">'+t.all+'</button>'+
+  '<button type="button" data-personal-action="export"'+(!upcoming.length?' disabled':'')+'>'+t.export+'</button></div>'+
+  (followed.length?'<div class="sports-personal-tags">'+followed.map(x=>
+   '<button type="button" data-follow-team="'+safe(x.name)+'" data-follow-sport="'+safe(x.sport)+'" aria-label="'+
+   safe(t.removed+': '+x.name)+'">'+safe(x.name)+' <span aria-hidden="true">×</span></button>').join('')+'</div>':
+   '<p class="sports-personal-empty">'+t.empty+'</p>')+
+  (followed.length?'<p class="sports-personal-next">'+(first?
+   '<strong>'+t.next+'：</strong>'+safe(first.home)+' · '+safe(first.away)+' <span>'+safe(dateLabel(first.start_time))+'</span>':
+   t.none)+'</p>':'');
+}
+function fold(text){return String(text||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n')
+ .replace(/,/g,'\\,').replace(/;/g,'\\;');}
+function icsTime(s){return new Date(s).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');}
+function exportCalendar(){
+ const now=Date.now();
+ const list=events.filter(x=>x.status==='scheduled'&&Date.parse(x.start_time)>now&&
+  Date.parse(x.start_time)<now+45*86400000&&followsEvent(x)&&x.time_precision!=='date')
+  .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time)).slice(0,150);
+ if(!list.length){window.alert(L().exportEmpty);return;}
+ const stamp=icsTime(new Date().toISOString());
+ const entries=list.map(x=>{
+  const dt=new Date(x.start_time).getTime();
+  const start=icsTime(x.start_time);
+  const end=icsTime(new Date(dt+2*3600000).toISOString());
+  const name=fold((x.league||'赛事')+': '+x.home+' vs '+x.away);
+  return ['BEGIN:VEVENT','UID:'+fold(String(x.provider||'fixture')+'-'+String(x.id))+'@liangyou-sports',
+    'DTSTAMP:'+stamp,'DTSTART:'+start,'DTEND:'+end,'SUMMARY:'+name,
+    'DESCRIPTION:'+fold('来源: '+String(x.provider||'')+'。预计时长2小时，仅为日历占位，不代表真实结束时间。'),
+    'END:VEVENT'].join('\r\n');
+ });
+ const contents=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LiangYou//Sports Calendar//ZH',
+  'CALSCALE:GREGORIAN','X-WR-CALNAME:LiangYou Sports',...entries,'END:VCALENDAR'].join('\r\n')+'\r\n';
+ const blob=new Blob([contents],{type:'text/calendar;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const anchor=document.createElement('a');anchor.href=url;anchor.download='LiangYou-following.ics';
+ document.body.append(anchor);anchor.click();anchor.remove();
+ window.setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function updateHealth(sources,generated){
+ if(!healthBox)return;
+ const t=L(),unique=new Map();
+ for(const x of sources||[]){if(x?.tag&&!unique.has(x.tag))unique.set(x.tag,x);}
+ const age=Date.parse(generated||'');
+ const old=Number.isFinite(age)&&Date.now()-age>18*3600000;
+ const incomplete=[...unique.values()].filter(x=>x.status!=='ok');
+ const main=old||incomplete.length?t.partial:t.verified;
+ healthBox.innerHTML='<details><summary><span>◈ '+t.health+'</span><span>'+
+  safe(main)+' · '+unique.size+'</span></summary><div class="sports-health-list">'+
+  [...unique.values()].map(s=>{
+   const status=s.status==='ok'?t.verified:s.status==='partial'?t.partial:
+    s.status==='failed'?t.failed:t.unknown;
+   const extra=Number.isInteger(s.failed_groups)&&s.failed_groups>0?
+    (isEn()?' · failed groups ':' · 异常数据组 ')+s.failed_groups:'';
+   return '<div><strong>'+safe(s.tag)+'</strong><span>'+safe(status)+extra+'</span></div>';
+  }).join('')+'</div><p>'+safe(t.archived)+'</p></details>';
+}
+load();
+shelf.addEventListener('click',ev=>{
+ const follow=ev.target.closest('[data-follow-team]');
+ if(follow){toggle(follow.dataset.followSport,follow.dataset.followTeam);return;}
+ const action=ev.target.closest('[data-personal-action]')?.dataset.personalAction;
+ if(action==='export'){exportCalendar();return;}
+ if(action==='mine'||action==='all'){
+  followingOnly=action==='mine';render();
+  window.dispatchEvent(new CustomEvent('liangyou:personal-change',{detail:{view:'calendar'}}));
+ }
+});
+document.getElementById('officialFixturesGrid')?.addEventListener('click',ev=>{
+ const button=ev.target.closest('[data-follow-team]');
+ if(!button)return;
+ ev.preventDefault();ev.stopPropagation();
+ toggle(button.dataset.followSport,button.dataset.followTeam);
+});
+window.addEventListener('liangyou:fixtures-updated',()=>{
+ events=window.LiangYouOfficialSportsEvents||[];
+ render();
+});
+window.addEventListener('liangyou:sports-health',event=>{
+ updateHealth(event.detail?.sources,event.detail?.generated_at);
+});
+section.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(button=>
+ button.addEventListener('click',()=>window.setTimeout(render,0)));
+window.LiangYouSportsPersonal=Object.freeze({has, followsEvent, followingOnly:()=>followingOnly,
+ toggle,refresh:render,updateHealth});
+render();
+})();
