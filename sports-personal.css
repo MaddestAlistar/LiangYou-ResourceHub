@@ -39,3 +39,20 @@
 .fixtures-form-rows strong{color:#dce6ef}.fixtures-form-rows span{font-variant-numeric:tabular-nums}
 .fixtures-form p{color:#91aac0;line-height:1.65;margin:7px 0 0}
 .fixtures-history-actions{margin:7px 0 11px}
+
+
+/* Keep head-to-head team labels balanced on narrow phone screens. */
+.fixtures-team-name{display:inline-block;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#officialFixtures .fixtures-versus:not(.is-board){display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:7px}
+#officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow{min-width:0;max-width:100%;justify-content:flex-start}
+#officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow:last-child{justify-content:flex-end}
+#officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow:last-child>.fixtures-follow-button{order:2}
+#officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow:last-child>.fixtures-team-name{text-align:right}
+#officialFixtures .fixtures-versus:not(.is-board)>em{white-space:nowrap}
+@media(max-width:480px){
+ #officialFixtures .fixtures-versus:not(.is-board){gap:5px;font-size:11px}
+ #officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow{gap:2px}
+ #officialFixtures .fixtures-versus:not(.is-board)>.fixtures-team-follow>.fixtures-follow-button{padding:2px;font-size:14px}
+ #officialFixtures .fixtures-versus.is-board{gap:5px;font-size:11px}
+ #officialFixtures .fixtures-versus.is-board .fixtures-team-follow{max-width:100%}
+}
