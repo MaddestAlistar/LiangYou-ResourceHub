@@ -115,6 +115,8 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
  assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('extraGeneratedAt') && fixtureJS.includes('selected.status===\'stale\'') && fixtureJS.includes('staleOption'),
+ 'Independent source timestamps and stale-table badges must remain visible');
 assert(fixtureJS.includes('extra-sports.json') && fixtureJS.includes('football-data') && fixtureJS.includes('winRate'),
  'New real provider standings and source labels must remain wired to fixtures UI');
 assert(html.includes('<option value="football">足球</option>') && html.includes('Data provided by football-data.org'),
@@ -128,7 +130,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.21') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.15'),
+assert(html.includes('fixtures.js?v=20261027.22') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.16'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -415,6 +417,18 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
   assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking is-football') &&
          ui.get('officialStandingGrid').innerHTML.includes('积分'),
          'Verified football table and points columns missing');
+  assert(ui.get('officialFixturesStatus').textContent.includes('NBA/足球'),
+    'Independent NBA/football verified timestamp must be displayed');
+  const footballRecord=extra.standings.find(x=>x.provider==='football-data');
+  if(footballRecord){
+    footballRecord.status='stale';
+    footballRecord.verified_at='2026-10-26T03:00:00Z';
+    ui.get('officialStandingSport').dispatch('change');
+    assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking-note is-stale'),
+      'Previously verified league table should display a warning');
+    assert(ui.get('officialStandingSelect').innerHTML.includes('（上次数据）'),
+      'Previously verified league must also be identified in dropdown');
+  }
   assert(ui.get('officialFixturesNote').innerHTML.includes('href="https://www.football-data.org/"'),
          'Visible football-data source attribution link missing');
   ui.get('officialStandingSport').value='all';
