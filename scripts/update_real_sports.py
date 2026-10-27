@@ -249,7 +249,12 @@ def official_bracket(raw,tournament_id,label):
         # "Semifinal 2: A vs B". Group by actual knockout round instead.
         raw_round=round_label.lower()
         lower=raw_round
-        if "grand final" in lower or re.search(r"\bfinal\b",lower):
+        numbered_round=re.search(r"\b(?:upper|lower|winners?|losers?)\s+bracket\s+round\s+(\d+)\b",raw_round)
+        if numbered_round:
+            # A match title such as "Lower bracket round 1 match 2: A vs B"
+            # must be grouped with round 1, not shown in its own column.
+            round_label="Round "+numbered_round.group(1)
+        elif "grand final" in lower or re.search(r"\bfinal\b",lower):
             round_label="Final"
         elif "semifinal" in lower or "semi-final" in lower:
             round_label="Semifinals"
@@ -323,7 +328,7 @@ def official_bracket(raw,tournament_id,label):
     order={"Round of 16":1,"Quarterfinals":2,"Semifinals":3,"Final":4}
     cards=[{"round":rnd,"matches":matches[:12]}
            for rnd,matches in sorted(rounds.items(),key=lambda item:
-               (order.get(item[0],9),item[0]))][:8]
+               (order.get(item[0],9),item[0]))][:12]
     if not cards:return None
     return {"tournament_id":tournament_id,"title":label,"rounds":cards,
             "provider":"pandascore"}
