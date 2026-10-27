@@ -687,6 +687,7 @@ async function fetchData(){
   if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
     window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
   dataHealth();
+  render();
  }catch{data={...data,status:'failed'};render();}
  finally{fetchPending=false;}
 }
