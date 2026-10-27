@@ -55,7 +55,7 @@ const win={
  setTimeout:()=>{},
  alert(){throw Error('Unexpected no-events alert')}
 };
-const ctx={window:win,document,
+const ctx={window:win,document,AbortSignal:{timeout:()=>({})},
  fetch:async url=>{
   assert.equal(url,'./data/update-status.json');
   return {ok:true,json:async()=>({schema:1,jobs:{
