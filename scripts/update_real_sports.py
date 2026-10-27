@@ -900,7 +900,7 @@ def main():
             if re.search(regex,title):phases[group]=True
     lineage_count=sum(len(m.get("previous_matches",[]))
         for b in brackets for r in b.get("rounds",[]) for m in r.get("matches",[]))
-    output={"schema":1,"fixture_schema_version":10,"source_type":"official_fixtures","generated_at":iso(now),
+    output={"schema":1,"fixture_schema_version":11,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
