@@ -451,6 +451,7 @@ def discover_lol_tournaments(key,now):
                     found.append({"tournament_id":row["id"],"sport":"lol",
                         "league":label,"tournament_name":title,
                         "has_bracket":row.get("has_bracket") is True,
+                        "start_time":iso(start or end) if (start or end) else None,
                         "source":"tournament"})
                 if period=="past" and (len(payload)<100 or historic>60):break
             except Exception:
@@ -476,14 +477,20 @@ def tournament_extras(matches,key,discoveries=None):
         priority=popularity(league,stage,m.get("sport"))
         # A discovered tournament explicitly marked has_bracket is preferable
         # to a guessed knockout event whose provider might have no bracket.
+        point=timestamp(m.get("start_time") or m.get("begin_at") or m.get("end_at"))
+        recent=point.timestamp() if point else 0
         value={"priority":priority,"title":label,"sport":m.get("sport"),
-               "bracket":knockout,"ranking":regular,"league":league}
+               "bracket":knockout,"ranking":regular,"league":league,
+               "recent":recent}
         if tid not in candidates or value["priority"]>candidates[tid]["priority"]:
             candidates[tid]=value
         else:
             candidates[tid]["bracket"] |= knockout
             candidates[tid]["ranking"] |= regular
-    order=lambda tid:(-candidates[tid]["priority"],tid)
+            candidates[tid]["recent"]=max(candidates[tid]["recent"],recent)
+    # Within the same league priority, prefer the latest confirmed tournament
+    # rather than the smallest (often oldest) PandaScore identifier.
+    order=lambda tid:(-candidates[tid]["priority"],-candidates[tid]["recent"],-tid)
     ranked_candidates=sorted(candidates,key=order)
     def spread_by_league(ids,limit):
         """Prioritize distinct competitions; fill unused slots with next valid stages."""
@@ -586,8 +593,10 @@ def tournament_extras(matches,key,discoveries=None):
                     blocked=True
                     print("PandaScore detail circuit breaker activated",flush=True)
                     break
-    brackets.sort(key=lambda x:(-x["prominence"],x["tournament_id"]))
-    standings.sort(key=lambda x:(-x["prominence"],x["id"]))
+    brackets.sort(key=lambda x:(-x["prominence"],
+                               -candidates[x["tournament_id"]]["recent"],-x["tournament_id"]))
+    standings.sort(key=lambda x:(-x["prominence"],
+                                -candidates[int(x["id"].removeprefix("panda-"))]["recent"],x["id"]))
     print("PandaScore details: %d knockout brackets, %d standings, %d failed requests" %
           (len(brackets),len(standings),errors),flush=True)
     return brackets,standings
