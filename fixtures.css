@@ -331,3 +331,14 @@
 @media(prefers-reduced-motion:reduce){
  .fixtures-league-tabs,.lyb-scroll{scroll-behavior:auto}
 }
+
+/* Group progression is driven by published group ranks, with rule-only destinations. */
+.lyb-group-rank{display:inline-flex;justify-content:center;align-items:center;min-width:21px;height:21px;border-radius:7px;
+ background:rgba(220,187,132,.12);border:1px solid rgba(220,187,132,.2);margin-right:3px}
+.lyb-group-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:74px}
+.lyb-group-meta strong{color:#f3d6a1;font-size:11px;font-variant-numeric:tabular-nums}
+.lyb-group-meta small{font-size:9px;color:#a9c3d7;white-space:normal;text-align:right;line-height:1.4}
+.lyb-group-warning{margin:12px 15px 0;padding:9px 12px;border:1px solid rgba(229,178,94,.4);
+ border-radius:10px;color:#f0d6a9;background:rgba(201,142,66,.1);font-size:11px;line-height:1.6}
+.lyb-group-flow+.lyb-caption{margin-top:0}
+@media(max-width:680px){.lyb-groups{grid-template-columns:1fr}.lyb-group-team{align-items:center}}
