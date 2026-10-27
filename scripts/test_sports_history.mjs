@@ -55,4 +55,40 @@ opened.hidden=false;holder.innerHTML='';
 await callbacks.click({target:{closest(sel){return sel==='[data-trend-open]'?opened:null}}});
 assert(!holder.innerHTML.includes('<polyline'),'Single observation must never be drawn as a trend');
 assert(holder.innerHTML.includes('两次'));
+// A malformed archived JSON must show a clear error, and a later click may retry.
+const retryListeners={};
+const retryBox={hidden:true,innerHTML:'',isConnected:true,dataset:{}};
+const retryButton={dataset:{trendOpen:'match-1'},hidden:false,closest(sel){
+ return sel==='.fixtures-trend'?{querySelector:()=>retryBox}:null;
+}};
+const retryWindow={
+ LiangYouSportsLinks:windowMock.LiangYouSportsLinks,
+ LiangYouOfficialSportsEvents:[fixture],LiangYouMarketRecords:[]
+};
+let retryCount=0,invalid=true;
+vm.runInNewContext(script,{
+ window:retryWindow,
+ document:{getElementById(id){
+  return id==='officialFixtures'?{addEventListener:(t,fn)=>{retryListeners[t]=fn}}:
+   id==='sports'?sportSection:null;
+ }},
+ fetch:async()=>{
+  retryCount++;
+  return {ok:true,json:async()=>invalid?{schema:1,source_type:'verified_market_history',markets:null}:raw};
+ },AbortSignal:{timeout:()=>({})},Date,Intl,console
+},{timeout:3000});
+const tryOpen=()=>retryListeners.click({
+ target:{closest:sel=>sel==='[data-trend-open]'?retryButton:null}
+});
+await tryOpen();
+assert(retryBox.innerHTML.includes('不可用'), 'A malformed history response must not spin indefinitely');
+invalid=false;retryButton.hidden=false;
+raw.markets['polymarket:sample-1'].points.push({
+ at:iso(-30*60000),outcomes:[['T1',.68],['GEN',.32]]
+});
+await tryOpen();
+assert.equal(retryCount,2,'Failed history downloads must be retried');
+assert(retryBox.innerHTML.includes('<polyline'),'Newly valid historical data must render');
+console.log('PASS: Malformed historical feeds show a failure and recover on retry.');
+
 console.log('PASS: Lazy historical market chart, documented provenance, no fabricated trend for one sample.');
