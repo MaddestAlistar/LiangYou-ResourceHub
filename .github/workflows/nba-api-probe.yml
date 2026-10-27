@@ -36,8 +36,9 @@ jobs:
                   print(name,'INVALID_JSON',status,flush=True);return
               output={'probe':name,'status':status,'keys':list(payload)[:18]}
               if name=='dunk_nba':
-                  rows=payload.get('standings',[])
-                  output.update({'season':payload.get('season'),'count':len(rows) if isinstance(rows,list) else None,'sample':rows[:1] if isinstance(rows,list) else None,'error':str(payload.get('error',''))[:150]})
+                  inner=payload.get('data') if isinstance(payload.get('data'),dict) else {}
+                  rows=inner.get('standings',payload.get('standings',[]))
+                  output.update({'data_type':type(payload.get('data')).__name__,'data_keys':list(inner)[:18],'season':inner.get('season',payload.get('season')),'count':len(rows) if isinstance(rows,list) else None,'sample':rows[:1] if isinstance(rows,list) else None,'error':str(payload.get('error',''))[:150]})
               elif name=='football_competitions':
                   rows=payload.get('competitions',[])
                   output.update({'count':len(rows) if isinstance(rows,list) else None,'codes':[x.get('code') for x in rows if isinstance(x,dict)][:30]})
