@@ -224,6 +224,9 @@ const boardPlayer=(event,which)=>{
  const alias=lang()==='zh'?event[which+'_zh']:event[which+'_en'];
  return boardTranslations?.player?.(event[which],event.sport,lang(),alias)||alias||team(event[which],event.sport);
 };
+const chessOutcome=(event)=>event.status==='finished'&&event.result_detail&&event.result_detail!=='*'?
+ (boardTranslations?.chessResult?.(event.result_detail,lang())||event.result_detail):'';
+const chessSide=which=>boardTranslations?.chessSide?.(which,lang())||(which==='home'?'White':'Black');
 const boardRating=(event,which)=>Number.isInteger(event[which+'_rating'])?
  (lang()==='zh'?'世界第':'World #')+(Number.isInteger(event[which+'_world_rank'])?event[which+'_world_rank']:'—')+
  ' · Elo '+event[which+'_rating']:'';
@@ -356,6 +359,7 @@ function showFixtureDetail(id,scroll=false){
  const whenAt=x.time_precision==='date'?(lang()==='zh'?'日期：':'Date: ')+(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time);
  const complete=x.status==='finished';
  const score=x.sport==='go'?(label?'以棋院公布的胜负记录为准':'See the Go association result'):
+  x.sport==='chess'&&chessOutcome(x)?safe(chessOutcome(x)):
   complete&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
   safe(String(x.score_home)+' : '+String(x.score_away)):(label?'暂无已核验终场比分':'No verified final score');
  const state=x.status==='finished'?(label?'已完赛':'Finished'):
@@ -369,10 +373,12 @@ function showFixtureDetail(id,scroll=false){
    b.sport===x.sport && String(b.title||'').toLowerCase().includes(String(x.league||'').toLowerCase()) &&
    x.league);
  refs.detail.hidden=false;
- refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+safe(boardPlayer(x,'home'))+
-  ' · '+safe(boardPlayer(x,'away'))+'</strong><button type="button" data-close-fixture aria-label="'+
+ refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+
+  (x.sport==='chess'?safe(chessSide('home'))+' · ':'')+safe(boardPlayer(x,'home'))+
+  ' · '+(x.sport==='chess'?safe(chessSide('away'))+' · ':'')+safe(boardPlayer(x,'away'))+'</strong><button type="button" data-close-fixture aria-label="'+
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
-  '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+' · '+safe(state)+
+  '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+
+  (x.stage?' · '+safe(localizeStage(x.stage,x.sport)):'')+' · '+safe(state)+
   ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+ 
   (x.sport==='go'?'<div class="fixtures-go-ratings">'+
     (boardRating(x,'home')?safe(boardPlayer(x,'home'))+'：'+safe(boardRating(x,'home'))+' · ':'')+
@@ -382,7 +388,7 @@ function showFixtureDetail(id,scroll=false){
     ((x.home_player_url||x.away_player_url)?' · <a href="https://db.u-go.net/" target="_blank" rel="noopener noreferrer">u-go.net</a>':'')+
     '<small> '+(label?'排名仅供参考，不代表比赛胜率':'Rankings are not win probabilities')+'</small></div>':'')+
   (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
-  (x.result_detail?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
+  (x.result_detail&&x.sport!=='chess'?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
    (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
   '<div class="fixtures-detail-actions">'+
@@ -478,7 +484,9 @@ function calendar(){
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
   const title=[localize(x.league,x.sport),localizeStage(x.stage,x.sport),
      Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
-  const score=x.sport==='go'&&x.status==='finished'&&x.result_detail?
+  const score=x.sport==='chess'&&chessOutcome(x)?
+    '<span class="fixtures-score">'+safe(chessOutcome(x))+'</span>':
+   x.sport==='go'&&x.status==='finished'&&x.result_detail?
     '<span class="fixtures-score">'+safe(x.result_detail)+'</span>':
     x.status==='finished'&&Number.isFinite(x.score_home)&&Number.isFinite(x.score_away)?
     '<span class="fixtures-score">'+safe(x.score_home)+' : '+safe(x.score_away)+'</span>':'';
@@ -486,7 +494,10 @@ function calendar(){
     x.status==='finished'?(lang()==='zh'?'已结束':'Final'):null;
   return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
     '</strong><span>'+safe(x.time_precision==='date'?(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span></div>'+
-    '<div class="fixtures-versus">'+safe(boardPlayer(x,'home'))+' <em>'+safe(copy.vs)+'</em> '+
+    '<div class="fixtures-versus">'+
+    (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">白方</span>':'')+
+    safe(boardPlayer(x,'home'))+' <em>'+safe(copy.vs)+'</em> '+
+    (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">黑方</span>':'')+
     safe(boardPlayer(x,'away'))+'</div>'+score+
     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
