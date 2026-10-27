@@ -25,7 +25,7 @@ CHINA = "https://www.weiqi.org.cn/competition/battle"
 LICHESS = "https://lichess.org/api/broadcast/top"
 GO_TITLE = re.compile(r"(?:世界|국제|world|棋聖|名人|本因坊|天元|碁聖|十段|王座|国手|国手山脈|烂柯|三星|LG|春蘭|农心|農心|応氏|女子|女流|囲碁|바둑|기성|명인|국수|棋仙|棋王|杯|전|リーグ)", re.I)
 PRO_CHESS = re.compile(r"(?:world|fide|candidates|grand|masters|championship|chess olympiad|cup|club|open|tata|sinquefield|bundesliga|national|champions|chess tour)", re.I)
-AMATEUR = re.compile(r"(?:u(?:8|10|12|14|16|18)\b|elementary|school|amateur|beginner|kids|어린이|청소년)",re.I)
+AMATEUR = re.compile(r"(?:u(?:8|10|12|14|16|18|20)\b|elementary|school|amateur|beginner|kids|children|child|youth|junior|cadet|student|scholastic|어린이|청소년)",re.I)
 
 def stamp(value):
     if isinstance(value,(float,int)) and value>0:
@@ -265,7 +265,7 @@ def main():
         # Do not overwrite previously verified fixtures after a network outage.
         raise RuntimeError("No board game source verified; preserving last snapshot")
     write_json(OUT,{"schema":1,"source_type":"board_game_fixtures","generated_at":iso(datetime.now(UTC)),
-        "interval_hours":6,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
+        "interval_hours":6,"board_source_revision":2,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
         "sources":sources,"events":clean[:180]})
 
 if __name__=="__main__":
