@@ -75,7 +75,7 @@ en:{title:'Calendar & tournament intelligence',
  total:n=>n+' upcoming this week',shown:(n,t)=>'Showing '+n+' of '+t,
  more:'More matches',round:'Round',draw:'TBD',rank:'Rank',
  team:'Team',wins:'W',losses:'L',feature:'Featured',vs:'vs',
- source:'Source',note:'Sources: PandaScore (esports), BALLDONTLIE and API-Sports (basketball), DunkAPI (NBA standings), football-data.org (football), Lichess and Chess.com (chess). The Odds API supplies separate pregame bookmaker references. Data is periodically verified, not live scores.',
+ source:'Source',note:'Sources: PandaScore (esports), BALLDONTLIE and API-Sports (basketball), DunkAPI (NBA standings), Data provided by football-data.org (football), Lichess and Chess.com (chess). The Odds API supplies separate pregame bookmaker references. Data is periodically verified, not live scores.',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
