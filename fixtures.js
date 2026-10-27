@@ -18,7 +18,7 @@ zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
- sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],stages:['全部阶段','小组赛战绩','淘汰赛对阵'],
+ sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','无畏契约','CS2','其他电竞'],stages:['淘汰赛','瑞士轮','小组赛'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球'],
  bracketSubtitle:'电竞阶段与晋级对阵',
  standingSubtitle:'多个联赛榜单可选择查看，点击榜单名称或展开卡片',
@@ -43,7 +43,7 @@ en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
  views:['Calendar','Esports brackets','Standings'],dates:['Today','Tomorrow','Next 7 days'],
  placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
- sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],stages:['All stages','Group results','Playoff brackets'],
+ sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','VALORANT','CS2','Other esports'],stages:['Knockout','Swiss stage','Group stage'],
  ranks:['All standings','League of Legends','Other esports','Basketball'],
  bracketSubtitle:'Esports stages and brackets',
  standingSubtitle:'Select a league or expand published ranking cards',
@@ -215,6 +215,7 @@ function topPriority(records){
 }
 function updateLabels(){
  const copy=t();el('officialFixturesTitle').textContent=copy.title;
+ const viz=window.LiangYouBracketViz;
  el('officialFixturesIntro').textContent=copy.intro;
  el('officialFixturesNote').textContent=copy.note;
  el('fixturesMarketTitle').textContent=copy.market;
@@ -225,7 +226,7 @@ function updateLabels(){
  refs.search.placeholder=copy.placeholder;refs.search.setAttribute('aria-label',copy.placeholder);
  [...refs.category.options].forEach((x,i)=>x.textContent=copy.category[i]);
  [...refs.sort.options].forEach((x,i)=>x.textContent=copy.sorts[i]);
- [...refs.bracketSport.options].forEach((x,i)=>x.textContent=copy.formats[i]);
+ [...refs.bracketSport.options].forEach((x,i)=>x.textContent=copy.formats[i]||x.textContent);
  [...refs.bracketStage.options].forEach((x,i)=>x.textContent=copy.stages[i]);
  [...refs.standingSport.options].forEach((x,i)=>x.textContent=copy.ranks[i]);
  refs.more.textContent=copy.more;
@@ -285,63 +286,38 @@ function bracketRound(label){
  return localize(label,'esports').replace(/^(?:Upper|Lower) Bracket Round /i,m=>m);
 }
 function brackets(){
- const copy=t(),kind=refs.bracketSport.value,stage=refs.bracketStage.value;
- // Ranking is rendered as a group stage; promotion is never inferred without a bracket.
- const knockout=data.brackets.filter(x=>x&&x.provider==='pandascore'&&Array.isArray(x.rounds)&&x.rounds.length)
-  .map(x=>({...x,_mode:'knockout',_key:'k-'+x.tournament_id}));
- const group=data.standings.filter(x=>x&&x.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length&&
-  /group|swiss|regular season|round robin|小组|瑞士|常规赛/i.test(x.title||''))
-  .map(x=>({...x,_mode:'group',_key:'g-'+x.id}));
- const records=[...knockout,...group].filter(x=>(kind==='all'||kindOf(x)===kind)&&
-  (stage==='all'||x._mode===stage))
-  .sort((a,b)=>(a._mode==='knockout'?0:1)-(b._mode==='knockout'?0:1)||
-   popularity(b)-popularity(a)||
-   String(a.title).localeCompare(String(b.title)));
- refs.bracketQuick.innerHTML='';
- if(!records.length){
-  refs.bracketSelect.hidden=true;refs.bracket.classList.remove('is-groups');
-  refs.bracket.innerHTML=empty(copy.unavailable);return;
+ const viz=window.LiangYouBracketViz,copy=t(),kind=refs.bracketSport.value;
+ if(!viz){refs.bracket.innerHTML=empty(copy.unavailable);return;}
+ // Only visual bracket trees or stage progression diagrams live in this view.
+ const knockout=data.brackets.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.rounds)&&x.rounds.length)
+  .map(x=>({...x,_key:'brk:'+x.tournament_id,_visual:'knockout'}));
+ const phases=data.standings.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length)
+  .map(x=>({...x,_key:'phase:'+x.id,_visual:viz.stageOf(x)})).filter(x=>x._visual==='swiss'||x._visual==='group');
+ const available=[...knockout,...phases].filter(x=>kind==='all'||viz.game(x)===kind);
+ const priority={knockout:0,swiss:1,group:2};
+ available.sort((a,b)=>(priority[a._visual]-priority[b._visual])||popularity(b)-popularity(a));
+ let stage=refs.bracketStage.value;
+ let records=available.filter(x=>x._visual===stage);
+ if(!records.length&&available.length){
+   stage=available[0]._visual;
+   refs.bracketStage.value=stage;
+   records=available.filter(x=>x._visual===stage);
  }
- refs.bracketSelect.hidden=false;options(refs.bracketSelect,records);
- const selected=records.find(x=>x._key===refs.bracketSelect.value)||records[0];
- if(selected._mode==='group'){
-  refs.bracket.classList.add('is-groups');
-  const groups=new Map();
-  for(const row of selected.groups){
-   if(!row||!Number.isInteger(row.rank)||!row.team)continue;
-   const group=row.group||'';
-   if(!groups.has(group))groups.set(group,[]);
-   groups.get(group).push(row);
-  }
-  refs.bracket.innerHTML=[...groups.entries()].map(([group,rows])=>
-   '<section class="fixtures-standing-group"><h4>'+safe(group?localize(group,kindOf(selected)):
-    (lang()==='zh'?'小组赛战绩':'Group results'))+'</h4>'+
-   '<table class="fixtures-ranking"><thead><tr><th>'+safe(copy.rank)+'</th><th>'+safe(copy.team)+
-   '</th><th>'+safe(copy.wins)+'</th><th>'+safe(copy.losses)+'</th></tr></thead><tbody>'+
-   rows.sort((a,b)=>a.rank-b.rank).slice(0,32).map(row=>'<tr><td>'+safe(row.rank)+'</td><td>'+
-   safe(team(row.team,kindOf(selected)))+'</td><td>'+
-   safe(Number.isInteger(row.wins)?row.wins:'—')+'</td><td>'+
-   safe(Number.isInteger(row.losses)?row.losses:'—')+'</td></tr>').join('')+
-   '</tbody></table></section>').join('')||empty(copy.unavailable);
+ refs.bracketQuick.innerHTML='';
+ refs.bracket.classList.remove('is-groups');
+ if(!records.length){
+  refs.bracketSelect.hidden=true;
+  refs.bracket.innerHTML=empty(copy.unavailable);
   return;
  }
- refs.bracket.classList.remove('is-groups');
- const grouped=new Map();
- for(const round of selected.rounds){
-  let key=String(round.round||copy.round);
-  key=key.replace(/^(Upper|Lower) Bracket Round (\\d+)(?: Match .*)?$/i,'$1 Bracket Round $2');
-  if(!grouped.has(key))grouped.set(key,[]);
-  grouped.get(key).push(...(Array.isArray(round.matches)?round.matches:[]));
- }
- const sport=kindOf(selected);
- refs.bracket.innerHTML=[...grouped.entries()].slice(0,10).map(([label,matches])=>
-  '<section class="fixtures-round"><h4>'+safe(bracketRound(label))+'</h4>'+
-  matches.slice(0,12).map(m=>
-   '<div class="fixtures-tie">'+[['home','score_home'],['away','score_away']].map(([side,score])=>
-    '<div class="fixtures-tie-line'+(m.winner===m[side]?' is-winner':'')+'"><span>'+
-    safe(team(m[side]||copy.draw,sport))+'</span><b>'+
-    safe(Number.isInteger(m[score])?m[score]:'—')+'</b></div>').join('')+
-  '</div>').join('')+'</section>').join('');
+ refs.bracketSelect.hidden=false;
+ options(refs.bracketSelect,records);
+ const chosen=records.find(x=>x._key===refs.bracketSelect.value)||records[0];
+ const opts={lang:lang(),team:v=>team(v,kindOf(chosen)),
+  translate:v=>bracketRound(v),events:data.events};
+ const markup=chosen._visual==='knockout'?viz.knockout(chosen,opts):
+  chosen._visual==='swiss'?viz.swiss(chosen,opts):viz.groups(chosen,opts);
+ refs.bracket.innerHTML=markup||empty(copy.unavailable);
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
