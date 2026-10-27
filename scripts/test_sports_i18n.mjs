@@ -176,6 +176,11 @@ assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.
 assert(fixtureJS.includes('Promise.all([') && fixtureJS.includes('archiveCache') &&
  fixtureJS.includes('lastSnapshotSignature') && fixtureJS.includes('fetchPending'),
  'Parallel verified feed loading, historical cache and unchanged-result fast path must remain');
+assert(fixtureJS.includes('extraCache')&&fixtureJS.includes("status:'stale'")&&
+ fixtureJS.includes("usableExtra?.generated_at"),
+ 'Failed optional NBA/football fetches must preserve previous verified snapshots as stale');
+assert(fixtureJS.includes("60*1000")&&fixtureJS.includes("if(view==='calendar')calendar()"),
+ 'Calendar time-window labels should advance without reloading the brackets');
 assert(fixtureJS.includes('let mobileBracket=') &&
  fixtureJS.includes('resetBracketView()'),
  'Phone bracket must not rerender for address-bar changes and stage navigation must reset fullscreen');
@@ -213,7 +218,7 @@ assert(!html.includes('id="officialStandingLeagues"') &&
  'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.29') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
+assert(html.includes('fixtures.js?v=20261027.30') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
