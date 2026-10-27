@@ -61,7 +61,10 @@ function knockout(record,opt={}){
   {title:z('败者组','Lower bracket',lang),kind:'lower'},
   {title:z('决赛 / 其他官方轮次','Finals / other rounds',lang),kind:'final'}
  ];
- const cw=226,gap=56,cardH=95,step=111,margin=16,top=48;
+ // Narrower columns reveal more of the next round on 360–430 px screens.
+ const mobile=typeof window.innerWidth==='number'&&window.innerWidth<=680;
+ const cw=mobile?178:226,gap=mobile?34:56,cardH=mobile?91:95,
+       step=mobile?104:111,margin=mobile?12:16,top=mobile?44:48;
  const stageById=new Map(),lanes=[];
  for(const type of types){
   const matches=all.filter(m=>m._side===type.kind);
@@ -176,9 +179,12 @@ function knockout(record,opt={}){
  return '<div class="lyb-visual"><div class="lyb-visual-top"><strong>PLAYOFF BRACKET</strong><span>'+
   z('真实淘汰赛对阵','Verified knockout routes',lang)+'</span></div>'+
   '<p class="lyb-bracket-disclaimer">'+html(note+caution)+'</p>'+
+  '<div class="lyb-knockout-gesture"><span>'+z('横向滑动查看后续轮次','Swipe to inspect later rounds',lang)+
+  '</span><span>‹ &nbsp; ›</span></div>'+
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+
   z('左右滑动查看晋级图','Swipe horizontally to view brackets',lang)+'">'+
-  '<div class="lyb-knockout-map lyb-multi-lane" style="width:'+width+'px;height:'+height+'px">'+
+  '<div class="lyb-knockout-map lyb-multi-lane'+(mobile?' is-mobile':'')+
+  '" style="width:'+width+'px;height:'+height+'px">'+
   '<svg class="lyb-lines" aria-hidden="true" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'">'+
   paths.join('')+'</svg>'+laneLabels.join('')+cards.join('')+'</div></div></div>';
 }
