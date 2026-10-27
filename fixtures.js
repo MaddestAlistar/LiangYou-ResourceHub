@@ -79,6 +79,7 @@ en:{title:'Calendar & tournament intelligence',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
+let oddsRecords=[],chessProfiles=new Map();
 let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
 let autoBoardStatus=false,manualBoardStatus=false;
 let fetchPending=false,archiveCache=null,extraCache=null,lastSnapshotSignature='';
@@ -175,7 +176,7 @@ const localize=(v,category='')=>{
  .replace(/Lower Bracket Round (\d+)(?: Match (\d+))?/gi,(_,n,m)=>'败者组第'+n+'轮'+(m?' 第'+m+'场':''))
  .replace(/\bRound (\d+)\b/gi,'第$1轮');
 };
-const providerName=id=>({pandascore:'PandaScore','football-data':'football-data.org',lichess:'Lichess',nihonkiin:'日本棋院',baduk:'韩国棋院','weiqi-association':'中国围棋协会'})[id]||'API-Sports';
+const providerName=id=>({pandascore:'PandaScore','football-data':'football-data.org',balldontlie:'BALLDONTLIE',lichess:'Lichess',nihonkiin:'日本棋院',baduk:'韩国棋院','weiqi-association':'中国围棋协会'})[id]||'API-Sports';
 const team=(v,sport)=>{
  const raw=String(v??'').trim();
  if(lang()==='en')return raw;
@@ -342,6 +343,44 @@ function predictionCard(m,fixture,zh){
    '</div>'+
  '</article>';
 }
+function renderChessProfiles(x,zh){
+ const players=[x.home,x.away].map(n=>chessProfiles.get(String(n))).filter(Boolean);
+ if(!players.length)return '';
+ return '<section class="fixtures-extra-panel">'+
+ '<strong>'+(zh?'棋手资料 · Chess.com':'Chess profiles · Chess.com')+'</strong>'+
+ '<div class="fixtures-extra-grid">'+players.map(p=>'<div class="fixtures-extra-person">'+
+ '<strong>'+safe(boardTranslations?.player?.(p.pgn_name,'chess',lang())||p.display_name)+'</strong>'+
+ '<small>'+safe(p.title||'')+'</small><div>'+
+ [[zh?'FIDE':'FIDE',p.fide],[zh?'快棋':'Rapid',p.rapid],[zh?'超快棋':'Blitz',p.blitz]]
+ .map(([n,v])=>'<span>'+safe(n)+' <b>'+safe(Number.isInteger(v)?v:'—')+'</b></span>').join('')+
+ '</div><a href="'+safe(p.source_url)+'" target="_blank" rel="noopener noreferrer">Chess.com</a></div>').join('')+'</div>'+
+ '<small>'+(zh?'等级分体系不同，资料非实时。':'Rating systems differ; cached data.')+'</small></section>';
+}
+function oddsForFixture(x){
+ if(x.status!=='scheduled'||!['basketball','football'].includes(x.sport))return null;
+ const now=Date.now();
+ const matching=oddsRecords.filter(o=>Number.isFinite(Date.parse(o.quote_at))&&
+  Date.parse(o.quote_at)<=now+60000&&now-Date.parse(o.quote_at)<12*3600000&&
+  Date.parse(o.start_time)>now&&linker?.pairs?.(o,x,60));
+ return matching.length===1?matching[0]:null;
+}
+function renderOddsReference(x,zh){
+ const o=oddsForFixture(x);
+ if(!o)return '';
+ const values=o.outcomes?.filter(q=>Number.isFinite(q.decimal)&&q.decimal>1)||[];
+ if(values.length<2||values.length>3)return '';
+ const selections=[values.find(q=>linker.keyName(q.name)===linker.keyName(x.home)),
+  values.find(q=>/^(draw|tie|平局)$/i.test(q.name)),
+  values.find(q=>linker.keyName(q.name)===linker.keyName(x.away))].filter(Boolean);
+ if(selections.length!==values.length)return '';
+ return '<details class="fixtures-extra-panel fixtures-odds-reference"><summary>'+
+ (zh?'赛前赔率参考':'Pregame bookmaker odds')+' <small>The Odds API · '+safe(when(o.quote_at))+'</small></summary>'+
+ '<div class="fixtures-odds-options">'+selections.map(q=>'<div><span>'+
+ safe(/^(draw|tie|平局)$/i.test(q.name)?(zh?'平局':'Draw'):team(q.name,x.sport))+
+ '</span><b>'+safe(Number(q.decimal).toFixed(2))+'</b></div>').join('')+'</div>'+
+ '<p>'+(zh?'十进制赔率 · 来源：':'Decimal odds · Source: ')+safe(o.bookmaker||'The Odds API')+
+ (zh?' · 非官方胜率，不代表比赛结果。':' · Not official win probabilities or results.')+'</p></details>';
+}
 function renderGoPlayerRating(x,side,zh){
  const name=boardPlayer(x,side);
  const rank=x[side+'_world_rank'];
@@ -426,6 +465,7 @@ function showFixtureDetail(id,scroll=false){
   (x.result_detail&&x.sport!=='chess'?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
    (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
+  (x.sport==='chess'?renderChessProfiles(x,label):'')+
   '<div class="fixtures-detail-actions">'+
   (bracket?'<button type="button" data-fixture-bracket="'+safe(bracket.tournament_id)+'">'+
     (label?'在晋级图中查看':'View bracket')+'</button>':'')+
@@ -446,7 +486,7 @@ function showFixtureDetail(id,scroll=false){
       '<p class="fixtures-predict-empty">'+
        (label?'本场暂无可核验的赛前预测数据':'No verified prediction data for this fixture')+
       '</p>')+
-  '</section>');
+  '</section>'+renderOddsReference(x,label));
  // Detail follows the tapped card; it no longer jumps to the top of the fixture list.
  button.closest('.fixtures-card').insertAdjacentElement('afterend',refs.detail);
  refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
@@ -794,12 +834,15 @@ async function fetchData(){
   };
   // Concurrent fetches avoid three sequential 16-second waits on slow networks.
   // The completed 2026 archive is immutable for this browsing session.
-  const [base,extraRaw,archiveRaw,boardRaw]=await Promise.all([
+  const [base,extraRaw,archiveRaw,boardRaw,nbaRaw,oddsRaw,chessRaw]=await Promise.all([
     fetchJson('./data/real-sports.json'),
     fetchJson('./data/extra-sports.json').catch(()=>null),
     archiveCache?Promise.resolve(archiveCache):
       fetchJson('./data/verified-lol-2026.json').catch(()=>null),
-    fetchJson('./data/board-games.json').catch(()=>null)
+    fetchJson('./data/board-games.json').catch(()=>null),
+   fetchJson('./data/nba-games.json').catch(()=>null),
+   fetchJson('./data/sports-odds.json').catch(()=>null),
+   fetchJson('./data/chess-players.json').catch(()=>null)
   ]);
   if(base.schema!==1||base.source_type!=='official_fixtures'||!Array.isArray(base.events))
    throw Error('Invalid official snapshot schema');
@@ -818,20 +861,33 @@ async function fetchData(){
   if(historic.length)archiveCache=archiveRaw;
   const board=boardRaw?.schema===1&&boardRaw.source_type==='board_game_fixtures'&&Array.isArray(boardRaw.events)?boardRaw:null;
   const boardEvents=board?board.events.filter(x=>x&&['chess','go'].includes(x.sport)&&['scheduled','live','finished'].includes(x.status)&&x.home&&x.away&&x.start_time):[];
+  const nba=nbaRaw?.schema===1&&nbaRaw.source_type==='nba_fixtures'&&Array.isArray(nbaRaw.events)?nbaRaw:null;
+  const whenNBA=Date.parse(nba?.verified_at||'');
+  const nbaEvents=Number.isFinite(whenNBA)&&Date.now()-whenNBA<=24*3600000?
+   nba.events.filter(x=>x?.provider==='balldontlie'&&x.sport==='basketball'&&
+     x.league==='NBA'&&x.home&&x.away&&x.start_time&&['scheduled','live','finished'].includes(x.status)):[];
   const signature=[base.generated_at,base.status,usableExtra?.generated_at||'',
-    extra?.status||'stale',archiveCache?.generated_at||'',board?.generated_at||''].join('|');
+    extra?.status||'stale',archiveCache?.generated_at||'',board?.generated_at||'',nba?.generated_at||'',oddsRaw?.generated_at||'',chessRaw?.generated_at||''].join('|');
   // An earlier transient fetch failure must clear on the next successful
   // request even if the server returned an unchanged snapshot.
   if(signature===lastSnapshotSignature&&data.status!=='failed')return;
   lastSnapshotSignature=signature;
-  const events=[...base.events,...(usableExtra?.events||[]),...boardEvents];
+  const events=[...nbaEvents,...base.events,...(usableExtra?.events||[]),...boardEvents];
   const dedupe=items=>{
-   const seen=new Set();
+   const seen=new Set(),unique=[];
    return items.filter(x=>{
     if(!x||!x.id||seen.has(x.id))return false;
-    seen.add(x.id);return true;
+    if(x.sport==='basketball'&&/\bNBA\b/i.test(x.league||'')&&
+      unique.some(y=>y.sport==='basketball'&&/\bNBA\b/i.test(y.league||'')&&
+       y.provider!==x.provider&&linker?.pairs?.(x,y,75)))return false;
+    seen.add(x.id);unique.push(x);return true;
    });
   };
+  oddsRecords=oddsRaw?.schema===1&&oddsRaw.source_type==='bookmaker_reference'&&Array.isArray(oddsRaw.events)?oddsRaw.events:[];
+  chessProfiles=new Map((chessRaw?.source_type==='chess_player_metadata'&&Array.isArray(chessRaw.players)?chessRaw.players:[])
+   .filter(x=>x&&x.pgn_name&&/^https:\/\/www\.chess\.com\/member\/[\w-]+$/.test(x.source_url||'')&&
+     Number.isFinite(Date.parse(x.verified_at))&&Date.now()-Date.parse(x.verified_at)<=72*3600000)
+   .map(x=>[x.pgn_name,x]));
   data={...base,
     events:dedupe(events).slice(0,500),
     brackets:Array.isArray(base.brackets)?base.brackets.slice(0,16):[],
@@ -841,7 +897,7 @@ async function fetchData(){
       (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
        /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
       ...published,...historic]).slice(0,24),
-    sources:[...(base.sources||[]),...(usableExtra?.sources||[]),...(board?.sources||[])],
+    sources:[...(base.sources||[]),...(usableExtra?.sources||[]),...(board?.sources||[]),...(nba?.sources||[]),...(chessRaw?.sources||[])],
     boardGeneratedAt:board?.generated_at||null,
     extraStatus:extra?.status||(usableExtra?'stale':'unavailable'),
     extraGeneratedAt:usableExtra?.generated_at||null,
