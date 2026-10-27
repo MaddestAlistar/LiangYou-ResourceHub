@@ -1,0 +1,91 @@
+name: One-time NBA endpoint diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nba-api-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Test NBA account access and standings without revealing API key
+        env:
+          API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request, urllib.error, urllib.parse
+          key = os.environ.get("API_SPORTS_KEY", "").strip()
+          if not key:
+              print("RESULT missing_github_secret API_SPORTS_KEY")
+              raise SystemExit(0)
+
+          def check(label, base, path, params=None):
+              query=urllib.parse.urlencode(params or {})
+              url=base+path+('?' + query if query else '')
+              request=urllib.request.Request(url,headers={
+                  "x-apisports-key":key,"Accept":"application/json",
+                  "User-Agent":"LiangYou-ResourceHub-NBA-AccessProbe/1.0"
+              })
+              code=0
+              try:
+                  with urllib.request.urlopen(request, timeout=24) as response:
+                      code=response.status
+                      payload=json.load(response)
+              except urllib.error.HTTPError as exc:
+                  code=exc.code
+                  try:payload=json.loads(exc.read(8192).decode("utf8"))
+                  except (ValueError,UnicodeDecodeError):payload={}
+              except Exception as exc:
+                  print("RESULT",label,"network_error",type(exc).__name__)
+                  return
+              if not isinstance(payload,dict):
+                  print("RESULT",label,"http",code,"invalid_response_type")
+                  return
+              items=payload.get("response")
+              errors=payload.get("errors")
+              error_tags=sorted(str(x) for x in errors.keys()) if isinstance(errors,dict) else (
+                  ['present'] if isinstance(errors,list) and errors else [])
+              result=payload.get("results")
+              length=len(items) if isinstance(items,list) else None
+              msg="RESULT {} http={} results={} rows={} error_tags={}".format(
+                  label,code,result,length,error_tags)
+              if isinstance(items,list) and items and label.endswith("standings"):
+                  conferences={}
+                  shaped=[]
+                  for row in items:
+                      if not isinstance(row,dict):continue
+                      team=row.get("team") or {}
+                      if not isinstance(team,dict):team={}
+                      conf=row.get("conference")
+                      if isinstance(conf,dict):
+                          conf=conf.get("name") or conf.get("rank")
+                      elif conf is None:conf=(row.get("group") or {}).get("name") if isinstance(row.get("group"),dict) else row.get("group")
+                      key_conf=str(conf or "none")
+                      conferences[key_conf]=conferences.get(key_conf,0)+1
+                      shaped.append({
+                       "team":str(team.get("name",""))[:60],
+                       "conference":key_conf[:40],
+                       "keys":sorted(row.keys())[:18],
+                      })
+                  msg+=" conference_distribution="+json.dumps(conferences,ensure_ascii=False)
+                  msg+=" sample="+json.dumps(shaped[:2],ensure_ascii=False)
+              elif isinstance(items,list) and items and label in ("nba_leagues","nba_seasons"):
+                  msg+=" samples="+json.dumps(items[:5],ensure_ascii=False)[:300]
+              print(msg,flush=True)
+
+          nba="https://v2.nba.api-sports.io"
+          basketball="https://v1.basketball.api-sports.io"
+          check("nba_leagues",nba,"/leagues")
+          check("nba_seasons",nba,"/seasons")
+          check("nba_2026_standings",nba,"/standings",{"league":"standard","season":2026})
+          check("nba_2025_standings",nba,"/standings",{"league":"standard","season":2025})
+          check("basketball_2026_standings",basketball,"/standings",{"league":12,"season":"2026-2027"})
+          check("basketball_2026_groups",basketball,"/standings/groups",{"league":12,"season":"2026-2027"})
+          PY
