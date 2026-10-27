@@ -1,0 +1,28 @@
+name: Probe Jikan and GDELT with throttling
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/probe-jikan-gdelt.yml'
+      - 'scripts/probe_jikan_gdelt.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jikan-gdelt-api-probe
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify Jikan and GDELT with HTTP 429 backoff
+        run: python scripts/probe_jikan_gdelt.py
