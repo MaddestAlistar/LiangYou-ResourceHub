@@ -378,8 +378,16 @@ function calendar(){
     team(x.home,x.sport),team(x.away,x.sport),
     localize(x.league,x.sport),localize(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
  });
- matches=refs.sort.value==='time'?[...matches].sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time)):
-  topPriority(matches);
+ // Past results should show the most recently completed matches first;
+ // future schedules still show earliest kickoff first for time sorting.
+ if(state==='finished'){
+  const newest=(a,b)=>Date.parse(b.start_time)-Date.parse(a.start_time);
+  matches=[...matches].sort((a,b)=>refs.sort.value==='time'?newest(a,b):
+   popularity(b)-popularity(a)||newest(a,b));
+ }else{
+  matches=refs.sort.value==='time'?[...matches].sort((a,b)=>
+   Date.parse(a.start_time)-Date.parse(b.start_time)):topPriority(matches);
+ }
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
   const title=[localize(x.league,x.sport),localize(x.stage,x.sport),
      Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
