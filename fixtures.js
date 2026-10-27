@@ -79,6 +79,7 @@ en:{title:'Calendar & tournament intelligence',
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
 let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
+let fetchPending=false,archiveCache=null,lastSnapshotSignature='';
 const linker=window.LiangYouSportsLinks;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
@@ -272,8 +273,10 @@ function updateLabels(){
   (lang()==='zh'?'电竞/篮球赛程 ':'Esports/basketball fixtures ')+when(data.generated_at):'';
  const extra=Number.isFinite(Date.parse(data.extraGeneratedAt||''))?
   (lang()==='zh'?'NBA/足球 ':'NBA/soccer ')+when(data.extraGeneratedAt):'';
- const note=data.extraStatus&&data.extraStatus!=='ok'?
-  (lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified'):'';
+ const issues=[];
+ if(data.extraStatus&&data.extraStatus!=='ok')issues.push(lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified');
+ if(data.status==='failed')issues.push(lang()==='zh'?'最新快照读取失败，保留上次数据':'Latest check failed; showing previously verified data');
+ const note=issues.join(' · ');
  refs.status.textContent=[basic,extra,note].filter(Boolean).join(' · ');
 }
 function dataHealth(){
@@ -628,30 +631,36 @@ function standings(){
 }
 function render(){updateLabels();dataHealth();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
 async function fetchData(){
+ if(fetchPending)return;
+ fetchPending=true;
  try{
   const fetchJson=async url=>{
    const result=await fetch(url,{cache:'no-cache',signal:AbortSignal.timeout(16000)});
    if(!result.ok)throw Error('Unavailable');
    return result.json();
   };
-  const base=await fetchJson('./data/real-sports.json');
+  // Concurrent fetches avoid three sequential 16-second waits on slow networks.
+  // The completed 2026 archive is immutable for this browsing session.
+  const [base,extraRaw,archiveRaw]=await Promise.all([
+    fetchJson('./data/real-sports.json'),
+    fetchJson('./data/extra-sports.json').catch(()=>null),
+    archiveCache?Promise.resolve(archiveCache):
+      fetchJson('./data/verified-lol-2026.json').catch(()=>null)
+  ]);
   if(base.schema!==1||base.source_type!=='official_fixtures'||!Array.isArray(base.events))
    throw Error('Invalid official snapshot schema');
-  let extra=null;
-  try{
-   const candidate=await fetchJson('./data/extra-sports.json');
-   if(candidate.schema===1&&candidate.source_type==='supplemental_fixtures'&&
-      Array.isArray(candidate.events)&&Array.isArray(candidate.standings))extra=candidate;
-  }catch{/* Optional provider unavailable; retain working PandaScore and API-Sports data. */}
+  const extra=extraRaw?.schema===1&&extraRaw.source_type==='supplemental_fixtures'&&
+    Array.isArray(extraRaw.events)&&Array.isArray(extraRaw.standings)?extraRaw:null;
   const published=extra?extra.standings:[];
-  let historic=[];
-  try{
-   const archive=await fetchJson('./data/verified-lol-2026.json');
-   if(archive.schema===1&&archive.source_type==='verified_completed_esports_standings'&&
-      Number(archive.season)===2026&&Array.isArray(archive.standings)&&
-      archive.standings.every(x=>x.historical_final&&Array.isArray(x.groups)&&x.source_url))
-     historic=archive.standings;
-  }catch{/* 2026 historical archive is optional; ordinary feeds continue. */}
+  const historic=archiveRaw?.schema===1&&archiveRaw.source_type==='verified_completed_esports_standings'&&
+    Number(archiveRaw.season)===2026&&Array.isArray(archiveRaw.standings)&&
+    archiveRaw.standings.every(x=>x.historical_final&&Array.isArray(x.groups)&&x.source_url)?
+    archiveRaw.standings:[];
+  if(historic.length)archiveCache=archiveRaw;
+  const signature=[base.generated_at,base.status,extra?.generated_at||'',
+    extra?.status||'',archiveCache?.generated_at||''].join('|');
+  if(signature===lastSnapshotSignature)return;
+  lastSnapshotSignature=signature;
   const events=extra?[...base.events,...extra.events]:base.events;
   const dedupe=items=>{
    const seen=new Set();
@@ -678,8 +687,8 @@ async function fetchData(){
   if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
     window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
   dataHealth();
- }catch{data={...data,status:'failed'};}
- render();
+ }catch{data={...data,status:'failed'};render();}
+ finally{fetchPending=false;}
 }
 views.forEach(x=>x.addEventListener('click',()=>{view=x.dataset.fixturesView;limit=6;render();}));
 dates.forEach(x=>x.addEventListener('click',()=>{date=x.dataset.fixturesDate;limit=6;render();}));
