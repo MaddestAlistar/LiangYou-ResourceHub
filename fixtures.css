@@ -284,3 +284,10 @@
 .lyb-legend span{display:flex;align-items:center;gap:6px}
 .lyb-legend i{display:inline-block;width:24px;border-top:2px solid #e9c47e}
 .lyb-legend .lyb-key-dashed{border-color:#99adc3;border-top-style:dashed;opacity:.65}
+
+/* Independently verified football tables and NBA conference rankings. */
+.fixtures-table-scroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.fixtures-ranking.is-football{min-width:460px;font-variant-numeric:tabular-nums}
+.fixtures-ranking.is-football th,.fixtures-ranking.is-football td{padding:8px 7px;white-space:nowrap}
+.fixtures-ranking.is-football td:nth-child(2){white-space:normal;min-width:112px}
+@media(max-width:430px){.fixtures-ranking{font-size:10px}.fixtures-ranking td,.fixtures-ranking th{padding:8px 7px}.fixtures-ranking.is-football{min-width:460px}}
