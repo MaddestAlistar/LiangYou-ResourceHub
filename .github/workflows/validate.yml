@@ -31,6 +31,7 @@ jobs:
           node --check sports-link.js
           node --check sports-personal.js
           node --check sports-share.js
+          node --check sports-history.js
           node --check fixtures.js
           python3 -m py_compile scripts/*.py
       - name: Verify icon publisher regressions
@@ -44,5 +45,7 @@ jobs:
           node scripts/test_sports_i18n.mjs
           node scripts/test_sports_personal.mjs
           node scripts/test_sports_share.mjs
+          node scripts/test_sports_history.mjs
+          python3 scripts/test_market_history.py
       - name: Validate catalog and web structure
         run: node scripts/validate.mjs
