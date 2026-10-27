@@ -177,7 +177,9 @@ function knockout(record,opt={}){
  const missing=unresolved+backward;
  const caution=missing?' '+z('有'+missing+'条前序关系未能完整显示。',''+missing+' predecessor links could not be displayed.',lang):'';
  return '<div class="lyb-visual"><div class="lyb-visual-top"><strong>PLAYOFF BRACKET</strong><span>'+
-  z('真实淘汰赛对阵','Verified knockout routes',lang)+'</span></div>'+
+  z('真实淘汰赛对阵','Verified knockout routes',lang)+'</span>'+
+  '<button type="button" class="lyb-exit-bracket" data-exit-bracket aria-label="'+
+  z('关闭全屏晋级图','Close full screen bracket',lang)+'">×</button></div>'+
   '<p class="lyb-bracket-disclaimer">'+html(note+caution)+'</p>'+
   '<div class="lyb-knockout-gesture"><span>'+z('横向滑动查看后续轮次','Swipe to inspect later rounds',lang)+
   '</span><span>‹ &nbsp; ›</span></div>'+
