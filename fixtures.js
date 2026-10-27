@@ -318,6 +318,7 @@ function brackets(){
  const markup=chosen._visual==='knockout'?viz.knockout(chosen,opts):
   chosen._visual==='swiss'?viz.swiss(chosen,opts):viz.groups(chosen,opts);
  refs.bracket.innerHTML=markup||empty(copy.unavailable);
+ if(chosen._visual==='swiss')viz.connect(refs.bracket);
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
@@ -395,4 +396,5 @@ refs.standingQuick.addEventListener('click',event=>{
 });
 document.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(x=>x.addEventListener('click',()=>setTimeout(render,0)));
 render();fetchData();if(typeof window.setInterval==='function')window.setInterval(fetchData,15*60*1000);
+if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>{if(view==='brackets')render();},{passive:true});
 })();
