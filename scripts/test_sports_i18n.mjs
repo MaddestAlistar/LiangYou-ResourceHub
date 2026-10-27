@@ -134,12 +134,12 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('id="officialStandingLeagues"') &&
- fixtureJS.includes('consolidatedStandings') && fixtureJS.includes('leagueFilter'),
- 'League tabs and grouped standings must remain available');
+assert(!html.includes('id="officialStandingLeagues"') &&
+ !fixtureJS.includes('leagueFilter') && fixtureJS.includes('consolidatedStandings'),
+ 'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.25') && html.includes('bracket-viz.js?v=20261027.10') && html.includes('fixtures.css?v=20261027.18'),
+assert(html.includes('fixtures.js?v=20261027.26') && html.includes('bracket-viz.js?v=20261027.11') && html.includes('fixtures.css?v=20261027.19'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -279,6 +279,18 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const swissHost={};
  vm.runInNewContext(actualVizSource,{window:swissHost,Intl,Date},{timeout:2000});
  const swissAPI=swissHost.LiangYouBracketViz;
+ {
+   const mobileHost={innerWidth:390};
+   vm.runInNewContext(actualVizSource,{window:mobileHost,Intl,Date},{timeout:2000});
+   const fixture=snapshot.brackets.find(x=>x.rounds?.length);
+   const mobile=mobileHost.LiangYouBracketViz.knockout(fixture,{lang:'zh'});
+   const desktop=swissAPI.knockout(fixture,{lang:'zh'});
+   const dimensions=str=>Number(str.match(/lyb-knockout-map[^"]*" style="width:(\d+)px;/)?.[1]||0);
+   assert(mobile.includes('lyb-knockout-gesture')&&mobile.includes('is-mobile'),
+     'Phone bracket must show swipe cue and compact layout');
+   assert(dimensions(mobile)>0 && dimensions(mobile)<dimensions(desktop),
+     'Narrow phone viewport must generate proportionally smaller bracket columns');
+ }
  // Every rendered knockout connector must come from a pair of real match IDs.
  for(const board of snapshot.brackets){
    const all=(board.rounds||[]).flatMap(round=>round.matches||[]);
