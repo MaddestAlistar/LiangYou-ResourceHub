@@ -221,6 +221,9 @@ const team=(v,sport)=>{
 const localizeStage=(value,sport)=>(sport==='chess'||sport==='go')?
  (boardTranslations?.stage?.(value,sport,lang())||String(value??'')):localize(value,sport);
 const boardPlayer=(event,which)=>{
+ // Standard football, basketball and esports entities must keep their
+ // existing Chinese team dictionary. Only board games are player records.
+ if(event.sport!=='chess'&&event.sport!=='go')return team(event[which],event.sport);
  const alias=lang()==='zh'?event[which+'_zh']:event[which+'_en'];
  return boardTranslations?.player?.(event[which],event.sport,lang(),alias)||alias||team(event[which],event.sport);
 };
