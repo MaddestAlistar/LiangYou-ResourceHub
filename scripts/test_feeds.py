@@ -466,4 +466,51 @@ class FeedRules(unittest.TestCase):
                          ["Quarterfinals","Semifinals","Final"])
         self.assertEqual(normalized["rounds"][0]["matches"][0]["score_home"],None)
 
+
+    def test_verified_nba_standings_require_30_teams_and_share_tied_ranks(self):
+        import update_extra_sports as extra
+        rows=[]
+        for conf in ('Eastern','Western'):
+            for i in range(15):
+                rows.append({'display_name':conf+' '+str(i+1), 'conference':conf,
+                             'wins':10-i//2, 'losses':i//2})
+        with patch.object(extra, 'request', return_value={'data':{'season':2027,'standings':rows}}):
+            board=extra.nba_standings('demo',2027)
+        self.assertEqual(len(board['groups']),30)
+        west=[x for x in board['groups'] if x['group']=='Western Conference']
+        self.assertEqual(west[0]['rank'],1)
+        self.assertEqual(west[1]['rank'],1)
+        self.assertEqual(west[2]['rank'],3)
+        self.assertEqual(board['order_method'],'win_pct')
+        with patch.object(extra, 'request', return_value={'data':{'season':2027,'standings':rows[:-1]}}):
+            with self.assertRaises(RuntimeError):
+                extra.nba_standings('demo',2027)
+
+    def test_stale_supplemental_league_board_expires_and_marks_old_data(self):
+        import update_extra_sports as extra
+        current=dt.datetime(2026,10,27,10,0,tzinfo=dt.timezone.utc)
+        previous={'sources':[{'tag':'football-data','verified_at':'2026-10-26T20:00:00Z'}],
+                  'standings':[{'id':'football-data-PL','provider':'football-data',
+                                'groups':[{'rank':1,'team':'Alpha'}]}]}
+        retained=extra.recent_board_fallback(previous,'football-data',current)
+        self.assertEqual(len(retained),1)
+        self.assertEqual(retained[0]['status'],'stale')
+        self.assertEqual(retained[0]['verified_at'],'2026-10-26T20:00:00Z')
+        self.assertIsNone(previous['standings'][0].get('status'))
+        self.assertEqual(extra.recent_board_fallback(previous,'football-data',
+            current+dt.timedelta(hours=36)),[])
+        self.assertEqual(extra.recent_board_fallback(previous,'dunkapi',current),[])
+
+    def test_supplemental_football_standings_keep_official_regular_league_not_group(self):
+        import update_extra_sports as extra
+        def table(group):
+            return {'type':'TOTAL','group':group,'table':[
+                {'position':i,'team':{'name':'Club '+str(i)},'won':i,'lost':0,
+                 'draw':0,'points':i*3,'playedGames':i} for i in range(1,11)]}
+        league=extra.football_standing({'standings':[table('REGULAR_SEASON')]},'PL')
+        self.assertTrue(league)
+        self.assertTrue(all(row['group']=='' for row in league['groups']))
+        grouped=extra.football_standing({'standings':[table('GROUP_A')]},'PL')
+        self.assertEqual(grouped['groups'][0]['group'],'Group A')
+
 if __name__ == '__main__': unittest.main()
