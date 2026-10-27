@@ -18,7 +18,7 @@ zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
- sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],stages:['全部阶段','小组赛 / 瑞士轮','淘汰赛'],
+ sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],stages:['全部阶段','小组赛战绩','淘汰赛对阵'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球'],
  bracketSubtitle:'电竞阶段与晋级对阵',
  standingSubtitle:'多个联赛榜单可选择查看，点击榜单名称或展开卡片',
@@ -43,7 +43,7 @@ en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
  views:['Calendar','Esports brackets','Standings'],dates:['Today','Tomorrow','Next 7 days'],
  placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
- sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],stages:['All stages','Groups / Swiss','Playoffs'],
+ sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],stages:['All stages','Group results','Playoff brackets'],
  ranks:['All standings','League of Legends','Other esports','Basketball'],
  bracketSubtitle:'Esports stages and brackets',
  standingSubtitle:'Select a league or expand published ranking cards',
@@ -294,8 +294,8 @@ function brackets(){
   .map(x=>({...x,_mode:'group',_key:'g-'+x.id}));
  const records=[...knockout,...group].filter(x=>(kind==='all'||kindOf(x)===kind)&&
   (stage==='all'||x._mode===stage))
-  .sort((a,b)=>popularity(b)-popularity(a)||
-   (a._mode==='group'?0:1)-(b._mode==='group'?0:1)||
+  .sort((a,b)=>(a._mode==='knockout'?0:1)-(b._mode==='knockout'?0:1)||
+   popularity(b)-popularity(a)||
    String(a.title).localeCompare(String(b.title)));
  refs.bracketQuick.innerHTML='';
  if(!records.length){
@@ -315,7 +315,7 @@ function brackets(){
   }
   refs.bracket.innerHTML=[...groups.entries()].map(([group,rows])=>
    '<section class="fixtures-standing-group"><h4>'+safe(group?localize(group,kindOf(selected)):
-    (lang()==='zh'?'阶段排名':'Stage standings'))+'</h4>'+
+    (lang()==='zh'?'小组赛战绩':'Group results'))+'</h4>'+
    '<table class="fixtures-ranking"><thead><tr><th>'+safe(copy.rank)+'</th><th>'+safe(copy.team)+
    '</th><th>'+safe(copy.wins)+'</th><th>'+safe(copy.losses)+'</th></tr></thead><tbody>'+
    rows.sort((a,b)=>a.rank-b.rank).slice(0,32).map(row=>'<tr><td>'+safe(row.rank)+'</td><td>'+
