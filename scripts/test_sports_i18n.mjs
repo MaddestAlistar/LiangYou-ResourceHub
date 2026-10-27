@@ -126,6 +126,9 @@ assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers L
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json"));
 const visualJS=readFileSync('bracket-viz.js','utf8');
+assert(fixtureJS.includes('Date.now()-verified<=6*3600000') &&
+ fixtureJS.includes("Number.isFinite(start)&&start>Date.now()"),
+ 'Fixture details must never leak expired prediction-market snapshots');
 assert(visualJS.includes('data-exit-bracket') &&
  readFileSync('fixtures.css','utf8').includes('.fixtures-diagrams.is-expanded .lyb-exit-bracket'),
  'Phone fullscreen bracket must have a visible built-in close control');
@@ -198,7 +201,7 @@ assert(!html.includes('id="officialStandingLeagues"') &&
  'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.28') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
+assert(html.includes('fixtures.js?v=20261027.29') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
