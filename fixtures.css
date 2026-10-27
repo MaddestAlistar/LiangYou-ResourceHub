@@ -532,10 +532,43 @@
  .fixtures-predict-foot{font-size:9px}
 }
 
-/* Professionally verified Go player rating metadata, compact on phones. */
-.fixtures-go-ratings{margin:10px 0 7px;padding:9px 11px;color:#becddd;border:1px solid rgba(147,174,196,.22);background:rgba(18,38,57,.4);border-radius:10px;font-size:11px;line-height:1.8;overflow-wrap:anywhere}
-.fixtures-go-ratings a{color:#e6c88d;text-decoration:underline;text-underline-offset:3px}
-@media(max-width:720px){.fixtures-go-ratings{font-size:10px;padding:8px 10px}}
+/* Go match detail: readable, hierarchy-first, two player cards. */
+#officialFixtures .fixtures-go-event{display:flex;flex-direction:column;gap:10px;margin-top:11px;min-width:0}
+#officialFixtures .fixtures-go-event-name{color:#e5eef8;font-size:13px;font-weight:680;line-height:1.6;overflow-wrap:anywhere}
+#officialFixtures .fixtures-go-event-meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;color:#abc2da;font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
+#officialFixtures .fixtures-go-event-meta>span{display:inline-flex;align-items:center;min-height:27px;border-radius:7px;padding:4px 9px;box-sizing:border-box;background:rgba(125,159,193,.1);border:1px solid rgba(138,172,206,.16)}
+#officialFixtures .fixtures-go-event-meta .fixtures-go-status{border-color:rgba(219,180,107,.32);background:rgba(200,157,86,.12);color:#f0d49e}
+#officialFixtures .fixtures-go-summary{margin:14px 0 10px;border:1px solid rgba(150,177,208,.24);background:rgba(9,27,47,.42);border-radius:12px;padding:12px;min-width:0}
+#officialFixtures .fixtures-go-player-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+#officialFixtures .fixtures-go-player{min-width:0;border-radius:10px;border:1px solid rgba(139,167,195,.22);background:rgba(38,61,88,.38);padding:12px}
+#officialFixtures .fixtures-go-player-name{display:block;font-size:14px;line-height:1.45;color:#f5f6fa;overflow-wrap:anywhere;margin-bottom:11px}
+#officialFixtures .fixtures-go-player-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#officialFixtures .fixtures-go-stat{display:flex;flex-direction:column;gap:5px;min-width:0}
+#officialFixtures .fixtures-go-stat span{font-size:10px;line-height:1.4;color:#9fb6cf}
+#officialFixtures .fixtures-go-stat b{font-size:20px;line-height:1.2;color:#eed3a1;font-weight:760;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+#officialFixtures .fixtures-go-summary-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid rgba(141,169,198,.16)}
+#officialFixtures .fixtures-go-source-links{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#officialFixtures .fixtures-go-source-links a{color:#e8c58e;text-decoration:none;font-size:11px;font-weight:660;border-bottom:1px solid rgba(232,197,142,.55);padding-bottom:2px}
+#officialFixtures .fixtures-go-source-links a:focus-visible{outline:2px solid #e8c58e;outline-offset:3px;border-radius:2px}
+#officialFixtures .fixtures-go-summary-foot p{margin:0;color:#9db2c8;font-size:10px;line-height:1.65;overflow-wrap:anywhere}
+@media(max-width:560px){
+ #officialFixtures .fixtures-go-event-name{font-size:12px}
+ #officialFixtures .fixtures-go-event-meta{font-size:10px;gap:6px}
+ #officialFixtures .fixtures-go-event-meta>span{min-height:25px;padding:4px 7px}
+ #officialFixtures .fixtures-go-summary{padding:10px;margin:12px 0 9px}
+ #officialFixtures .fixtures-go-player-grid{gap:7px}
+ #officialFixtures .fixtures-go-player{padding:10px 9px}
+ #officialFixtures .fixtures-go-player-name{font-size:12px;margin-bottom:9px}
+ #officialFixtures .fixtures-go-player-stats{gap:4px}
+ #officialFixtures .fixtures-go-stat b{font-size:17px}
+ #officialFixtures .fixtures-go-stat span{font-size:9px}
+ #officialFixtures .fixtures-go-summary-foot{align-items:flex-start}
+}
+@media(max-width:360px){
+ #officialFixtures .fixtures-go-player-grid{grid-template-columns:minmax(0,1fr);gap:7px}
+ #officialFixtures .fixtures-go-player-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #officialFixtures .fixtures-go-player{padding:10px 11px}
+}
 
 /* Board-game events: translated names can be longer than Lichess/KBA labels. */
 #officialFixtures .fixtures-cardtop strong{min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.5;overflow-wrap:anywhere}
