@@ -388,8 +388,9 @@ function showFixtureDetail(id,scroll=false){
    x.league);
  refs.detail.hidden=false;
  refs.detail.innerHTML='<div class="fixtures-detail-head"><strong>'+
-  (x.sport==='chess'?safe(chessSide('home'))+' · ':'')+safe(boardPlayer(x,'home'))+
-  ' · '+(x.sport==='chess'?safe(chessSide('away'))+' · ':'')+safe(boardPlayer(x,'away'))+'</strong><button type="button" data-close-fixture aria-label="'+
+  (x.sport==='go'?(label?'职业围棋 · 对局详情':'Professional Go · Match details'):
+   (x.sport==='chess'?safe(chessSide('home'))+' · ':'')+safe(boardPlayer(x,'home'))+
+   ' · '+(x.sport==='chess'?safe(chessSide('away'))+' · ':'')+safe(boardPlayer(x,'away')))+'</strong><button type="button" data-close-fixture aria-label="'+
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
   (x.sport==='go'?
    '<div class="fixtures-go-event">'+
