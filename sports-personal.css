@@ -30,3 +30,12 @@
 .fixtures-archive-toggle[aria-pressed=true]{border-color:#d9b579;color:#f2d7a8;background:rgba(158,113,52,.17)}
 @media(max-width:700px){.sports-personal{padding:11px;margin:5px 0 12px;gap:8px}.sports-health-list{grid-template-columns:1fr}.sports-personal-title strong{font-size:13px}.sports-personal-title p{font-size:10px}.sports-personal-actions button{flex:1;min-width:90px;font-size:11px;padding:7px 8px}.fixtures-team-follow{gap:1px}.fixtures-follow-button{font-size:15px}}
 @media(max-width:390px){.sports-personal-title{flex-wrap:wrap}.sports-personal-count{margin-left:auto}.sports-personal-actions button{min-width:75px}}
+
+/* Verified form is optional and never presented as a predictive model. */
+.fixtures-form{border:1px solid rgba(139,170,199,.23);background:rgba(13,30,48,.56);border-radius:11px;margin:10px 0 12px;padding:10px 12px;color:#b7c8d4;font-size:11px}
+.fixtures-form summary{cursor:pointer;color:#e4cc9e;font-weight:700}
+.fixtures-form-rows{display:grid;gap:5px;margin:10px 0}
+.fixtures-form-rows>div{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.fixtures-form-rows strong{color:#dce6ef}.fixtures-form-rows span{font-variant-numeric:tabular-nums}
+.fixtures-form p{color:#91aac0;line-height:1.65;margin:7px 0 0}
+.fixtures-history-actions{margin:7px 0 11px}
