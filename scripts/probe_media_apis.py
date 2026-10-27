@@ -113,12 +113,14 @@ def tastedive():
     attempts = []
     for endpoint, params in candidates:
         status, obj, err = fetch(endpoint, params, timeout=15)
-        data = obj.get("Similar", {}) if isinstance(obj, dict) else {}
-        rows = data.get("Results", []) if isinstance(data, dict) else []
+        data = obj.get("Similar", obj.get("similar", {})) if isinstance(obj, dict) else {}
+        rows = data.get("Results", data.get("results", [])) if isinstance(data, dict) else []
         ok = status == 200 and isinstance(rows, list) and bool(rows)
-        attempts.append(str(status) if status else (err or "network_error"))
+        top_keys = ",".join(list(obj.keys())[:8]) if isinstance(obj, dict) else "non_object"
+        inner_keys = ",".join(list(data.keys())[:8]) if isinstance(data, dict) else "non_object"
+        attempts.append(str(status) + "[keys:" + top_keys + ";similar:" + inner_keys + ";count:" + str(len(rows)) + "]" if status else (err or "network_error"))
         if ok: return report("TasteDive", status, True, "recommendations=" + str(len(rows)), True)
-    return report("TasteDive", status, False, "legacy endpoints " + "/".join(attempts) + " (could be API migration)", True, err)
+    return report("TasteDive", status, False, "responses=" + "/".join(attempts), True, err)
 
 def fanart():
     key = secret("FANARTTV_API_KEY", "FANART_API_KEY")
