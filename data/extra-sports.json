@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-27T13:55:17Z",
+  "generated_at": "2026-10-27T23:05:14Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-27T13:55:17Z"
+      "verified_at": "2026-10-27T23:05:14Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 138,
       "standings": 5,
-      "verified_at": "2026-10-27T13:55:17Z"
+      "verified_at": "2026-10-27T23:05:14Z"
     }
   ],
   "status": "ok",
@@ -118,12 +118,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-27T17:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "US Sassuolo Calcio",
       "away": "SS Lazio",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 6,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -136,12 +136,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-27T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "AS Roma",
       "away": "Cagliari Calcio",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 4,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -154,12 +154,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-27T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Torino FC",
       "away": "Como 1907",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 3,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -446,6 +446,24 @@
       "status_detail": "TIMED",
       "home": "Le Havre AC",
       "away": "Paris Saint-Germain FC",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-559646",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Ligue 1",
+      "stage": "Regular Season",
+      "start_time": "2026-10-30T18:00:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "OGC Nice",
+      "away": "Stade Rennais FC 1901",
       "score_home": null,
       "score_away": null,
       "best_of": null,
@@ -1048,24 +1066,6 @@
       "source_url": "https://www.football-data.org/"
     },
     {
-      "id": "football-data-559646",
-      "provider": "football-data",
-      "sport": "football",
-      "league": "Ligue 1",
-      "stage": "Regular Season",
-      "start_time": "2026-10-31T16:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
-      "home": "OGC Nice",
-      "away": "Stade Rennais FC 1901",
-      "score_home": null,
-      "score_away": null,
-      "best_of": null,
-      "winner_id": null,
-      "prominence": 190,
-      "source_url": "https://www.football-data.org/"
-    },
-    {
       "id": "football-data-558542",
       "provider": "football-data",
       "sport": "football",
@@ -1202,42 +1202,6 @@
       "status_detail": "TIMED",
       "home": "AC Milan",
       "away": "FC Internazionale Milano",
-      "score_home": null,
-      "score_away": null,
-      "best_of": null,
-      "winner_id": null,
-      "prominence": 190,
-      "source_url": "https://www.football-data.org/"
-    },
-    {
-      "id": "football-data-559640",
-      "provider": "football-data",
-      "sport": "football",
-      "league": "Ligue 1",
-      "stage": "Regular Season",
-      "start_time": "2026-10-31T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
-      "home": "Olympique Lyonnais",
-      "away": "Angers SCO",
-      "score_home": null,
-      "score_away": null,
-      "best_of": null,
-      "winner_id": null,
-      "prominence": 190,
-      "source_url": "https://www.football-data.org/"
-    },
-    {
-      "id": "football-data-559641",
-      "provider": "football-data",
-      "sport": "football",
-      "league": "Ligue 1",
-      "stage": "Regular Season",
-      "start_time": "2026-10-31T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
-      "home": "FC Lorient",
-      "away": "Stade Brestois 29",
       "score_home": null,
       "score_away": null,
       "best_of": null,
@@ -1570,6 +1534,24 @@
       "source_url": "https://www.football-data.org/"
     },
     {
+      "id": "football-data-559640",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Ligue 1",
+      "stage": "Regular Season",
+      "start_time": "2026-11-01T16:15:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "Olympique Lyonnais",
+      "away": "Angers SCO",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
       "id": "football-data-559642",
       "provider": "football-data",
       "sport": "football",
@@ -1796,6 +1778,24 @@
       "status_detail": "TIMED",
       "home": "Atalanta BC",
       "away": "Parma Calcio 1913",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-559641",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Ligue 1",
+      "stage": "Regular Season",
+      "start_time": "2026-11-02T19:45:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "FC Lorient",
+      "away": "Stade Brestois 29",
       "score_home": null,
       "score_away": null,
       "best_of": null,
@@ -2787,7 +2787,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     },
     {
@@ -2999,7 +2999,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     },
     {
@@ -3211,7 +3211,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     },
     {
@@ -3403,7 +3403,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     },
     {
@@ -3415,17 +3415,17 @@
       "groups": [
         {
           "rank": 1,
-          "team": "FC Internazionale Milano",
-          "wins": 7,
+          "team": "SS Lazio",
+          "wins": 8,
           "losses": 0,
           "draws": 1,
-          "points": 22,
-          "played": 8,
+          "points": 25,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 2,
-          "team": "SS Lazio",
+          "team": "FC Internazionale Milano",
           "wins": 7,
           "losses": 0,
           "draws": 1,
@@ -3436,30 +3436,30 @@
         {
           "rank": 3,
           "team": "AS Roma",
-          "wins": 5,
+          "wins": 6,
           "losses": 0,
           "draws": 3,
-          "points": 18,
-          "played": 8,
+          "points": 21,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 4,
+          "team": "Como 1907",
+          "wins": 6,
+          "losses": 1,
+          "draws": 2,
+          "points": 20,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 5,
           "team": "AC Milan",
           "wins": 5,
           "losses": 0,
           "draws": 3,
           "points": 18,
-          "played": 8,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "Como 1907",
-          "wins": 5,
-          "losses": 1,
-          "draws": 2,
-          "points": 17,
           "played": 8,
           "group": ""
         },
@@ -3487,20 +3487,20 @@
           "rank": 8,
           "team": "Torino FC",
           "wins": 4,
-          "losses": 3,
+          "losses": 4,
           "draws": 1,
           "points": 13,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 9,
           "team": "Cagliari Calcio",
           "wins": 4,
-          "losses": 3,
+          "losses": 4,
           "draws": 1,
           "points": 13,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
@@ -3547,10 +3547,10 @@
           "rank": 14,
           "team": "US Sassuolo Calcio",
           "wins": 2,
-          "losses": 4,
+          "losses": 5,
           "draws": 2,
           "points": 8,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
@@ -3615,7 +3615,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     },
     {
@@ -3807,7 +3807,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-27T13:55:17Z",
+      "verified_at": "2026-10-27T23:05:14Z",
       "status": "ok"
     }
   ],
