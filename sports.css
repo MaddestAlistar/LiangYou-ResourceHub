@@ -311,3 +311,12 @@
 @media(max-width:680px){.sports-compare{padding:8px 9px}.sports-compare-row{padding:7px 0}
  .sports-provider-health{gap:5px}.sports-provider-state{font-size:9px}
  .sports-view-fixture{min-height:42px}}
+
+
+.sports-focus-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:11px 13px;margin:6px 0 12px;border-radius:12px;border:1px solid rgba(196,159,99,.4);
+ background:rgba(59,76,91,.26);color:#e4c899;font-size:11px}
+.sports-focus-bar[hidden]{display:none}
+.sports-focus-bar button{border:1px solid rgba(191,163,107,.55);background:rgba(198,151,76,.12);
+ border-radius:9px;color:#f4d4a0;padding:7px 11px;cursor:pointer;font-weight:750}
+@media(max-width:560px){.sports-focus-bar{flex-wrap:wrap}.sports-focus-bar button{width:100%;min-height:38px}}
