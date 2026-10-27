@@ -19,14 +19,15 @@ zh:{title:'赛事日历与赛事资料',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
  sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','无畏契约','CS2','其他电竞'],stages:['淘汰赛','瑞士轮','小组赛'],
- ranks:['全部排名','英雄联盟','其他电竞','篮球'],
+ ranks:['全部排名','英雄联盟','其他电竞','篮球','足球'],
  bracketSubtitle:'电竞阶段与晋级对阵',
  standingSubtitle:'多个联赛榜单可选择查看，点击榜单名称或展开卡片',
  hotHint:'按赛事知名度优先：世界赛、LPL/LCK、NBA 等；不代表真实观众人数',
  selectAllStandings:'全部可用榜单',
  bracketCount:n=>'已核验 '+n+' 个晋级图',
  rankingCount:n=>'已核验 '+n+' 份排名资料',
- noNba:'暂无 NBA 积分榜',
+ noNba:'NBA 排名暂不可用，等待数据源恢复',
+ points:'积分',played:'场',draws:'平',winRate:'胜率',
  esportsKind:['英雄联盟','其他电竞'],
  first:'正在等待官方赛事资料首次同步，不显示模拟比赛。',
  empty:'暂未采集到符合条件的比赛，请换个日期、项目或关键词。',
@@ -37,21 +38,22 @@ zh:{title:'赛事日历与赛事资料',
  total:n=>'已收录未来7天 '+n+' 场',shown:(n,t)=>'已显示 '+n+' / '+t+' 场',
  more:'加载更多赛程',round:'轮次',draw:'待定',rank:'排名',
  team:'战队 / 球队',wins:'胜',losses:'负',feature:'重点赛事',vs:'对阵',
- source:'来源',note:'数据来源：API-Sports 与 PandaScore，约每6小时采集。热门优先按世界赛、LPL/LCK、NBA、知名电竞赛事的重要程度排序，并非真实观众人数；晋级关系和积分仅展示已核验内容。预测市场独立展示。',
+ source:'来源',note:'来源：PandaScore（电竞）、API-Sports（篮球赛程）、DunkAPI（NBA 排名）。足球数据由 football-data.org 提供（Data provided by football-data.org）。约每6小时采集，非实时比分；按赛事知名度排序，不代表真实观看人数。',
  market:'赛前预测市场'},
 en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
  views:['Calendar','Esports brackets','Standings'],dates:['Today','Tomorrow','Next 7 days'],
  placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
  sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','VALORANT','CS2','Other esports'],stages:['Knockout','Swiss stage','Group stage'],
- ranks:['All standings','League of Legends','Other esports','Basketball'],
+ ranks:['All standings','League of Legends','Other esports','Basketball','Football'],
  bracketSubtitle:'Esports stages and brackets',
  standingSubtitle:'Select a league or expand published ranking cards',
  hotHint:'Editorial prominence: Worlds, LPL/LCK, NBA, not live viewership',
  selectAllStandings:'All available rankings',
  bracketCount:n=>n+' verified brackets',
  rankingCount:n=>n+' published rankings',
- noNba:'No NBA standings yet',
+ noNba:'NBA standings unavailable until the data provider recovers',
+ points:'Pts',played:'P',draws:'D',winRate:'Win%',
  esportsKind:['League of Legends','Other esports'],
  first:'Waiting for official fixture data. No sample results.',
  empty:'No scheduled matches for these filters.',
@@ -62,7 +64,7 @@ en:{title:'Calendar & tournament intelligence',
  total:n=>n+' upcoming this week',shown:(n,t)=>'Showing '+n+' of '+t,
  more:'More matches',round:'Round',draw:'TBD',rank:'Rank',
  team:'Team',wins:'W',losses:'L',feature:'Featured',vs:'vs',
- source:'Source',note:'Data from API-Sports and PandaScore, checked about every six hours. Featured ordering is editorial, not live audience popularity. Brackets and standings are verified provider records; prediction markets are separate below.',
+ source:'Source',note:'Sources: PandaScore (esports), API-Sports (basketball fixtures), DunkAPI (NBA standings). Data provided by football-data.org for soccer. Updates about every six hours; not live scores. Popularity ordering is editorial.',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
@@ -84,6 +86,10 @@ const localize=(v,category='')=>{
  'VCT Game Changers':'VCT 改变者赛','PGL Masters Bucharest':'PGL 布加勒斯特大师赛',
  'NBA':'NBA 美国职业篮球联赛','NBA W':'WNBA 美国女子职业篮球联赛',
  'National Basketball Association':'NBA 美国职业篮球联赛',
+ 'Premier League':'英格兰超级联赛','La Liga':'西班牙甲级联赛',
+ 'Bundesliga':'德国甲级联赛','Serie A':'意大利甲级联赛',
+ 'Ligue 1':'法国甲级联赛','Eredivisie':'荷兰甲级联赛',
+ 'Primeira Liga':'葡萄牙超级联赛',
  'World Championship 2026':'2026 全球总决赛',
  'League of Legends World Championship':'英雄联盟全球总决赛',
  'Worlds 2026':'2026 英雄联盟全球总决赛',
@@ -259,7 +265,7 @@ function calendar(){
    return '<article class="fixtures-card"><div class="fixtures-cardtop"><strong>'+safe(title)+
      '</strong><span>'+safe(when(x.start_time))+'</span></div>'+
      '<div class="fixtures-versus">'+safe(team(x.home,x.sport))+' <em>'+safe(copy.vs)+'</em> '+safe(team(x.away,x.sport))+'</div>'+
-     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(x.provider==='pandascore'?'PandaScore':'API-Sports')+
+     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(x.provider==='pandascore'?'PandaScore':x.provider==='football-data'?'football-data.org':'API-Sports')+
      '</span>'+ (popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
      '<span>'+safe(copy.time)+'</span></div></article>';
  }).join(''):empty(data.generated_at?copy.empty:copy.first);
@@ -358,16 +364,27 @@ function standings(){
    groups.get(key).push(item);
   }
   if(!groups.size)return '';
-  const tables=[...groups.entries()].map(([group,list])=>
-   '<section class="fixtures-standing-group"><h4>'+safe(localize(group,kindOf(selected)))+'</h4><table class="fixtures-ranking">'+
-   '<thead><tr><th>'+copy.rank+'</th><th>'+copy.team+'</th><th>'+copy.wins+'</th><th>'+copy.losses+'</th></tr></thead><tbody>'+
-   list.sort((a,b)=>a.rank-b.rank).slice(0,30).map(x=>'<tr><td>'+safe(x.rank)+'</td><td>'+
-    safe(team(x.team,kindOf(selected)))+'</td><td>'+safe(Number.isInteger(x.wins)?x.wins:'—')+
-    '</td><td>'+safe(Number.isInteger(x.losses)?x.losses:'—')+'</td></tr>').join('')+
-   '</tbody></table></section>').join('');
+  const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
+  const tables=[...groups.entries()].map(([group,list])=>{
+   const headers=football?[copy.rank,copy.team,copy.points,copy.played,copy.wins,copy.draws,copy.losses]:
+       nba?[copy.rank,copy.team,copy.wins,copy.losses,copy.winRate]:
+       [copy.rank,copy.team,copy.wins,copy.losses];
+   const rows=list.sort((a,b)=>a.rank-b.rank).slice(0,30).map(x=>{
+    const value=v=>Number.isInteger(v)?safe(v):'—';
+    const tds=football?[value(x.rank),safe(team(x.team,sport)),value(x.points),value(x.played),value(x.wins),value(x.draws),value(x.losses)]:
+        nba?[value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses),
+          Number.isFinite(x.win_pct)?safe((x.win_pct*100).toFixed(1)+'%'):'—']:
+        [value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses)];
+    return '<tr>'+tds.map(v=>'<td>'+v+'</td>').join('')+'</tr>';
+   }).join('');
+   return '<section class="fixtures-standing-group"><h4>'+safe(localize(group,sport))+
+    '</h4><div class="fixtures-table-scroll"><table class="fixtures-ranking'+(football?' is-football':'')+'">'+
+    '<thead><tr>'+headers.map(h=>'<th>'+safe(h)+'</th>').join('')+'</tr></thead><tbody>'+
+    rows+'</tbody></table></div></section>';
+  }).join('');
   return '<details class="fixtures-standing-card"'+(i<3||selection.length===1?' open':'')+'>'+
    '<summary><span>'+safe(kindOf(selected)==='lol'?copy.esportsKind[0]:
-     kindOf(selected)==='esports'?copy.esportsKind[1]:copy.ranks[3])+' · '+
+     kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
    '<div class="fixtures-standing-tables">'+tables+'</div></details>';
@@ -376,12 +393,36 @@ function standings(){
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
 async function fetchData(){
  try{
-  const result=await fetch('./data/real-sports.json?v='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(16000)});
-  if(!result.ok)throw Error('Unavailable');
-  const next=await result.json();
-  if(next.schema!==1||next.source_type!=='official_fixtures'||!Array.isArray(next.events))throw Error('Invalid schema');
-  data={...next,events:next.events.slice(0,300),brackets:Array.isArray(next.brackets)?next.brackets.slice(0,16):[],
-    standings:Array.isArray(next.standings)?next.standings.slice(0,24):[]};
+  const fetchJson=async url=>{
+   const result=await fetch(url+'?v='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(16000)});
+   if(!result.ok)throw Error('Unavailable');
+   return result.json();
+  };
+  const base=await fetchJson('./data/real-sports.json');
+  if(base.schema!==1||base.source_type!=='official_fixtures'||!Array.isArray(base.events))
+   throw Error('Invalid official snapshot schema');
+  let extra=null;
+  try{
+   const candidate=await fetchJson('./data/extra-sports.json');
+   if(candidate.schema===1&&candidate.source_type==='supplemental_fixtures'&&
+      Array.isArray(candidate.events)&&Array.isArray(candidate.standings))extra=candidate;
+  }catch{/* Optional provider unavailable; retain working PandaScore and API-Sports data. */}
+  const published=extra?extra.standings:[];
+  const events=extra?[...base.events,...extra.events]:base.events;
+  const dedupe=items=>{
+   const seen=new Set();
+   return items.filter(x=>{
+    if(!x||!x.id||seen.has(x.id))return false;
+    seen.add(x.id);return true;
+   });
+  };
+  data={...base,
+    events:dedupe(events).slice(0,500),
+    brackets:Array.isArray(base.brackets)?base.brackets.slice(0,16):[],
+    standings:dedupe([...(base.standings||[]),...published]).slice(0,24),
+    sources:[...(base.sources||[]),...(extra?.sources||[])],
+    extraStatus:extra?.status||'unavailable',
+    generated_at:base.generated_at};
  }catch{data={...data,status:'failed'};}
  render();
 }
