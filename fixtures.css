@@ -122,7 +122,7 @@
 .fixtures-brackets.is-groups>.fixtures-standing-group{min-width:0}
 @media(max-width:680px){
  .fixtures-subhead{margin:8px 0 12px}
- .fixtures-subhead .fixtures-multiselect{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+ .fixtures-subhead .fixtures-multiselect{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px;flex:0 0 auto;min-height:0;height:auto;align-self:stretch}
  .fixtures-subhead .fixtures-multiselect select:first-child,
  .fixtures-subhead .fixtures-multiselect select:nth-child(2),
  .fixtures-subhead .fixtures-multiselect select:last-child{width:100%;max-width:100%;min-width:0}
@@ -130,3 +130,6 @@
  .fixtures-brackets.is-groups{grid-template-columns:1fr}
  .fixtures-standing-card summary{font-size:11px}
 }
+
+/* A vertical mobile flex parent must not inherit the desktop 520px flex-basis. */
+@media(max-width:680px){.fixtures-subhead>.fixtures-multiselect{flex:0 0 auto!important;min-height:0;height:auto;align-self:stretch}.fixtures-subhead select{overflow:hidden;text-overflow:ellipsis}}
