@@ -482,6 +482,22 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(loser["previous_matches"],[{"match_id":"10","type":"loser"}])
         self.assertEqual(loser["bracket_side"],"lower")
 
+    def test_named_upper_lower_round_matches_share_round_columns(self):
+        import update_real_sports as real
+        matches=[]
+        for ident,caption in ((11,"Upper Bracket Round 1 Match 1: A vs B"),
+                              (12,"Upper Bracket Round 1 Match 2: C vs D"),
+                              (13,"Lower Bracket Round 1 Match 1: A vs D")):
+            matches.append({
+                "id":ident,"round_name":caption,
+                "opponents":[{"opponent":{"id":ident*2,"name":"A"+str(ident)}},
+                             {"opponent":{"id":ident*2+1,"name":"B"+str(ident)}}]})
+        tree=real.official_bracket(matches,44,"LPL · Playoffs")
+        groups={x["round"]:len(x["matches"]) for x in tree["rounds"]}
+        self.assertEqual(groups["Upper Bracket / Round 1"],2)
+        self.assertEqual(groups["Lower Bracket / Round 1"],1)
+        self.assertEqual(sum(groups.values()),3)
+
     def test_real_standings_no_inferred_ranks(self):
         import update_real_sports as real
         raw=[{"rank":2,"team":{"name":"TES"},"wins":5,"losses":3},
