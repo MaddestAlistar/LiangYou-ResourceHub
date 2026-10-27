@@ -436,3 +436,13 @@
 .fixtures-market-source{white-space:normal;font-variant-numeric:tabular-nums;color:#c0d7e4}
 @media(max-width:680px){.fixtures-detail-markets{align-items:flex-start}
  .fixtures-market-source{flex:1 1 100%}}
+
+
+/* The fullscreen close control stays inside the fixed diagram on mobile. */
+.lyb-exit-bracket{display:none;border:1px solid rgba(236,196,124,.65);border-radius:9px;
+ background:rgba(128,77,42,.22);color:#ffe4b3;min-width:38px;height:38px;
+ font-size:25px;line-height:1;cursor:pointer;flex:0 0 auto}
+.fixtures-diagrams.is-expanded .lyb-exit-bracket{display:inline-flex;align-items:center;justify-content:center}
+.fixtures-diagrams.is-expanded .lyb-visual-top{flex-shrink:0}
+.fixtures-diagrams.is-expanded .lyb-exit-bracket:focus-visible{
+ outline:2px solid #fff0cd;outline-offset:2px}
