@@ -130,7 +130,7 @@ function knockout(record,opt={}){
   for(const stage of lane.stages){
    const x=margin+stage.col*(cw+gap);
    const extra=(longest-stage.games.length)*step/2;
-   cards.push('<div class="lyb-round-name" style="left:'+x+'px;top:'+(yOffset+25)+'px;width:'+cw+'px">'+
+   cards.push('<div class="lyb-round-name" data-col="'+stage.col+'" style="left:'+x+'px;top:'+(yOffset+25)+'px;width:'+cw+'px">'+
      html(translate(stage.name))+'</div>');
    for(let i=0;i<stage.games.length;i++){
     const m=stage.games[i],y=yOffset+top+extra+i*step;
@@ -141,7 +141,7 @@ function knockout(record,opt={}){
       '</span><b>'+num(score)+'</b></div>';
     const detail=m.best_of?'BO'+m.best_of:'';
     const state=m.winner?z('已完赛','Final',lang):z('结果待确认','Result pending',lang);
-    cards.push('<article class="lyb-match"'+
+    cards.push('<article class="lyb-match" role="button" tabindex="0"'+
       (m.match_id?' data-match-id="'+html(m.match_id)+'"':'')+
       ' style="left:'+x+'px;top:'+y+'px;width:'+cw+'px">'+
       '<div class="lyb-match-meta">'+html(detail)+' <span>'+html(state)+'</span></div>'+
