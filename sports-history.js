@@ -29,8 +29,12 @@ function load(){
  historyPromise=fetch('./data/market-history.json',{
   cache:'no-cache',signal:AbortSignal.timeout(14000)
  }).then(r=>{if(!r.ok)throw Error('Missing snapshot');return r.json();})
- .then(x=>x?.schema===1&&x.source_type==='verified_market_history'&&x.markets&&
-  typeof x.markets==='object'&&!Array.isArray(x.markets)?x:null)
+ .then(x=>{
+  if(x?.schema!==1||x.source_type!=='verified_market_history'||!x.markets||
+    typeof x.markets!=='object'||Array.isArray(x.markets))
+   throw Error('Invalid historical snapshot');
+  return x;
+ })
  .catch(error=>{historyPromise=null;throw error;});
  return historyPromise;
 }
