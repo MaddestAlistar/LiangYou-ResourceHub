@@ -717,10 +717,47 @@ def main():
         by_bucket[key]=by_bucket.get(key,0)+1
         if by_bucket[key]<=status_limits[event["status"]]:
             selected.append(event)
-    output={"schema":1,"fixture_schema_version":6,"source_type":"official_fixtures","generated_at":iso(now),
+    # Preserve only recently verified previous data when a provider misses a
+    # stage in one collection. Never represent these retained rows as live.
+    try:
+        previous=json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
+    except Exception:
+        previous={}
+    previous_at=timestamp(previous.get("generated_at"))
+    if previous_at and dt.timedelta(0)<=now-previous_at<=dt.timedelta(hours=36):
+        for section,records,limit in (("standings",standings,MAX_STANDINGS_REQUESTS+1),
+                                      ("brackets",brackets,MAX_BRACKET_REQUESTS)):
+            current_ids={str(r.get("id") or r.get("tournament_id")) for r in records}
+            for old in previous.get(section,[]):
+                if len(records)>=limit:break
+                if not isinstance(old,dict) or old.get("provider")!="pandascore":continue
+                ident=str(old.get("id") or old.get("tournament_id"))
+                if ident in current_ids:continue
+                if section=="standings" and not any(
+                    isinstance(row.get("wins"),int) and isinstance(row.get("losses"),int)
+                    for row in old.get("groups",[]) if isinstance(row,dict)):continue
+                if section=="brackets" and not old.get("rounds"):continue
+                preserved=dict(old)
+                preserved["status"]="stale"
+                preserved["verified_at"]=previous.get("generated_at")
+                records.append(preserved)
+                current_ids.add(ident)
+    phases={"lck_legend":False,"lck_rise":False,"lpl_ascend":False,"lpl_nirvana":False}
+    checks={"lck_legend":r"\blck\b.*legend group",
+            "lck_rise":r"\blck\b.*rise group",
+            "lpl_ascend":r"\blpl\b.*group ascend",
+            "lpl_nirvana":r"\blpl\b.*group nirvana"}
+    for board in standings:
+        title=str(board.get("title","")).lower()
+        for group,regex in checks.items():
+            if re.search(regex,title):phases[group]=True
+    lineage_count=sum(len(m.get("previous_matches",[]))
+        for b in brackets for r in b.get("rounds",[]) for m in r.get("matches",[]))
+    output={"schema":1,"fixture_schema_version":7,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
+             "phase_coverage":phases,"verified_bracket_edges":lineage_count,
              "stage_matches":stage_matches,
             "notes":"Verified schedules, provider bracket trees and standings. No live score display; updates roughly every six hours."}
     write_json(OUT,output)
