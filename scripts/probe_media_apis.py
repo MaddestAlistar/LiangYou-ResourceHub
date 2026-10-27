@@ -52,6 +52,8 @@ def missing(name, key):
 
 def jikan():
     status, obj, err = fetch("https://api.jikan.moe/v4/anime/1")
+    if status is None or status in (429, 502, 503):
+        status, obj, err = fetch("https://api.jikan.moe/v4/anime/1/full", timeout=23)
     d = obj.get("data", {}) if isinstance(obj, dict) else {}
     ok = status == 200 and isinstance(d, dict) and bool(d.get("mal_id")) and bool(d.get("title"))
     return report("Jikan v4", status, ok, "anime_id=" + str(d.get("mal_id")) + ", score_available=" + str(d.get("score") is not None), error=err)
@@ -92,6 +94,9 @@ def kofic():
     target = (datetime.now(ZoneInfo("Asia/Seoul")).date() - timedelta(days=2)).strftime("%Y%m%d")
     status, obj, err = fetch("https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json",
                              {"key": key, "targetDt": target}, timeout=22)
+    if status is None:
+        status, obj, err = fetch("https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json",
+                                 {"key": key, "targetDt": target}, timeout=25)
     d = obj.get("boxOfficeResult", {}) if isinstance(obj, dict) else {}
     rows = d.get("dailyBoxOfficeList", []) if isinstance(d, dict) else []
     ok = status == 200 and isinstance(rows, list) and len(rows) > 0
@@ -102,8 +107,8 @@ def tastedive():
     key = secret("TASTEDIVE_API_KEY")
     if not key: return missing("TasteDive", "TASTEDIVE_API_KEY")
     candidates = [
-        ("https://tastedive.com/api/similar", {"q": "Fight Club", "k": key, "type": "movies", "limit": "3"}),
-        ("https://api.tastedive.com/similar", {"q": "Fight Club", "k": key, "type": "movies", "limit": "3"}),
+        ("https://tastedive.com/api/similar", {"q": "Fight Club", "k": key, "type": "movie", "limit": "3"}),
+        ("https://tastedive.com/api/similar", {"q": "movie:Fight Club", "k": key, "type": "movie", "limit": "3"}),
     ]
     attempts = []
     for endpoint, params in candidates:
@@ -174,6 +179,9 @@ def boxoffice():
 def introdb():
     status, obj, err = fetch("https://api.theintrodb.org/v4/media",
               {"tvdb_id": "71663", "season": "1", "episode": "1"}, timeout=20)
+    if status in (400,403,404) or status is None:
+        status, obj, err = fetch("https://api.theintrodb.org/v4/media",
+              {"tvdb_id": "71663", "duration_ms": "7200000"}, timeout=20)
     d = obj if isinstance(obj, dict) else {}
     ok = status == 200 and bool(d) and ("kind" in d or "tvdb_id" in d or "intro" in d or "credits" in d or "episodes" in d)
     return report("TheIntroDB v4", status, ok,
