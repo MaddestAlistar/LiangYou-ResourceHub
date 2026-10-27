@@ -438,7 +438,7 @@ function standings(){
    (lang()==='zh'?'赛制规则：登峰组前2名进入胜者组半决赛，第3—6名进入胜者组四分之一决赛，第7—8名及涅槃组前2名进入骑士之路；涅槃组后2名淘汰。':'Format: Ascend top 2 to upper semifinals, next 4 to upper quarterfinals; bottom 2 and Nirvana top 2 to qualification. Nirvana bottom 2 eliminated.'):'';
   const rulesNote=rules?'<p class="fixtures-ranking-note">'+safe(rules+(lang()==='zh'?' 仅说明赛制，当前排名不自动判定已晋级。':' Rules only; published ranks do not automatically confirm qualification.'))+'</p>':'';
   const missingNote=selected.missing_groups?.length?'<p class="fixtures-ranking-note is-stale">'+
-   safe((lang()==='zh'?'以下分组暂未获得可靠数据：':'Missing verified groups: ')+selected.missing_groups.join(' / '))+'</p>':'';
+   safe((lang()==='zh'?'以下分组暂未获得可靠数据：':'Missing verified groups: ')+selected.missing_groups.map(x=>localize(x)).join(' / '))+'</p>':'';
   const staleNote=selected.status==='stale'?'<p class="fixtures-ranking-note is-stale">'+
     safe(copy.staleBoard)+(selected.verified_at?' · '+safe(when(selected.verified_at)):'')+'</p>':'';
   const tables=[...groups.entries()].map(([group,list])=>{
