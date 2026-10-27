@@ -28,6 +28,7 @@ zh:{title:'赛事日历与赛事资料',
  rankingCount:n=>'已核验 '+n+' 份排名资料',
  noNba:'NBA 排名暂不可用，等待数据源恢复',
  nbaNote:'按胜率排序，同战绩并列；未采用 NBA 官方复杂决胜规则。',
+ staleBoard:'上次核验的数据',staleOption:'（上次数据）',
  points:'积分',played:'场',draws:'平',winRate:'胜率',
  esportsKind:['英雄联盟','其他电竞'],
  first:'正在等待官方赛事资料首次同步，不显示模拟比赛。',
@@ -55,6 +56,7 @@ en:{title:'Calendar & tournament intelligence',
  rankingCount:n=>n+' published rankings',
  noNba:'NBA standings unavailable until the data provider recovers',
  nbaNote:'Sorted by win rate; tied records share a rank. Official tiebreakers are not applied.',
+ staleBoard:'Previously verified data',staleOption:' (previous)',
  points:'Pts',played:'P',draws:'D',winRate:'Win%',
  esportsKind:['League of Legends','Other esports'],
  first:'Waiting for official fixture data. No sample results.',
@@ -244,9 +246,13 @@ function updateLabels(){
  el('fixturesSortHint').textContent=copy.hotHint;
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
- const node=data.generated_at?Date.parse(data.generated_at):NaN;
- refs.status.textContent=(Number.isFinite(node)?(lang()==='zh'?'更新 ':'Updated ')+when(data.generated_at):'')+
-  (data.extraStatus&&data.extraStatus!=='ok'?(lang()==='zh'?' · 篮球/足球部分来源暂不可用':' · Some basketball/soccer sources unavailable'):'');
+ const basic=Number.isFinite(Date.parse(data.generated_at||''))?
+  (lang()==='zh'?'电竞/篮球赛程 ':'Esports/basketball fixtures ')+when(data.generated_at):'';
+ const extra=Number.isFinite(Date.parse(data.extraGeneratedAt||''))?
+  (lang()==='zh'?'NBA/足球 ':'NBA/soccer ')+when(data.extraGeneratedAt):'';
+ const note=data.extraStatus&&data.extraStatus!=='ok'?
+  (lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified'):'';
+ refs.status.textContent=[basic,extra,note].filter(Boolean).join(' · ');
 }
 function calendar(){
  const copy=t(),now=Date.now(),until=now+7*86400000;
@@ -287,7 +293,7 @@ function options(select,items,includeAll=false){
  const current=select.value;
  select.innerHTML=(includeAll?'<option value="all">'+safe(t().selectAllStandings)+'</option>':'')+
   items.map((x,i)=>'<option value="'+safe(String(x._key||x.tournament_id||x.id||i))+'">'+
-  safe(localize(x.title,kindOf(x)))+'</option>').join('');
+  safe(localize(x.title,kindOf(x))+(x.status==='stale'?t().staleOption:''))+'</option>').join('');
  if(includeAll&&(current==='all'||!current))select.value='all';
  else if(items.some(x=>String(x._key||x.tournament_id||x.id)===current))select.value=current;
  else if(items[0])select.value=String(items[0]._key||items[0].tournament_id||items[0].id);
@@ -370,6 +376,8 @@ function standings(){
   if(!groups.size)return '';
   const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
   const orderNote=selected.order_method==='win_pct'?'<p class="fixtures-ranking-note">'+safe(copy.nbaNote)+'</p>':'';
+  const staleNote=selected.status==='stale'?'<p class="fixtures-ranking-note is-stale">'+
+    safe(copy.staleBoard)+(selected.verified_at?' · '+safe(when(selected.verified_at)):'')+'</p>':'';
   const tables=[...groups.entries()].map(([group,list])=>{
    const headers=football?[copy.rank,copy.team,copy.points,copy.played,copy.wins,copy.draws,copy.losses]:
        nba?[copy.rank,copy.team,copy.wins,copy.losses,copy.winRate]:
@@ -392,7 +400,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+orderNote+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+staleNote+orderNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
@@ -427,6 +435,7 @@ async function fetchData(){
     standings:dedupe([...(base.standings||[]),...published]).slice(0,24),
     sources:[...(base.sources||[]),...(extra?.sources||[])],
     extraStatus:extra?.status||'unavailable',
+    extraGeneratedAt:extra?.generated_at||null,
     generated_at:base.generated_at};
  }catch{data={...data,status:'failed'};}
  render();
