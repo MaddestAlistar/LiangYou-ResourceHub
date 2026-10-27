@@ -28,8 +28,10 @@ PANDA_LOL_TOURNAMENTS = ("running", "past")
 # Safe per-cycle cap: 3 all-game match + 2 LoL match + 2 LoL
 # tournament discovery + up to 5 brackets + 6 tables = 18 Panda calls.
 # At 6h cadence this stays <= 72 read requests/day (without retries).
-MAX_BRACKET_REQUESTS = 5
-MAX_STANDINGS_REQUESTS = 6
+# Keep a bounded set of current-phase records; priority stages receive reserved slots.
+# About 23 PandaScore read requests per full refresh at the maximum, before retries.
+MAX_BRACKET_REQUESTS = 6
+MAX_STANDINGS_REQUESTS = 10
 
 def popularity(league, stage="", sport=""):
     """Editorial prominence ordering, NOT a claim of real viewer traffic."""
@@ -281,6 +283,28 @@ def official_bracket(raw,tournament_id,label):
                         scores=[None,None]
                     match={"home":teams[0],"away":teams[1],
                            "score_home":scores[0],"score_away":scores[1]}
+                    # Preserve provider IDs and upstream winner/loser lineage.
+                    # Never infer a double-elimination transition from a team name alone.
+                    if ident: match["match_id"]=ident
+                    prior=node.get("previous_matches")
+                    if isinstance(prior,list):
+                        refs=[]
+                        for p in prior[:4]:
+                            if not isinstance(p,dict):continue
+                            p_id=p.get("match_id")
+                            flow=str(p.get("type") or "").lower()
+                            if isinstance(p_id,(int,str)) and str(p_id).strip() and flow in ("winner","loser"):
+                                refs.append({"match_id":str(p_id),"type":flow})
+                        if refs:match["previous_matches"]=refs
+                    rtype=name(node.get("bracket_type") or node.get("bracket") or node.get("type")).lower()
+                    if rtype in ("upper","lower","winners","losers","winner","loser"):
+                        match["bracket_side"]="lower" if rtype in ("lower","losers","loser") else "upper"
+                    elif "lower" in lower or "loser" in lower:match["bracket_side"]="lower"
+                    elif "upper" in lower or "winner" in lower:match["bracket_side"]="upper"
+                    best_of=positive_int(node.get("number_of_games"))
+                    if best_of in (1,2,3,5,7):match["best_of"]=best_of
+                    match_date=timestamp(node.get("scheduled_at") or node.get("begin_at"))
+                    if match_date:match["start_time"]=iso(match_date)
                     # Winner only if the API explicitly supplies a verified ID.
                     winner=node.get("winner_id")
                     if winner in (a_id,b_id) and type(winner) is int:
@@ -327,8 +351,19 @@ def panda_standings(raw,tournament_id,label):
     extract(raw)
     entries=sorted(entries,key=lambda x:(x["group"],x["rank"]))
     if not entries:return None
+    league=label.split(" · ")[0].strip()
+    stage=label.split(" · ",1)[1].strip() if " · " in label else ""
+    phase_group=""
+    if re.search(r"legend group",stage,re.I):phase_group="Legend Group"
+    elif re.search(r"rise group",stage,re.I):phase_group="Rise Group"
+    elif re.search(r"group ascend",stage,re.I):phase_group="Group Ascend"
+    elif re.search(r"group nirvana",stage,re.I):phase_group="Group Nirvana"
+    if phase_group:
+        for e in entries:
+            if not e["group"]:e["group"]=phase_group
     return {"id":"panda-"+str(tournament_id),"title":label,"kind":"esports",
-            "provider":"pandascore","groups":entries[:50]}
+            "provider":"pandascore","league":league,"stage":stage,
+            "phase_group":phase_group,"groups":entries[:50]}
 
 
 def nba_standings(key,now):
@@ -452,23 +487,32 @@ def tournament_extras(matches,key,discoveries=None):
     if len(bracket_choices)<MAX_BRACKET_REQUESTS:
         bracket_choices+= [tid for tid in bracket_pool if tid not in bracket_choices][:
             MAX_BRACKET_REQUESTS-len(bracket_choices)]
-    # Balance the fixed six-table budget across LoL and other esports.
-    lol_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]=="lol"]
-    other_rank=[tid for tid in ranked_candidates if candidates[tid]["sport"]!="lol"]
-    rank_choices=spread_by_league(lol_rank,4)+spread_by_league(other_rank,2)
-    # Always retain a true Worlds Swiss/group stage when published.
-    # A high-profile Play-In must not crowd out the main Worlds progression map.
-    worlds_stage=next((tid for tid in lol_rank if
-        re.search(r"worlds|world championship|全球总决赛",candidates[tid]["title"],re.I)
-        and re.search(r"group|swiss|小组|瑞士",candidates[tid]["title"],re.I)),None)
-    if worlds_stage is not None and worlds_stage not in rank_choices:
-        selected_lol=[i for i,tid in enumerate(rank_choices)
-                      if candidates[tid]["sport"]=="lol"]
-        if selected_lol:
-            rank_choices[selected_lol[-1]]=worlds_stage
-        elif len(rank_choices)<MAX_STANDINGS_REQUESTS:
-            rank_choices.append(worlds_stage)
-    for tid in ranked_candidates:
+    # Reserve complete paired league groups BEFORE popularity-based allocation.
+    # A Legend/Ascend table alone must never consume all available LCK/LPL slots.
+    rank_pool=[tid for tid in ranked_candidates if candidates[tid]["ranking"]]
+    def phase_key(tid):
+        v=candidates[tid]
+        title=(v["league"]+" "+v["title"]).lower()
+        if re.search(r"\\blck\\b",title) and not re.search(r"challenger|academy|youth",title):
+            if "legend group" in title:return "lck_legend"
+            if "rise group" in title:return "lck_rise"
+        if re.search(r"\\blpl\\b",title):
+            if "group ascend" in title:return "lpl_ascend"
+            if "group nirvana" in title:return "lpl_nirvana"
+        if re.search(r"worlds|world championship",title) and re.search(r"group|swiss",title):
+            return "worlds_swiss"
+        return ""
+    priority_keys=("lck_legend","lck_rise","lpl_ascend","lpl_nirvana","worlds_swiss")
+    rank_choices=[]
+    for key in priority_keys:
+        chosen=next((tid for tid in rank_pool if phase_key(tid)==key),None)
+        if chosen is not None and chosen not in rank_choices:rank_choices.append(chosen)
+    others=[tid for tid in rank_pool if candidates[tid]["sport"]!="lol"]
+    for tid in spread_by_league(others,2):
+        if tid not in rank_choices and len(rank_choices)<MAX_STANDINGS_REQUESTS:rank_choices.append(tid)
+    for tid in spread_by_league(rank_pool,MAX_STANDINGS_REQUESTS):
+        if tid not in rank_choices and len(rank_choices)<MAX_STANDINGS_REQUESTS:rank_choices.append(tid)
+    for tid in rank_pool:
         if len(rank_choices)>=MAX_STANDINGS_REQUESTS:break
         if tid not in rank_choices:rank_choices.append(tid)
     brackets=[];standings=[];errors=0
