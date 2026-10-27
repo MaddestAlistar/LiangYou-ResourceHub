@@ -533,7 +533,9 @@ def tournament_extras(matches,key,discoveries=None):
         if tid not in rank_choices:rank_choices.append(tid)
     brackets=[];standings=[];errors=0
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
+    blocked=False
     for kind,ids in (("brackets",bracket_choices),("standings",rank_choices)):
+        if blocked:break
         for tid in ids:
             label=candidates[tid]["title"]
             try:
@@ -546,8 +548,23 @@ def tournament_extras(matches,key,discoveries=None):
                     value["sport"]=candidates[tid]["sport"]
                     value["prominence"]=candidates[tid]["priority"]
                     (brackets if kind=="brackets" else standings).append(value)
-            except Exception:
+            except Exception as exc:
                 errors+=1
+                # Never print tokens, URL query parameters or raw API bodies.
+                reason=str(exc)
+                status=next((code for code in ("401","403","429","404","422")
+                             if "HTTP "+code in reason),None)
+                if status:
+                    print("PandaScore %s detail endpoint: HTTP %s" % (kind,status),flush=True)
+                else:
+                    print("PandaScore %s detail endpoint: request rejected (%s)" %
+                          (kind,type(exc).__name__),flush=True)
+                # When the endpoint is denied, additional detail requests only
+                # waste the subscription's rate budget. Keep prior verified data.
+                if status in ("401","403","429"):
+                    blocked=True
+                    print("PandaScore detail circuit breaker activated",flush=True)
+                    break
     brackets.sort(key=lambda x:(-x["prominence"],x["tournament_id"]))
     standings.sort(key=lambda x:(-x["prominence"],x["id"]))
     print("PandaScore details: %d knockout brackets, %d standings, %d failed requests" %
@@ -724,7 +741,7 @@ def main():
     except Exception:
         previous={}
     previous_at=timestamp(previous.get("generated_at"))
-    if previous_at and dt.timedelta(0)<=now-previous_at<=dt.timedelta(hours=36):
+    if previous_at and dt.timedelta(0)<=now-previous_at<=dt.timedelta(days=14):
         for section,records,limit in (("standings",standings,MAX_STANDINGS_REQUESTS+1),
                                       ("brackets",brackets,MAX_BRACKET_REQUESTS)):
             current_ids={str(r.get("id") or r.get("tournament_id")) for r in records}
@@ -738,8 +755,12 @@ def main():
                     for row in old.get("groups",[]) if isinstance(row,dict)):continue
                 if section=="brackets" and not old.get("rounds"):continue
                 preserved=dict(old)
+                source_at=timestamp(preserved.get("verified_at")) or previous_at
+                if not source_at or now-source_at>dt.timedelta(days=14):continue
                 preserved["status"]="stale"
-                preserved["verified_at"]=previous.get("generated_at")
+                # Preserve the original evidence date; never advance it when
+                # the current collector has not obtained a fresh record.
+                preserved["verified_at"]=iso(source_at)
                 records.append(preserved)
                 current_ids.add(ident)
     phases={"lck_legend":False,"lck_rise":False,"lpl_ascend":False,"lpl_nirvana":False}
