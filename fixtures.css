@@ -72,3 +72,32 @@
  .fixtures-subhead .fixtures-multiselect select:last-child{flex:1}
  .fixtures-sortbar{flex-wrap:wrap;line-height:1.6}
 }
+
+
+/* Visible LoL knockout choices and compact multi-league rankings */
+.fixtures-quick{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+.fixtures-quick-label{flex:0 0 100%;font-size:11px;color:#d1c39f;line-height:1.6}
+.fixtures-quick-btn{max-width:100%;overflow-wrap:anywhere;text-align:left;min-height:35px;
+ padding:7px 10px;border-radius:9px;border:1px solid rgba(148,167,187,.31);
+ background:rgba(24,40,57,.65);color:#bbcede;font:inherit;font-size:10px;cursor:pointer}
+.fixtures-quick-btn>span{color:#d8c199;font-weight:700}
+.fixtures-quick-btn.is-active{border-color:rgba(218,181,119,.75);
+ color:#fff1d2;background:rgba(192,148,84,.19)}
+.fixtures-quick-btn:focus-visible{outline:2px solid #e5c686;outline-offset:2px}
+.fixtures-record-summary{color:#9db4c5;font-size:11px;line-height:1.6;margin:4px 0 12px}
+.fixtures-standing-card{min-width:0;border:1px solid rgba(133,161,187,.29);
+ border-radius:12px;background:rgba(12,27,43,.68);overflow:hidden;align-self:start}
+.fixtures-standing-card summary{display:flex;justify-content:space-between;align-items:center;
+ gap:12px;padding:12px 13px;color:#e4cf9f;font-size:12px;font-weight:700;
+ cursor:pointer;list-style:none;line-height:1.5;overflow-wrap:anywhere}
+.fixtures-standing-card summary::-webkit-details-marker{display:none}
+.fixtures-standing-card summary:focus-visible{outline:2px solid #e5c686;outline-offset:-2px}
+.fixtures-standing-card summary:after{content:'⌄';color:#c9b18c;font-size:19px}
+.fixtures-standing-card[open] summary:after{content:'⌃'}
+.fixtures-standing-num{color:#a4b8c9;white-space:nowrap;font-size:10px;font-weight:400;margin-left:auto}
+.fixtures-standing-tables{padding:0 8px 9px}
+.fixtures-standing-tables .fixtures-standing-group{margin-bottom:8px}
+.fixtures-standing-tables .fixtures-standing-group:last-child{margin-bottom:0}
+@media(max-width:720px){.fixtures-standing{grid-template-columns:1fr}.fixtures-quick-btn{font-size:10px}
+ .fixtures-quick-label{font-size:10px}.fixtures-standing-card summary{padding:10px}}
+@media(prefers-reduced-motion:reduce){.fixtures-quick-btn{transition:none}}
