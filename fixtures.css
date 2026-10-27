@@ -446,3 +446,28 @@
 .fixtures-diagrams.is-expanded .lyb-visual-top{flex-shrink:0}
 .fixtures-diagrams.is-expanded .lyb-exit-bracket:focus-visible{
  outline:2px solid #fff0cd;outline-offset:2px}
+
+/* Unified calendar detail interaction: card-adjacent on phones and desktops. */
+.fixtures-grid>.fixtures-detail{grid-column:1/-1;min-width:0;width:100%;box-sizing:border-box;
+ margin:0 0 5px;scroll-margin-top:140px}
+.fixtures-card.is-selected{border-color:rgba(235,193,121,.75);
+ background:linear-gradient(135deg,rgba(28,52,77,.96),rgba(13,32,52,.9))}
+.fixtures-detail-btn[aria-expanded="true"]{background:rgba(221,175,93,.22);border-color:#e1c28b;
+ color:#ffe6ba}
+.fixtures-cardfoot{flex-wrap:wrap;min-width:0}
+.fixtures-detail-btn{margin-left:auto;min-height:34px;white-space:nowrap}
+.fixtures-detail-markets{align-items:stretch;flex-direction:column;gap:8px}
+.fixtures-detail-markets>strong{font-size:12px;line-height:1.6;color:#e6cc9f}
+.fixtures-detail-markets .fixtures-market-source{display:block;width:100%;box-sizing:border-box;
+ padding:10px 12px;background:rgba(8,22,38,.6);border-color:rgba(124,157,194,.31);
+ border-radius:9px;color:#d1e1ed;font-size:11px;line-height:1.8;
+ overflow-wrap:anywhere;white-space:normal;font-variant-numeric:tabular-nums}
+@media(max-width:720px){
+ .fixtures-grid>.fixtures-detail{padding:13px 12px;scroll-margin-top:110px}
+ .fixtures-detail-head strong{font-size:12px;line-height:1.55}
+ .fixtures-detail-markets .fixtures-market-source{font-size:11px}
+ .fixtures-cardfoot{gap:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .fixtures-card,.fixtures-detail-btn{scroll-behavior:auto;transition:none}
+}
