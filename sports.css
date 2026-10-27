@@ -290,3 +290,24 @@
   .sports-findbar{flex-wrap:nowrap}
   .sports-sort{max-width:109px}
 }
+
+
+/* One match, independent market snapshots */
+.sports-compare{margin:10px 0;padding:10px 11px;border-radius:11px;
+ border:1px solid rgba(134,170,204,.26);background:rgba(15,33,58,.7)}
+.sports-compare>strong{display:block;font-size:10px;color:#acc5df;margin-bottom:6px}
+.sports-compare-row{display:flex;justify-content:space-between;gap:9px;align-items:center;
+ padding:6px 0;border-top:1px solid rgba(118,150,181,.14)}
+.sports-compare-row span{font-size:11px;color:#b2c9db}
+.sports-compare-row b{font-size:12px;color:#e5c68f;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sports-view-fixture{display:block;width:100%;margin:11px 0 0;padding:9px 10px;
+ background:rgba(49,95,113,.25);border:1px solid rgba(113,186,204,.35);
+ border-radius:9px;font-size:11px;font-weight:750;color:#bde9f1;cursor:pointer}
+.sports-view-fixture:hover,.sports-view-fixture:focus-visible{border-color:#8ad0dd;background:rgba(49,95,113,.38)}
+.sports-provider-health{margin:8px 0 14px}
+.sports-provider-state{display:inline-flex;align-items:center;padding:5px 8px;border-radius:8px;
+ background:rgba(45,94,86,.19);color:#bce6db;font-size:10px;border:1px solid rgba(103,174,156,.32)}
+.sports-provider-state.is-stale{color:#f5ca91;background:rgba(151,102,61,.15);border-color:rgba(201,146,82,.36)}
+@media(max-width:680px){.sports-compare{padding:8px 9px}.sports-compare-row{padding:7px 0}
+ .sports-provider-health{gap:5px}.sports-provider-state{font-size:9px}
+ .sports-view-fixture{min-height:42px}}
