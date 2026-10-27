@@ -91,7 +91,7 @@ assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("_mode:'gro
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.12') && html.includes('fixtures.css?v=20261027.6'),
+assert(html.includes('fixtures.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.6'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
