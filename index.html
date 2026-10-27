@@ -21,17 +21,17 @@
   <link rel="stylesheet" href="./style.css?v=4.1">
   <link rel="stylesheet" href="./design.css?v=4.7">
   <link rel="stylesheet" href="./daily-free.css?v=20261025.1">
-  <link rel="stylesheet" href="./sports.css?v=20261027.2">
-  <link rel="stylesheet" href="./fixtures.css?v=20261027.21">
+  <link rel="stylesheet" href="./sports.css?v=20261027.4">
+  <link rel="stylesheet" href="./fixtures.css?v=20261027.33">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=6" defer></script>
   <script src="./design.js?v=4.6" defer></script>
   <script src="./daily-free.js?v=20261024.4" defer></script>
   <script src="./sports-i18n.js?v=20261027.2" defer></script>
   <script src="./sports-link.js?v=20261027.3" defer></script>
-  <script src="./sports.js?v=20261027.3" defer></script>
+  <script src="./sports.js?v=20261027.4" defer></script>
   <script src="./bracket-viz.js?v=20261027.13" defer></script>
-  <script src="./fixtures.js?v=20261027.32" defer></script>
+  <script src="./fixtures.js?v=20261027.33" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
 .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding-block:10px}
@@ -113,11 +113,9 @@
           <div>
             <p class="eyebrow">LIANGYOU · MATCH INTELLIGENCE</p>
             <h2 id="sports-title" data-sports-t="title">赛事数据中心</h2>
-            <p data-sports-t="intro">赛事日历、电竞晋级图、联赛积分榜与赛前预测市场集中查看。赛程和排名采用官方数据源，市场概率单独呈现。</p>
+            <p data-sports-t="intro">赛事日历、电竞晋级图与联赛积分榜集中查看，赛前预测在对应赛事详情中展示。</p>
           </div>
           <div class="sports-meta" aria-live="polite">
-            <strong id="sportsCount">数据加载中</strong>
-            <span id="sportsStatus">正在读取自动更新快照</span>
             <div class="sports-language" id="sportsLanguage" role="group" aria-label="切换赛事语言">
               <button type="button" class="sports-language-btn is-active" data-sports-lang="zh" aria-pressed="true" lang="zh-CN">中文</button>
               <button type="button" class="sports-language-btn" data-sports-lang="en" aria-pressed="false" lang="en">English</button>
@@ -137,8 +135,7 @@
             <button type="button" class="fixtures-view" data-fixtures-view="brackets" aria-pressed="false">电竞晋级图</button>
             <button type="button" class="fixtures-view" data-fixtures-view="standings" aria-pressed="false">联赛积分榜</button>
           </div>
-          <p id="officialFixturesStatus" class="fixtures-update" aria-live="polite">正在读取已核验的赛事快照</p>
-          <div id="officialFixturesHealth" class="fixtures-source-health" aria-label="官方赛事数据源状态"></div>
+          <p id="officialFixturesStatus" class="fixtures-update" aria-live="polite">等待数据核验</p>
           <div id="fixtureCalendarPanel" class="fixtures-subpanel">
             <div class="fixtures-tools">
               <div class="fixtures-filters" role="group" aria-label="赛事日期">
@@ -207,45 +204,7 @@
             <div id="officialStandingQuick" class="fixtures-quick fixtures-standing-quick" hidden role="group" aria-label="可查看的联赛积分榜"></div>
             <div id="officialStandingGrid" class="fixtures-standing" aria-live="polite"><p class="fixtures-empty">正在核查官方积分榜</p></div>
           </div>
-          <p class="fixtures-footnote" id="officialFixturesNote">PandaScore · API-Sports · DunkAPI · Data provided by football-data.org</p>
         </section>
-        <div class="fixtures-market-heading"><strong id="fixturesMarketTitle">赛前预测市场</strong><span id="fixturesMarketSubtitle">Polymarket · Predict.fun · Kalshi</span></div>
-        <div class="sports-tabs" role="group" aria-label="赛事分类">
-          <button class="sports-tab is-active" type="button" data-sport-filter="all" aria-pressed="true">全部赛事</button>
-          <button class="sports-tab" type="button" data-sport-filter="lol" aria-pressed="false">🎮 英雄联盟</button>
-          <button class="sports-tab" type="button" data-sport-filter="basketball" aria-pressed="false">🏀 篮球</button>
-          <button class="sports-tab" type="button" data-sport-filter="football" aria-pressed="false">⚽ 足球</button>
-          <button class="sports-tab" type="button" data-sport-filter="other" aria-pressed="false">其他</button>
-        </div>
-        <div class="sports-findbar" role="search" aria-label="搜索赛事">
-          <label for="sportsSearch" class="sports-search-label" data-sports-t="searchLabel">搜索赛事</label>
-          <div class="sports-search-wrap"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m16 16 5 5"/></svg>
-            <input id="sportsSearch" type="search" inputmode="search" autocomplete="off" maxlength="90" placeholder="搜索球队、选手、联赛或赛事名称" aria-label="搜索球队或赛事">
-          </div>
-          <select id="sportsSort" class="sports-sort" aria-label="赛事排序">
-            <option value="time" data-sports-t="sortTime">按开赛时间</option>
-            <option value="activity" data-sports-t="sortActivity">按市场活跃度</option>
-          </select>
-        </div>
-        <div class="sports-source-toolbar" role="group" aria-label="数据来源" id="sportsSources">
-          <span class="sports-source-label" data-sports-t="sourcesHeading">预测数据来源</span>
-          <button type="button" class="sports-source-btn is-active" data-source-filter="all" aria-pressed="true" data-sports-t="allSources">全部来源</button>
-          <button type="button" class="sports-source-btn" data-source-filter="predict" aria-pressed="false">Predict.fun</button>
-          <button type="button" class="sports-source-btn" data-source-filter="polymarket" aria-pressed="false">Polymarket</button>
-          <button type="button" class="sports-source-btn" data-source-filter="kalshi" aria-pressed="false">Kalshi</button>
-        </div>
-        <p class="sports-source-hint" id="sportsSourceHint" data-sports-t="richHint" hidden>切换任一数据来源查看详细市场数据；Kalshi 成交量按合约份数展示，不等于美元成交额。</p>
-        <div id="sportsProviderHealth" class="sports-provider-health" aria-label="预测市场数据源状态"></div>
-        <div id="sportsFocusBar" class="sports-focus-bar" hidden></div>
-        <div class="sports-grid" id="sportsGrid" aria-live="polite"><div class="sports-empty"><strong>正在读取赛事数据</strong>首次同步前不会展示示意赔率或虚构比赛。</div></div>
-        <div class="sports-list-actions" id="sportsListActions" hidden>
-          <span id="sportsShowing" aria-live="polite"></span>
-          <div class="sports-list-buttons">
-            <button id="sportsCollapse" class="sports-list-btn sports-list-btn-secondary" type="button" hidden>收起赛事 ↑</button>
-            <button id="sportsMore" class="sports-list-btn" type="button" hidden>查看更多赛事 ↓</button>
-          </div>
-        </div>
-        <p class="sports-foot" data-sports-t="sourceNote">数据来源：Polymarket 公开 Gamma API · 市场报价对应的隐含概率，不等同于博彩公司赔率、官方胜率或实时比分。按每 2 小时计划检查；部分赛事可能暂时无数据。比赛时间按北京时间显示。</p>
         <div class="sports-promo">
           <img src="./assets/collabs/conflux.webp" width="120" height="120" loading="lazy" decoding="async" alt="汇流直播 App 图标">
           <div class="sports-promo-copy"><strong data-sports-t="promoTitle">想边看赛事数据，边追比赛直播？</strong><p data-sports-t="promoText">欢迎使用「汇流直播」关注电竞与体育内容，查看支持的赛事信息及相关直播。实际数据展示、赛程与可观看场次以 App 当前版本和直播平台为准。</p></div>
