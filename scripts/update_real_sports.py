@@ -520,8 +520,8 @@ def tournament_extras(matches,key,discoveries=None):
         return ""
     priority_keys=("lck_legend","lck_rise","lpl_ascend","lpl_nirvana","worlds_swiss")
     rank_choices=[]
-    for key in priority_keys:
-        chosen=next((tid for tid in rank_pool if phase_key(tid)==key),None)
+    for phase_name in priority_keys:
+        chosen=next((tid for tid in rank_pool if phase_key(tid)==phase_name),None)
         if chosen is not None and chosen not in rank_choices:rank_choices.append(chosen)
     others=[tid for tid in rank_pool if candidates[tid]["sport"]!="lol"]
     for tid in spread_by_league(others,2):
@@ -774,7 +774,7 @@ def main():
             if re.search(regex,title):phases[group]=True
     lineage_count=sum(len(m.get("previous_matches",[]))
         for b in brackets for r in b.get("rounds",[]) for m in r.get("matches",[]))
-    output={"schema":1,"fixture_schema_version":8,"source_type":"official_fixtures","generated_at":iso(now),
+    output={"schema":1,"fixture_schema_version":9,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
