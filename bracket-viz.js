@@ -184,23 +184,37 @@ function swiss(record,opt={}){
     String(e.id).replace(/^(?:stage|panda)-/,''))===i)
    .sort((a,b)=>Date.parse(a.start_time)-Date.parse(b.start_time));
  const matchCard=m=>{
-   const scored=Number.isInteger(m.score_home)&&Number.isInteger(m.score_away)&&m.status==='finished';
-   const title=html(team(m.home))+' <strong>'+(scored?num(m.score_home)+' : '+num(m.score_away):'VS')+'</strong> '+html(team(m.away));
-   return '<div class="lyb-round-match">'+title+'</div>';
+  const done=m.status==='finished';
+  const won=done?norm(m.winner):'';
+  const row=(who,score)=>'<div class="lyb-matchup-team'+(won&&norm(who)===won?' is-winner':'')+'">'+
+   '<span>'+html(team(who))+'</span><b>'+(done?num(score):'—')+'</b></div>';
+  return '<article class="lyb-matchup">'+row(m.home,m.score_home)+row(m.away,m.score_away)+'</article>';
+ };
+ // Only an individually verified previous record identifies the match's
+ // pre-round pool. A fixture's date by itself is never evidence of that pool.
+ const poolFor=m=>{
+  if(!history||!Number.isInteger(m.round)||m.round<1||m.round>5)return null;
+  const prior=history.stages[m.round-1],one=prior?.get(norm(m.home)),two=prior?.get(norm(m.away));
+  if(!one||!two||one.games!==m.round-1||two.games!==m.round-1||
+     one.wins!==two.wins||one.losses!==two.losses)return null;
+  return one.wins+'-'+one.losses;
  };
  const display=slots.map((col,i)=>{
-   const games=matches.filter(m=>m.round===i+1).slice(0,12);
-   return '<div class="lyb-swiss-column"><h4><small>ROUND '+(i+1)+'</small>'+html(columnNames[i])+'</h4>'+
-    col.map(slot=>'<div data-pool="'+html(slot.name)+'" class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
-     '<header><b>'+html(slot.name)+'</b><small>'+(
+  const roundNo=i+1;
+  return '<div class="lyb-swiss-column"><h4><small>'+
+   (i===5?'OUTCOMES':'ROUND '+roundNo)+'</small>'+html(columnNames[i])+'</h4>'+
+   col.map(slot=>{
+    const slotMatches=i<5?matches.filter(m=>m.round===roundNo&&poolFor(m)===slot.name):[];
+    return '<div data-pool="'+html(slot.name)+'" class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
+      '<header><b>'+html(slot.name)+'</b><small>'+(
        slot.advanced?z('晋级','Qualified',lang):slot.eliminated?z('淘汰','Eliminated',lang):
        z('战绩池','Record pool',lang))+'</small></header>'+
-     (slot.teams.length?slot.teams.map(showTeam).join(''):
-       '<div class="lyb-pool-empty">—</div>')+'</div>').join('')+
-     (games.length?'<div class="lyb-round-results"><strong>'+z('本轮对阵','Round matchups',lang)+'</strong>'+
-      games.map(matchCard).join('')+'</div>':'')+'</div>';
+      (slotMatches.length?'<div class="lyb-pool-matches">'+slotMatches.map(matchCard).join('')+'</div>':
+       slot.teams.length?slot.teams.map(showTeam).join(''):
+       '<div class="lyb-pool-empty">—</div>')+'</div>';
+   }).join('')+'</div>';
  }).join('');
- const loose=matches.filter(m=>!Number.isInteger(m.round)||m.round<1||m.round>5);
+ const loose=matches.filter(m=>!Number.isInteger(m.round)||m.round<1||m.round>5||!poolFor(m));
  const timelines=new Map();
  const dayFormatter=new Intl.DateTimeFormat(lang==='en'?'en-US':'zh-CN',{
   timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'});
@@ -228,7 +242,7 @@ function swiss(record,opt={}){
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('瑞士轮晋级路线图','Swiss stage progression',lang)+'">'+
   '<div class="lyb-swiss-track"><svg class="lyb-swiss-links" aria-hidden="true"></svg>'+display+'</div></div>'+
   (fixtureList?'<section class="lyb-upcoming"><h4>'+z('赛程对阵时间线','Match timeline',lang)+'</h4><div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('按日期排列的已核验对阵','Verified fixtures by date',lang)+'"><div class="lyb-timeline-track">'+fixtureList+'</div></div></section>':'')+
-  (count?'<p class="lyb-caption">'+history?z('根据已核验比赛顺序还原历轮战绩；虚线表示可能的晋级方向。','Round records reconstructed from verified match chronology; dashed lines show possible advancement.',lang):z('战队显示当前战绩；虚线是赛制路线。','Verified current records; dashed lines show the tournament format.',lang)+'</p>':'')+
+  (count?'<p class="lyb-caption">'+(history?z('已核验比赛对应历轮战绩；虚线表示可能的晋级方向。','Verified rounds and records; dashed lines show possible progression.',lang):z('当前战绩与赛制路线。','Current verified records and stage paths.',lang))+'</p>':'')+
   '</div>';
 }
 function groups(record,opt={}){
