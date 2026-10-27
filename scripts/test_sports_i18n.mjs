@@ -70,7 +70,7 @@ assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(e
 assert(ui.includes("extra.summary") && ui.includes("volume_24h_usd") && ui.includes("quotesUnavailable"));
 assert(ui.includes("volume_24h_contracts") && ui.includes("provider === 'kalshi'"));
 assert(html.includes('data-source-filter="kalshi"'));
-assert(html.includes('sports-link.js?v=20261027.1') &&
+assert(html.includes('sports-link.js?v=20261027.2') &&
  html.indexOf('sports-link.js?') < html.indexOf('sports.js?'), 'Cross-provider linker must load before market UI');
 assert(html.includes('id="sportsProviderHealth"')&&html.includes('id="officialFixturesHealth"'));
 assert(html.includes('id="officialFixturesState"')&&html.includes('id="officialFixtureDetail"'));
@@ -94,6 +94,16 @@ const matched=link.officialFor(markets[0],[{sport:'basketball',home:'Brooklyn Ne
 assert.equal(matched?.id,'match-1','Official match must link by time, sport and both teams');
 assert.equal(link.officialFor(markets[0],[matched,matched]),null,
  'Ambiguous official candidates must not be linked');
+
+assert.equal(link.matchIdentity(markets[0],[matched]),'official:match-1',
+ 'Explicit official IDs must anchor linked market cards');
+assert(link.matchIdentity(markets[0],[]).startsWith('market:basketball:'),
+ 'Market-only IDs must be separate from published official match IDs');
+const fixtureStylesNew=readFileSync('fixtures.css','utf8');
+assert(fixtureStylesNew.includes('.fixtures-diagrams.is-expanded')&&
+ fixtureStylesNew.includes('.lyb-match.is-focused'),
+ 'Fullscreen and verified pathway highlighting need responsive styles');
+
 assert(html.includes('id="sportsSearch"') && html.includes('id="sportsSort"'));
 assert.equal((html.match(/data-sport-filter="/g)||[]).length,5);
 assert(html.indexOf('data-sport-filter="football"') < html.indexOf('data-sport-filter="other"'));
@@ -139,6 +149,16 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
  assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('showFixtureDetail') && fixtureJS.includes('refs.state.addEventListener') &&
+ fixtureJS.includes('highlightBracket') && fixtureJS.includes('jumpBracketColumn'),
+ 'Fixture detail, state selector and bracket interactions must remain wired');
+assert(fixtureJS.includes("cache:'no-cache'")&&!fixtureJS.includes("?v='+Date.now()"),
+ 'Official data should use conditional HTTP caching without random cache-busting');
+assert(ui.includes("cache:'no-cache'")&&!ui.includes("feed.url + '?v=' + Date.now()"),
+ 'Market refresh must use conditional caching instead of unbounded URL variants');
+assert(ui.includes('groupMarkets(filtered)')&&ui.includes('liangyou:open-market')&&
+ ui.includes('liangyou:open-fixture'),
+ 'Multi-venue merge and round-trip navigation must remain functional');
 assert(fixtureJS.includes('LCK 常规赛 · 第3—4轮 · 传奇组（阶段榜）') &&
  fixtureJS.includes('lckStageNote'), 'LCK stage label and scope note must be displayed');
 assert(fixtureJS.includes("x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses))"),
@@ -163,7 +183,7 @@ assert(!html.includes('id="officialStandingLeagues"') &&
  'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.27') && html.includes('bracket-viz.js?v=20261027.12') && html.includes('fixtures.css?v=20261027.20'),
+assert(html.includes('fixtures.js?v=20261027.28') && html.includes('bracket-viz.js?v=20261027.13') && html.includes('fixtures.css?v=20261027.21'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
