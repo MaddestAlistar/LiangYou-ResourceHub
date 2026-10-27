@@ -258,3 +258,20 @@
  .lyb-pool-team{font-size:10px;padding:4px 0}
  .lyb-round-match{font-size:10px}
 }
+
+/* Match pairings live inside their verified pre-round record pools. */
+.lyb-pool-matches{display:grid;gap:7px;padding-top:8px}
+.lyb-matchup{min-width:0;overflow:hidden;border:1px solid rgba(133,169,199,.31);
+ border-radius:9px;background:rgba(9,27,47,.79);padding:6px 8px}
+.lyb-matchup-team{display:flex;align-items:center;justify-content:space-between;gap:7px;
+ min-height:27px;color:#c5d7e5;font-size:11px;line-height:1.35}
+.lyb-matchup-team+.lyb-matchup-team{border-top:1px solid rgba(147,179,204,.14)}
+.lyb-matchup-team span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lyb-matchup-team b{font-size:12px;flex:none;color:#dce4ea;min-width:16px;text-align:right;
+ font-variant-numeric:tabular-nums}
+.lyb-matchup-team.is-winner,.lyb-matchup-team.is-winner b{color:#f0d199;font-weight:750}
+@media(max-width:700px){
+ .lyb-pool-matches{gap:5px;padding-top:6px}
+ .lyb-matchup{padding:5px 7px}
+ .lyb-matchup-team{font-size:10px;min-height:25px}
+}
