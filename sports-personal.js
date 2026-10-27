@@ -109,9 +109,10 @@ function exportCalendar(){
 // Health is diagnostic metadata; it never acts as a source of scores.
 let latestSources=[],latestGenerated='',jobs=null;
 const jobNames={
- sports:'Polymarket',predict:'Predict.fun',kalshi:'Kalshi',
- fixtures:'赛事主数据',extras:'足球与排名',board:'国际象棋 / 围棋',
- nba:'NBA',odds:'The Odds API',chess_profiles:'棋手资料'
+ sports:['Polymarket','Polymarket'],predict:['Predict.fun','Predict.fun'],kalshi:['Kalshi','Kalshi'],
+ fixtures:['赛事主数据','Official fixtures'],extras:['足球与排名','Football & standings'],
+ board:['国际象棋 / 围棋','Chess & Go'],nba:['NBA','NBA'],odds:['The Odds API','The Odds API'],
+ chess_profiles:['棋手资料','Chess profiles']
 };
 function updateHealth(sources,generated){
  if(!healthBox)return;
@@ -131,7 +132,7 @@ function updateHealth(sources,generated){
   const frequency=Number(entry.interval_hours)||6;
   const delayed=!Number.isFinite(last)||Date.now()-last>(frequency*2+1)*3600000;
   const bad=entry.status!=='ok';
-  return {name:jobNames[id],last,delayed,bad};
+  return {name:jobNames[id][isEn()?1:0],last,delayed,bad};
  });
  const issues=old||sourceProblems.length>0||jobRows.some(x=>x.bad||x.delayed);
  const main=!(unique.size||jobRows.length)?t.unknown:issues?t.partial:t.verified;
