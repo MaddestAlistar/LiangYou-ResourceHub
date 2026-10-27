@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from feed_common import ROOT, write_json
+from go_player_sources import enrich
 
 OUT = ROOT / "data" / "board-games.json"
 UTC = timezone.utc
@@ -162,7 +163,7 @@ def japan():
             league=label,stage="",home=white,away=black,
             start_time=iso(match_date),time_precision="date",display_date=match_date.strftime("%Y-%m-%d"),
             status="finished" if finished else "scheduled",
-            score_home=1 if finished else None,score_away=0 if finished else None,
+            score_home=None,score_away=None,
             result_detail=result if finished else "",
             prominence=260 if re.search(r"国手山脈|世界|LG|三星|春蘭|応氏|農心",label) else 140,
             source_url=JAPAN))
@@ -264,8 +265,10 @@ def main():
     if not any(s["status"]=="ok" for s in sources):
         # Do not overwrite previously verified fixtures after a network outage.
         raise RuntimeError("No board game source verified; preserving last snapshot")
+    # Ranking/player metadata never changes the verified fixture identity or status.
+    sources.extend(enrich(clean))
     write_json(OUT,{"schema":1,"source_type":"board_game_fixtures","generated_at":iso(datetime.now(UTC)),
-        "interval_hours":6,"board_source_revision":2,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
+        "interval_hours":6,"board_source_revision":3,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
         "sources":sources,"events":clean[:180]})
 
 if __name__=="__main__":
