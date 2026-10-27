@@ -320,3 +320,13 @@
 .sports-focus-bar button{border:1px solid rgba(191,163,107,.55);background:rgba(198,151,76,.12);
  border-radius:9px;color:#f4d4a0;padding:7px 11px;cursor:pointer;font-weight:750}
 @media(max-width:560px){.sports-focus-bar{flex-wrap:wrap}.sports-focus-bar button{width:100%;min-height:38px}}
+
+/* Independent source links remain accessible in aggregated market rows. */
+.sports-compare-row{flex-wrap:wrap}
+.sports-compare-row b{flex:1 1 135px;text-align:right;overflow-wrap:anywhere;white-space:normal}
+.sports-compare-row a{font-size:10px;line-height:1.4;color:#b2e1ec;
+ border:1px solid rgba(122,190,216,.28);border-radius:6px;padding:4px 7px;
+ text-decoration:none}
+.sports-compare-row a:focus-visible{outline:2px solid #efd6a7;outline-offset:2px}
+@media(max-width:680px){.sports-compare-row b{flex-basis:120px;font-size:10px;text-align:left}
+ .sports-compare-row a{margin-left:auto}}
