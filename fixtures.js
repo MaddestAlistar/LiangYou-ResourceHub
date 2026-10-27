@@ -332,7 +332,7 @@ function brackets(){
  const markup=chosen._visual==='knockout'?viz.knockout(chosen,opts):
   chosen._visual==='swiss'?viz.swiss(chosen,opts):viz.groups(chosen,opts);
  refs.bracket.innerHTML=markup||empty(copy.unavailable);
- if(chosen._visual==='swiss')viz.connect(refs.bracket);
+ if(chosen._visual==='swiss')viz.connect(refs.bracket,chosen,opts.events);
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
