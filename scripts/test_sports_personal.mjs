@@ -86,4 +86,13 @@ win.dispatchEvent({type:'liangyou:sports-health',detail:{sources:[
 assert(health.innerHTML.includes('api-sports')&&health.innerHTML.includes('10'));
 api.toggle('lol','T1');
 assert(!api.has('lol','T1'));
+// Board games can use Hangul, Kana and Han script; distinct people must not collide.
+api.toggle('go','박정환');
+assert(api.has('go','박정환'));
+assert(!api.has('go','김주아'));
+api.toggle('go','김주아');
+assert(api.has('go','김주아'));
+assert(api.has('go','박정환'));
+api.toggle('go','박정환');
+assert(!api.has('go','박정환')&&api.has('go','김주아'));
 console.log('PASS: Personal follows, fixture filter signal, iCalendar export, source health, stable matcher guardrails.');
