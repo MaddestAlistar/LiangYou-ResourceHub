@@ -652,4 +652,56 @@ class FeedRules(unittest.TestCase):
         grouped=extra.football_standing({'standings':[table('GROUP_A')]},'PL')
         self.assertEqual(grouped['groups'][0]['group'],'Group A')
 
+class NewSportsIntegrations(unittest.TestCase):
+    def test_balldontlie_nba_time_score_state_and_canceled(self):
+        import update_nba_balldontlie as nba
+        now_=datetime(2026,10,27,16,tzinfo=timezone.utc)
+        row={'id':19,'datetime':'2026-10-28T01:00:00Z','status_state':'final',
+             'status':'Final','postseason':False,'home_team':{'full_name':'Boston Celtics'},
+             'visitor_team':{'full_name':'Brooklyn Nets'},
+             'home_team_score':112,'visitor_team_score':109}
+        event=nba.parse_game(row,now_)
+        self.assertEqual(event['status'],'finished')
+        self.assertEqual(event['score_home'],112)
+        self.assertEqual(event['provider'],'balldontlie')
+        self.assertEqual(event['start_time'],'2026-10-28T01:00:00Z')
+        self.assertIsNone(nba.parse_game({**row,'datetime':None},now_))
+        self.assertIsNone(nba.parse_game({**row,'status_state':'postponed'},now_))
+        self.assertIsNone(nba.parse_game({**row,'home_team_score':None},now_))
+        future=nba.parse_game({**row,'status_state':'scheduled'},now_)
+        self.assertIsNone(future['score_home'])
+
+    def test_odds_are_upcoming_matching_fresh_h2h_only(self):
+        import update_odds_reference as odds
+        now_=datetime(2026,10,27,16,tzinfo=timezone.utc)
+        event={'id':'123','commence_time':'2026-10-28T01:00:00Z',
+               'home_team':'Boston Celtics','away_team':'Brooklyn Nets',
+               'bookmakers':[{'title':'FanDuel','markets':[{'key':'h2h',
+                 'last_update':'2026-10-27T15:50:00Z','outcomes':[
+                   {'name':'Boston Celtics','price':1.65},
+                   {'name':'Brooklyn Nets','price':2.44}]}]}]}
+        self.assertEqual(len(odds.rows_for('basketball_nba',[event],now_)),1)
+        self.assertEqual(len(odds.rows_for('basketball_nba',[{
+          **event,'bookmakers':[{**event['bookmakers'][0],
+           'markets':[{'key':'spreads','outcomes':[]}]}]}],now_)),0)
+        self.assertEqual(len(odds.rows_for('basketball_nba',[{
+          **event,'commence_time':'2026-10-27T15:00:00Z'}],now_)),0)
+        self.assertEqual(len(odds.rows_for('basketball_nba',[{
+          **event,'bookmakers':[{**event['bookmakers'][0],
+            'markets':[{**event['bookmakers'][0]['markets'][0],
+             'last_update':'2026-10-26T02:00:00Z'}]}]}],now_)),0)
+
+    def test_chess_com_requires_exact_verified_name(self):
+        import update_chess_players as players
+        profile={'username':'hikaru','name':'Hikaru Nakamura','title':'GM'}
+        stats={'chess_blitz':{'last':{'rating':3400}},'chess_rapid':{'last':{'rating':2800}}}
+        with patch.object(players,'get_json',side_effect=[profile,stats]):
+            info=players.fetch_player('Nakamura, Hikaru','hikaru','Hikaru Nakamura')
+            self.assertEqual(info['blitz'],3400)
+            self.assertEqual(info['rapid'],2800)
+            self.assertIsNone(info['fide'])
+        with patch.object(players,'get_json',return_value={**profile,'name':'Different Name'}):
+            with self.assertRaises(ValueError):
+                players.fetch_player('Nakamura, Hikaru','hikaru','Hikaru Nakamura')
+
 if __name__ == '__main__': unittest.main()
