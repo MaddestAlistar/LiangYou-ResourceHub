@@ -99,9 +99,10 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
    status:'finished',home:'T1',away:'BLG',score_home:2,score_away:1,
    start_time:'2026-10-27T10:00:00Z'}]
  });
- assert(swiss.includes('lyb-swiss-track')&&swiss.includes('lyb-round-results'));
- assert(swiss.includes('lyb-swiss-links') && swiss.includes('ROUND 6'), 'Six-stage Swiss route must include outcomes and SVG links');
- assert(swiss.includes('T1')&&swiss.includes('BLG')&&swiss.includes('2 : 1'));
+ assert(swiss.includes('lyb-swiss-track')&&swiss.includes('lyb-timeline-track'));
+ assert(!swiss.includes('lyb-matchup'), 'No guessed round pool when history is incomplete');
+ assert(swiss.includes('lyb-swiss-links') && swiss.includes('OUTCOMES'), 'Swiss route must show outcomes and SVG links');
+ assert(swiss.includes('T1')&&swiss.includes('BLG')&&swiss.includes('2')&&swiss.includes('1'));
  const unassigned=model.LiangYouBracketViz.swiss({
   id:'panda-23',title:'Worlds · Group Stage',groups:[]
  },{lang:'zh',events:[{id:'stage-18',tournament_id:23,round:null,
@@ -267,8 +268,12 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
    const worlds=snapshot.standings.find(x=>/Worlds.*Group Stage/i.test(x.title));
    if(worlds){
      const visual=swissAPI.swiss(worlds,{lang:'zh',events:snapshot.stage_matches});
-     assert((visual.match(/lyb-round-results/g)||[]).length>=3,
-      'Swiss page must show historical round matchups rather than one generic list');
+     assert((visual.match(/class="lyb-matchup"/g)||[]).length===snapshot.stage_matches.length,
+      'Every verified Swiss match must appear in its historical record pool');
+     assert(!visual.includes('lyb-timeline-track'), 'Known-round Swiss matchups should not fall into a duplicate timeline');
+     assert(visual.includes('<p class="lyb-caption">'), 'Correctly nested caption must render');
+     assert((visual.match(/<div\b/g)||[]).length===(visual.match(/<\/div>/g)||[]).length,
+      'Swiss graph must emit balanced DOM nodes');
      assert(visual.includes('0-0')&&visual.includes('2-2')&&visual.includes('ADVANCES'));
    }
    const incomplete=swissAPI.inferRounds(snapshot.stage_matches.slice(0,7));
