@@ -70,6 +70,30 @@ assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(e
 assert(ui.includes("extra.summary") && ui.includes("volume_24h_usd") && ui.includes("quotesUnavailable"));
 assert(ui.includes("volume_24h_contracts") && ui.includes("provider === 'kalshi'"));
 assert(html.includes('data-source-filter="kalshi"'));
+assert(html.includes('sports-link.js?v=20261027.1') &&
+ html.indexOf('sports-link.js?') < html.indexOf('sports.js?'), 'Cross-provider linker must load before market UI');
+assert(html.includes('id="sportsProviderHealth"')&&html.includes('id="officialFixturesHealth"'));
+assert(html.includes('id="officialFixturesState"')&&html.includes('id="officialFixtureDetail"'));
+assert(html.includes('id="officialBracketRound"')&&html.includes('id="officialBracketExpand"'));
+const linksSource=readFileSync('sports-link.js','utf8');
+const linkHost={};
+vm.runInNewContext(linksSource,{window:linkHost,Date},{timeout:2000});
+const link=linkHost.LiangYouSportsLinks;
+const markets=[
+ {category:'basketball',start_time:'2026-10-28T00:00:00Z',provider:'polymarket',
+  outcomes:[{name:'Nets'},{name:'Celtics'}]},
+ {category:'basketball',start_time:'2026-10-28T00:00:00Z',provider:'predict',
+  outcomes:[{name:'Boston Celtics'},{name:'Brooklyn Nets'}]}
+];
+assert.equal(link.groupMarkets(markets).length,1,'Same matchup should aggregate independent venues');
+assert.equal(link.groupMarkets(markets)[0].sources.length,2,'All venue snapshots must survive aggregation');
+assert.equal(link.groupMarkets([{...markets[0],time_kind:'market_close'},markets[1]]).length,2,
+ 'Market-close timestamps must not be treated as kickoff');
+const matched=link.officialFor(markets[0],[{sport:'basketball',home:'Brooklyn Nets',away:'Boston Celtics',
+ start_time:'2026-10-28T00:00:00Z',id:'match-1'}]);
+assert.equal(matched?.id,'match-1','Official match must link by time, sport and both teams');
+assert.equal(link.officialFor(markets[0],[matched,matched]),null,
+ 'Ambiguous official candidates must not be linked');
 assert(html.includes('id="sportsSearch"') && html.includes('id="sportsSort"'));
 assert.equal((html.match(/data-sport-filter="/g)||[]).length,5);
 assert(html.indexOf('data-sport-filter="football"') < html.indexOf('data-sport-filter="other"'));
@@ -139,7 +163,7 @@ assert(!html.includes('id="officialStandingLeagues"') &&
  'Duplicate league pill navigation must be removed; grouped standings must remain');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.26') && html.includes('bracket-viz.js?v=20261027.11') && html.includes('fixtures.css?v=20261027.19'),
+assert(html.includes('fixtures.js?v=20261027.27') && html.includes('bracket-viz.js?v=20261027.12') && html.includes('fixtures.css?v=20261027.20'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -393,7 +417,9 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const ids=['officialFixtures','officialFixturesGrid','officialFixturesCount',
  'officialFixturesStatus','officialFixturesSearch','officialFixturesCategory',
  'officialFixturesSort','officialFixturesMore','officialFixturesShowing',
+ 'officialFixturesState','officialFixturesHealth','officialFixtureDetail',
  'officialBracketGrid','officialBracketQuick','officialBracketSelect','officialBracketSport','officialBracketStage',
+ 'officialBracketRound','officialBracketFocus','officialBracketExpand','officialBracketRoundLabel',
  'officialStandingGrid','officialStandingSummary','officialStandingQuick','officialStandingSelect','officialStandingSport',
  'officialFixturesTitle','officialFixturesIntro','officialFixturesNote',
  'fixturesMarketTitle','fixtureCalendarPanel','fixtureBracketsPanel',
@@ -407,6 +433,9 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialFixturesCategory').value='all';
  ui.get('officialFixturesSort').options=[{value:'popular'},{value:'time'}];
  ui.get('officialFixturesSort').value='popular';
+ ui.get('officialFixturesState').value='scheduled';
+ ui.get('officialFixturesState').options=[
+  {value:'scheduled'},{value:'live'},{value:'finished'}];
  ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'valorant'},{value:'cs2'},{value:'other'}];
  ui.get('officialBracketSport').value='all';
   ui.get('officialBracketStage').options=[{value:'knockout'},{value:'swiss'},{value:'group'}];
