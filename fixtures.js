@@ -314,7 +314,7 @@ function brackets(){
  options(refs.bracketSelect,records);
  const chosen=records.find(x=>x._key===refs.bracketSelect.value)||records[0];
  const opts={lang:lang(),team:v=>team(v,kindOf(chosen)),
-  translate:v=>bracketRound(v),events:data.events};
+  translate:v=>bracketRound(v),events:[...(data.stage_matches||[]),...data.events]};
  const markup=chosen._visual==='knockout'?viz.knockout(chosen,opts):
   chosen._visual==='swiss'?viz.swiss(chosen,opts):viz.groups(chosen,opts);
  refs.bracket.innerHTML=markup||empty(copy.unavailable);
