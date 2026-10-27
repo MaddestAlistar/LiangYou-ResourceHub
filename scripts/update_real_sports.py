@@ -494,8 +494,24 @@ def tournament_extras(matches,key,discoveries=None):
                 chosen.append(tid)
                 if len(chosen)>=limit:break
         return chosen
+    # Feature the real LCK/LPL playoffs above older Road to MSI/Play-In events.
+    # Still show only published provider bracket nodes, never fabricated pairings.
+    def bracket_rank(tid):
+        item=candidates[tid]
+        title=(item["league"]+" "+item["title"]).lower()
+        bonus=0
+        if re.search(r"worlds|world championship",title) and re.search(r"knockout|playoffs",title):
+            bonus=250
+        elif re.search(r"\\blck\\b",title) and re.search(r"playoffs",title):
+            bonus=240
+        elif re.search(r"\\blpl\\b",title) and re.search(r"playoffs",title):
+            bonus=235
+        elif re.search(r"\\blck\\b",title) and "road to msi" in title:
+            bonus=-140
+        return item["priority"]+bonus
     # Keep at least one other-esports bracket when available, even during Worlds.
-    bracket_pool=[tid for tid in ranked_candidates if candidates[tid]["bracket"]]
+    bracket_pool=sorted([tid for tid in ranked_candidates if candidates[tid]["bracket"]],
+                        key=lambda tid:(-bracket_rank(tid),tid))
     other_bracket=[tid for tid in bracket_pool if candidates[tid]["sport"]=="esports"]
     lol_bracket=[tid for tid in bracket_pool if candidates[tid]["sport"]=="lol"]
     bracket_choices=spread_by_league(lol_bracket,MAX_BRACKET_REQUESTS-(1 if other_bracket else 0))
@@ -774,7 +790,7 @@ def main():
             if re.search(regex,title):phases[group]=True
     lineage_count=sum(len(m.get("previous_matches",[]))
         for b in brackets for r in b.get("rounds",[]) for m in r.get("matches",[]))
-    output={"schema":1,"fixture_schema_version":9,"source_type":"official_fixtures","generated_at":iso(now),
+    output={"schema":1,"fixture_schema_version":10,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
