@@ -212,6 +212,17 @@ const fixtureSnapshot = JSON.parse(text('data/real-sports.json'));
 assert.equal(fixtureSnapshot.schema,1);
 assert.equal(fixtureSnapshot.source_type,'official_fixtures');
 assert(Array.isArray(fixtureSnapshot.events));
+assert(Array.isArray(fixtureSnapshot.brackets||[]) && Array.isArray(fixtureSnapshot.standings||[]));
+for(const b of (fixtureSnapshot.brackets||[])){
+  assert(b.provider==='pandascore'&&Array.isArray(b.rounds)&&b.rounds.length>0);
+  for(const r of b.rounds)for(const game of r.matches||[])
+    assert(game.home&&game.away,'A bracket must contain two verified teams');
+}
+for(const board of (fixtureSnapshot.standings||[])){
+  assert(['pandascore','api-sports'].includes(board.provider)&&Array.isArray(board.groups));
+  for(const row of board.groups)assert(Number.isInteger(row.rank)&&row.rank>=0&&row.team);
+}
+assert(html.includes('data-fixtures-view="brackets"')&&html.includes('data-fixtures-view="standings"'));
 const fixtureIds=new Set();
 for(const match of fixtureSnapshot.events){
   assert(typeof match.id==='string'&&!fixtureIds.has(match.id),'Duplicate fixture ID');

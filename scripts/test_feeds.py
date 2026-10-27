@@ -382,4 +382,26 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(5+4+len(real.PANDA_ENDPOINTS),12)
 
 
+
+    def test_real_tournament_bracket_requires_provider_teams(self):
+        import update_real_sports as real
+        raw=[{"round_name":"Semifinals","matches":[
+            {"id":19,"opponents":[
+                {"opponent":{"id":1,"name":"T1"}},{"opponent":{"id":2,"name":"BLG"}}],
+             "results":[{"team_id":1,"score":3},{"team_id":2,"score":1}],"winner_id":1}]}]
+        result=real.official_bracket(raw,345,"Worlds")
+        self.assertEqual(result["rounds"][0]["round"],"Semifinals")
+        self.assertEqual(result["rounds"][0]["matches"][0]["winner"],"T1")
+        self.assertEqual(result["rounds"][0]["matches"][0]["score_home"],3)
+        self.assertIsNone(real.official_bracket([{"name":"Unknown"}],345,"Worlds"))
+
+    def test_real_standings_no_inferred_ranks(self):
+        import update_real_sports as real
+        raw=[{"rank":2,"team":{"name":"TES"},"wins":5,"losses":3},
+             {"team":{"name":"Unranked"}}]
+        board=real.panda_standings(raw,123,"Playoffs")
+        self.assertEqual(len(board["groups"]),1)
+        self.assertEqual(board["groups"][0]["rank"],2)
+        self.assertEqual(board["groups"][0]["wins"],5)
+
 if __name__ == '__main__': unittest.main()
