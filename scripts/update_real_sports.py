@@ -493,10 +493,10 @@ def tournament_extras(matches,key,discoveries=None):
     def phase_key(tid):
         v=candidates[tid]
         title=(v["league"]+" "+v["title"]).lower()
-        if re.search(r"\\blck\\b",title) and not re.search(r"challenger|academy|youth",title):
+        if re.search(r"\blck\b",title) and not re.search(r"challenger|academy|youth",title):
             if "legend group" in title:return "lck_legend"
             if "rise group" in title:return "lck_rise"
-        if re.search(r"\\blpl\\b",title):
+        if re.search(r"\blpl\b",title):
             if "group ascend" in title:return "lpl_ascend"
             if "group nirvana" in title:return "lpl_nirvana"
         if re.search(r"worlds|world championship",title) and re.search(r"group|swiss",title):
