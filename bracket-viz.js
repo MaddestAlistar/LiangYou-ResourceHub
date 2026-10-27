@@ -250,7 +250,7 @@ function swiss(record,opt={}){
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('瑞士轮晋级路线图','Swiss stage progression',lang)+'">'+
   '<div class="lyb-swiss-track"><svg class="lyb-swiss-links" aria-hidden="true"></svg>'+display+'</div></div>'+
   (fixtureList?'<section class="lyb-upcoming"><h4>'+z('赛程对阵时间线','Match timeline',lang)+'</h4><div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('按日期排列的已核验对阵','Verified fixtures by date',lang)+'"><div class="lyb-timeline-track">'+fixtureList+'</div></div></section>':'')+
-  (count?'<p class="lyb-caption">'+(history?z('已核验比赛对应历轮战绩；虚线表示可能的晋级方向。','Verified rounds and records; dashed lines show possible progression.',lang):z('当前战绩与赛制路线。','Current verified records and stage paths.',lang))+'</p>':'')+
+  (count?'<div class="lyb-legend">'+(history?'<span><i class="lyb-key-solid"></i>'+z('已确认路线','Confirmed',lang)+'</span>':'')+'<span><i class="lyb-key-dashed"></i>'+z('可能路径','Possible paths',lang)+'</span></div>':'')+
   '</div>';
 }
 function groups(record,opt={}){
