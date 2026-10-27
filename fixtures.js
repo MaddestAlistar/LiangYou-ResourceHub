@@ -440,6 +440,7 @@ function bracketRound(label){
 }
 function setupBracketControls(chosen){
  const active=chosen?._visual==='knockout';
+ el('officialBracketRoundLabel').hidden=!active;
  refs.bracketRound.hidden=!active;refs.bracketExpand.hidden=!active;
  refs.bracketFocus.hidden=!active||!selectedBracketMatch;
  const candidates=active&&typeof refs.bracket.querySelectorAll==='function'?
@@ -717,9 +718,15 @@ if(typeof window.addEventListener==='function'){
  });
  window.addEventListener('liangyou:markets-updated',()=>{if(detailId)showFixtureDetail(detailId);});
 }
-refs.bracketSport.addEventListener('change',()=>{selectedBracketMatch=null;render();});
-refs.bracketStage.addEventListener('change',()=>{selectedBracketMatch=null;render();});
-refs.bracketSelect.addEventListener('change',()=>{selectedBracketMatch=null;render();});
+function resetBracketView(){
+ selectedBracketMatch=null;
+ refs.bracket.classList.remove('is-expanded');
+ refs.bracketExpand.setAttribute('aria-pressed','false');
+ render();
+}
+refs.bracketSport.addEventListener('change',resetBracketView);
+refs.bracketStage.addEventListener('change',resetBracketView);
+refs.bracketSelect.addEventListener('change',resetBracketView);
 refs.bracketRound.addEventListener('change',jumpBracketColumn);
 refs.bracketExpand.addEventListener('click',()=>{
  const expanded=refs.bracket.classList.toggle('is-expanded');
@@ -750,7 +757,7 @@ refs.bracketQuick.addEventListener('click',e=>{
  const btn=e.target.closest('[data-fixtures-tournament]');
  if(!btn)return;
  refs.bracketSelect.value=btn.dataset.fixturesTournament;
- render();
+ resetBracketView();
 });
 refs.standingSport.addEventListener('change',render);
 refs.standingSelect.addEventListener('change',render);
@@ -766,5 +773,11 @@ render();fetchData();if(typeof window.setInterval==='function')window.setInterva
 },30*60*1000);
 if(typeof document.addEventListener==='function')
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetchData();});
-if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>{if(view==='brackets')render();},{passive:true});
+let mobileBracket=typeof window.innerWidth==='number'&&window.innerWidth<=680;
+if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>{
+  // Mobile browser chrome triggers many resize events. Rerender only at
+  // the 680px breakpoint so a user's scroll position is not repeatedly lost.
+  const next=typeof window.innerWidth==='number'&&window.innerWidth<=680;
+  if(next!==mobileBracket){mobileBracket=next;if(view==='brackets')render();}
+},{passive:true});
 })();
