@@ -268,7 +268,7 @@ def main():
     # Ranking/player metadata never changes the verified fixture identity or status.
     sources.extend(enrich(clean))
     write_json(OUT,{"schema":1,"source_type":"board_game_fixtures","generated_at":iso(datetime.now(UTC)),
-        "interval_hours":6,"board_source_revision":3,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
+        "interval_hours":6,"board_source_revision":4,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
         "sources":sources,"events":clean[:180]})
 
 if __name__=="__main__":
