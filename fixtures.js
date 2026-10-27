@@ -244,13 +244,14 @@ const when=v=>{
 const dayKey=value=>new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Shanghai',
  year:'numeric',month:'2-digit',day:'2-digit'}).format(value);
 const empty=msg=>'<p class="fixtures-empty">'+safe(msg)+'</p>';
-const followLabel=(name,sport)=>{
+const followLabel=(event,which)=>{
+ const name=event[which],sport=event.sport;
  const active=Boolean(personal?.has(sport,name));
  const title=(lang()==='zh'?(active?'取消关注 ':'关注 '):(active?'Unfollow ':'Follow '))+name;
  return '<span class="fixtures-team-follow"><button type="button" class="fixtures-follow-button" '+
   'data-follow-team="'+safe(name)+'" data-follow-sport="'+safe(sport)+'" '+
   'aria-label="'+safe(title)+'" aria-pressed="'+active+'">'+(active?'★':'☆')+'</button>'+
-  safe(boardPlayer({home:name,sport},'home'))+'</span>';
+  safe(boardPlayer(event,which))+'</span>';
 };
 function popularity(row){
  if(Number.isFinite(row.prominence))return row.prominence;
@@ -583,9 +584,9 @@ function calendar(){
     '</strong><span>'+safe(x.time_precision==='date'?(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span></div>'+
     '<div class="fixtures-versus">'+
     (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">白方</span>':'')+
-    followLabel(x.home,x.sport)+' <em>'+safe(copy.vs)+'</em> '+
+    followLabel(x,'home')+' <em>'+safe(copy.vs)+'</em> '+
     (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">黑方</span>':'')+
-    followLabel(x.away,x.sport)+'</div>'+score+
+    followLabel(x,'away')+'</div>'+score+
     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
