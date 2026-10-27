@@ -1,0 +1,63 @@
+name: Verify Guardian Open Platform API
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/guardian-api-probe.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Test Guardian film news API securely
+        env:
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, urllib.request, urllib.error, urllib.parse
+          key=os.getenv('GUARDIAN_API_KEY','').strip()
+          if not key:
+              print('GUARDIAN_PROBE '+json.dumps({'result':'failed','reason':'missing_secret'}))
+              sys.exit(1)
+          tests=[
+              ('film_section',{'section':'film','page-size':'3','order-by':'newest'}),
+              ('film_search',{'q':'film','page-size':'3','order-by':'newest'})
+          ]
+          all_ok=True
+          for name,params in tests:
+              query=urllib.parse.urlencode({**params,'api-key':key})
+              url='https://content.guardianapis.com/search?'+query
+              status=None
+              data={}
+              fault=None
+              try:
+                  req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'LiangYou-ResourceHub/1.0'})
+                  with urllib.request.urlopen(req,timeout=20) as response:
+                      status=response.status
+                      data=json.load(response)
+              except urllib.error.HTTPError as err:
+                  status=err.code
+                  try: data=json.loads(err.read(16384))
+                  except Exception: data={}
+              except Exception as err:
+                  fault=type(err).__name__
+              response=data.get('response',{}) if isinstance(data,dict) else {}
+              rows=response.get('results',[]) if isinstance(response,dict) else []
+              ok=status==200 and response.get('status')=='ok' and isinstance(rows,list) and len(rows)>0
+              if not ok: all_ok=False
+              samples=[{'title':str(r.get('webTitle',''))[:140],'section':r.get('sectionId'),'date':r.get('webPublicationDate')} for r in rows[:2] if isinstance(r,dict)]
+              print('GUARDIAN_PROBE '+json.dumps({
+                  'endpoint':name,'http_status':status,'result':'ok' if ok else 'failed',
+                  'api_response_status':response.get('status'),
+                  'returned_count':len(rows) if isinstance(rows,list) else 0,
+                  'total_matches':response.get('total'),
+                  'network_error_type':fault,
+                  'articles':samples
+              },ensure_ascii=False))
+          sys.exit(0 if all_ok else 1)
+          PY
