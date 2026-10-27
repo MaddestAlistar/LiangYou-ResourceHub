@@ -9,7 +9,7 @@ const refs={grid:el('officialFixturesGrid'),status:el('officialFixturesStatus'),
  state:el('officialFixturesState'),detail:el('officialFixtureDetail'),
  bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),bracketStage:el('officialBracketStage'),
  bracketRound:el('officialBracketRound'),bracketFocus:el('officialBracketFocus'),bracketExpand:el('officialBracketExpand'),
- standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
+ standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport'),archive:el('sportsArchiveToggle')};
 if(Object.values(refs).some(v=>!v))return;
 const views=[...panel.querySelectorAll('[data-fixtures-view]')];
 const dates=[...panel.querySelectorAll('[data-fixtures-date]')];
@@ -80,10 +80,11 @@ en:{title:'Calendar & tournament intelligence',
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
 let oddsRecords=[],chessProfiles=new Map();
-let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
+let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null,archiveMode=false;
 let autoBoardStatus=false,manualBoardStatus=false;
 let fetchPending=false,archiveCache=null,extraCache=null,lastSnapshotSignature='';
 const linker=window.LiangYouSportsLinks;
+const personal=window.LiangYouSportsPersonal;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
@@ -243,6 +244,14 @@ const when=v=>{
 const dayKey=value=>new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Shanghai',
  year:'numeric',month:'2-digit',day:'2-digit'}).format(value);
 const empty=msg=>'<p class="fixtures-empty">'+safe(msg)+'</p>';
+const followLabel=(name,sport)=>{
+ const active=Boolean(personal?.has(sport,name));
+ const title=(lang()==='zh'?(active?'取消关注 ':'关注 '):(active?'Unfollow ':'Follow '))+name;
+ return '<span class="fixtures-team-follow"><button type="button" class="fixtures-follow-button" '+
+  'data-follow-team="'+safe(name)+'" data-follow-sport="'+safe(sport)+'" '+
+  'aria-label="'+safe(title)+'" aria-pressed="'+active+'">'+(active?'★':'☆')+'</button>'+
+  safe(boardPlayer({home:name,sport},'home'))+'</span>';
+};
 function popularity(row){
  if(Number.isFinite(row.prominence))return row.prominence;
  const text=(String(row.league||'')+' '+String(row.stage||'')).toLowerCase();
@@ -286,6 +295,8 @@ function updateLabels(){
  el('fixturesSortHint').textContent=copy.hotHint;
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
+ refs.archive.textContent=lang()==='zh'?(archiveMode?'返回全部榜单':'2026 赛季档案'):(archiveMode?'All standings':'2026 season archive');
+ refs.archive.setAttribute('aria-pressed',String(archiveMode));
  // Only show a single public verification timestamp; preserve diagnostics in data.
  const checks=[data.generated_at,data.extraGeneratedAt,data.boardGeneratedAt].map(x=>Date.parse(x||''))
   .filter(Number.isFinite);
@@ -542,6 +553,7 @@ function calendar(){
    if(date==='tomorrow'&&dayKey(new Date(instant))!==tomorrow)return false;
   }else if(instant<now-(x.sport==='chess'||x.sport==='go'?(state==='live'?48:168):(state==='live'?24:48))*3600000||instant>now+3600000)return false;
   if(refs.category.value!=='all'&&x.sport!==refs.category.value)return false;
+  if(personal?.followingOnly()&&!personal.followsEvent(x))return false;
   return !query||[x.home,x.away,x.league,x.stage,x.sport,
     team(x.home,x.sport),team(x.away,x.sport),boardPlayer(x,'home'),boardPlayer(x,'away'),
     localize(x.league,x.sport),localizeStage(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
@@ -571,9 +583,9 @@ function calendar(){
     '</strong><span>'+safe(x.time_precision==='date'?(x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span></div>'+
     '<div class="fixtures-versus">'+
     (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">白方</span>':'')+
-    safe(boardPlayer(x,'home'))+' <em>'+safe(copy.vs)+'</em> '+
+    followLabel(x.home,x.sport)+' <em>'+safe(copy.vs)+'</em> '+
     (x.sport==='chess'&&lang()==='zh'?'<span class="fixtures-chess-side">黑方</span>':'')+
-    safe(boardPlayer(x,'away'))+'</div>'+score+
+    followLabel(x.away,x.sport)+'</div>'+score+
     '<div class="fixtures-cardfoot"><span class="fixtures-source">'+safe(providerName(x.provider))+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
@@ -753,12 +765,12 @@ function standings(){
  const copy=t(),kind=refs.standingSport.value;
  const records=consolidatedStandings(data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
     (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))))
-    .filter(x=>(kind==='all'||kindOf(x)===kind))
+    .filter(x=>(kind==='all'||kindOf(x)===kind)&&(archiveMode?Boolean(x.historical_final):true))
     .sort((a,b)=>popularity(b)-popularity(a));
  if(!records.length){
   refs.standingSelect.hidden=true;refs.standingQuick.innerHTML='';
-  refs.standingSummary.textContent=kind==='basketball'?copy.noNba:copy.noStanding;
-  refs.standing.innerHTML=empty(kind==='basketball'?copy.noNba:copy.noStanding);return;
+  refs.standingSummary.textContent=archiveMode?(lang()==='zh'?'该项目暂无已核验的历史赛季档案':'No verified historical season archive for this sport'):(kind==='basketball'?copy.noNba:copy.noStanding);
+  refs.standing.innerHTML=empty(archiveMode?(lang()==='zh'?'暂无历史榜单':'No historical standings'):kind==='basketball'?copy.noNba:copy.noStanding);return;
  }
  refs.standingSelect.hidden=false;options(refs.standingSelect,records);
  const selectedId=refs.standingSelect.value;
@@ -906,6 +918,7 @@ async function fetchData(){
   window.LiangYouOfficialSportsEvents=data.events;
   if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
     window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
+  window.dispatchEvent(new CustomEvent('liangyou:sports-health',{detail:{sources:data.sources,generated_at:base.generated_at}}));
   
   render();
  }catch{data={...data,status:'failed'};render();}
@@ -948,6 +961,10 @@ if(typeof window.addEventListener==='function'){
   refs.detail.scrollIntoView?.({behavior:'smooth',block:'nearest'});
  });
  window.addEventListener('liangyou:markets-updated',()=>{if(view==='calendar')calendar();});
+ window.addEventListener('liangyou:personal-change',event=>{
+  if(event.detail?.view==='calendar'){view='calendar';date='week';refs.state.value='scheduled';refs.category.value='all';refs.search.value='';limit=6;}
+  render();
+ });
 }
 function resetBracketView(){
  selectedBracketMatch=null;
@@ -990,7 +1007,8 @@ refs.bracketQuick.addEventListener('click',e=>{
  refs.bracketSelect.value=btn.dataset.fixturesTournament;
  resetBracketView();
 });
-refs.standingSport.addEventListener('change',render);
+refs.archive.addEventListener('click',()=>{archiveMode=!archiveMode;refs.standingSelect.value='';render();});
+ refs.standingSport.addEventListener('change',render);
 refs.standingSelect.addEventListener('change',render);
 refs.standingQuick.addEventListener('click',event=>{
  const button=event.target.closest('[data-fixtures-standing]');
