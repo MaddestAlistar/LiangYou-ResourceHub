@@ -333,10 +333,11 @@ function showFixtureDetail(id){
     (label?'已关联的赛前预测市场':'Matched prediction-market snapshots')+'</strong>'+
     (group.length?group.map(g=>{
        const site=g.provider==='predict'?'Predict.fun':g.provider==='kalshi'?'Kalshi':'Polymarket';
-       const sides=(g.outcomes||[]).filter(o=>!['draw','tie','平局'].includes(String(o.name).toLowerCase()));
-       const probabilities=sides.slice(0,2).every(o=>Number.isFinite(o.probability))?
-         sides.slice(0,2).map(o=>(o.probability*100).toFixed(1)+'%').join(' / '):'—';
-       return '<span class="fixtures-market-source">'+safe(site)+' · '+safe(probabilities)+'</span>';
+       const probabilities=(g.outcomes||[]).map(o=>team(o.name,x.sport)+' '+
+         (Number.isFinite(o.probability)?(o.probability*100).toFixed(1)+'%':'—')).join(' · ');
+       const asOf=Number.isFinite(Date.parse(g.checked_at||''))?when(g.checked_at):'—';
+       return '<span class="fixtures-market-source">'+safe(site)+' · '+safe(probabilities)+
+         ' · '+(label?'采集于 ':'Captured ')+safe(asOf)+'</span>';
     }).join(''):
      '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
   '</div>';
