@@ -44,6 +44,7 @@ assert.equal(holder.hidden,false);
 assert.equal(opened.hidden,true);
 assert(holder.innerHTML.includes('<polyline'),'Two verified points must produce a chart');
 assert(holder.innerHTML.includes('66.0%'),'Observed percentage must be displayed without forecast');
+assert(holder.innerHTML.includes('+5.0 个百分点'),'Historical change is measured in percentage points');
 assert(holder.innerHTML.includes('非')||holder.innerHTML.includes('不是'));
 assert.equal(requests,1);
 const dayButton={dataset:{historyRange:'7'},closest(sel){return sel==='[data-trend-content]'?holder:null}};
@@ -55,6 +56,8 @@ opened.hidden=false;holder.innerHTML='';
 await callbacks.click({target:{closest(sel){return sel==='[data-trend-open]'?opened:null}}});
 assert(!holder.innerHTML.includes('<polyline'),'Single observation must never be drawn as a trend');
 assert(holder.innerHTML.includes('两次'));
+assert(opened.hidden===false&&opened.dataset.trendRetry==='1',
+ 'A single observation must keep manual recheck accessible');
 // A malformed archived JSON must show a clear error, and a later click may retry.
 const retryListeners={};
 const retryBox={hidden:true,innerHTML:'',isConnected:true,dataset:{}};
@@ -82,6 +85,8 @@ const tryOpen=()=>retryListeners.click({
 });
 await tryOpen();
 assert(retryBox.innerHTML.includes('不可用'), 'A malformed history response must not spin indefinitely');
+assert(retryButton.hidden===false&&retryButton.textContent==='重新加载走势',
+ 'A failed history request must offer a visible retry');
 invalid=false;retryButton.hidden=false;
 raw.markets['polymarket:sample-1'].points.push({
  at:iso(-30*60000),outcomes:[['T1',.68],['GEN',.32]]
