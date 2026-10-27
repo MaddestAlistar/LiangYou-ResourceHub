@@ -24,16 +24,22 @@
   'team we':'we','jd gaming':'jdg','edward gaming':'edg',
   'invictus gaming':'ig','kt rolster':'kt','gen.g esports':'geng',
   'gen g':'geng','gen.g':'geng','hanwha life esports':'hle',
-  'dplus kia':'dk','t1 esports':'t1'
+  'dplus kia':'dk','t1 esports':'t1',
+  'rising bees':'vitality rising bees','team vitality':'vitality',
+  'manchester united fc':'man utd','manchester united':'man utd','man united':'man utd',
+  'nottingham forest fc':'nottingham forest','wolves':'wolverhampton wanderers',
+  'wolverhampton wanderers fc':'wolverhampton wanderers',
+  'paris saint germain':'psg','paris saint germain fc':'psg'
  };
  const keyName=x=>{
-  let v=String(x||'').normalize('NFKC').trim().toLowerCase()
+  let v=String(x||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').normalize('NFKC').trim().toLowerCase()
    .replace(/[’‘]/g,"'").replace(/\bfc\b|\bfootball club\b/gi,'').replace(/[.\-_]+/g,' ')
    .replace(/\s+/g,' ').trim();
   v=aliases[v]||v;
   return v.replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
  };
- const category=x=>x?.category==='other'?'esports':x?.category||x?.sport||'';
+ // An unknown sport must never be silently relabeled as esports.
+ const category=x=>x?.category||x?.sport||'';
  const draw=x=>['draw','tie','平局','x'].includes(String(x||'').trim().toLowerCase());
  const marketSides=m=>Array.isArray(m?.outcomes)?
   m.outcomes.map(x=>x.name).filter(x=>!draw(x)).map(keyName).filter(Boolean):[];
@@ -65,11 +71,12 @@
   return grouped;
  };
  const officialFor=(market,fixtures)=>{
-  const matches=(fixtures||[]).filter(x=>pairs(market,x,45));
+  // Permit a one-hour schedule adjustment, but never a multi-hour market-close offset.
+  const matches=(fixtures||[]).filter(x=>pairs(market,x,90));
   // An ambiguous team/time match is not a verified event association.
   return matches.length===1?matches[0]:null;
  };
- const marketsFor=(official,markets)=>groupMarkets((markets||[]).filter(m=>pairs(m,official,45)));
+ const marketsFor=(official,markets)=>groupMarkets((markets||[]).filter(m=>pairs(m,official,90)));
  // Stable, reviewable client-side identity: prefer an official provider event ID.
  // Unlinked market IDs are scoped to a market-only category and normalized sides.
  const matchIdentity=(record,fixtures=[])=>{
