@@ -47,6 +47,31 @@ jobs:
               'result_count':body.get('resultCount') if isinstance(body,dict) else None,
               'first_title':rows[0].get('trackName') if rows else None,
               'has_store_link':bool(rows and rows[0].get('trackViewUrl')),'error_type':err}
+          # Diagnose an empty Apple movie search with other valid film queries / storefronts.
+          # A control search verifies whether the store endpoint works at all.
+          if not ok:
+              movie_tests=[
+                  ('Inception_no_entity',{'term':'Inception','media':'movie','country':'us','limit':'5'}),
+                  ('Star_Wars_UK',{'term':'Star Wars','media':'movie','country':'gb','limit':'5'}),
+                  ('Titanic_US',{'term':'Titanic','media':'movie','country':'us','limit':'5'}),
+                  ('Avatar_CA',{'term':'Avatar','media':'movie','country':'ca','limit':'5'}),
+              ]
+              diagnostics=[]
+              for label,params in movie_tests:
+                  c,b,e=query('https://itunes.apple.com/search',params)
+                  n=b.get('resultCount',0) if isinstance(b,dict) else None
+                  examples=b.get('results',[]) if isinstance(b,dict) else []
+                  diagnostics.append({'query':label,'http':c,'count':n,'first':examples[0].get('trackName') if examples else None,'error_type':e})
+                  if c==200 and isinstance(n,int) and n>0:
+                      ok=True
+                      results['Apple iTunes Search API'].update(http=c,result='PASS',result_count=n,
+                          first_title=examples[0].get('trackName') if examples else None,
+                          has_store_link=bool(examples and examples[0].get('trackViewUrl')),error_type=e)
+              c,b,e=query('https://itunes.apple.com/search',{'term':'Taylor Swift','media':'music','country':'us','limit':'2'})
+              diagnostics.append({'query':'music_control','http':c,'count':b.get('resultCount') if isinstance(b,dict) else None,'error_type':e})
+              for row in diagnostics:
+                  print('APPLE_ITUNES_DIAGNOSTIC '+json.dumps(row,ensure_ascii=False),flush=True)
+          
           code,body,err=query('https://en.wikipedia.org/w/api.php',{
               'action':'query','format':'json','prop':'info','titles':'Inception','redirects':'1'
           })
