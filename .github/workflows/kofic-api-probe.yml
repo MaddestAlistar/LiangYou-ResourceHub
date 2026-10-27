@@ -1,0 +1,72 @@
+name: Verify KOFIC KOBIS API
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/kofic-api-probe.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify KOBIS box-office API without logging credentials
+        env:
+          KOFIC_API_KEY: ${{ secrets.KOFIC_API_KEY }}
+        run: |
+          python - <<'PY'
+          import os, sys, json, urllib.request, urllib.parse, urllib.error
+          from datetime import datetime, timedelta
+          from zoneinfo import ZoneInfo
+          key = os.environ.get("KOFIC_API_KEY","").strip()
+          if not key:
+              print("KOFIC_PROBE "+json.dumps({"result":"failed","reason":"missing_KOFIC_API_KEY"}))
+              sys.exit(1)
+          korea_today = datetime.now(ZoneInfo("Asia/Seoul")).date()
+          daily_date = korea_today - timedelta(days=2)
+          days_since_sunday = (korea_today.weekday()+1)%7
+          sunday = korea_today - timedelta(days=days_since_sunday or 7)
+          checks = [
+              ("daily", "searchDailyBoxOfficeList.json", daily_date.strftime("%Y%m%d"), {}),
+              ("weekend", "searchWeeklyBoxOfficeList.json", sunday.strftime("%Y%m%d"), {"weekGb":"1"}),
+          ]
+          all_ok = True
+          for name,endpoint,target,params in checks:
+              query = urllib.parse.urlencode({"key":key,"targetDt":target,**params})
+              url = "https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/"+endpoint+"?"+query
+              http = None
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"LiangYouResourceHub/1.0"}),timeout=25) as resp:
+                      http=resp.status
+                      body=json.load(resp)
+              except urllib.error.HTTPError as exc:
+                  http=exc.code
+                  try: body=json.loads(exc.read(16384))
+                  except Exception: body={}
+              except Exception as exc:
+                  body={"exception_type":type(exc).__name__}
+              if not isinstance(body,dict): body={}
+              payload = body.get("boxOfficeResult",{})
+              field = "dailyBoxOfficeList" if name=="daily" else "weeklyBoxOfficeList"
+              rows = payload.get(field,[]) if isinstance(payload,dict) else []
+              err = body.get("faultInfo")
+              ok = http==200 and isinstance(rows,list) and len(rows)>0
+              if not ok: all_ok=False
+              sample = [
+                  {"rank":r.get("rank"),"movie":r.get("movieNm"),"audience":r.get("audiCnt")}
+                  for r in rows[:3] if isinstance(r,dict)
+              ] if isinstance(rows,list) else []
+              # Never log request URL, credentials, or raw server messages.
+              print("KOFIC_PROBE "+json.dumps({
+                  "endpoint":name,"target_date":target,"http_status":http,
+                  "result":"ok" if ok else "failed",
+                  "has_fault_info":bool(err),"response_keys":list(body.keys())[:6],
+                  "count":len(rows) if isinstance(rows,list) else 0,"sample":sample,
+                  "error_type":body.get("exception_type")
+              },ensure_ascii=False))
+          sys.exit(0 if all_ok else 1)
+          PY
