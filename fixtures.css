@@ -397,7 +397,6 @@
 .fixtures-detail-markets{display:flex;gap:7px;align-items:center;flex-wrap:wrap;
  margin-top:10px;font-size:10px;color:#b7cbe0}
 .fixtures-detail-markets strong{color:#d3e0ed;font-size:10px}
-.fixtures-detail-markets span{padding:4px 7px;border:1px solid rgba(119,157,192,.28);border-radius:6px}
 .fixtures-score{display:block;text-align:center;font-weight:850;color:#f7d79e;font-size:17px;margin-top:4px}
 .fixtures-state-tag{font-size:10px;color:#e7c995}
 .fixtures-bracket-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
@@ -433,9 +432,6 @@
 @media(prefers-reduced-motion:reduce){.lyb-multi-lane .lyb-match{transition:none}}
 
 
-.fixtures-market-source{white-space:normal;font-variant-numeric:tabular-nums;color:#c0d7e4}
-@media(max-width:680px){.fixtures-detail-markets{align-items:flex-start}
- .fixtures-market-source{flex:1 1 100%}}
 
 
 /* The fullscreen close control stays inside the fixed diagram on mobile. */
@@ -458,14 +454,9 @@
 .fixtures-detail-btn{margin-left:auto;min-height:34px;white-space:nowrap}
 .fixtures-detail-markets{align-items:stretch;flex-direction:column;gap:8px}
 .fixtures-detail-markets>strong{font-size:12px;line-height:1.6;color:#e6cc9f}
-.fixtures-detail-markets .fixtures-market-source{display:block;width:100%;box-sizing:border-box;
- padding:10px 12px;background:rgba(8,22,38,.6);border-color:rgba(124,157,194,.31);
- border-radius:9px;color:#d1e1ed;font-size:11px;line-height:1.8;
- overflow-wrap:anywhere;white-space:normal;font-variant-numeric:tabular-nums}
 @media(max-width:720px){
  .fixtures-grid>.fixtures-detail{padding:13px 12px;scroll-margin-top:110px}
  .fixtures-detail-head strong{font-size:12px;line-height:1.55}
- .fixtures-detail-markets .fixtures-market-source{font-size:11px}
  .fixtures-cardfoot{gap:7px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -474,5 +465,71 @@
 
 .fixtures-predict-tag{font-size:10px;color:#a9e2d8;background:rgba(64,159,155,.13);
  border:1px solid rgba(98,185,176,.3);border-radius:7px;padding:4px 7px;white-space:nowrap}
-.fixtures-market-source a{color:#f0cf96;text-underline-offset:3px;font-weight:700}
-.fixtures-market-source a:focus-visible{outline:2px solid #e0b878;outline-offset:2px}
+
+/* Verified prediction comparison: a premium, compact native mobile card. */
+.fixtures-detail-markets{display:flex;flex-direction:column;align-items:stretch;gap:11px;margin-top:15px;min-width:0}
+.fixtures-predictions-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:5px 12px;line-height:1.4}
+.fixtures-predictions-head>strong{font-size:13px;color:#f0d6a5;font-weight:750;letter-spacing:.02em}
+.fixtures-predictions-head>span{font-size:10px;color:#90a6ba}
+.fixtures-predict-card{position:relative;isolation:isolate;overflow:hidden;box-sizing:border-box;width:100%;
+ padding:15px 16px 12px;border:1px solid rgba(116,158,193,.34);border-radius:16px;
+ background:radial-gradient(ellipse at 0 4%,rgba(28,105,175,.16),transparent 53%),
+ radial-gradient(ellipse at 100% 3%,rgba(177,68,91,.13),transparent 54%),
+ linear-gradient(155deg,rgba(13,32,51,.98),rgba(8,22,37,.98));
+ box-shadow:inset 0 1px 0 rgba(232,244,255,.06),0 10px 26px rgba(0,0,0,.13)}
+.fixtures-predict-card:before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:1px;
+ background:linear-gradient(90deg,rgba(76,163,254,.52),transparent 48%,rgba(250,94,119,.42))}
+.fixtures-predict-match{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr);
+ align-items:stretch;gap:5px;min-height:81px;min-width:0}
+.fixtures-predict-side{display:flex;flex-direction:column;justify-content:space-between;gap:7px;min-width:0;padding:1px 0}
+.fixtures-predict-side.is-red{text-align:right;align-items:flex-end}
+.fixtures-predict-side.is-blue{text-align:left;align-items:flex-start}
+.fixtures-predict-team{display:-webkit-box;max-width:100%;min-height:2.8em;
+ -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;
+ font-size:12px;font-weight:670;line-height:1.4;color:#deeaf5;letter-spacing:.005em}
+.fixtures-predict-percent{display:block;max-width:100%;font-size:clamp(24px,3vw,32px);
+ font-weight:850;letter-spacing:-.035em;line-height:1.1;font-variant-numeric:tabular-nums}
+.fixtures-predict-side.is-blue .fixtures-predict-percent{color:#72bbff;text-shadow:0 0 20px rgba(64,149,247,.2)}
+.fixtures-predict-side.is-red .fixtures-predict-percent{color:#ff8090;text-shadow:0 0 20px rgba(236,82,110,.18)}
+.fixtures-predict-middle{display:flex;align-items:center;justify-content:center;min-width:0;padding-top:8px}
+.fixtures-predict-vs{display:flex;justify-content:center;align-items:center;width:34px;height:30px;
+ border-radius:9px;border:1px solid rgba(155,179,204,.16);background:rgba(106,140,173,.07);
+ color:#7894aa;letter-spacing:.09em;font-weight:850;font-size:10px}
+.fixtures-predict-draw{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ padding:6px 4px;border:1px solid rgba(223,183,105,.24);border-radius:9px;
+ background:rgba(173,129,61,.08);color:#d8c29b;text-align:center;white-space:nowrap}
+.fixtures-predict-draw small{font-size:9px;line-height:1.2}
+.fixtures-predict-draw b{font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.fixtures-predict-track{display:flex;width:100%;height:12px;overflow:hidden;box-sizing:border-box;
+ margin:10px 0 0;border-radius:999px;background:rgba(90,115,142,.16);
+ box-shadow:inset 0 1px 3px rgba(0,0,0,.42),0 0 0 1px rgba(124,155,182,.15)}
+.fixtures-predict-segment{display:block;height:100%;min-width:0;flex-shrink:1}
+.fixtures-predict-segment.is-blue{background:linear-gradient(90deg,#377fe8,#65bfff);
+ box-shadow:inset 0 1px 0 rgba(234,245,255,.36)}
+.fixtures-predict-segment.is-red{background:linear-gradient(90deg,#ff8195,#e44c67);
+ box-shadow:inset 0 1px 0 rgba(255,231,237,.32)}
+.fixtures-predict-segment.is-draw{background:linear-gradient(90deg,#d8b375,#f0cb87);
+ box-shadow:inset 0 1px 0 rgba(255,245,208,.32)}
+.fixtures-predict-segment:not(:last-child){border-right:2px solid rgba(9,26,43,.82)}
+.fixtures-predict-foot{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ min-width:0;margin-top:12px;padding-top:9px;border-top:1px solid rgba(140,170,197,.12);
+ color:#859fb5;font-size:10px;line-height:1.35;font-variant-numeric:tabular-nums}
+.fixtures-predict-foot>span:first-child{min-width:0;overflow-wrap:anywhere}
+.fixtures-predict-provider{flex:none;color:#afc0ce;text-align:right;white-space:nowrap}
+.fixtures-predict-empty{margin:0;border:1px dashed rgba(124,153,181,.32);border-radius:10px;
+ padding:12px;color:#9cb1c5;font-size:11px;line-height:1.6}
+@media(max-width:720px){
+ .fixtures-detail-markets{gap:10px}
+ .fixtures-predict-card{padding:13px 12px 11px;border-radius:13px}
+ .fixtures-predict-match{grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);gap:4px;min-height:79px}
+ .fixtures-predict-team{font-size:11px}
+ .fixtures-predict-percent{font-size:clamp(22px,6.6vw,29px)}
+ .fixtures-predict-vs{width:28px;height:27px;font-size:9px}
+}
+@media(max-width:380px){
+ .fixtures-predictions-head>span{font-size:9px}
+ .fixtures-predict-card{padding:12px 10px 10px}
+ .fixtures-predict-match{grid-template-columns:minmax(0,1fr) 35px minmax(0,1fr);gap:3px}
+ .fixtures-predict-percent{font-size:22px}
+ .fixtures-predict-foot{font-size:9px}
+}
