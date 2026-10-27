@@ -79,7 +79,7 @@ assert(ui.includes("['other','esports'].includes(m.category)"));
 assert(html.includes('data-sports-t="richHint"'));
 
 assert(html.includes('id="officialFixtures"') && html.includes('id="officialFixturesGrid"'));
-assert(html.includes('fixtures.js?v=20261027.3') && html.includes('fixtures.css?v=20261027.3'));
+assert(html.includes('fixtures.js?v=20261027.4') && html.includes('fixtures.css?v=20261027.3'));
 const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
