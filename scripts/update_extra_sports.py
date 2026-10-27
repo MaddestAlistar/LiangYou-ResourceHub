@@ -91,10 +91,13 @@ def nba_standings(key, year):
     for conf in (east, west):
         conf.sort(key=lambda x: (-x["win_pct"], -x["wins"], x["team"]))
         for i, row in enumerate(conf, 1):
-            row["rank"] = i
+            # DunkAPI does not publish the NBA official tiebreak rank.
+            # Equal records retain equal displayed rank: no arbitrary tiebreaker.
+            row["rank"] = next((j for j, prior in enumerate(conf, 1)
+                               if prior["wins"] == row["wins"] and prior["losses"] == row["losses"]), i)
     return {"id": "dunk-nba-" + str(year), "title": "NBA " + str(year - 1) + "-" + str(year),
             "kind": "basketball", "sport": "basketball", "provider": "dunkapi",
-            "groups": groups, "prominence": 440}
+            "groups": groups, "order_method": "win_pct", "prominence": 440}
 
 
 def football_fixture(x):
@@ -151,7 +154,7 @@ def football_standing(payload, code):
             groups.append({
                 "rank": rank, "team": str(team["name"]), "wins": wins, "losses": losses,
                 "draws": draws, "points": points, "played": played,
-                "group": "Group " + str(table["group"])[-1:] if table.get("group") else ""
+                "group": "Group " + str(table["group"])[-1:] if str(table.get("group") or "").startswith("GROUP_") else ""
             })
     if len(groups) < 10:
         return None
@@ -240,7 +243,7 @@ def main():
                              if s.get("tag") == "football-data"), None)})
         print("Football verification unavailable:", type(exc).__name__, flush=True)
 
-    output = {"schema": 1, "source_type": "supplemental_fixtures",
+    output = {"schema": 1, "extra_sports_version": 2, "source_type": "supplemental_fixtures",
               "generated_at": stamp, "interval_hours": 6, "sources": sources,
               "status": "ok" if all(x["status"] == "ok" for x in sources) else "partial",
               "events": events, "standings": standings,
