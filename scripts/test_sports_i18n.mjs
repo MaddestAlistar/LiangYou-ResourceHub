@@ -79,6 +79,32 @@ assert(collector.includes('source_type="board_game_fixtures"')||collector.includ
 const boardHost={};
 vm.runInNewContext(read('board-i18n.js'),{window:boardHost},{timeout:2000});
 const bt=boardHost.LiangYouBoardI18n;
+
+const teamStart=fixtures.indexOf('const team=(v,sport)=>{');
+const teamEnd=fixtures.indexOf('const chessOutcome=',teamStart);
+assert(teamStart>=0&&teamEnd>teamStart,'Cannot locate real calendar participant rendering functions');
+const teamScope=fixtures.slice(teamStart,teamEnd)+'\n({team,boardPlayer})';
+const localeScope=value=>vm.runInNewContext(teamScope,{
+ lang:()=>value,translations:tr,boardTranslations:bt
+},{timeout:2000});
+const zhParticipants=localeScope('zh');
+const enParticipants=localeScope('en');
+for(const [sport,name,expected] of [
+ ['football','Arsenal FC','阿森纳'],
+ ['football','Manchester City FC','曼城'],
+ ['basketball','Golden State Warriors','金州勇士'],
+ ['basketball','Los Angeles Lakers','洛杉矶湖人'],
+ ['lol','Top Esports','TES（滔搏）'],
+ ['esports','Bilibili Gaming','BLG（哔哩哔哩）']
+]){
+ assert.equal(zhParticipants.boardPlayer({sport,home:name},'home'),expected,
+  'Non-board Chinese participant translation regression: '+name);
+ assert.equal(enParticipants.boardPlayer({sport,home:name},'home'),name,
+  'English team name must remain official: '+name);
+}
+assert.equal(zhParticipants.boardPlayer({sport:'go',home:'박정환',home_zh:'朴廷桓'},'home'),'朴廷桓');
+assert.equal(zhParticipants.boardPlayer({sport:'chess',home:'Caruana, Fabiano'},'home'),'法比亚诺·卡鲁阿纳');
+
 assert(bt && typeof bt.league==='function' && typeof bt.player==='function' && typeof bt.stage==='function',
  'Board localization interface unavailable');
 assert.equal(bt.league('49기 SG배 한국일보 명인전 패자결승','go','zh'),'第49届 SG杯韩国日报名人战 · 败者组决赛');
