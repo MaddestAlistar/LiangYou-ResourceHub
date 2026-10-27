@@ -63,7 +63,7 @@ for (const event of live.events) {
 const html = readFileSync('index.html', 'utf8');
 assert(html.includes('data-sports-lang="zh"') && html.includes('data-sports-lang="en"'));
 assert(html.indexOf('sports-i18n.js?') < html.indexOf('sports.js?'), 'Dictionary must load first');
-assert(html.includes('data-sports-t="sourceNote"'));
+assert(!html.includes('data-sports-t="sourceNote"'), 'Removed standalone source note should remain absent');
 const ui = readFileSync('sports.js', 'utf8');
 assert(ui.includes('renderStatic()') && ui.includes('translation.title(event, language)'));
 assert(ui.includes("activeSource !== 'all'") && ui.includes('richMarketDetails(event, names)'));
@@ -131,6 +131,10 @@ const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json"));
+assert(html.includes('value="chess"') && html.includes('value="go"'), 'Chess and Go filter options required');
+assert(fixtureJS.includes('board-games.json') && fixtureJS.includes("providerName("), 'Board games must load from verified data');
+const boardSnapshot=JSON.parse(readFileSync('data/board-games.json','utf8'));
+assert(boardSnapshot.schema===1 && boardSnapshot.source_type==='board_game_fixtures' && Array.isArray(boardSnapshot.events), 'Board games snapshot must have canonical structure');
 const visualJS=readFileSync('bracket-viz.js','utf8');
 assert(fixtureJS.includes('Date.now()-verified<=6*3600000') &&
  fixtureJS.includes("Number.isFinite(start)&&start>Date.now()"),
