@@ -670,7 +670,9 @@ async function fetchData(){
   if(historic.length)archiveCache=archiveRaw;
   const signature=[base.generated_at,base.status,usableExtra?.generated_at||'',
     extra?.status||'stale',archiveCache?.generated_at||''].join('|');
-  if(signature===lastSnapshotSignature)return;
+  // An earlier transient fetch failure must clear on the next successful
+  // request even if the server returned an unchanged snapshot.
+  if(signature===lastSnapshotSignature&&data.status!=='failed')return;
   lastSnapshotSignature=signature;
   const events=usableExtra?[...base.events,...usableExtra.events]:base.events;
   const dedupe=items=>{
