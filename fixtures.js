@@ -274,6 +274,55 @@ function updateLabels(){
   when(new Date(Math.max(...checks)).toISOString()):
   (lang()==='zh'?'等待数据核验':'Waiting for data verification');
 }
+// Keep the independently sourced probability for each outcome; never present it as an official win rate.
+function predictionCard(m,fixture,zh){
+ const outcomes=Array.isArray(m.outcomes)?m.outcomes:[];
+ const isDraw=o=>/^(draw|tie|平局|平|x)$/i.test(String(o?.name||'').trim());
+ const contestants=outcomes.filter(o=>!isDraw(o));
+ if(contestants.length!==2)return '';
+ const key=linker?.keyName;
+ const home=key?contestants.find(o=>key(o.name)===key(fixture.home)):null;
+ const away=key?contestants.find(o=>key(o.name)===key(fixture.away)):null;
+ const left=home&&away&&home!==away?home:contestants[0];
+ const right=home&&away&&home!==away?away:contestants[1];
+ const draw=outcomes.find(isDraw);
+ const valid=o=>Number.isFinite(o?.probability)&&o.probability>=0&&o.probability<=1;
+ const percent=o=>valid(o)?(o.probability*100).toFixed(1)+'%':'—';
+ const all=[left,...(draw?[draw]:[]),right];
+ const total=all.reduce((sum,o)=>sum+(valid(o)?o.probability:0),0);
+ const width=o=>total>0&&valid(o)?(o.probability/total*100).toFixed(3)+'%':'0%';
+ const name=o=>safe(team(o?.name||'',fixture.sport));
+ const leftName=name(left),rightName=name(right);
+ const source=m.provider==='predict'?'Predict.fun':m.provider==='kalshi'?'Kalshi':'Polymarket';
+ const captured=Number.isFinite(Date.parse(m.checked_at||''))?when(m.checked_at):'—';
+ const barLabel=all.map(o=>team(o.name,fixture.sport)+' '+percent(o)).join(' · ');
+ return '<article class="fixtures-predict-card">'+
+   '<div class="fixtures-predict-match">'+
+     '<div class="fixtures-predict-side is-blue">'+
+       '<span class="fixtures-predict-team" title="'+leftName+'">'+leftName+'</span>'+
+       '<strong class="fixtures-predict-percent">'+safe(percent(left))+'</strong>'+
+     '</div>'+
+     '<div class="fixtures-predict-middle">'+
+       (draw?'<span class="fixtures-predict-draw"><small>'+
+         (zh?'平局':'Draw')+'</small><b>'+safe(percent(draw))+'</b></span>':
+         '<span class="fixtures-predict-vs">VS</span>')+
+     '</div>'+
+     '<div class="fixtures-predict-side is-red">'+
+       '<span class="fixtures-predict-team" title="'+rightName+'">'+rightName+'</span>'+
+       '<strong class="fixtures-predict-percent">'+safe(percent(right))+'</strong>'+
+     '</div>'+
+   '</div>'+
+   '<div class="fixtures-predict-track" role="img" aria-label="'+safe(barLabel)+'">'+
+     '<span class="fixtures-predict-segment is-blue" style="width:'+width(left)+'"></span>'+
+     (draw?'<span class="fixtures-predict-segment is-draw" style="width:'+width(draw)+'"></span>':'')+
+     '<span class="fixtures-predict-segment is-red" style="width:'+width(right)+'"></span>'+
+   '</div>'+
+   '<div class="fixtures-predict-foot"><span>'+
+     (zh?'采集于 ':'Captured ')+safe(captured)+'</span>'+
+     '<span class="fixtures-predict-provider">'+safe(source)+'</span>'+
+   '</div>'+
+ '</article>';
+}
 function showFixtureDetail(id,scroll=false){
  const button=[...refs.grid.querySelectorAll('[data-fixture-id]')]
   .find(node=>node.dataset.fixtureId===String(id));
@@ -320,27 +369,17 @@ function showFixtureDetail(id,scroll=false){
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
     (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+
   '</div>'+
-  '<div class="fixtures-detail-markets"><strong>'+
-    (label?'赛前预测 · 市场隐含概率（非官方胜率）':'Market-implied probabilities (not official odds)')+'</strong>'+
-    (group.length?group.map(g=>{
-       const site=g.provider==='predict'?'Predict.fun':g.provider==='kalshi'?'Kalshi':'Polymarket';
-       const probabilities=(g.outcomes||[]).map(o=>team(o.name,x.sport)+' '+
-         (Number.isFinite(o.probability)?(o.probability*100).toFixed(1)+'%':'—')).join(' · ');
-       const asOf=Number.isFinite(Date.parse(g.checked_at||''))?when(g.checked_at):'—';
-       const hosts={predict:'predict.fun',kalshi:'kalshi.com',polymarket:'polymarket.com'};
-       let href='';
-       try{
-        const url=new URL(g.source_url),expected=hosts[g.provider];
-        if(expected&&url.protocol==='https:'&&
-          (url.hostname===expected||url.hostname==='www.'+expected))href=url.href;
-       }catch{}
-       return '<span class="fixtures-market-source">'+safe(site)+' · '+safe(probabilities)+
-         ' · '+(label?'采集于 ':'Captured ')+safe(asOf)+
-         (href?' · <a href="'+safe(href)+'" target="_blank" rel="noopener noreferrer">'+
-          (label?'查看来源 ↗':'View source ↗')+'</a>':'')+'</span>';
-    }).join(''):
-     '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
-  '</div>';
+  '<section class="fixtures-detail-markets" aria-label="'+
+    (label?'赛前预测':'Pre-match prediction')+'">'+
+    '<div class="fixtures-predictions-head"><strong>'+
+      (label?'赛前预测':'Pre-match prediction')+'</strong><span>'+
+      (label?'市场隐含概率 · 非官方胜率':'Market-implied probability · not official win rate')+
+    '</span></div>'+
+    (group.length?group.map(g=>predictionCard(g,x,label)).filter(Boolean).join(''):
+      '<p class="fixtures-predict-empty">'+
+       (label?'本场暂无可核验的赛前预测数据':'No verified prediction data for this fixture')+
+      '</p>')+
+  '</section>';
  // Detail follows the tapped card; it no longer jumps to the top of the fixture list.
  button.closest('.fixtures-card').insertAdjacentElement('afterend',refs.detail);
  refs.grid.querySelectorAll('[data-fixture-id]').forEach(node=>{
