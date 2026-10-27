@@ -386,6 +386,8 @@ class FeedRules(unittest.TestCase):
         ]
         called=[]
         def fake_get(url,headers):
+            self.assertEqual(headers.get("Authorization"),"Bearer dummy",
+                             "Tournament selection must not shadow the PandaScore API token")
             called.append(url)
             if "/standings?" in url:
                 ident=int(url.split("/tournaments/")[1].split("/")[0])
@@ -397,6 +399,26 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(sum(s["sport"]=="lol" for s in standings),8)
         self.assertEqual(sum(s["sport"]=="esports" for s in standings),2)
         self.assertLessEqual(len(called),real.MAX_STANDINGS_REQUESTS)
+
+    def test_paired_lck_lpl_groups_are_reserved_without_token_shadowing(self):
+        import update_real_sports as real
+        rows=[
+            {"tournament_id":100,"sport":"lol","league":"LCK","tournament_name":"Round 3-4 Legend Group"},
+            {"tournament_id":101,"sport":"lol","league":"LCK","tournament_name":"Round 3-4 Rise Group"},
+            {"tournament_id":200,"sport":"lol","league":"LPL","tournament_name":"Group Ascend"},
+            {"tournament_id":201,"sport":"lol","league":"LPL","tournament_name":"Group Nirvana"},
+            {"tournament_id":300,"sport":"lol","league":"Worlds","tournament_name":"Group Stage"},
+        ]
+        def fake(url,headers):
+            self.assertEqual(headers.get("Authorization"),"Bearer dummy")
+            if "/standings?" in url:
+                return [{"team":{"name":"Team A"},"rank":1,"wins":2,"losses":1}]
+            return []
+        with patch.object(real,"json_request",side_effect=fake):
+            _,result=real.tournament_extras(rows,"dummy")
+        ids={x["id"] for x in result}
+        for tid in (100,101,200,201,300):
+            self.assertIn("panda-"+str(tid),ids)
 
     def test_official_collectors_rate_budget(self):
         import update_real_sports as real
