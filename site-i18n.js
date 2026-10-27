@@ -42,7 +42,7 @@
     let node;
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || parent.closest('script,style,textarea,code,pre,[data-site-lang],.sports-match,.sports-prob,.sports-track')) continue;
+      if (!parent || parent.closest('script,style,textarea,code,pre,[data-site-lang],#officialFixtures,.sports-match,.sports-prob,.sports-track')) continue;
       if (!original.has(node) || (node.nodeValue !== original.get(node) && node.nodeValue !== translatedValues.get(node))) original.set(node,node.nodeValue);
       const source = original.get(node);
       const desired = language === 'en' ? translateText(source) : source;
@@ -51,7 +51,7 @@
     }
     // Translate accessible labels and placeholders without changing URLs or values.
     for (const element of document.querySelectorAll('[aria-label],[title],[placeholder]')) {
-      if (element.closest('[data-site-lang]')) continue;
+      if (element.closest('[data-site-lang],#officialFixtures')) continue;
       let record = attributeOriginals.get(element);
       if (!record) { record = {}; attributeOriginals.set(element,record); }
       for (const attr of ['aria-label','title','placeholder']) {
