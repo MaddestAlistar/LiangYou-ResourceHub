@@ -86,11 +86,22 @@ assert.equal(bt.league('2026 Sh수협은행 여자바둑 최강전 결승 3국',
 assert.equal(bt.league('名人 挑戦７','go','zh'),'日本名人战 · 挑战赛第7局');
 assert.equal(bt.league('Benidorm Chess Open 2026 | Group A','chess','zh'),'2026 贝尼多姆国际象棋公开赛 · A组');
 assert.equal(bt.stage('Round 6','chess','zh'),'第6轮');
+assert.equal(bt.chessResult('1-0','zh'),'白方胜');
+assert.equal(bt.chessResult('0-1','zh'),'黑方胜');
+assert.equal(bt.chessResult('1/2-1/2','zh'),'和棋');
+assert.equal(bt.chessResult('*','zh'),'对局未结束');
+assert.equal(bt.chessResult('1/2-1/2','en'),'1/2-1/2');
+assert.equal(bt.chessSide('home','zh'),'白方');
+assert.equal(bt.chessSide('away','zh'),'黑方');
+assert.equal(bt.chessSide('home','en'),'White');
+assert(fixtures.includes("x.sport==='chess'&&chessOutcome(x)"), 'Finished chess result must be localized in cards');
+assert(fixtures.includes("x.sport==='chess'?safe(chessSide('home'))"), 'Chess detail needs localized white/black player roles');
+assert(fixtures.includes("x.sport!=='chess'?"), 'Chess details must not show duplicate raw PGN result');
 assert.equal(bt.stage('패자결승','go','zh'),'败者组决赛');
 assert.equal(bt.stage('결승 3국','go','zh'),'决赛第3局');
 assert.equal(bt.player('박정환','go','zh'),'朴廷桓');
 assert.equal(bt.player('스미레','go','zh'),'仲邑堇');
-assert.equal(bt.player('김주아','go','zh'),'金凑笌');
+assert.equal(bt.player('김주아','go','zh'),'김주아', 'Unverified Go name must not be invented');
 assert.equal(bt.player('Caruana, Fabiano','chess','zh'),'法比亚诺·卡鲁阿纳');
 assert.equal(bt.player('Unknown, Player','chess','zh'),'Unknown, Player',
  'Unknown real player must never be assigned a guessed Chinese identity');
@@ -102,6 +113,22 @@ assert(fixtures.includes('const boardTranslations=window.LiangYouBoardI18n')&&
  'Localized league/round/player rendering must be connected');
 assert(html.indexOf('board-i18n.js?')<html.indexOf('fixtures.js?') &&
  html.includes('./board-i18n.js?'), 'Load board translations before fixture UI');
+const chessActive=board.events.filter(x=>x.sport==='chess'&&x.status==='live');
+const chessCompleted=board.events.filter(x=>x.sport==='chess'&&x.status==='finished');
+assert(chessActive.length>0&&chessCompleted.length>0,
+ 'Fixtures must include live and recently finished chess samples');
+for(const group of [chessActive,chessCompleted]){
+ for(const row of group){
+   const zhLeague=bt.league(row.league,'chess','zh');
+   const zhStage=bt.stage(row.stage,'chess','zh');
+   assert(/[\u3400-\u9fff]/.test(zhLeague), 'Unlocalized chess tournament: '+row.league);
+   assert(/[\u3400-\u9fff]/.test(zhStage), 'Unlocalized chess stage: '+row.stage);
+   assert.equal(bt.league(row.league,'chess','en'),row.league);
+   assert.equal(bt.stage(row.stage,'chess','en'),row.stage);
+   if(row.status==='finished')assert(['白方胜','黑方胜','和棋'].includes(bt.chessResult(row.result_detail,'zh')),
+    'Untranslated completed chess result: '+row.id);
+ }
+}
 for(const row of board.events){
  if(!['go','chess'].includes(row.sport))continue;
  assert(bt.league(row.league,row.sport,'zh').trim(),'Empty translated tournament: '+row.id);
