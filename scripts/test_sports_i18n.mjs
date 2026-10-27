@@ -41,6 +41,8 @@ assert(fixtures.includes("board-games.json") && fixtures.includes('boardGenerate
 assert(fixtures.includes("providerName(") && fixtures.includes("time_precision==='date'"),'Board provider and date-only support missing');
 assert(fixtures.includes("cache:'no-cache'") && fixtures.includes('Promise.all(['),'Parallel no-cache loading missing');
 assert(fixtures.includes('showFixtureDetail') && fixtures.includes('refs.state.addEventListener'),'Calendar details must remain interactive');
+assert(fixtures.includes('autoBoardStatus')&&fixtures.includes("refs.state.value='scheduled';autoBoardStatus=false"),'Temporary chess/Go recent-results fallback must reset when changing categories');
+assert(collector.includes('start>NOW+timedelta(minutes=5)'),'Future Lichess broadcast must not be reported live');
 assert(fixtures.includes("topPriority(matches)")&&fixtures.includes("if(state==='finished')"),'Calendar priority and finished ordering must remain');
 assert(fixtures.includes("Date.now()-verified<=6*3600000"),'Old prediction markets must not leak into match details');
 assert(styles.includes('.fixtures-grid')&&styles.includes('@media(max-width:720px)'),'Responsive fixture styles missing');
