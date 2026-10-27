@@ -115,6 +115,10 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
  assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('extra-sports.json') && fixtureJS.includes('football-data') && fixtureJS.includes('winRate'),
+ 'New real provider standings and source labels must remain wired to fixtures UI');
+assert(html.includes('<option value="football">足球</option>') && html.includes('Data provided by football-data.org'),
+ 'Football ranking selector and visible provider attribution missing');
 assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("viz.stageOf"), 'Diagram stage selector missing');
 assert(fixtureJS.includes('viz.connect(refs.bracket,chosen,opts.events)'), 'Swiss confirmed edges must connect to verified event history');
 assert(html.includes('<option value="swiss" selected>'), 'Feature verified 2026 Worlds Swiss by default');
@@ -124,7 +128,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.19') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.13'),
+assert(html.includes('fixtures.js?v=20261027.20') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.14'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
