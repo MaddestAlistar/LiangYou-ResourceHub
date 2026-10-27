@@ -65,15 +65,18 @@ jobs:
           else
             python scripts/refresh_data.py
           fi
+      - name: Accumulate history from existing verified public markets
+        run: python scripts/update_market_history.py
       - name: Validate complete snapshots and web references
         run: |
+          python scripts/test_market_history.py
           node scripts/validate.mjs
           node scripts/test_sports_i18n.mjs
       - name: Commit snapshots and icons with concurrent-edit protection
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/predict-sports.json data/kalshi-sports.json data/real-sports.json data/extra-sports.json data/board-games.json data/nba-games.json data/sports-odds.json data/chess-players.json data/update-status.json assets/daily-free assets/android-free assets/game-free
+          git add -A data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/predict-sports.json data/kalshi-sports.json data/real-sports.json data/extra-sports.json data/board-games.json data/nba-games.json data/sports-odds.json data/chess-players.json data/market-history.json data/update-status.json assets/daily-free assets/android-free assets/game-free
           if ! git diff --cached --quiet; then
             git commit -m "Refresh verified feeds and check health [skip ci]"
             for attempt in 1 2 3; do
