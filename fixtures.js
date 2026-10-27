@@ -35,6 +35,7 @@ zh:{title:'赛事日历与赛事资料',
  empty:'暂未采集到符合条件的比赛，请换个日期、项目或关键词。',
  unavailable:'暂无该阶段的赛事数据',
  noStanding:'暂无该赛事积分榜',
+ rankingOnly:'当前仅有名次数据，数据源未提供胜负记录；“—”不代表 0。',
  updated:'最近核验',partial:'部分接口暂不可用，仅展示已核验资料。',
  stale:'当前快照超过18小时，请以赛事官方公告为准。',time:'北京时间',
  total:n=>'已收录未来7天 '+n+' 场',shown:(n,t)=>'已显示 '+n+' / '+t+' 场',
@@ -63,6 +64,7 @@ en:{title:'Calendar & tournament intelligence',
  empty:'No scheduled matches for these filters.',
  unavailable:'No event data for this stage',
  noStanding:'No standings for this event',
+ rankingOnly:'Only rank positions are available; the source did not supply wins or losses. Dashes do not mean zero.',
  updated:'Last checked',partial:'Some providers unavailable. Verified records only.',
  stale:'Data more than 18 hours old. Check the organizer for updates.',time:'UTC+8',
  total:n=>n+' upcoming this week',shown:(n,t)=>'Showing '+n+' of '+t,
@@ -390,8 +392,10 @@ function standings(){
         [value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses)];
     return '<tr>'+tds.map(v=>'<td>'+v+'</td>').join('')+'</tr>';
    }).join('');
+   const rankOnly=!football&&!nba&&list.every(x=>!Number.isInteger(x.wins)&&!Number.isInteger(x.losses));
    return '<section class="fixtures-standing-group"><h4>'+safe(localize(group,sport))+
-    '</h4><div class="fixtures-table-scroll"><table class="fixtures-ranking'+(football?' is-football':'')+'">'+
+    '</h4>'+(rankOnly?'<p class="fixtures-ranking-note">'+safe(copy.rankingOnly)+'</p>':'')+
+    '<div class="fixtures-table-scroll"><table class="fixtures-ranking'+(football?' is-football':'')+'">'+
     '<thead><tr>'+headers.map(h=>'<th>'+safe(h)+'</th>').join('')+'</tr></thead><tbody>'+
     rows+'</tbody></table></div></section>';
   }).join('');
