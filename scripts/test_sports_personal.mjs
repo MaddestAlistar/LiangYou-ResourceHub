@@ -10,6 +10,8 @@ const matcher=readFileSync('sports-link.js','utf8');
 assert(html.includes('sports-personal.js?')&&html.includes('sports-personal.css?'));
 assert(html.includes('id="sportsPersonal"')&&html.includes('id="sportsHealth"'));
 assert(html.includes('id="sportsArchiveToggle"'));
+assert(html.indexOf('id="sportsPersonal"')>html.indexOf('id="fixtureCalendarPanel"'),
+ 'Personal follow controls should only occupy the calendar view');
 assert(html.indexOf('sports-link.js?')<html.indexOf('sports-personal.js?')&&
  html.indexOf('sports-personal.js?')<html.indexOf('fixtures.js?'));
 assert(fixtures.includes('personal?.followingOnly()')&&fixtures.includes('renderVerifiedForm(x,label)'));
@@ -53,7 +55,14 @@ const win={
  setTimeout:()=>{},
  alert(){throw Error('Unexpected no-events alert')}
 };
-const ctx={window:win,document,localStorage:{
+const ctx={window:win,document,
+ fetch:async url=>{
+  assert.equal(url,'./data/update-status.json');
+  return {ok:true,json:async()=>({schema:1,jobs:{
+   fixtures:{status:'ok',interval_hours:6,last_success_at:new Date().toISOString()},
+   board:{status:'failed',interval_hours:6,last_success_at:new Date().toISOString()}
+  }})};
+ },localStorage:{
  getItem:key=>saved[key]||null,setItem:(key,val)=>{saved[key]=val}
 },Blob:CalendarBlob,URL:{createObjectURL:()=> 'blob:mock',revokeObjectURL(){}},
 CustomEvent:class {constructor(type,options={}){this.type=type;this.detail=options.detail}},
@@ -84,6 +93,9 @@ win.dispatchEvent({type:'liangyou:sports-health',detail:{sources:[
  {tag:'pandascore',status:'ok'},{tag:'api-sports',status:'partial',failed_groups:10}],
  generated_at:new Date().toISOString()}});
 assert(health.innerHTML.includes('api-sports')&&health.innerHTML.includes('10'));
+await new Promise(resolve=>setImmediate(resolve));
+assert(health.innerHTML.includes('赛事主数据')&&health.innerHTML.includes('国际象棋 / 围棋'));
+assert(health.innerHTML.includes('不可用'), 'Scheduled collector failure must be exposed');
 api.toggle('lol','T1');
 assert(!api.has('lol','T1'));
 // Board games can use Hangul, Kana and Han script; distinct people must not collide.
