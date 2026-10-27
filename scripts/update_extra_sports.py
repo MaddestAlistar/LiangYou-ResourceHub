@@ -15,7 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from feed_common import ROOT, iso, now, read_json, write_json
+from feed_common import ROOT, date, iso, now, read_json, write_json
 
 OUT = ROOT / "data/extra-sports.json"
 FOOTBALL = "https://api.football-data.org/v4"
@@ -190,6 +190,25 @@ def collect_football(key, instant):
     return events, standings, errors
 
 
+
+def recent_board_fallback(previous, provider, instant, max_age_hours=48):
+    """Carry last verified table briefly, prominently marked as stale.
+
+    Outages must not make obsolete league rankings look newly verified.
+    """
+    source_stamp = next((x.get("verified_at") for x in previous.get("sources", [])
+                         if x.get("tag") == provider), None)
+    result = []
+    for board in previous.get("standings", []):
+        if board.get("provider") != provider:
+            continue
+        previous_time = date(board.get("verified_at") or source_stamp)
+        if not previous_time or not 0 <= (instant - previous_time).total_seconds() <= max_age_hours * 3600:
+            continue
+        result.append({**board, "verified_at": iso(previous_time), "status": "stale"})
+    return result
+
+
 def main():
     instant = now()
     stamp = iso(instant)
@@ -205,11 +224,11 @@ def main():
             raise RuntimeError("DUNKAPI_API_KEY not configured")
         season = instant.year + (1 if instant.month >= 7 else 0)
         board = nba_standings(nba_key, season)
+        board.update({"verified_at": stamp, "status": "ok"})
         standings.append(board)
         sources.append({"tag": "dunkapi", "status": "ok", "count": len(board["groups"]), "verified_at": stamp})
     except Exception as exc:
-        prior = [x for x in previous.get("standings", [])
-                 if x.get("provider") == "dunkapi"]
+        prior = recent_board_fallback(previous, "dunkapi", instant)
         standings.extend(prior)
         sources.append({"tag": "dunkapi", "status": "stale" if prior else "failed",
                         "count": sum(len(x.get("groups", [])) for x in prior),
@@ -222,11 +241,13 @@ def main():
             raise RuntimeError("FOOTBALL_DATA_API_KEY not configured")
         f_events, f_boards, misses = collect_football(football_key, instant)
         events.extend(f_events)
+        for board in f_boards:
+            board.update({"verified_at": stamp, "status": "ok"})
         standings.extend(f_boards)
         # Retain missing league tables but never replace recent verified tables.
         found = {x["id"] for x in f_boards}
-        standings.extend(x for x in previous.get("standings", [])
-                         if x.get("provider") == "football-data" and x.get("id") not in found)
+        standings.extend(x for x in recent_board_fallback(previous, "football-data", instant)
+                         if x["id"] not in found)
         sources.append({"tag": "football-data", "status": "partial" if misses else "ok",
                         "count": len(f_events), "standings": len(f_boards),
                         "verified_at": stamp})
@@ -234,7 +255,7 @@ def main():
             print("Football standings temporarily unavailable:", len(misses), flush=True)
     except Exception as exc:
         prior_events = [x for x in previous.get("events", []) if x.get("provider") == "football-data"]
-        prior_boards = [x for x in previous.get("standings", []) if x.get("provider") == "football-data"]
+        prior_boards = recent_board_fallback(previous, "football-data", instant)
         events.extend(prior_events)
         standings.extend(prior_boards)
         sources.append({"tag": "football-data", "status": "stale" if prior_events else "failed",
@@ -243,7 +264,7 @@ def main():
                              if s.get("tag") == "football-data"), None)})
         print("Football verification unavailable:", type(exc).__name__, flush=True)
 
-    output = {"schema": 1, "extra_sports_version": 2, "source_type": "supplemental_fixtures",
+    output = {"schema": 1, "extra_sports_version": 3, "source_type": "supplemental_fixtures",
               "generated_at": stamp, "interval_hours": 6, "sources": sources,
               "status": "ok" if all(x["status"] == "ok" for x in sources) else "partial",
               "events": events, "standings": standings,
