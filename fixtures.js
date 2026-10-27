@@ -327,8 +327,17 @@ function showFixtureDetail(id,scroll=false){
        const probabilities=(g.outcomes||[]).map(o=>team(o.name,x.sport)+' '+
          (Number.isFinite(o.probability)?(o.probability*100).toFixed(1)+'%':'—')).join(' · ');
        const asOf=Number.isFinite(Date.parse(g.checked_at||''))?when(g.checked_at):'—';
+       const hosts={predict:'predict.fun',kalshi:'kalshi.com',polymarket:'polymarket.com'};
+       let href='';
+       try{
+        const url=new URL(g.source_url),expected=hosts[g.provider];
+        if(expected&&url.protocol==='https:'&&
+          (url.hostname===expected||url.hostname==='www.'+expected))href=url.href;
+       }catch{}
        return '<span class="fixtures-market-source">'+safe(site)+' · '+safe(probabilities)+
-         ' · '+(label?'采集于 ':'Captured ')+safe(asOf)+'</span>';
+         ' · '+(label?'采集于 ':'Captured ')+safe(asOf)+
+         (href?' · <a href="'+safe(href)+'" target="_blank" rel="noopener noreferrer">'+
+          (label?'查看来源 ↗':'View source ↗')+'</a>':'')+'</span>';
     }).join(''):
      '<small>'+(label?'暂无可确认的同场市场数据':'No confidently matched market')+'</small>')+
   '</div>';
@@ -397,6 +406,11 @@ function calendar(){
     x.provider==='football-data'?'football-data.org':'API-Sports')+'</span>'+
     (status?'<span class="fixtures-state-tag">'+safe(status)+'</span>':
     popularity(x)>=390?'<span class="fixtures-featured">'+safe(copy.feature)+'</span>':'')+
+    (linker?.marketsFor(x,(window.LiangYouMarketRecords||[]).filter(m=>
+       Number.isFinite(Date.parse(m.checked_at||''))&&
+       Date.now()-Date.parse(m.checked_at)<=6*3600000&&
+       Date.parse(m.start_time)>Date.now())).length?
+       '<span class="fixtures-predict-tag">'+(lang()==='zh'?'赛前预测':'Prediction')+'</span>':'')+
     '<button type="button" class="fixtures-detail-btn" data-fixture-id="'+safe(x.id)+'" aria-expanded="false">'+
       (lang()==='zh'?'查看详情':'Details')+'</button></div></article>';
  }).join(''):empty(data.generated_at?copy.empty:copy.first);
