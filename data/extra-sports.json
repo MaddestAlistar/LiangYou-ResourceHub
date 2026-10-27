@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "extra_sports_version": 2,
+  "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-27T07:08:36Z",
+  "generated_at": "2026-10-27T07:20:55Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-27T07:08:36Z"
+      "verified_at": "2026-10-27T07:20:55Z"
     },
     {
       "tag": "football-data",
-      "status": "partial",
+      "status": "ok",
       "count": 138,
-      "standings": 4,
-      "verified_at": "2026-10-27T07:08:36Z"
+      "standings": 5,
+      "verified_at": "2026-10-27T07:20:55Z"
     }
   ],
-  "status": "partial",
+  "status": "ok",
   "events": [
     {
       "id": "football-data-567331",
@@ -2786,7 +2786,9 @@
         }
       ],
       "order_method": "win_pct",
-      "prominence": 440
+      "prominence": 440,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     },
     {
       "id": "football-data-PL",
@@ -2996,7 +2998,9 @@
           "group": ""
         }
       ],
-      "prominence": 170
+      "prominence": 170,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     },
     {
       "id": "football-data-PD",
@@ -3206,7 +3210,9 @@
           "group": ""
         }
       ],
-      "prominence": 170
+      "prominence": 170,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     },
     {
       "id": "football-data-BL1",
@@ -3396,7 +3402,9 @@
           "group": ""
         }
       ],
-      "prominence": 170
+      "prominence": 170,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     },
     {
       "id": "football-data-SA",
@@ -3606,7 +3614,9 @@
           "group": ""
         }
       ],
-      "prominence": 170
+      "prominence": 170,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     },
     {
       "id": "football-data-FL1",
@@ -3796,7 +3806,9 @@
           "group": ""
         }
       ],
-      "prominence": 170
+      "prominence": 170,
+      "verified_at": "2026-10-27T07:20:55Z",
+      "status": "ok"
     }
   ],
   "notes": "Verified third-party provider data, 6-hour refresh; provider attribution required."
