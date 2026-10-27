@@ -106,7 +106,7 @@
   const ui = {
     zh: {
       title: '赛事数据中心',
-      intro: '英雄联盟、NBA、足球与热门电竞赛事。自动整理公开市场的赛前胜负预测概率，数据以来源市场为准，不构成投注建议。',
+      intro: '赛事日历、电竞晋级图、联赛积分榜与赛前预测市场集中查看。赛程和排名采用官方数据源，市场概率单独呈现。',
       all: '全部赛事', lol: '🎮 英雄联盟', basketball: '🏀 篮球',
       football: '⚽ 足球', esports: '🕹️ 其他电竞', other: '其他',
       loading: '正在读取赛事数据', firstLoad: '首次同步前不会展示示意赔率或虚构比赛。',
@@ -144,7 +144,7 @@
     },
     en: {
       title: 'Sports Data Center',
-      intro: 'League of Legends, NBA, football and popular esports. Pre-match probabilities from public prediction markets, refreshed automatically. Not betting advice.',
+      intro: 'Explore upcoming matches, esports brackets, league standings, and separate prediction-market data. Official results and market prices are clearly distinguished.',
       all: 'All', lol: '🎮 LoL', basketball: '🏀 Basketball',
       football: '⚽ Football', esports: '🕹️ Esports', other: 'Other',
       loading: 'Loading sports data', firstLoad: 'No placeholder matches or fabricated odds are shown.',
