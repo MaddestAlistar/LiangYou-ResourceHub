@@ -645,7 +645,7 @@ def main():
         by_bucket[key]=by_bucket.get(key,0)+1
         if by_bucket[key]<=status_limits[event["status"]]:
             selected.append(event)
-    output={"schema":1,"fixture_schema_version":5,"source_type":"official_fixtures","generated_at":iso(now),
+    output={"schema":1,"fixture_schema_version":6,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
