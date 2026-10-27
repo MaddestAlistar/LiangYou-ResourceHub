@@ -944,7 +944,7 @@ async function fetchData(){
       (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
        /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
       ...published,...historic]).slice(0,24),
-    sources:[...(base.sources||[]),...(usableExtra?.sources||[]),...(board?.sources||[]),...(nba?.sources||[]),...(chessRaw?.sources||[])],
+    sources:[...(base.sources||[]),...(usableExtra?.sources||[]).map(x=>extra?x:{...x,status:'stale'}),...(board?.sources||[]),...(nba?.sources||[]),...(chessRaw?.sources||[])],
     boardGeneratedAt:board?.generated_at||null,
     extraStatus:extra?.status||(usableExtra?'stale':'unavailable'),
     extraGeneratedAt:usableExtra?.generated_at||null,
