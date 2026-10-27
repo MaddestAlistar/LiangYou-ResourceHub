@@ -122,7 +122,7 @@ function inferRounds(source){
    !m.winner||![norm(m.home),norm(m.away)].includes(norm(m.winner))))return null;
  const played=new Map([...entrants].map(t=>[t,0]));
  const record=new Map([...entrants].map(t=>[t,{wins:0,losses:0}]));
- const stages=[new Map([...record].map(([t,v])=>[t,{...v}]))];
+ const stages=[new Map([...record].map(([t,v])=>[t,{...v,games:0}]))];
  const ordered=[];
  for(const m of matches){
   const a=norm(m.home),b=norm(m.away);
