@@ -542,3 +542,8 @@
 #officialFixtures .fixtures-cardtop>span{flex:none;align-self:start;padding-top:2px}
 #officialFixtures .fixtures-versus{min-width:0;overflow-wrap:anywhere;word-break:normal}
 @media(max-width:420px){#officialFixtures .fixtures-cardtop{align-items:flex-start;gap:6px}#officialFixtures .fixtures-cardtop strong{font-size:10px}#officialFixtures .fixtures-cardtop>span{font-size:10px}}
+
+/* White/black markers keep foreign player names interpretable in zh-CN. */
+#officialFixtures .fixtures-chess-side{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:1px 5px;border:1px solid rgba(170,184,196,.27);border-radius:5px;background:rgba(255,255,255,.07);font-size:10px;line-height:1.55;font-weight:600;color:#dfecf6;white-space:nowrap}
+#officialFixtures .fixtures-chess-side:last-of-type{background:rgba(0,0,0,.24);color:#e4e8ed}
+@media(max-width:420px){#officialFixtures .fixtures-chess-side{font-size:9px;padding:1px 4px}}
