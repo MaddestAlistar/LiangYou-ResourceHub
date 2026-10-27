@@ -41,6 +41,7 @@
   let lastUpdated = null;
   let failed = false;
   let refreshPending = false;
+  let lastFetchAttempt = 0;
   let sourcePartial = false;
   let feedHealth = [];
   let focusedFixtureId = null;
@@ -371,10 +372,12 @@
         official:linker?.officialFor(event,window.LiangYouOfficialSportsEvents||[])||null}));
     let ordered;
     if (sortMode === 'activity') {
-      const ranks=activityRank(visible);
-      ordered=[...visible].sort((a,b)=>
-        (ranks.get(b.id+'|'+(b.provider||'polymarket'))||0)-
-        (ranks.get(a.id+'|'+(a.provider||'polymarket'))||0) ||
+      // Normalize activity within each source instead of comparing USD
+      // volumes with Kalshi contract counts.
+      const ranks=activityRank(filtered);
+      const strength=entry=>Math.max(0,...(entry.linkedSources||[entry]).map(src=>
+        ranks.get(src.id+'|'+(src.provider||'polymarket'))||0));
+      ordered=[...visible].sort((a,b)=>strength(b)-strength(a)||
         Date.parse(a.start_time)-Date.parse(b.start_time));
     } else {
       ordered = [...visible].sort((a,b)=>
@@ -468,8 +471,10 @@
       ).map(event => ({...event, provider}))
     };
   }
-  async function refresh() {
-    if (refreshPending) return;
+  async function refresh(force=false) {
+    if (refreshPending || (!force && lastFetchAttempt &&
+       Date.now()-lastFetchAttempt<15*60*1000)) return;
+    lastFetchAttempt=Date.now();
     refreshPending = true;
     try {
       const requests = await Promise.allSettled(feeds.map(async feed => {
@@ -534,7 +539,9 @@
   }
   renderStatic();
   refresh();
-  window.setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
+  // Published snapshots usually refresh every two hours. Conditional
+  // revalidation avoids repeatedly downloading unchanged market feeds.
+  window.setInterval(() => { if (!document.hidden) refresh(); }, 20 * 60 * 1000);
   window.setInterval(() => { updateStatus(); render(); }, 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
