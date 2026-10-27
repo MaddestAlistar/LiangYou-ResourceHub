@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="./sports.css?v=20261027.4">
   <link rel="stylesheet" href="./fixtures.css?v=20261027.60">
   <link rel="stylesheet" href="./sports-personal.css?v=20261028.2">
+  <link rel="stylesheet" href="./sports-share.css?v=20261028.1">
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=7" defer></script>
   <script src="./design.js?v=4.6" defer></script>
@@ -34,6 +35,7 @@
   <script src="./sports.js?v=20261027.4" defer></script>
   <script src="./bracket-viz.js?v=20261027.13" defer></script>
   <script src="./board-i18n.js?v=20261027.2" defer></script>
+  <script src="./sports-share.js?v=20261028.1" defer></script>
   <script src="./fixtures.js?v=20261028.2" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
@@ -374,6 +376,12 @@
   </main>
   <footer class="site-footer"><div class="container footer-inner"><div><a class="footer-brand" href="#top">良友资源中心 <span>· 良哥看未来</span></a><p>独立资源导航，非相关 App 官方网站。<br>图标、商标及第三方素材归各自权利人所有。</p></div><div class="footer-links"><a href="#library">资源库</a><a href="https://t.me/liangyouuniversity" target="_blank" rel="noopener noreferrer">Telegram ↗</a><a href="https://xhslink.cn/o/8SW6tCkrHad" target="_blank" rel="noopener noreferrer">小红书 ↗</a><a href="https://github.com/MaddestAlistar/LiangYou-ResourceHub" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="#top">回到顶部 ↑</a><span>© 2026 良哥看未来</span></div></div></footer>
   <dialog id="projectDialog" class="project-dialog" aria-labelledby="dialogTitle"><div class="dialog-header"><span>资源详情 · 选择版本</span><button id="closeDialog" class="icon-button" type="button" aria-label="关闭资源详情" autofocus>×</button></div><div id="dialogBody"></div><div id="manualCopy" class="manual-copy" hidden><label for="manualCopyValue">请长按或全选以下完整链接，再复制</label><textarea id="manualCopyValue" readonly rows="4" spellcheck="false"></textarea><button type="button" class="button button-secondary" id="selectCopyValue">全选链接</button><span id="manualCopyStatus" role="status"></span></div><p id="dialogStatus" class="dialog-status" role="status" aria-live="polite"></p></dialog>
+  <dialog class="sports-share-dialog" id="sportsShareDialog" aria-labelledby="sportsShareTitle">
+    <div class="sports-share-head"><strong id="sportsShareTitle" data-share-title>赛事分享卡</strong><button type="button" data-share-close aria-label="关闭分享预览">×</button></div>
+    <p class="sports-share-caption">来自可核验赛事快照，不是实时比分或赛前预测胜率。</p>
+    <img id="sportsSharePreview" alt="赛事分享卡片预览">
+    <div class="sports-share-controls"><button type="button" data-share-save>保存 PNG</button><button type="button" data-share-native hidden>系统分享</button><button type="button" data-share-close>关闭</button></div>
+  </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
