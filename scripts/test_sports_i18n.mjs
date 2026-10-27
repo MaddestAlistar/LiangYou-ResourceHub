@@ -410,11 +410,18 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
   modes[2].dispatch('click');
   if(snapshot.standings.length){
     assert(ui.get('officialStandingQuick').innerHTML==='', 'Redundant standings buttons still shown');
-    const records=[...snapshot.standings,...extra.standings].filter(x=>
-      x&&Array.isArray(x.groups)&&x.groups.length&&
+    // Count the same published records the UI receives: archived 2026
+    // finals supersede incomplete PandaScore phase fragments.
+    const candidates=[...snapshot.standings.filter(x=>
+      !(archived.standings.length&&String(snapshot.generated_at||'').startsWith('2026-')&&
+      (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
+       /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
+      ...extra.standings,...archived.standings];
+    const records=candidates.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
       (x.sport==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses))));
-    assert(ui.get('officialStandingSelect').options.length===records.length,
-      'Only verified standings with win/loss data (or football points) should be selectable');
+    assert.equal(ui.get('officialStandingSelect').options.length,
+      new Set(records.map(x=>x.id)).size,
+      'Only complete published standings (including verified historical finals) should be selectable');
     assert(!records.some(x=>x.title==='Worlds · Play-In'), 'Rank-only Worlds Play-In should be hidden');
     assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===1,
       'Only the chosen standings card should render');
