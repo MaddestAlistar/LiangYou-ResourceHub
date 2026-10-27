@@ -139,7 +139,7 @@ assert(html.includes('id="officialStandingLeagues"') &&
  'League tabs and grouped standings must remain available');
 assert(visualJS.includes('previous_matches') && visualJS.includes('is-loser'),
  'Official bracket predecessor routes and loser paths must remain visible');
-assert(html.includes('fixtures.js?v=20261027.24') && html.includes('bracket-viz.js?v=20261027.8') && html.includes('fixtures.css?v=20261027.17'),
+assert(html.includes('fixtures.js?v=20261027.25') && html.includes('bracket-viz.js?v=20261027.9') && html.includes('fixtures.css?v=20261027.18'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
