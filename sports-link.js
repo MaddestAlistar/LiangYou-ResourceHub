@@ -76,7 +76,7 @@
   const epoch=time(record);
   if(teams.length!==2||!Number.isFinite(epoch))return null;
   return 'market:'+category(record)+':'+teams.join(':')+':'+
-    new Date(epoch).toISOString().slice(0,10);
+    new Date(epoch).toISOString().slice(0,16);
  };
  root.LiangYouSportsLinks=Object.freeze({keyName,category,sides,pairs,groupMarkets,officialFor,marketsFor,matchIdentity});
 })(window);
