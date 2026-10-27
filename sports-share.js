@@ -142,6 +142,9 @@ async function openShare(id){
    typeof File==='function'&&
    navigator.canShare({files:[new File([fileBlob],currentName,{type:'image/png'})]}));
   dialog.querySelector('[data-share-title]').textContent=english()?'Match share card':'赛事分享卡';
+  dialog.querySelector('[data-share-note]').textContent=english()?
+   'Verified match snapshot only. Not a live score or prediction.':
+   '来自可核验赛事快照，不是实时比分或赛前预测胜率。';
   saveBtn.textContent=english()?'Save PNG':'保存 PNG';
   closeBtn.textContent=english()?'Close':'关闭';
   nativeBtn.textContent=english()?'Share':'系统分享';
@@ -153,7 +156,8 @@ panel.addEventListener('click',ev=>{
  const action=ev.target.closest?.('[data-fixture-share]');
  if(action){ev.preventDefault();openShare(action.dataset.fixtureShare);}
 });
-closeBtn.addEventListener('click',()=>{
+dialog.addEventListener('click',ev=>{
+ if(!ev.target.closest?.('[data-share-close]'))return;
  if(dialog.close)dialog.close();else dialog.removeAttribute('open');
 });
 saveBtn.addEventListener('click',()=>{
