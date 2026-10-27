@@ -10,9 +10,12 @@ import json
 import re
 import unicodedata
 from urllib.request import Request, urlopen
+from urllib.parse import quote, urljoin, urlparse
 from bs4 import BeautifulSoup
 
+ARCHIVE_INDEX = "https://db.u-go.net/playerdb-archive/"
 ARCHIVE = "https://dldb.u-go.net/playerdb-latest.json.gz"
+API = "https://db.u-go.net/playerdb/players/"
 RATINGS = "https://www.goratings.org/en/"
 UA = "LiangYou-ResourceHub/2.0 (+https://github.com/MaddestAlistar/LiangYou-ResourceHub)"
 
@@ -101,7 +104,14 @@ def build_name_index(doc):
     return by_name,len(rows)
 
 def load_names():
-    raw=fetch(ARCHIVE,2000000)
+    # The download lives behind a separate host; derive its real path from
+    # the official archive index, do not assume the .gz filename is at /.
+    listing=BeautifulSoup(fetch(ARCHIVE_INDEX,400000).decode('utf-8','replace'),'html.parser')
+    urls=[urljoin(ARCHIVE_INDEX,a.get('href','')) for a in listing.select('a[href]')
+        if 'playerdb-latest.json.gz' in a.get('href','')]
+    urls=[url for url in urls if urlparse(url).scheme=='https' and
+        urlparse(url).hostname in ('dldb.u-go.net','db.u-go.net','dl.u-go.net')]
+    raw=fetch(urls[0] if urls else ARCHIVE,2000000)
     if raw[:2]==b"\x1f\x8b":raw=gzip.decompress(raw)
     if len(raw)>12000000:raise ValueError("Decompressed player database too large")
     doc=json.loads(raw.decode("utf-8-sig"))
@@ -131,6 +141,30 @@ def load_ratings():
     if len(by_name)<20:raise ValueError("Go Ratings page parser found no usable ratings")
     return by_id,by_name
 
+def partial_names(events,limit=12):
+    '''Use documented exact-match API for a few relevant players if the archive is down.'''
+    found={}
+    queried=set()
+    calls=0
+    for e in events:
+        if e.get('sport')!='go':continue
+        for side in ('home','away'):
+            source=bare_name(e.get(side,''))
+            key=norm(source)
+            if not key or key in queried:continue
+            queried.add(key)
+            if calls>=limit:return found,calls
+            calls+=1
+            try:
+                doc=json.loads(fetch(API+'?searchname='+quote(source),300000).decode('utf-8'))
+                rows=doc.get('results',[]) if isinstance(doc,dict) else []
+                if len(rows)!=1:continue
+                entries,_=build_name_index(rows)
+                if key in entries and entries[key]:found[key]=entries[key]
+            except Exception as exc:
+                print('u-go exact lookup unavailable',type(exc).__name__,flush=True)
+    return found,calls
+
 def enrich(events):
     names={}
     ratings_by_id={}
@@ -140,8 +174,9 @@ def enrich(events):
         names,total=load_names()
         status.append({"tag":"u-go","status":"ok","players":total})
     except Exception as exc:
-        status.append({"tag":"u-go","status":"unavailable"})
-        print("::warning::u-go metadata:",type(exc).__name__,str(exc)[:110],flush=True)
+        print('::warning::u-go archive:',type(exc).__name__,str(exc)[:160],flush=True)
+        names,calls=partial_names(events)
+        status.append({'tag':'u-go','status':'partial' if names else 'unavailable','players':len(names),'queries':calls})
     try:
         ratings_by_id,ratings_by_name=load_ratings()
         status.append({"tag":"go-ratings","status":"ok","players":len(ratings_by_name)})
