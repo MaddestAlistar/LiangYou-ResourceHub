@@ -33,7 +33,7 @@ function toggle(sport,name){
 }
 const L=()=>isEn()?{
  title:'My fixtures',help:'Follow teams to filter upcoming matches. Saved only in this browser.',
- follow:'Following',mine:'Following',all:'All matches',export:'Add to calendar',
+ follow:'Following',mine:'Following',all:'All matches',export:'Export .ics',
  empty:'Tap ☆ beside a team in the match calendar to follow it.',
  none:'No upcoming fixtures for followed teams in the available snapshot.',
  next:'Next followed fixture',notAvailable:'No verified time',removed:'Remove',
@@ -41,7 +41,7 @@ const L=()=>isEn()?{
  archived:'Data is a periodic snapshot, not live scores.',exportEmpty:'There are no dated upcoming matches to export.'
 }:{
  title:'我的赛事',help:'关注喜欢的球队和战队，一键筛选未来赛程。收藏只保存在当前浏览器。',
- follow:'已关注',mine:'只看关注',all:'全部赛事',export:'加入手机日历',
+ follow:'已关注',mine:'只看关注',all:'全部赛事',export:'导出日历 .ics',
  empty:'在赛事日历中点击队伍旁的 ☆ 即可关注。',
  none:'当前数据快照暂无关注队伍的未来赛事。',
  next:'下一场关注赛事',notAvailable:'时间未核验',removed:'取消关注',
