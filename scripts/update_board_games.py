@@ -124,7 +124,7 @@ def chess(token):
     return events
 
 def event_date(raw,year,month,day,zone):
-    try:return datetime(year,month,day,tzinfo=zone)
+    try:return datetime(year,month,day,12,0,tzinfo=zone)
     except ValueError:return None
 
 def japan():
@@ -160,7 +160,7 @@ def japan():
         key=hashlib.sha1((str(match_date.date())+"|"+label+"|"+white+"|"+black).encode()).hexdigest()[:12]
         events.append(dict(id="go-jp-"+key,provider="nihonkiin",sport="go",
             league=label,stage="",home=white,away=black,
-            start_time=iso(match_date),time_precision="date",
+            start_time=iso(match_date),time_precision="date",display_date=match_date.strftime("%Y-%m-%d"),
             status="finished" if finished else "scheduled",
             score_home=1 if finished else None,score_away=0 if finished else None,
             result_detail=result if finished else "",
