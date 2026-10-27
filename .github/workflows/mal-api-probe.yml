@@ -1,0 +1,61 @@
+name: Verify MyAnimeList API v2
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/mal-api-probe.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Test public MAL anime API (never print credentials)
+        env:
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+          MAL_CLIENT_SECRET: ${{ secrets.MAL_CLIENT_SECRET }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, urllib.request, urllib.error
+          client_id = os.getenv('MAL_CLIENT_ID','').strip()
+          if not client_id:
+              print('MAL_PROBE '+json.dumps({'result':'failed','reason':'MAL_CLIENT_ID secret missing'}))
+              sys.exit(1)
+          print('MAL_PROBE '+json.dumps({'client_id_configured':True,'client_secret_configured':bool(os.getenv('MAL_CLIENT_SECRET','').strip())}))
+          checks = [
+              ('top_anime','https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=3&fields=mean,rank,num_list_users'),
+              ('anime_detail','https://api.myanimelist.net/v2/anime/1?fields=id,title,mean,rank'),
+          ]
+          all_ok = True
+          for name,url in checks:
+              code=None
+              try:
+                  req=urllib.request.Request(url,headers={'X-MAL-CLIENT-ID':client_id,'Accept':'application/json','User-Agent':'LiangYouResourceHub/1.0'})
+                  with urllib.request.urlopen(req,timeout=20) as resp:
+                      code=resp.status
+                      payload=json.load(resp)
+              except urllib.error.HTTPError as exc:
+                  code=exc.code
+                  try: payload=json.loads(exc.read(8192))
+                  except Exception: payload={}
+              except Exception as exc:
+                  payload={'reason':type(exc).__name__}
+              ok=False;summary={}
+              if name=='top_anime':
+                  rows=payload.get('data',[]) if isinstance(payload,dict) else []
+                  ok=(code==200 and isinstance(rows,list) and bool(rows) and isinstance(rows[0].get('node'),dict))
+                  if ok:
+                      n=rows[0]['node']
+                      summary={'count':len(rows),'first_anime_id':n.get('id'),'has_mean_score':n.get('mean') is not None}
+              else:
+                  ok=(code==200 and isinstance(payload,dict) and payload.get('id')==1)
+                  if ok:
+                      summary={'anime_id':payload.get('id'),'title':payload.get('title'),'has_mean_score':payload.get('mean') is not None}
+              if not ok: all_ok=False
+              print('MAL_PROBE '+json.dumps({'endpoint':name,'http_status':code,'result':'ok' if ok else 'failed',**summary},ensure_ascii=False))
+          sys.exit(0 if all_ok else 1)
+          PY
