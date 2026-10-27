@@ -404,4 +404,15 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(board["groups"][0]["rank"],2)
         self.assertEqual(board["groups"][0]["wins"],5)
 
+
+    def test_bracket_round_sorting_never_uses_match_title_as_round(self):
+        import update_real_sports as real
+        raw=[{"name":"Final: A vs B","opponents":[{"opponent":{"id":1,"name":"A"}},{"opponent":{"id":2,"name":"B"}}]},
+             {"name":"Semifinal 2: A vs C","opponents":[{"opponent":{"id":1,"name":"A"}},{"opponent":{"id":3,"name":"C"}}]},
+             {"name":"Quarterfinal 4: B vs D","opponents":[{"opponent":{"id":2,"name":"B"}},{"opponent":{"id":4,"name":"D"}}]}]
+        normalized=real.official_bracket(raw,55,"Cup · Playoffs")
+        self.assertEqual([r["round"] for r in normalized["rounds"]],
+                         ["Quarterfinals","Semifinals","Final"])
+        self.assertEqual(normalized["rounds"][0]["matches"][0]["score_home"],None)
+
 if __name__ == '__main__': unittest.main()

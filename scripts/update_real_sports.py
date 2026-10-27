@@ -215,7 +215,18 @@ def official_bracket(raw,tournament_id,label):
         scanned+=1
         round_label=name(node.get("round_name") or node.get("round") or
                          node.get("stage") or node.get("name") or parent_round)
-        if isinstance(node.get("round_number"),int) and not round_label:
+        # PandaScore nodes often use individual match titles such as
+        # "Semifinal 2: A vs B". Group by actual knockout round instead.
+        lower=round_label.lower()
+        if "grand final" in lower or re.search(r"\bfinal\b",lower):
+            round_label="Final"
+        elif "semifinal" in lower or "semi-final" in lower:
+            round_label="Semifinals"
+        elif "quarterfinal" in lower or "quarter-final" in lower:
+            round_label="Quarterfinals"
+        elif "round of 16" in lower or "last 16" in lower:
+            round_label="Round of 16"
+        elif isinstance(node.get("round_number"),int) and not round_label:
             round_label="Round "+str(node["round_number"])
         opponents=node.get("opponents")
         if not isinstance(opponents,list):
@@ -238,6 +249,8 @@ def official_bracket(raw,tournament_id,label):
                     a_id=(opponents[0].get("opponent") or opponents[0]).get("id")
                     b_id=(opponents[1].get("opponent") or opponents[1]).get("id")
                     scores=[score_map.get(a_id),score_map.get(b_id)]
+                    if scores==[0,0] and not node.get("winner_id"):
+                        scores=[None,None]
                     match={"home":teams[0],"away":teams[1],
                            "score_home":scores[0],"score_away":scores[1]}
                     # Winner only if the API explicitly supplies a verified ID.
@@ -249,7 +262,10 @@ def official_bracket(raw,tournament_id,label):
             value=node.get(key)
             if isinstance(value,(list,dict)):visit(value,depth+1,round_label)
     visit(raw)
-    cards=[{"round":rnd,"matches":matches[:12]} for rnd,matches in rounds.items()][:10]
+    order={"Round of 16":1,"Quarterfinals":2,"Semifinals":3,"Final":4}
+    cards=[{"round":rnd,"matches":matches[:12]}
+           for rnd,matches in sorted(rounds.items(),key=lambda item:
+               (order.get(item[0],9),item[0]))][:8]
     if not cards:return None
     return {"tournament_id":tournament_id,"title":label,"rounds":cards,
             "provider":"pandascore"}
@@ -322,38 +338,44 @@ def nba_standings(key,now):
 
 
 def tournament_extras(matches,key):
-    # Only two distinct relevant tournaments per collection. Four additional
-    # requests at most (brackets + standings), even with many Panda matches.
+    """Only four optional requests: two knockout brackets and two standings."""
     candidates={}
     for m in matches:
         tid=m.get("tournament_id")
         if type(tid) is not int or m.get("provider")!="pandascore":continue
-        title=m.get("tournament_name") or m.get("league") or ""
+        league=m.get("league") or ""
+        stage=m.get("tournament_name") or ""
+        label=name(league+" · "+stage) if stage else name(league)
         if tid not in candidates:
-            priority=(0 if m.get("sport")=="lol" else 2)
-            combined=(m.get("league","")+" "+title).lower()
-            if any(x in combined for x in ("worlds","msi","lpl","lck","international")):
-                priority-=1
-            candidates[tid]=(priority,title)
-    selected=sorted(candidates,key=lambda tid:(candidates[tid][0],tid))[:2]
+            text=(league+" "+stage).lower()
+            featured=any(x in text for x in ("worlds","msi","lpl","lck","international","vct","pgl"))
+            score=(0 if m.get("sport")=="lol" else 2)-(1 if featured else 0)
+            knockout=any(x in stage.lower() for x in
+                         ("playoff","elimination","knockout","final","quarter","semi"))
+            regular=any(x in stage.lower() for x in
+                        ("regular","group","swiss","league","week"))
+            candidates[tid]=(score,label,knockout,regular)
+    bracket_choices=sorted((tid for tid,v in candidates.items() if v[2]),
+                           key=lambda tid:(candidates[tid][0],tid))[:2]
+    rank_choices=sorted((tid for tid,v in candidates.items() if v[3]),
+                        key=lambda tid:(candidates[tid][0],tid))[:2]
     brackets=[];standings=[];errors=0
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
-    for tid in selected:
-        title=candidates[tid][1]
-        for kind in ("brackets","standings"):
+    for kind,ids in (("brackets",bracket_choices),("standings",rank_choices)):
+        for tid in ids:
+            label=candidates[tid][1]
             try:
-                url=PANDA_ROOT+"/tournaments/"+str(tid)+"/"+kind+"?"+urlencode({"page[size]":100,"page[number]":1})
+                url=PANDA_ROOT+"/tournaments/"+str(tid)+"/"+kind+"?"+urlencode(
+                    {"page[size]":100,"page[number]":1})
                 raw=json_request(url,headers)
-                normalized=(official_bracket(raw,tid,title) if kind=="brackets"
-                            else panda_standings(raw,tid,title))
-                if normalized:
-                    (brackets if kind=="brackets" else standings).append(normalized)
+                value=(official_bracket(raw,tid,label) if kind=="brackets"
+                       else panda_standings(raw,tid,label))
+                if value:(brackets if kind=="brackets" else standings).append(value)
             except Exception:
                 errors+=1
-    print("PandaScore tournament details: %d brackets, %d standings, %d request failures" %
+    print("PandaScore details: %d knockout brackets, %d standings, %d failed requests" %
           (len(brackets),len(standings),errors),flush=True)
     return brackets,standings
-
 
 def retrieve_api_sports(key,now):
     today=now.date()
@@ -456,7 +478,7 @@ def main():
         by_bucket[key]=by_bucket.get(key,0)+1
         if by_bucket[key]<=status_limits[event["status"]]:
             selected.append(event)
-    output={"schema":1,"fixture_schema_version":2,"source_type":"official_fixtures","generated_at":iso(now),
+    output={"schema":1,"fixture_schema_version":3,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:2],"standings":standings[:3],
