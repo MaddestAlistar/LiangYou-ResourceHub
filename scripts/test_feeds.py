@@ -379,7 +379,13 @@ class FeedRules(unittest.TestCase):
         import update_real_sports as real
         self.assertEqual(len(real.FOOTBALL),5)
         self.assertEqual(len(real.PANDA_ENDPOINTS),3)
-        self.assertEqual(5+4+len(real.PANDA_ENDPOINTS),12)
+        self.assertEqual(len(real.PANDA_LOL_MATCHES),2)
+        self.assertEqual(len(real.PANDA_LOL_TOURNAMENTS),2)
+        self.assertEqual(real.MAX_BRACKET_REQUESTS,5)
+        self.assertEqual(real.MAX_STANDINGS_REQUESTS,6)
+        self.assertLessEqual(len(real.PANDA_ENDPOINTS)+len(real.PANDA_LOL_MATCHES)+
+            len(real.PANDA_LOL_TOURNAMENTS)+real.MAX_BRACKET_REQUESTS+
+            real.MAX_STANDINGS_REQUESTS,18)
 
 
 
@@ -404,6 +410,26 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(board["groups"][0]["rank"],2)
         self.assertEqual(board["groups"][0]["wins"],5)
 
+
+    def test_featured_tournament_prioritizes_worlds(self):
+        import update_real_sports as real
+        self.assertGreater(real.popularity("Worlds","Knockout Stage","lol"),
+                           real.popularity("LGC Rising","Playoffs","lol"))
+        self.assertGreater(real.popularity("NBA","","basketball"),
+                           real.popularity("DFRAG Invitational","","esports"))
+
+    def test_high_priority_lol_tournament_discovery(self):
+        import update_real_sports as real
+        fake=[{"id":810,"name":"Playoffs","has_bracket":True,
+               "begin_at":"2026-10-23T00:00:00Z","end_at":"2026-11-02T00:00:00Z",
+               "league":{"name":"Worlds"}},
+              {"id":812,"name":"Groups","has_bracket":False,
+               "begin_at":"2026-10-23T00:00:00Z"}]
+        with patch.object(real,"json_request",return_value=fake):
+            results=real.discover_lol_tournaments("dummy",
+                dt.datetime(2026,10,27,tzinfo=dt.timezone.utc))
+        self.assertEqual(len(results),2)
+        self.assertTrue(all(v["tournament_id"]==810 and v["sport"]=="lol" for v in results))
 
     def test_bracket_round_sorting_never_uses_match_title_as_round(self):
         import update_real_sports as real

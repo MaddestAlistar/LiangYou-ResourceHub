@@ -23,6 +23,30 @@ PANDA_ROOT = "https://api.pandascore.co"
 # Fixed budget for each complete run: 5 football + 4 basketball + 3 PandaScore.
 # At 6-hour intervals, at most 36 requests/day to API-Sports, 12 to PandaScore.
 PANDA_ENDPOINTS = ("upcoming", "running", "past")
+PANDA_LOL_MATCHES = ("upcoming", "past")
+PANDA_LOL_TOURNAMENTS = ("running", "past")
+# Safe per-cycle cap: 3 all-game match + 2 LoL match + 2 LoL
+# tournament discovery + up to 5 brackets + 6 tables = 18 Panda calls.
+# At 6h cadence this stays <= 72 read requests/day (without retries).
+MAX_BRACKET_REQUESTS = 5
+MAX_STANDINGS_REQUESTS = 6
+
+def popularity(league, stage="", sport=""):
+    """Editorial prominence ordering, NOT a claim of real viewer traffic."""
+    s=(str(league)+" "+str(stage)).lower()
+    if sport=="lol":
+        base=100
+        if re.search(r"worlds|world championship|全球总决赛",s):return 500
+        if re.search(r"mid.season|\bmsi\b",s):return 460
+        if re.search(r"\blpl\b|\blck\b",s):return 430
+        if re.search(r"\blec\b|\blcs\b|\blcp\b|\bfirst stand\b",s):return 385
+        return 290
+    if re.search(r"\bnba\b",s):return 410
+    if re.search(r"champions league|欧冠|premier league|英超",s):return 390
+    if re.search(r"vct|valorant champions|\bmasters\b|\bmajor\b|international|\bti\b",s):return 325
+    if re.search(r"pgl|blast|esl pro|iem|dreamleague",s):return 310
+    return 220 if sport=="basketball" else 160 if sport=="football" else 90
+
 
 class UnavailableSeason(RuntimeError):
     """Current season inaccessible under the provider plan; do not retry all leagues."""
@@ -123,6 +147,7 @@ def football_row(raw,now):
             "start_time":iso(when),"status":st,"status_detail":name((fixture.get("status") or {}).get("long")),
             "home":name(home["name"]),"away":name(away["name"]),
             "score_home":home_score,"score_away":away_score,
+            "prominence":popularity(league.get("name"),league.get("round"),"football"),
             "source_url": "https://www.api-football.com/"}
 
 
@@ -151,6 +176,7 @@ def basketball_row(raw,now):
             "home":name(home["name"]),"away":name(away["name"]),
             "score_home":score(h.get("total")) if st!="scheduled" else None,
             "score_away":score(a.get("total")) if st!="scheduled" else None,
+            "prominence":popularity(competition,"","basketball"),
             "source_url":"https://www.api-basketball.com/"}
 
 
@@ -189,6 +215,7 @@ def pandascore_row(raw,now):
             "score_home":hscore,"score_away":ascore,
             "best_of":raw.get("number_of_games") if type(raw.get("number_of_games")) is int and raw["number_of_games"] in (1,2,3,5,7) else None,
             "winner_id":raw.get("winner_id") if isinstance(raw.get("winner_id"),int) else None,
+            "prominence":popularity(league.get("name"),tour.get("name"),game),
             "source_url":"https://www.pandascore.co/"}
 
 
@@ -281,6 +308,8 @@ def panda_standings(raw,tournament_id,label):
             return
         if not isinstance(value,dict):return
         team=value.get("team") or value.get("opponent")
+        if not team and isinstance(value.get("opponent"),dict):
+            team=value["opponent"]
         if isinstance(team,dict) and team.get("name"):
             rank=value.get("rank",value.get("position"))
             rank=positive_int(rank)
@@ -291,7 +320,7 @@ def panda_standings(raw,tournament_id,label):
                                 "wins":wins,"losses":losses,
                                 "group":name(value.get("group", ""))})
             return
-        for key in ("standings","groups","rows","teams","results"):
+        for key in ("standings","groups","rows","teams","results","rankings","participants","entries"):
             if isinstance(value.get(key),(list,dict)):
                 extract(value[key],depth+1)
     extract(raw)
@@ -337,42 +366,85 @@ def nba_standings(key,now):
             "groups":sorted(flat,key=lambda x:(x["group"],x["rank"]))[:36]}
 
 
-def tournament_extras(matches,key):
-    """Only four optional requests: two knockout brackets and two standings."""
+def discover_lol_tournaments(key,now):
+    """Discover real LoL knockout events beyond first page of general matches."""
+    found=[]
+    headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
+    for period in PANDA_LOL_TOURNAMENTS:
+        try:
+            url=PANDA_ROOT+"/lol/tournaments/"+period+"?"+urlencode({
+                "page[size]":80,"page[number]":1,
+                "sort":"-end_at" if period=="past" else "-begin_at"})
+            payload=json_request(url,headers)
+            if not isinstance(payload,list):continue
+            for row in payload:
+                if not isinstance(row,dict) or not isinstance(row.get("id"),int):continue
+                if row.get("has_bracket") is not True:continue
+                end=timestamp(row.get("end_at"))
+                start=timestamp(row.get("begin_at"))
+                if end and end < now-dt.timedelta(days=150):continue
+                if start and start > now+dt.timedelta(days=45):continue
+                league=row.get("league") or {}
+                label=name(league.get("name") if isinstance(league,dict) else "") or "英雄联盟"
+                title=name(row.get("name")) or "淘汰赛"
+                found.append({"tournament_id":row["id"],"sport":"lol",
+                    "league":label,"tournament_name":title,
+                    "has_bracket":True,"source":"tournament"})
+        except Exception:
+            print("PandaScore LoL tournament discovery: %s unavailable" % period,flush=True)
+    return found
+
+
+def tournament_extras(matches,key,discoveries=None):
+    """Query bounded high-profile LoL and other esports, without inventing tables."""
     candidates={}
-    for m in matches:
+    for m in list(matches)+list(discoveries or []):
         tid=m.get("tournament_id")
-        if type(tid) is not int or m.get("provider")!="pandascore":continue
+        if type(tid) is not int:continue
         league=m.get("league") or ""
         stage=m.get("tournament_name") or ""
         label=name(league+" · "+stage) if stage else name(league)
-        if tid not in candidates:
-            text=(league+" "+stage).lower()
-            featured=any(x in text for x in ("worlds","msi","lpl","lck","international","vct","pgl"))
-            score=(0 if m.get("sport")=="lol" else 2)-(1 if featured else 0)
-            knockout=any(x in stage.lower() for x in
-                         ("playoff","elimination","knockout","final","quarter","semi"))
-            regular=any(x in stage.lower() for x in
-                        ("regular","group","swiss","league","week"))
-            candidates[tid]=(score,label,knockout,regular)
-    bracket_choices=sorted((tid for tid,v in candidates.items() if v[2]),
-                           key=lambda tid:(candidates[tid][0],tid))[:2]
-    rank_choices=sorted((tid for tid,v in candidates.items() if v[3]),
-                        key=lambda tid:(candidates[tid][0],tid))[:2]
+        knockout=any(k in stage.lower() for k in
+                     ("playoff","elimination","knockout","final","quarter","semi"))
+        knockout=knockout or m.get("has_bracket") is True
+        regular=any(k in stage.lower() for k in
+                    ("regular","group","swiss","league","week","qualifier"))
+        priority=popularity(league,stage,m.get("sport"))
+        # A discovered tournament explicitly marked has_bracket is preferable
+        # to a guessed knockout event whose provider might have no bracket.
+        value={"priority":priority,"title":label,"sport":m.get("sport"),
+               "bracket":knockout,"ranking":regular}
+        if tid not in candidates or value["priority"]>candidates[tid]["priority"]:
+            candidates[tid]=value
+        else:
+            candidates[tid]["bracket"] |= knockout
+            candidates[tid]["ranking"] |= regular
+    order=lambda tid:(-candidates[tid]["priority"],tid)
+    bracket_choices=sorted((tid for tid,v in candidates.items() if v["bracket"]),key=order)[:MAX_BRACKET_REQUESTS]
+    rank_choices=sorted(candidates,key=order)[:MAX_STANDINGS_REQUESTS]
+    # Ensure other esports retain some representation even in Worlds season.
+    if all(candidates[tid]["sport"]=="lol" for tid in bracket_choices) and len(bracket_choices)>2:
+        extras=sorted((tid for tid,v in candidates.items() if v["bracket"] and v["sport"]=="esports"),key=order)
+        if extras: bracket_choices[-1]=extras[0]
     brackets=[];standings=[];errors=0
     headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
     for kind,ids in (("brackets",bracket_choices),("standings",rank_choices)):
         for tid in ids:
-            label=candidates[tid][1]
+            label=candidates[tid]["title"]
             try:
                 url=PANDA_ROOT+"/tournaments/"+str(tid)+"/"+kind+"?"+urlencode(
                     {"page[size]":100,"page[number]":1})
                 raw=json_request(url,headers)
                 value=(official_bracket(raw,tid,label) if kind=="brackets"
                        else panda_standings(raw,tid,label))
-                if value:(brackets if kind=="brackets" else standings).append(value)
+                if value:
+                    value["sport"]=candidates[tid]["sport"]
+                    value["prominence"]=candidates[tid]["priority"]
+                    (brackets if kind=="brackets" else standings).append(value)
             except Exception:
                 errors+=1
+    brackets.sort(key=lambda x:(-x["prominence"],x["tournament_id"]))
+    standings.sort(key=lambda x:(-x["prominence"],x["id"]))
     print("PandaScore details: %d knockout brackets, %d standings, %d failed requests" %
           (len(brackets),len(standings),errors),flush=True)
     return brackets,standings
@@ -413,11 +485,11 @@ def retrieve_api_sports(key,now):
 
 def retrieve_pandascore(key,now):
     results=[];failures=[]
-    for path in PANDA_ENDPOINTS:
+    for path in PANDA_ENDPOINTS + tuple("lol/matches/"+x for x in PANDA_LOL_MATCHES):
         try:
-            raw=json_request(PANDA_ROOT+"/matches/"+path+"?"+urlencode({
+            raw=json_request(PANDA_ROOT+"/"+("matches/"+path if "/" not in path else path)+"?"+urlencode({
                 "page[size]":100,"page[number]":1,
-                "sort":"begin_at" if path!="past" else "-begin_at"}),
+                "sort":"begin_at" if not path.endswith("past") else "-begin_at"}),
                 {"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA})
             if not isinstance(raw,list):raise ValueError("PandaScore matches must be a list")
             for row in raw:
@@ -425,7 +497,7 @@ def retrieve_pandascore(key,now):
                 if match:results.append(match)
         except Exception:
             failures.append(path)
-    if len(failures)==3:
+    if len(failures)==len(PANDA_ENDPOINTS)+len(PANDA_LOL_MATCHES):
         raise RuntimeError("All PandaScore match endpoints failed (check key, plan or quota)")
     return results,failures
 
@@ -446,7 +518,7 @@ def main():
             matches,failed=func(secret,now)
             for event in matches:events[event["id"]]=event
             if provider=="pandascore":
-                b,t=tournament_extras(matches,secret)
+                b,t=tournament_extras(matches,secret,discover_lol_tournaments(secret,now))
                 brackets.extend(b);standings.extend(t)
             elif provider=="api-sports":
                 try:
@@ -481,7 +553,7 @@ def main():
     output={"schema":1,"fixture_schema_version":3,"source_type":"official_fixtures","generated_at":iso(now),
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
-            "events":selected,"brackets":brackets[:2],"standings":standings[:3],
+            "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
             "notes":"Verified schedules, provider bracket trees and standings. No live score display; updates roughly every six hours."}
     write_json(OUT,output)
     print("Official fixtures published: "+str(len(selected)),flush=True)
