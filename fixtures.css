@@ -431,3 +431,8 @@
  .fixtures-diagrams.is-expanded .lyb-visual{inset:4px;height:calc(100dvh - 8px)}
 }
 @media(prefers-reduced-motion:reduce){.lyb-multi-lane .lyb-match{transition:none}}
+
+
+.fixtures-market-source{white-space:normal;font-variant-numeric:tabular-nums;color:#c0d7e4}
+@media(max-width:680px){.fixtures-detail-markets{align-items:flex-start}
+ .fixtures-market-source{flex:1 1 100%}}
