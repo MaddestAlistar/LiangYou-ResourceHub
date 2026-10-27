@@ -407,6 +407,40 @@ function renderGoPlayerRating(x,side,zh){
    '<div class="fixtures-go-stat"><span>Elo</span><b>'+safe(ratingText)+'</b></div>'+
   '</div></div>';
 }
+function renderVerifiedForm(fixture,zh){
+ // Only summarize completed games that are actually present in this finite snapshot.
+ // Never infer form from scheduled, live, stale scores or prediction-market records.
+ if(!['lol','esports','basketball','football'].includes(fixture.sport))return '';
+ const key=n=>linker?.keyName?.(n)||String(n||'').toLowerCase();
+ const cutoff=Date.parse(fixture.start_time);
+ const completed=data.events.filter(game=>game.sport===fixture.sport&&game.id!==fixture.id&&
+  game.status==='finished'&&Number.isFinite(game.score_home)&&Number.isFinite(game.score_away)&&
+  Date.parse(game.start_time)<cutoff&&
+  Date.parse(game.start_time)>=cutoff-90*86400000);
+ function form(name){
+  const identity=key(name);
+  const rows=completed.filter(m=>key(m.home)===identity||key(m.away)===identity)
+   .sort((a,b)=>Date.parse(b.start_time)-Date.parse(a.start_time)).slice(0,5);
+  if(!rows.length)return null;
+  let win=0,draw=0,loss=0;
+  for(const row of rows){
+   const score=key(row.home)===identity?row.score_home-row.score_away:row.score_away-row.score_home;
+   if(score>0)win++;else if(score===0)draw++;else loss++;
+  }
+  return {name,win,draw,loss,count:rows.length};
+ }
+ const sides=[form(fixture.home),form(fixture.away)].filter(Boolean);
+ const h2h=completed.filter(m=>[key(m.home),key(m.away)].sort().join('|')===
+  [key(fixture.home),key(fixture.away)].sort().join('|')).length;
+ if(!sides.length&&!h2h)return '';
+ return '<details class="fixtures-form"><summary>'+(zh?'近期战绩（可核验快照）':'Recent form (verified snapshot)')+'</summary>'+
+  '<div class="fixtures-form-rows">'+sides.map(x=>'<div><strong>'+safe(team(x.name,fixture.sport))+
+  '</strong><span>'+x.count+(zh?'场：':' games: ')+x.win+(zh?'胜 ':'W ')+
+  x.draw+(zh?'平 ':'D ')+x.loss+(zh?'负':'L')+'</span></div>').join('')+'</div>'+
+  (h2h?'<p>'+(zh?'当前收录双方历史交手：':'Head-to-head games in current snapshot: ')+h2h+'</p>':'')+
+  '<p>'+(zh?'仅统计本次已收录且有终场比分的比赛，最多展示各队5场；不是完整赛季战绩，也不用于推断胜率。':
+  'Only completed scored games present in this snapshot, up to 5 per team; not full-season form or a win probability.')+'</p></details>';
+}
 function showFixtureDetail(id,scroll=false){
  const button=[...refs.grid.querySelectorAll('[data-fixture-id]')]
   .find(node=>node.dataset.fixtureId===String(id));
@@ -483,7 +517,7 @@ function showFixtureDetail(id,scroll=false){
     (label?'在晋级图中查看':'View bracket')+'</button>':'')+
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
     (label?'查看相关联赛积分榜':'Open league standings')+'</button>':'')+
-  '</div>'+
+  '</div>'+renderVerifiedForm(x,label)+
   (['chess','go'].includes(x.sport)?'<p class="fixtures-detail-caution">'+
       (label?'棋类赛程和赛果按来源定时核验，并非实时对局。':'Board-game fixtures are periodically verified, not live move updates.')+
       (x.source_url&&/^https:\/\/(?:lichess\.org|www\.nihonkiin\.or\.jp|www\.baduk\.or\.kr)\//.test(x.source_url)?
