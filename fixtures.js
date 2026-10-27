@@ -369,10 +369,13 @@ function showFixtureDetail(id,scroll=false){
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
   '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+' · '+safe(state)+
   ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+ 
-  (x.sport==='go'&&(boardRating(x,'home')||boardRating(x,'away'))?
-   '<div class="fixtures-go-ratings">'+(boardRating(x,'home')?safe(boardPlayer(x,'home'))+'：'+safe(boardRating(x,'home')):'')+
-    (boardRating(x,'away')?' · '+safe(boardPlayer(x,'away'))+'：'+safe(boardRating(x,'away')):'')+
-    ' <a href="https://www.goratings.org/en/" target="_blank" rel="noopener noreferrer">Go Ratings</a></div>':'')+
+  (x.sport==='go'?'<div class="fixtures-go-ratings">'+
+    (boardRating(x,'home')?safe(boardPlayer(x,'home'))+'：'+safe(boardRating(x,'home'))+' · ':'')+
+    (boardRating(x,'away')?safe(boardPlayer(x,'away'))+'：'+safe(boardRating(x,'away'))+' · ':'')+
+    '<a href="https://www.goratings.org/en/" target="_blank" rel="noopener noreferrer">'+
+    (label?'Go Ratings 世界排名':'Go Ratings player rankings')+'</a>'+
+    ((x.home_player_url||x.away_player_url)?' · <a href="https://db.u-go.net/" target="_blank" rel="noopener noreferrer">u-go.net</a>':'')+
+    '<small> '+(label?'排名仅供参考，不代表比赛胜率':'Rankings are not win probabilities')+'</small></div>':'')+
   (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
   (x.result_detail?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
