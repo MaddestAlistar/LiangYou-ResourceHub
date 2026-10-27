@@ -518,6 +518,51 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(groups["Lower Bracket / Round 1"],1)
         self.assertEqual(sum(groups.values()),3)
 
+    def test_recover_missing_bracket_nodes_from_exact_provider_matches(self):
+        import update_real_sports as real
+        record={"title":"LPL · Playoffs","tournament_id":77,"rounds":[
+            {"round":"Upper Bracket / Final","matches":[
+                {"match_id":"101","home":"T1","away":"TES",
+                 "previous_matches":[{"match_id":"99","type":"winner"}],
+                 "bracket_side":"upper"}]},
+            {"round":"Lower Bracket / Quarterfinals","matches":[
+                {"match_id":"102","home":"JDG","away":"AL",
+                 "previous_matches":[{"match_id":"99","type":"loser"}],
+                 "bracket_side":"lower"}]}]}
+        target={"id":99,"name":"Upper Bracket Semifinal 1: T1 vs JDG",
+                "tournament":{"id":77},
+                "opponents":[{"opponent":{"id":1,"name":"T1"}},
+                             {"opponent":{"id":2,"name":"JDG"}}],
+                "results":[{"team_id":1,"score":3},{"team_id":2,"score":1}],
+                "winner_id":1,"number_of_games":5}
+        with patch.object(real,"json_request",return_value=[target]) as mocked:
+            _,added=real.recover_bracket_predecessors(record,"secret")
+        self.assertEqual(added,1)
+        self.assertEqual(mocked.call_count,1)
+        self.assertIn("/tournaments/77/matches?",mocked.call_args.args[0])
+        recovered=[m for r in record["rounds"] for m in r["matches"] if m.get("match_id")=="99"]
+        self.assertEqual(len(recovered),1)
+        self.assertEqual(recovered[0]["winner"],"T1")
+        self.assertEqual(recovered[0]["score_home"],3)
+        self.assertEqual(recovered[0]["verified_from"],"pandascore-tournament-matches")
+        with patch.object(real,"json_request",return_value=[target]) as mocked:
+            _,added=real.recover_bracket_predecessors(record,"secret")
+        self.assertEqual(added,0)
+        mocked.assert_not_called()
+
+    def test_recover_missing_bracket_nodes_reject_unverified_opponents(self):
+        import update_real_sports as real
+        record={"title":"LPL · Playoffs","tournament_id":77,"rounds":[
+            {"round":"Final","matches":[{"match_id":"101","home":"T1","away":"TES",
+               "previous_matches":[{"match_id":"99","type":"winner"}]}]}]}
+        bogus={"id":99,"name":"Semifinals","tournament":{"id":78},
+               "opponents":[{"opponent":{"id":1,"name":"Team X"}},
+                            {"opponent":{"id":2,"name":"Team Y"}}]}
+        with patch.object(real,"json_request",return_value=[bogus]):
+            _,added=real.recover_bracket_predecessors(record,"secret")
+        self.assertEqual(added,0)
+        self.assertEqual(len(record["rounds"]),1)
+
     def test_real_standings_no_inferred_ranks(self):
         import update_real_sports as real
         raw=[{"rank":2,"team":{"name":"TES"},"wins":5,"losses":3},
