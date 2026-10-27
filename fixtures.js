@@ -6,7 +6,7 @@ const el=id=>document.getElementById(id);
 const refs={grid:el('officialFixturesGrid'),status:el('officialFixturesStatus'),count:el('officialFixturesCount'),
  search:el('officialFixturesSearch'),category:el('officialFixturesCategory'),sort:el('officialFixturesSort'),
  more:el('officialFixturesMore'),showing:el('officialFixturesShowing'),
- state:el('officialFixturesState'),health:el('officialFixturesHealth'),detail:el('officialFixtureDetail'),
+ state:el('officialFixturesState'),detail:el('officialFixtureDetail'),
  bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),bracketStage:el('officialBracketStage'),
  bracketRound:el('officialBracketRound'),bracketFocus:el('officialBracketFocus'),bracketExpand:el('officialBracketExpand'),
  standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
@@ -250,9 +250,6 @@ function updateLabels(){
  el('officialBracketRoundLabel').textContent=lang()==='zh'?'快速定位轮次':'Jump to round';el('officialFixturesTitle').textContent=copy.title;
  const viz=window.LiangYouBracketViz;
  el('officialFixturesIntro').textContent=copy.intro;
- el('officialFixturesNote').innerHTML=safe(copy.note).replace('football-data.org',
-  '<a href="https://www.football-data.org/" target="_blank" rel="noopener noreferrer">football-data.org</a>');
- el('fixturesMarketTitle').textContent=copy.market;
  views.forEach((x,i)=>{x.textContent=copy.views[i];
   const yes=x.dataset.fixturesView===view;x.classList.toggle('is-active',yes);x.setAttribute('aria-pressed',String(yes));});
  dates.forEach((x,i)=>{x.textContent=copy.dates[i];
@@ -269,37 +266,13 @@ function updateLabels(){
  el('fixturesSortHint').textContent=copy.hotHint;
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
- const basic=Number.isFinite(Date.parse(data.generated_at||''))?
-  (lang()==='zh'?'电竞/篮球赛程 ':'Esports/basketball fixtures ')+when(data.generated_at):'';
- const extra=Number.isFinite(Date.parse(data.extraGeneratedAt||''))?
-  (lang()==='zh'?'NBA/足球 ':'NBA/soccer ')+when(data.extraGeneratedAt):'';
- const issues=[];
- if(data.status==='partial')issues.push(lang()==='zh'?'部分赛事接口采集不完整':'Some official providers returned incomplete data');
- if(Number.isFinite(Date.parse(data.generated_at||''))&&Date.now()-Date.parse(data.generated_at)>18*3600000)
-  issues.push(copy.stale);
- if(data.extraStatus&&data.extraStatus!=='ok')issues.push(lang()==='zh'?'部分体育数据暂不可用或沿用上次核验':'Some sports data unavailable or previously verified');
- if(data.status==='failed')issues.push(lang()==='zh'?'最新快照读取失败，保留上次数据':'Latest check failed; showing previously verified data');
- const note=issues.join(' · ');
- refs.status.textContent=[basic,extra,note].filter(Boolean).join(' · ');
-}
-function dataHealth(){
- const langZH=lang()==='zh';
- const badges=[
-  ...((data.officialSources||[]).map(x=>({...x,checked:data.generated_at}))),
-  ...((data.extraSources||[]).map(x=>({...x,checked:x.verified_at||data.extraGeneratedAt})))
- ];
- refs.health.innerHTML=badges.map(x=>{
-  const whenAt=Number.isFinite(Date.parse(x.checked||''))?when(x.checked):'—';
-  const expired=!Number.isFinite(Date.parse(x.checked||''))||
-    Date.now()-Date.parse(x.checked)>18*3600000;
-  const stale=x.status!=='ok'||expired;
-  const name=({'api-sports':'API-Sports','pandascore':'PandaScore',
-    'football-data':'football-data.org','dunkapi':'DunkAPI'})[x.tag]||x.tag;
-  return '<span class="fixtures-source-state'+(stale?' is-stale':'')+'">'+safe(name)+
-    ' · '+safe(expired?(langZH?'数据待更新':'Stale snapshot'):
-      x.status==='ok'?(langZH?'已核验':'Verified'):(langZH?'部分缺失 / 上次数据':'Partial / previous'))+
-    ' · '+safe(whenAt)+'</span>';
- }).join('');
+ // Only show a single public verification timestamp; preserve diagnostics in data.
+ const checks=[data.generated_at,data.extraGeneratedAt].map(x=>Date.parse(x||''))
+  .filter(Number.isFinite);
+ refs.status.textContent=checks.length?
+  (lang()==='zh'?'最近数据核验：':'Last data check: ')+
+  when(new Date(Math.max(...checks)).toISOString()):
+  (lang()==='zh'?'等待数据核验':'Waiting for data verification');
 }
 function showFixtureDetail(id){
  detailId=id;
@@ -643,7 +616,7 @@ function standings(){
    '<div class="fixtures-standing-tables">'+staleNote+orderNote+archiveNote+sourceUrl+stageNote+missingNote+rulesNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
-function render(){updateLabels();dataHealth();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
+function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
 async function fetchData(){
  if(fetchPending)return;
  fetchPending=true;
@@ -707,7 +680,7 @@ async function fetchData(){
   window.LiangYouOfficialSportsEvents=data.events;
   if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
     window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
-  dataHealth();
+  
   render();
  }catch{data={...data,status:'failed'};render();}
  finally{fetchPending=false;}
@@ -805,7 +778,7 @@ render();fetchData();if(typeof window.setInterval==='function'){
  // bracket reflow when data has not changed.
  window.setInterval(()=>{
    if(document.hidden)return;
-   updateLabels();dataHealth();
+   updateLabels();
    if(view==='calendar')calendar();
  },60*1000);
 }
