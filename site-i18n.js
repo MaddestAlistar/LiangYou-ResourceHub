@@ -13,6 +13,7 @@
   Object.assign(translations,{"确认打包文件中的单独图片都有命名":"Confirm that every image in the archive has been named","已确认":"Confirmed","请先勾选「已确认」：确认打包文件中的单独图片都有命名":"Check Confirmed to confirm every image has been named"});
   Object.assign(translations, {"资源中心":"Resources","情报中心":"Insights","应用精选":"Apps","良友社区":"Community","频道库":"Channel Library","影视情报中心":"Film & TV Intelligence","筹备中":"Coming soon","良友联名软件":"Co-branded Apps"});
   Object.assign(translations, {"欢迎来到良友资源中心":"Welcome to LiangYou Resource Hub","进入资源中心":"Enter Resource Hub"});
+  Object.assign(translations, {"收藏本站":"Save this site","收藏良友资源中心":"Save LiangYou Resource Hub","打开系统分享":"Open system share","复制网站地址":"Copy site address","关闭收藏说明":"Close bookmark guide"});
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
