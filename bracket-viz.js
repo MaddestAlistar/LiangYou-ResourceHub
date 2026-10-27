@@ -102,7 +102,8 @@ const swissNodes=[
  [{name:'0-0',index:'R1',wins:0,losses:0}],
  [{name:'1-0',index:'R2',wins:1,losses:0},{name:'0-1',index:'R2',wins:0,losses:1}],
  [{name:'2-0',index:'R3',wins:2,losses:0},{name:'1-1',index:'R3',wins:1,losses:1},{name:'0-2',index:'R3',wins:0,losses:2}],
- [{name:'2-1',index:'R4',wins:2,losses:1},{name:'2-2',index:'R5',wins:2,losses:2},{name:'1-2',index:'R4',wins:1,losses:2}],
+ [{name:'2-1',index:'R4',wins:2,losses:1},{name:'1-2',index:'R4',wins:1,losses:2}],
+ [{name:'2-2',index:'R5',wins:2,losses:2}],
  [{name:'ADVANCES',index:'OUT',advanced:true},{name:'ELIMINATED',index:'OUT',eliminated:true}]
 ];
 function swiss(record,opt={}){
@@ -114,7 +115,7 @@ function swiss(record,opt={}){
  const count=ranked.length;
  const showTeam=t=>'<div class="lyb-pool-team"><span>'+html(team(t.team))+'</span><b>'+
   num(t.wins)+':'+num(t.losses)+'</b></div>';
- const columnNames=[z('起点','Start',lang),z('首轮','Round 2',lang),z('第二轮','Round 3',lang),z('关键轮','Deciding',lang),z('晋级结果','Outcomes',lang)];
+ const columnNames=[z('初始赛程','Opening',lang),z('第一轮后','After R1',lang),z('第二轮后','After R2',lang),z('第三轮后','After R3',lang),z('决胜轮','Decider',lang),z('晋级结果','Outcomes',lang)];
  const matches=events.filter(e=>Number(e.tournament_id)===tournamentId&&e.home&&e.away&&
    ['scheduled','live','finished'].includes(e.status))
    .filter((e,i,list)=>list.findIndex(x=>String(x.id).replace(/^(?:stage|panda)-/,'')===String(e.id).replace(/^(?:stage|panda)-/,''))===i)
@@ -127,7 +128,7 @@ function swiss(record,opt={}){
  const display=slots.map((col,i)=>{
    const games=matches.filter(m=>m.round===i+1).slice(0,12);
    return '<div class="lyb-swiss-column"><h4><small>ROUND '+(i+1)+'</small>'+html(columnNames[i])+'</h4>'+
-    col.map(slot=>'<div class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
+    col.map(slot=>'<div data-pool="'+html(slot.name)+'" class="lyb-pool '+(slot.advanced?'is-advanced':slot.eliminated?'is-eliminated':'')+'">'+
      '<header><b>'+html(slot.name)+'</b><small>'+(
        slot.advanced?z('晋级','Qualified',lang):slot.eliminated?z('淘汰','Eliminated',lang):
        z('战绩池','Record pool',lang))+'</small></header>'+
@@ -149,9 +150,9 @@ function swiss(record,opt={}){
  return '<div class="lyb-visual lyb-swiss"><div class="lyb-visual-top"><strong>SWISS STAGE</strong>'+
   '<span>'+z('瑞士轮 · 战绩晋级路线','Swiss · progression by record',lang)+'</span></div>'+
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('瑞士轮晋级路线图','Swiss stage progression',lang)+'">'+
-  '<div class="lyb-swiss-track">'+display+'</div></div>'+
+  '<div class="lyb-swiss-track"><svg class="lyb-swiss-links" aria-hidden="true"></svg>'+display+'</div></div>'+
   (fixtureList?'<section class="lyb-upcoming"><h4>'+z('已采集对阵','Verified matchups',lang)+'</h4><div class="lyb-fixtures">'+fixtureList+'</div></section>':'')+
-  (count?'<p class="lyb-caption">'+z('战队仅显示当前已核验战绩；路径为赛制结构，不代表历史晋级轨迹。','Teams show verified current records; pathways illustrate the format, not historical advancement.',lang)+'</p>':'')+
+  (count?'<p class="lyb-caption">'+z('战队显示已核验战绩，虚线代表赛制可能路线。','Teams show verified current records; pathways illustrate the format, not historical advancement.',lang)+'</p>':'')+
   '</div>';
 }
 function groups(record,opt={}){
@@ -171,5 +172,32 @@ function groups(record,opt={}){
   z('出线阶段','Qualification',lang)+'</strong><span>'+z('待官方确认','Pending confirmation',lang)+
   '</span></div></div></div>';
 }
-window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups};
+
+const swissEdges=[
+ ['0-0','1-0'],['0-0','0-1'],
+ ['1-0','2-0'],['1-0','1-1'],['0-1','1-1'],['0-1','0-2'],
+ ['2-0','2-1'],['2-0','ADVANCES'],['1-1','2-1'],['1-1','1-2'],
+ ['0-2','1-2'],['0-2','ELIMINATED'],
+ ['2-1','2-2'],['2-1','ADVANCES'],['1-2','2-2'],['1-2','ELIMINATED'],
+ ['2-2','ADVANCES'],['2-2','ELIMINATED']
+];
+function connect(root){
+ if(!root||typeof root.querySelector!=='function')return;
+ const track=root.querySelector('.lyb-swiss-track'),svg=track?.querySelector('.lyb-swiss-links');
+ if(!track||!svg||typeof track.getBoundingClientRect!=='function')return;
+ const base=track.getBoundingClientRect(),nodes=new Map();
+ track.querySelectorAll('.lyb-pool[data-pool]').forEach(item=>nodes.set(item.dataset.pool,item.getBoundingClientRect()));
+ const coords=[];
+ for(const [from,to] of swissEdges){
+  const a=nodes.get(from),b=nodes.get(to);
+  if(!a||!b)continue;
+  const x1=a.right-base.left,x2=b.left-base.left,y1=(a.top+a.bottom)/2-base.top,y2=(b.top+b.bottom)/2-base.top;
+  const mid=x1+(x2-x1)*.5;
+  coords.push('<path d="M'+x1+' '+y1+' H'+mid+' V'+y2+' H'+x2+'"/>');
+ }
+ svg.setAttribute('viewBox','0 0 '+track.scrollWidth+' '+track.scrollHeight);
+ svg.innerHTML=coords.join('');
+}
+
+window.LiangYouBracketViz={game,stageOf,knockout,swiss,groups,connect};
 })();
