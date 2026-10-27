@@ -178,9 +178,12 @@ def pandascore_row(raw,now):
     hscore=score_by_team.get(teams[0].get("id")) if st!="scheduled" else None
     ascore=score_by_team.get(teams[1].get("id")) if st!="scheduled" else None
     league=raw.get("league") or {}; tour=raw.get("tournament") or {}
+    tournament_id=tour.get("id") if isinstance(tour.get("id"),int) else None
     return {"id":"panda-"+str(ident),"provider":"pandascore","sport":game,
             "league":name(league.get("name")) or name(videogame.get("name")),
             "stage":name(tour.get("name")),
+            "tournament_id":tournament_id,
+            "tournament_name":name(tour.get("name")),
             "start_time":iso(when),"status":st,"status_detail":"",
             "home":name(teams[0]["name"]),"away":name(teams[1]["name"]),
             "score_home":hscore,"score_away":ascore,
@@ -189,12 +192,177 @@ def pandascore_row(raw,now):
             "source_url":"https://www.pandascore.co/"}
 
 
+def positive_int(value):
+    return value if type(value) is int and 0 <= value <= 10000 else None
+
+
+def official_bracket(raw,tournament_id,label):
+    """Extract identifiable real fixtures from provider bracket tree.
+    Do not fabricate rounds, opponents or advancement from incomplete nodes.
+    """
+    if not isinstance(raw,(list,dict)):
+        return None
+    rounds={}
+    seen=set()
+    scanned=0
+    def visit(node,depth=0,parent_round=""):
+        nonlocal scanned
+        if depth>9 or scanned>900:return
+        if isinstance(node,list):
+            for item in node[:120]:visit(item,depth+1,parent_round)
+            return
+        if not isinstance(node,dict):return
+        scanned+=1
+        round_label=name(node.get("round_name") or node.get("round") or
+                         node.get("stage") or node.get("name") or parent_round)
+        if isinstance(node.get("round_number"),int) and not round_label:
+            round_label="Round "+str(node["round_number"])
+        opponents=node.get("opponents")
+        if not isinstance(opponents,list):
+            opponents=node.get("teams") if isinstance(node.get("teams"),list) else None
+        if isinstance(opponents,list) and len(opponents)==2:
+            teams=[]
+            for obj in opponents:
+                if not isinstance(obj,dict):continue
+                target=obj.get("opponent") if isinstance(obj.get("opponent"),dict) else obj
+                if target and target.get("name"):teams.append(name(target["name"]))
+            if len(teams)==2:
+                ident=str(node.get("id") or node.get("match_id") or "")
+                identifier=ident if ident else "|".join(teams)
+                if identifier not in seen:
+                    seen.add(identifier)
+                    if not round_label:round_label="Bracket"
+                    score_items=node.get("results") or []
+                    score_map={item.get("team_id"):positive_int(item.get("score"))
+                               for item in score_items if isinstance(item,dict)}
+                    a_id=(opponents[0].get("opponent") or opponents[0]).get("id")
+                    b_id=(opponents[1].get("opponent") or opponents[1]).get("id")
+                    scores=[score_map.get(a_id),score_map.get(b_id)]
+                    match={"home":teams[0],"away":teams[1],
+                           "score_home":scores[0],"score_away":scores[1]}
+                    # Winner only if the API explicitly supplies a verified ID.
+                    winner=node.get("winner_id")
+                    if winner in (a_id,b_id) and type(winner) is int:
+                        match["winner"]=teams[0] if winner==a_id else teams[1]
+                    rounds.setdefault(round_label,[]).append(match)
+        for key in ("brackets","rounds","matches","games","nodes","children","groups","tree"):
+            value=node.get(key)
+            if isinstance(value,(list,dict)):visit(value,depth+1,round_label)
+    visit(raw)
+    cards=[{"round":rnd,"matches":matches[:12]} for rnd,matches in rounds.items()][:10]
+    if not cards:return None
+    return {"tournament_id":tournament_id,"title":label,"rounds":cards,
+            "provider":"pandascore"}
+
+
+def panda_standings(raw,tournament_id,label):
+    if not isinstance(raw,list):return None
+    entries=[]
+    def extract(value,depth=0):
+        if depth>3:return
+        if isinstance(value,list):
+            for el in value[:150]:extract(el,depth+1)
+            return
+        if not isinstance(value,dict):return
+        team=value.get("team") or value.get("opponent")
+        if isinstance(team,dict) and team.get("name"):
+            rank=value.get("rank",value.get("position"))
+            rank=positive_int(rank)
+            wins=positive_int(value.get("wins",value.get("win")))
+            losses=positive_int(value.get("losses",value.get("loss")))
+            if rank is not None:
+                entries.append({"rank":rank,"team":name(team["name"]),
+                                "wins":wins,"losses":losses,
+                                "group":name(value.get("group", ""))})
+            return
+        for key in ("standings","groups","rows","teams","results"):
+            if isinstance(value.get(key),(list,dict)):
+                extract(value[key],depth+1)
+    extract(raw)
+    entries=sorted(entries,key=lambda x:(x["group"],x["rank"]))
+    if not entries:return None
+    return {"id":"panda-"+str(tournament_id),"title":label,"kind":"esports",
+            "provider":"pandascore","groups":entries[:50]}
+
+
+def nba_standings(key,now):
+    # The documented NBA basketball league ID is 12; verify returned league
+    # metadata when available, and never manufacture a standings row.
+    season=(now.year if now.month>=7 else now.year-1)
+    season_label=str(season)+"-"+str(season+1)
+    rows=sports_request(BASKET_ROOT,"standings",{"league":12,"season":season_label},key)
+    flat=[]
+    def visit(x,depth=0):
+        if depth>3:return
+        if isinstance(x,list):
+            for y in x[:250]:visit(y,depth+1)
+            return
+        if not isinstance(x,dict):return
+        team=x.get("team") or {}
+        if not isinstance(team,dict) or not team.get("name"):return
+        rank=positive_int(x.get("position"))
+        if rank is None:return
+        group=x.get("group") or {}
+        groupname=name(group.get("name") if isinstance(group,dict) else group)
+        if groupname not in ("Eastern Conference","Western Conference"):
+            return
+        data=x.get("games") or {}
+        win=data.get("win") if isinstance(data,dict) else None
+        lose=data.get("lose") if isinstance(data,dict) else None
+        if isinstance(win,dict):win=win.get("total")
+        if isinstance(lose,dict):lose=lose.get("total")
+        flat.append({"rank":rank,"team":name(team["name"]),
+                     "group":groupname,"wins":positive_int(win),
+                     "losses":positive_int(lose)})
+    visit(rows)
+    if not flat:return None
+    return {"id":"nba-"+season_label,"title":"NBA "+season_label,
+            "provider":"api-sports","kind":"basketball",
+            "groups":sorted(flat,key=lambda x:(x["group"],x["rank"]))[:36]}
+
+
+def tournament_extras(matches,key):
+    # Only two distinct relevant tournaments per collection. Four additional
+    # requests at most (brackets + standings), even with many Panda matches.
+    candidates={}
+    for m in matches:
+        tid=m.get("tournament_id")
+        if type(tid) is not int or m.get("provider")!="pandascore":continue
+        title=m.get("tournament_name") or m.get("league") or ""
+        if tid not in candidates:
+            priority=(0 if m.get("sport")=="lol" else 2)
+            combined=(m.get("league","")+" "+title).lower()
+            if any(x in combined for x in ("worlds","msi","lpl","lck","international")):
+                priority-=1
+            candidates[tid]=(priority,title)
+    selected=sorted(candidates,key=lambda tid:(candidates[tid][0],tid))[:2]
+    brackets=[];standings=[];errors=0
+    headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
+    for tid in selected:
+        title=candidates[tid][1]
+        for kind in ("brackets","standings"):
+            try:
+                url=PANDA_ROOT+"/tournaments/"+str(tid)+"/"+kind+"?"+urlencode({"page[size]":100,"page[number]":1})
+                raw=json_request(url,headers)
+                normalized=(official_bracket(raw,tid,title) if kind=="brackets"
+                            else panda_standings(raw,tid,title))
+                if normalized:
+                    (brackets if kind=="brackets" else standings).append(normalized)
+            except Exception:
+                errors+=1
+    print("PandaScore tournament details: %d brackets, %d standings, %d request failures" %
+          (len(brackets),len(standings),errors),flush=True)
+    return brackets,standings
+
+
 def retrieve_api_sports(key,now):
     today=now.date()
     results=[]; failures=[]
     start=(today-dt.timedelta(days=1)).isoformat()
     end=(today+dt.timedelta(days=7)).isoformat()
-    for league_id,league_title in FOOTBALL.items():
+    # Current-season football access is often absent on the free tier;
+    # probe one league only. It must not exhaust the request budget.
+    for league_id,league_title in list(FOOTBALL.items())[:1]:
         try:
             rows=sports_request(FOOTBALL_ROOT,"fixtures",{"league":league_id,"season":str(today.year),
                        "from":start,"to":end},key)
@@ -207,7 +375,7 @@ def retrieve_api_sports(key,now):
             break
         except Exception:
             failures.append("football-"+league_id)
-    for offset in (-1,0,1,2):
+    for offset in (0,1,2,3,4,5,6):
         day=(today+dt.timedelta(days=offset)).isoformat()
         try:
             rows=sports_request(BASKET_ROOT,"games",{"date":day},key)
@@ -216,7 +384,7 @@ def retrieve_api_sports(key,now):
                 if match:results.append(match)
         except Exception:
             failures.append("basketball-"+str(offset))
-    if len(failures)==9:
+    if len(failures)==8:
         raise RuntimeError("All API-Sports fixtures requests failed (check subscription/region/quota)")
     return results,failures
 
@@ -242,7 +410,7 @@ def retrieve_pandascore(key,now):
 
 def main():
     now=dt.datetime.now(UTC)
-    events={};sources=[]
+    events={};sources=[];brackets=[];standings=[]
     pairs=(("api-sports","API_SPORTS_KEY",retrieve_api_sports),
            ("pandascore","PANDASCORE_API_TOKEN",retrieve_pandascore))
     for provider,keyname,func in pairs:
@@ -255,6 +423,15 @@ def main():
         try:
             matches,failed=func(secret,now)
             for event in matches:events[event["id"]]=event
+            if provider=="pandascore":
+                b,t=tournament_extras(matches,secret)
+                brackets.extend(b);standings.extend(t)
+            elif provider=="api-sports":
+                try:
+                    nba=nba_standings(secret,now)
+                    if nba:standings.append(nba)
+                except Exception:
+                    print("NBA standings not available on current plan; keeping calendar data",flush=True)
             sources.append({"tag":provider,"status":"partial" if failed else "ok",
                             "count":len(matches),"failed_groups":len(failed)})
             print("Official fixtures: "+provider+" returned "+str(len(matches))+
@@ -280,9 +457,10 @@ def main():
         if by_bucket[key]<=status_limits[event["status"]]:
             selected.append(event)
     output={"schema":1,"source_type":"official_fixtures","generated_at":iso(now),
-            "interval_hours":6,"sources":sources,"status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
-            "events":selected,
-            "notes":"Verified provider schedules and reported scores; 6-hour snapshots are not real-time. Missing scores are shown as pending."}
+            "interval_hours":6,"sources":sources,
+            "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
+            "events":selected,"brackets":brackets[:2],"standings":standings[:3],
+            "notes":"Verified schedules, provider bracket trees and standings. No live score display; updates roughly every six hours."}
     write_json(OUT,output)
     print("Official fixtures published: "+str(len(selected)),flush=True)
 
