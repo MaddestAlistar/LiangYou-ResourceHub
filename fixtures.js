@@ -751,7 +751,7 @@ if(typeof window.addEventListener==='function'){
   refs.state.value=match?.status||'scheduled';date='week';limit=6;render();showFixtureDetail(id);
   refs.detail.scrollIntoView?.({behavior:'smooth',block:'nearest'});
  });
- window.addEventListener('liangyou:markets-updated',()=>{if(detailId)showFixtureDetail(detailId);});
+ window.addEventListener('liangyou:markets-updated',()=>{if(view==='calendar')calendar();});
 }
 function resetBracketView(){
  selectedBracketMatch=null;
