@@ -120,6 +120,8 @@ const localize=(v,category='')=>{
   'Worlds · Play-In':'英雄联盟全球总决赛 · 入围赛',
   'Worlds · Group Stage':'英雄联盟全球总决赛 · 小组赛',
  'LCK · Round 3-4':'LCK · 第3—4轮 · 分组阶段榜',
+ 'LCK · 2026 Rounds 3-4':'LCK · 2026赛季第3—4轮 · 最终分组榜',
+ 'LPL · 2026 Split 3 Regular Season':'LPL · 2026第三赛段 · 最终分组榜',
  'LPL · Group Stage':'LPL · 登峰组与涅槃组 · 阶段榜',
  'Legend Group':'传奇组','Rise Group':'崛起组',
  'Group Ascend':'登峰组','Group Nirvana':'涅槃组',
@@ -349,8 +351,8 @@ function brackets(){
  // Only visual bracket trees or stage progression diagrams live in this view.
  const knockout=data.brackets.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.rounds)&&x.rounds.length)
   .map(x=>({...x,_key:'brk:'+x.tournament_id,_visual:'knockout'}));
- const phases=consolidatedStandings(data.standings.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length))
-  .map(x=>({...x,_key:'phase:'+x.id,_visual:x.is_combined?'group':viz.stageOf(x)}))
+ const phases=consolidatedStandings(data.standings.filter(x=>(x?.provider==='pandascore'||x?.historical_final===true)&&Array.isArray(x.groups)&&x.groups.length))
+  .map(x=>({...x,_key:'phase:'+x.id,_visual:x.is_combined||x.historical_final?'group':viz.stageOf(x)}))
   .filter(x=>x._visual==='swiss'||x._visual==='group');
  // When the provider has matches but no published standings, retain the
  // real Swiss fixture diagram without inventing a standings position.
@@ -430,6 +432,11 @@ function standings(){
   if(!groups.size)return '';
   const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
   const orderNote=selected.order_method==='win_pct'?'<p class="fixtures-ranking-note">'+safe(copy.nbaNote)+'</p>':'';
+  const archiveNote=selected.historical_final?'<p class="fixtures-ranking-note">'+
+   safe(lang()==='zh'?'2026年已完赛阶段的最终排名（历史快照，不是实时赛事），独立于 PandaScore 动态数据。':'Final historical 2026 standings; not live PandaScore results.')+'</p>':'';
+  const sourceUrl=selected.historical_final&&/^https:\/\/(?:lolesports\.com|www\.sheepesports\.com)\//.test(selected.source_url||'')?
+   '<p class="fixtures-ranking-note"><a href="'+safe(selected.source_url)+'" target="_blank" rel="noopener noreferrer">'+
+   safe(lang()==='zh'?'查看原始赛事成绩':'Original event standings')+'</a></p>':'';
   const stageNote=selected.is_combined?'<p class="fixtures-ranking-note">'+
    safe(lang()==='zh'?'同赛段分组集中展示，排名与战绩来自已核验数据源；不等同于全年总榜。':'Grouped verified phase records, not full-season standings.')+'</p>':
    selected.title==='LCK · Round 3-4 Legend Group'?'<p class="fixtures-ranking-note">'+safe(copy.lckStageNote)+'</p>':'';
@@ -468,7 +475,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+missingNote+rulesNote+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+staleNote+orderNote+archiveNote+sourceUrl+stageNote+missingNote+rulesNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
@@ -489,6 +496,14 @@ async function fetchData(){
       Array.isArray(candidate.events)&&Array.isArray(candidate.standings))extra=candidate;
   }catch{/* Optional provider unavailable; retain working PandaScore and API-Sports data. */}
   const published=extra?extra.standings:[];
+  let historic=[];
+  try{
+   const archive=await fetchJson('./data/verified-lol-2026.json');
+   if(archive.schema===1&&archive.source_type==='verified_completed_esports_standings'&&
+      Number(archive.season)===2026&&Array.isArray(archive.standings)&&
+      archive.standings.every(x=>x.historical_final&&Array.isArray(x.groups)&&x.source_url))
+     historic=archive.standings;
+  }catch{/* 2026 historical archive is optional; ordinary feeds continue. */}
   const events=extra?[...base.events,...extra.events]:base.events;
   const dedupe=items=>{
    const seen=new Set();
@@ -500,7 +515,12 @@ async function fetchData(){
   data={...base,
     events:dedupe(events).slice(0,500),
     brackets:Array.isArray(base.brackets)?base.brackets.slice(0,16):[],
-    standings:dedupe([...(base.standings||[]),...published]).slice(0,24),
+    // 2026 final archives take precedence over incomplete 2026 phase snapshots.
+    standings:dedupe([...(base.standings||[]).filter(x=>
+      !(historic.length&&String(base.generated_at||'').startsWith('2026-')&&
+      (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
+       /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
+      ...published,...historic]).slice(0,24),
     sources:[...(base.sources||[]),...(extra?.sources||[])],
     extraStatus:extra?.status||'unavailable',
     extraGeneratedAt:extra?.generated_at||null,
