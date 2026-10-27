@@ -299,3 +299,35 @@
 
 /* Freshness notices remain legible inside long mobile standings tables. */
 .fixtures-ranking-note.is-stale{border:1px solid rgba(224,169,95,.37);background:rgba(210,146,67,.10);color:#f0cf9e;padding:7px 9px;border-radius:8px;margin:5px 3px 10px}
+
+
+/* 2026 competition cockpit: thumb-friendly league navigation */
+.fixtures-league-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;padding:4px 1px 12px;
+ overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+.fixtures-league-tabs button{flex:0 0 auto;min-height:39px;padding:8px 14px;border:1px solid rgba(145,174,209,.32);
+ border-radius:999px;background:rgba(20,41,65,.72);color:#bed0df;font-size:12px;font-weight:700;cursor:pointer}
+.fixtures-league-tabs button.is-active{border-color:#dfbf82;background:rgba(222,185,120,.13);color:#ffe3af}
+.fixtures-league-tabs button:focus-visible{outline:2px solid #e4bf7c;outline-offset:3px}
+.fixtures-standing-card .fixtures-ranking{font-variant-numeric:tabular-nums}
+.fixtures-standing-group h4{overflow-wrap:anywhere}
+.fixtures-standing-tables .fixtures-ranking-note{max-width:900px}
+.lyb-multi-lane{min-width:100%}
+.lyb-lane-label{position:absolute;left:16px;color:#f1d298;font-weight:850;letter-spacing:.04em;font-size:13px}
+.lyb-bracket-disclaimer{margin:0;padding:10px 16px;color:#a7bcd1;font-size:11px;line-height:1.6}
+.lyb-lines path.lyb-bracket-edge.is-winner{stroke:#63ceb5;stroke-width:2.2}
+.lyb-lines path.lyb-bracket-edge.is-loser{stroke:#e4b77a;stroke-width:2;stroke-dasharray:5 4}
+.lyb-match-meta{display:flex;justify-content:space-between;gap:6px;color:#aec3d4;
+ font-size:9px;font-weight:700;padding:4px 7px 1px;min-height:17px}
+.lyb-match-meta span{color:#d9bd8d}
+@media(max-width:680px){
+ .fixtures-league-tabs{margin-inline:-2px}
+ .fixtures-league-tabs button{min-height:42px;font-size:12px}
+ .fixtures-subhead .fixtures-multiselect{gap:7px}
+ .fixtures-standing-group{max-width:100%;overflow:hidden}
+ .fixtures-ranking:not(.is-football){min-width:340px}
+ .lyb-bracket-disclaimer{font-size:10px}
+ .lyb-visual-top{padding:12px 12px 9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .fixtures-league-tabs,.lyb-scroll{scroll-behavior:auto}
+}
