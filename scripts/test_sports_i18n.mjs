@@ -249,7 +249,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  'officialFixturesStatus','officialFixturesSearch','officialFixturesCategory',
  'officialFixturesSort','officialFixturesMore','officialFixturesShowing',
  'officialBracketGrid','officialBracketQuick','officialBracketSelect','officialBracketSport',
- 'officialStandingGrid','officialStandingSummary','officialStandingSelect','officialStandingSport',
+ 'officialStandingGrid','officialStandingSummary','officialStandingQuick','officialStandingSelect','officialStandingSport',
  'officialFixturesTitle','officialFixturesIntro','officialFixturesNote',
  'fixturesMarketTitle','fixtureCalendarPanel','fixtureBracketsPanel',
  'fixtureStandingsPanel','fixturesSortHint','officialBracketSubtitle','officialStandingSubtitle'];
@@ -282,6 +282,10 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  modes[2].dispatch('click');
  const count=snapshot.standings.filter(x=>x.groups?.length).length;
  if(count){
+  assert(ui.get('officialStandingQuick').innerHTML.includes('data-fixtures-standing="all"'),
+   'All standings selector missing');
+  assert((ui.get('officialStandingQuick').innerHTML.match(/data-fixtures-standing=/g)||[]).length===count+1,
+   'All existing rankings must be directly discoverable');
   assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===Math.min(count,8),
     'Multiple rankings should appear on first visit');
   assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
