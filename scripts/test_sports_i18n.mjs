@@ -400,11 +400,20 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
   modes[2].dispatch('click');
   if(snapshot.standings.length){
     assert(ui.get('officialStandingQuick').innerHTML==='', 'Redundant standings buttons still shown');
-    assert(ui.get('officialStandingSelect').options.length===snapshot.standings.length+extra.standings.length,
-      'Dropdown must list all esports, basketball, and football rankings');
+    const records=[...snapshot.standings,...extra.standings].filter(x=>
+      x&&Array.isArray(x.groups)&&x.groups.length&&
+      (x.sport==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses))));
+    assert(ui.get('officialStandingSelect').options.length===records.length,
+      'Only verified standings with win/loss data (or football points) should be selectable');
+    assert(!records.some(x=>x.title==='Worlds · Play-In'), 'Rank-only Worlds Play-In should be hidden');
     assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===1,
       'Only the chosen standings card should render');
     assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
+    ui.get('officialStandingSelect').value='panda-21364';
+    ui.get('officialStandingSelect').dispatch('change');
+    assert(ui.get('officialStandingGrid').innerHTML.includes('第3—4轮') &&
+           ui.get('officialStandingGrid').innerHTML.includes('崛起组未收录'),
+           'LCK Legend Group must be correctly labeled as incomplete stage standings');
   }
   ui.get('officialStandingSport').value='basketball';
   ui.get('officialStandingSport').dispatch('change');
