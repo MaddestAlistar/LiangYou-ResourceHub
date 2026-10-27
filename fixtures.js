@@ -76,7 +76,7 @@ en:{title:'Calendar & tournament intelligence',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
-let view='calendar',date='week',limit=6;
+let view='calendar',date='week',limit=6,leagueFilter='all';
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
@@ -296,6 +296,37 @@ function kindOf(v){
  if(v.kind==='basketball')return 'basketball';
  return /worlds|league of legends|\blol\b|\blpl\b|\blck\b|\blcp\b|\blgc\b|\blec\b|\bmsi\b/i.test(v.title||'')?'lol':'esports';
 }
+function consolidatedStandings(records){
+ const out=[],paired=new Map();
+ for(const record of records){
+  const title=String(record.title||'');
+  const lck=/^LCK\s*·\s*Round 3-4\s+(?:Legend|Rise) Group$/i.test(title);
+  const lpl=/^LPL\s*·\s*Group (?:Ascend|Nirvana)$/i.test(title);
+  const key=lck?'lck-2026-round34':lpl?'lpl-2026-split3':null;
+  if(!key){out.push(record);continue;}
+  if(!paired.has(key))paired.set(key,[]);
+  paired.get(key).push(record);
+ }
+ for(const [key,items] of paired){
+  const lck=key.startsWith('lck');
+  const expected=lck?['Legend Group','Rise Group']:['Group Ascend','Group Nirvana'];
+  const groups=items.flatMap(item=>item.groups.map(r=>({...r,
+   group:r.group||item.phase_group||(/legend/i.test(item.title)?'Legend Group':
+   /rise/i.test(item.title)?'Rise Group':/ascend/i.test(item.title)?'Group Ascend':'Group Nirvana')})));
+  const seen=new Set(groups.map(r=>r.group));
+  out.push({...items[0],id:key,title:lck?'LCK · Round 3-4':'LPL · Group Stage',
+   groups,missing_groups:expected.filter(g=>!seen.has(g)),record_count:items.length,
+   is_combined:true,phase_family:key,status:items.some(x=>x.status==='stale')?'stale':items[0].status});
+ }
+ return out;
+}
+function standingsLeague(x){
+ const title=String(x.title||'').toLowerCase();
+ if(/\blck\b/.test(title)&&!/challenger|academy|youth/.test(title))return 'lck';
+ if(/\blpl\b/.test(title))return 'lpl';
+ if(/worlds|world championship/.test(title))return 'worlds';
+ return 'other';
+}
 function options(select,items,includeAll=false){
  const current=select.value;
  select.innerHTML=(includeAll?'<option value="all">'+safe(t().selectAllStandings)+'</option>':'')+
@@ -359,11 +390,10 @@ function brackets(){
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
- const records=data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
-    // Hide rank-only tables (e.g. Worlds Play-In) when the source has no W/L records.
-    // Retain raw data for the bracket and group-stage diagrams.
-    (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))&&
-    (kind==='all'||kindOf(x)===kind))
+ const records=consolidatedStandings(data.standings.filter(x=>x&&Array.isArray(x.groups)&&x.groups.length&&
+    (kindOf(x)==='football'||x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses)))))
+    .filter(x=>(kind==='all'||kindOf(x)===kind)&&
+       (leagueFilter==='all'||standingsLeague(x)===leagueFilter))
     .sort((a,b)=>popularity(b)-popularity(a));
  if(!records.length){
   refs.standingSelect.hidden=true;refs.standingQuick.innerHTML='';
@@ -386,19 +416,25 @@ function standings(){
   if(!groups.size)return '';
   const sport=kindOf(selected),football=sport==='football',nba=sport==='basketball';
   const orderNote=selected.order_method==='win_pct'?'<p class="fixtures-ranking-note">'+safe(copy.nbaNote)+'</p>':'';
-  const stageNote=selected.title==='LCK · Round 3-4 Legend Group'?'<p class="fixtures-ranking-note">'+safe(copy.lckStageNote)+'</p>':'';
+  const stageNote=selected.is_combined?'<p class="fixtures-ranking-note">'+
+   safe(lang()==='zh'?'同赛段分组集中展示，排名与战绩来自已核验数据源；不等同于全年总榜。':'Grouped verified phase records, not full-season standings.')+'</p>':
+   selected.title==='LCK · Round 3-4 Legend Group'?'<p class="fixtures-ranking-note">'+safe(copy.lckStageNote)+'</p>':'';
+  const missingNote=selected.missing_groups?.length?'<p class="fixtures-ranking-note is-stale">'+
+   safe((lang()==='zh'?'以下分组暂未获得可靠数据：':'Missing verified groups: ')+selected.missing_groups.join(' / '))+'</p>':'';
   const staleNote=selected.status==='stale'?'<p class="fixtures-ranking-note is-stale">'+
     safe(copy.staleBoard)+(selected.verified_at?' · '+safe(when(selected.verified_at)):'')+'</p>':'';
   const tables=[...groups.entries()].map(([group,list])=>{
    const headers=football?[copy.rank,copy.team,copy.points,copy.played,copy.wins,copy.draws,copy.losses]:
        nba?[copy.rank,copy.team,copy.wins,copy.losses,copy.winRate]:
-       [copy.rank,copy.team,copy.wins,copy.losses];
+       [copy.rank,copy.team,copy.wins,copy.losses,copy.winRate];
    const rows=list.sort((a,b)=>a.rank-b.rank).slice(0,30).map(x=>{
     const value=v=>Number.isInteger(v)?safe(v):'—';
     const tds=football?[value(x.rank),safe(team(x.team,sport)),value(x.points),value(x.played),value(x.wins),value(x.draws),value(x.losses)]:
         nba?[value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses),
           Number.isFinite(x.win_pct)?safe((x.win_pct*100).toFixed(1)+'%'):'—']:
-        [value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses)];
+        [value(x.rank),safe(team(x.team,sport)),value(x.wins),value(x.losses),
+         Number.isInteger(x.wins)&&Number.isInteger(x.losses)&&x.wins+x.losses>0?
+         safe((100*x.wins/(x.wins+x.losses)).toFixed(1)+'%'):'—'];
     return '<tr>'+tds.map(v=>'<td>'+v+'</td>').join('')+'</tr>';
    }).join('');
    const rankOnly=!football&&!nba&&list.every(x=>!Number.isInteger(x.wins)&&!Number.isInteger(x.losses));
@@ -413,7 +449,7 @@ function standings(){
      kindOf(selected)==='esports'?copy.esportsKind[1]:kindOf(selected)==='football'?copy.ranks[4]:copy.ranks[3])+' · '+
      safe(localize(selected.title,kindOf(selected)))+'</span>'+
    '<span class="fixtures-standing-num">'+safe(selected.groups.length)+' '+safe(copy.team)+'</span></summary>'+
-   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+tables+'</div></details>';
+   '<div class="fixtures-standing-tables">'+staleNote+orderNote+stageNote+missingNote+tables+'</div></details>';
  }).join('')||empty(copy.noStanding);
 }
 function render(){updateLabels();if(view==='calendar')calendar();else if(view==='brackets')brackets();else standings();}
