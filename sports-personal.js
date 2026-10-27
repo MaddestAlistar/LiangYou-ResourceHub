@@ -7,7 +7,12 @@ const healthBox=document.getElementById('sportsHealth');
 if(!section||!shelf)return;
 const STORAGE='liangyou-sports-following-v1';
 const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const norm=v=>window.LiangYouSportsLinks?.keyName?.(v)||String(v||'').toLowerCase().trim();
+const norm=v=>{
+ const raw=String(v||'').trim();
+ // Market matcher understands Latin aliases, while Korean/Japanese names need Unicode fallback.
+ return window.LiangYouSportsLinks?.keyName?.(raw)||
+  raw.normalize('NFKC').toLocaleLowerCase().replace(/[\s\p{P}\p{S}]+/gu,'');
+};
 const allowed=new Set(['lol','esports','basketball','football','chess','go']);
 let followed=[];
 let followingOnly=false;
