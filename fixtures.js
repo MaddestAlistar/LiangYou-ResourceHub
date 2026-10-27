@@ -79,7 +79,7 @@ en:{title:'Calendar & tournament intelligence',
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
 let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
-let fetchPending=false,archiveCache=null,lastSnapshotSignature='';
+let fetchPending=false,archiveCache=null,extraCache=null,lastSnapshotSignature='';
 const linker=window.LiangYouSportsLinks;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
@@ -657,17 +657,22 @@ async function fetchData(){
    throw Error('Invalid official snapshot schema');
   const extra=extraRaw?.schema===1&&extraRaw.source_type==='supplemental_fixtures'&&
     Array.isArray(extraRaw.events)&&Array.isArray(extraRaw.standings)?extraRaw:null;
-  const published=extra?extra.standings:[];
+  if(extra)extraCache=extra;
+  // Retain earlier verified NBA/football snapshots when an optional feed
+  // fails. Never label these retained records as freshly verified.
+  const usableExtra=extra||extraCache;
+  const published=usableExtra?usableExtra.standings.map(x=>extra?x:
+    {...x,status:'stale',verified_at:x.verified_at||usableExtra.generated_at}):[];
   const historic=archiveRaw?.schema===1&&archiveRaw.source_type==='verified_completed_esports_standings'&&
     Number(archiveRaw.season)===2026&&Array.isArray(archiveRaw.standings)&&
     archiveRaw.standings.every(x=>x.historical_final&&Array.isArray(x.groups)&&x.source_url)?
     archiveRaw.standings:[];
   if(historic.length)archiveCache=archiveRaw;
-  const signature=[base.generated_at,base.status,extra?.generated_at||'',
-    extra?.status||'',archiveCache?.generated_at||''].join('|');
+  const signature=[base.generated_at,base.status,usableExtra?.generated_at||'',
+    extra?.status||'stale',archiveCache?.generated_at||''].join('|');
   if(signature===lastSnapshotSignature)return;
   lastSnapshotSignature=signature;
-  const events=extra?[...base.events,...extra.events]:base.events;
+  const events=usableExtra?[...base.events,...usableExtra.events]:base.events;
   const dedupe=items=>{
    const seen=new Set();
    return items.filter(x=>{
@@ -684,11 +689,11 @@ async function fetchData(){
       (/^LCK · Round 3-4 (?:Legend|Rise) Group$/i.test(x.title||'')||
        /^LPL · Group (?:Ascend|Nirvana)$/i.test(x.title||'')))),
       ...published,...historic]).slice(0,24),
-    sources:[...(base.sources||[]),...(extra?.sources||[])],
-    extraStatus:extra?.status||'unavailable',
-    extraGeneratedAt:extra?.generated_at||null,
+    sources:[...(base.sources||[]),...(usableExtra?.sources||[])],
+    extraStatus:extra?.status||(usableExtra?'stale':'unavailable'),
+    extraGeneratedAt:usableExtra?.generated_at||null,
     generated_at:base.generated_at,officialSources:base.sources||[],
-    extraSources:extra?.sources||[]};
+    extraSources:(usableExtra?.sources||[]).map(x=>extra?x:{...x,status:'stale'})};
   window.LiangYouOfficialSportsEvents=data.events;
   if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
     window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
