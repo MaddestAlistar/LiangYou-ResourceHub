@@ -115,11 +115,15 @@ function knockout(record,opt={}){
    paths.push('<path class="'+cls+'" d="'+d+'" />');edges++;
   }
  }
- const explanation=edges?
-   z('实线连接来自 PandaScore 已核验的上一场比赛 ID；败者转入败者组以虚线区分。',
-     'Match connections use verified provider predecessor IDs; loser transitions are dashed.',lang):
+ const missingPredecessors=all.reduce((n,m)=>n+
+   (m.previous_matches||[]).filter(p=>!places.has(String(p.match_id))).length,0);
+ const explanation=(edges?
+   z('比赛连线仅使用官方上一场比赛 ID；败者路线以虚线区分。',
+     'Match paths use provider predecessor IDs only; loser paths are dashed.',lang):
    z('数据源暂未返回足够的前驱关系，因此只展示真实对阵，不绘制推测连线。',
-     'No confirmed predecessor data is available; only verified matchups are shown.',lang);
+     'No confirmed predecessor data is available; only verified matchups are shown.',lang))+
+   (missingPredecessors?' '+z('另有'+missingPredecessors+'条前序引用缺少对应节点，未绘制推测路线。',
+    missingPredecessors+' predecessor references have no source match node; no guessed links are drawn.',lang):'');
  return '<div class="lyb-visual"><div class="lyb-visual-top"><strong>PLAYOFF BRACKET</strong><span>'+
   z('真实双败 / 淘汰赛对阵','Verified knockout & double elimination',lang)+'</span></div>'+
   '<p class="lyb-bracket-disclaimer">'+html(explanation)+'</p>'+
