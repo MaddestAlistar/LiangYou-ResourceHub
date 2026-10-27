@@ -605,3 +605,25 @@
 #officialFixtures .fixtures-extra-person>div b{font-size:14px}
 #officialFixtures .fixtures-odds-options b{font-size:17px}
 #officialFixtures .fixtures-odds-options span{font-size:9px}}
+
+/* Compact cards: the provider remains in detailed metadata, not each card footer. */
+#officialFixtures .fixtures-cardfoot{justify-content:flex-end;gap:8px}
+#officialFixtures .fixtures-cardfoot .fixtures-detail-btn{margin-left:auto}
+
+/* Detail action grid: balanced two-column phone layout, no awkward single orphan button. */
+#officialFixtures .fixtures-detail-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+#officialFixtures .fixtures-detail-actions>button{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;
+  padding:10px 12px;text-align:center;white-space:normal;overflow-wrap:anywhere;line-height:1.5;
+  background:linear-gradient(135deg,rgba(208,167,101,.17),rgba(76,105,139,.2));
+  border:1px solid rgba(209,177,118,.4);border-radius:11px;font-size:12px;font-weight:690}
+#officialFixtures .fixtures-detail-actions>button:nth-child(odd):last-child{grid-column:1/-1}
+#officialFixtures .fixtures-detail-actions>button:hover,#officialFixtures .fixtures-detail-actions>button:focus-visible{
+  background:rgba(208,167,101,.25);border-color:rgba(244,208,143,.8)}
+@media(min-width:820px){
+  #officialFixtures .fixtures-detail-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #officialFixtures .fixtures-detail-actions>button:nth-child(odd):last-child{grid-column:auto}
+}
+@media(max-width:360px){#officialFixtures .fixtures-detail-actions{gap:7px}
+  #officialFixtures .fixtures-detail-actions>button{padding:10px 7px;font-size:11px}}
+/* The optional diagnostics stay collected internally; the user-facing status banner is removed. */
+#sportsHealth[hidden]{display:none!important}
