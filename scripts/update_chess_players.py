@@ -12,7 +12,9 @@ from feed_common import ROOT,read_json,now,date,iso,write_json
 
 OUT=ROOT/"data/chess-players.json"
 BOARD=ROOT/"data/board-games.json"
-VERIFIED_USERS={"Nakamura, Hikaru":("hikaru","Hikaru Nakamura")}
+VERIFIED_USERS={"Nakamura, Hikaru":("hikaru","Hikaru Nakamura"),
+                "Caruana, Fabiano":("fabianocaruana","Fabiano Caruana"),
+                "Dubov, Daniil":("duhless","Daniil Dubov")}
 BASE="https://api.chess.com/pub/player/"
 
 def get_json(url):
@@ -56,7 +58,7 @@ def main():
             if t and timedelta(0)<=instant-t<=timedelta(hours=72):
                 records.append(was)
     write_json(OUT,{"schema":1,"source_type":"chess_player_metadata",
-      "chess_profile_version":1,"generated_at":iso(instant),"verified_at":iso(instant) if success else None,
+      "chess_profile_version":2,"generated_at":iso(instant),"verified_at":iso(instant) if success else None,
       "status":"ok" if success else "no_verified_profiles","players":records,
       "sources":[{"tag":"chess.com","status":"ok" if success else "unavailable","count":success}]})
     print("Chess.com verified profiles:",success,flush=True)
