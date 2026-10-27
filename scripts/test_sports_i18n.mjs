@@ -86,14 +86,12 @@ const fixtureJS = readFileSync('fixtures.js','utf8');
 assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers League'), 'Chinese event names missing');
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json") && fixtureJS.includes("score_home"));
-assert(fixtureJS.includes("data-fixtures-standing") && fixtureJS.includes("officialStandingQuick"),
-  'Every published standings table must be selectable by name');
-assert(fixtureJS.includes("data-fixtures-tournament") && fixtureJS.includes("kindOf(x)==='lol'"),
-  'League of Legends bracket tabs must remain available');
+assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('refs.bracketStage') && fixtureJS.includes("_mode:'group'"), 'Group-stage selector missing');
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.11') && html.includes('fixtures.css?v=20261027.5'),
+assert(html.includes('fixtures.js?v=20261027.12') && html.includes('fixtures.css?v=20261027.6'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
@@ -248,7 +246,7 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const ids=['officialFixtures','officialFixturesGrid','officialFixturesCount',
  'officialFixturesStatus','officialFixturesSearch','officialFixturesCategory',
  'officialFixturesSort','officialFixturesMore','officialFixturesShowing',
- 'officialBracketGrid','officialBracketQuick','officialBracketSelect','officialBracketSport',
+ 'officialBracketGrid','officialBracketQuick','officialBracketSelect','officialBracketSport','officialBracketStage',
  'officialStandingGrid','officialStandingSummary','officialStandingQuick','officialStandingSelect','officialStandingSport',
  'officialFixturesTitle','officialFixturesIntro','officialFixturesNote',
  'fixturesMarketTitle','fixtureCalendarPanel','fixtureBracketsPanel',
@@ -263,7 +261,9 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  ui.get('officialFixturesSort').options=[{value:'popular'},{value:'time'}];
  ui.get('officialFixturesSort').value='popular';
  ui.get('officialBracketSport').options=[{value:'all'},{value:'lol'},{value:'esports'}];
- ui.get('officialBracketSport').value='lol';
+ ui.get('officialBracketSport').value='all';
+  ui.get('officialBracketStage').options=[{value:'all'},{value:'group'},{value:'knockout'}];
+  ui.get('officialBracketStage').value='all';
  ui.get('officialStandingSport').options=[{value:'all'},{value:'lol'},{value:'esports'},{value:'basketball'}];
  ui.get('officialStandingSport').value='all';
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
@@ -272,32 +272,36 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
- const lol=snapshot.brackets.filter(x=>x.sport==='lol'&&x.rounds?.length);
- if(lol.length){
-  assert((ui.get('officialBracketQuick').innerHTML.match(/data-fixtures-tournament=/g)||[]).length===lol.length,
-    'All available LoL brackets should be visible, not just one dropdown option');
-  assert(ui.get('officialBracketQuick').innerHTML.includes('英雄联盟'));
-  assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'));
- }
- modes[2].dispatch('click');
- const count=snapshot.standings.filter(x=>x.groups?.length).length;
- if(count){
-  assert(ui.get('officialStandingQuick').innerHTML.includes('data-fixtures-standing="all"'),
-   'All standings selector missing');
-  assert((ui.get('officialStandingQuick').innerHTML.match(/data-fixtures-standing=/g)||[]).length===count+1,
-   'All existing rankings must be directly discoverable');
-  assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===Math.min(count,8),
-    'Multiple rankings should appear on first visit');
-  assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
-  assert(ui.get('officialStandingSelect').value==='all');
- }
- section.getAttribute=()=> 'en';
+  assert(ui.get('officialBracketQuick').innerHTML==='', 'Redundant tournament buttons still shown');
+  assert(ui.get('officialBracketSelect').options.length>=snapshot.brackets.length,
+    'Bracket dropdown must contain each collected knockout tournament');
+  ui.get('officialBracketStage').value='group';
+  ui.get('officialBracketStage').dispatch('change');
+  const stages=snapshot.standings.filter(x=>/group|swiss|regular season/i.test(x.title||''));
+  if(stages.length){
+    assert(ui.get('officialBracketSelect').options.length===stages.length,
+      'Published group stages must be selectable');
+    assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-ranking'));
+  }
+  ui.get('officialBracketStage').value='knockout';
+  ui.get('officialBracketStage').dispatch('change');
+  if(snapshot.brackets.length)assert(ui.get('officialBracketGrid').innerHTML.includes('fixtures-tie-line'));
+  modes[2].dispatch('click');
+  if(snapshot.standings.length){
+    assert(ui.get('officialStandingQuick').innerHTML==='', 'Redundant standings buttons still shown');
+    assert(ui.get('officialStandingSelect').options.length===snapshot.standings.length,
+      'Dropdown must list all published rankings');
+    assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===1,
+      'Only the chosen standings card should render');
+    assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
+  }
+  section.getAttribute=()=> 'en';
  modes[0].dispatch('click');
  assert(ui.get('officialFixturesTitle').textContent==='Calendar & tournament intelligence');
  assert(ui.get('fixturesSortHint').textContent.includes('Editorial prominence'));
  modes[1].dispatch('click');
- assert(ui.get('officialBracketSubtitle').textContent.includes('Verified'));
- console.log('PASS: Fixture board bilingual rendering, LoL brackets, and multiple ranking cards.');
+ assert(ui.get('officialBracketSubtitle').textContent.includes('Esports stages'));
+ console.log('PASS: Fixture board bilingual rendering, group stages and compact rankings.');
 }
 
 console.log('PASS: Chinese-English translations, original names and snapshot match titles');
