@@ -513,6 +513,8 @@ function showFixtureDetail(id,scroll=false){
    (label?'这是定时采集快照，不代表实时比分。':'Periodic snapshot, not a live score.')+'</p>':'')+
   (x.sport==='chess'?renderChessProfiles(x,label):'')+
   '<div class="fixtures-detail-actions">'+
+  '<button type="button" data-fixture-share="'+safe(x.id)+'">'+
+    (label?'生成赛事分享图':'Share match image')+'</button>'+
   (bracket?'<button type="button" data-fixture-bracket="'+safe(bracket.tournament_id)+'">'+
     (label?'在晋级图中查看':'View bracket')+'</button>':'')+
   (table?'<button type="button" data-fixture-standings="'+safe(table.id)+'">'+
