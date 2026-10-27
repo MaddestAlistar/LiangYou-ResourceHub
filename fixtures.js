@@ -339,6 +339,20 @@ function predictionCard(m,fixture,zh){
    '</div>'+
  '</article>';
 }
+function renderGoPlayerRating(x,side,zh){
+ const name=boardPlayer(x,side);
+ const rank=x[side+'_world_rank'];
+ const rating=x[side+'_rating'];
+ const rankText=Number.isInteger(rank)?String(rank):'—';
+ const ratingText=Number.isInteger(rating)?String(rating):'—';
+ return '<div class="fixtures-go-player">'+
+  '<strong class="fixtures-go-player-name">'+safe(name)+'</strong>'+
+  '<div class="fixtures-go-player-stats">'+
+   '<div class="fixtures-go-stat"><span>'+(zh?'世界排名':'World ranking')+'</span>'+
+    '<b>'+safe(rankText)+'</b></div>'+
+   '<div class="fixtures-go-stat"><span>Elo</span><b>'+safe(ratingText)+'</b></div>'+
+  '</div></div>';
+}
 function showFixtureDetail(id,scroll=false){
  const button=[...refs.grid.querySelectorAll('[data-fixture-id]')]
   .find(node=>node.dataset.fixtureId===String(id));
@@ -377,16 +391,33 @@ function showFixtureDetail(id,scroll=false){
   (x.sport==='chess'?safe(chessSide('home'))+' · ':'')+safe(boardPlayer(x,'home'))+
   ' · '+(x.sport==='chess'?safe(chessSide('away'))+' · ':'')+safe(boardPlayer(x,'away'))+'</strong><button type="button" data-close-fixture aria-label="'+
   (label?'关闭详情':'Close detail')+'">×</button></div>'+
-  '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+
-  (x.stage?' · '+safe(localizeStage(x.stage,x.sport)):'')+' · '+safe(state)+
-  ' · '+safe(whenAt)+' · '+safe(source)+'</div>'+ 
-  (x.sport==='go'?'<div class="fixtures-go-ratings">'+
-    (boardRating(x,'home')?safe(boardPlayer(x,'home'))+'：'+safe(boardRating(x,'home'))+' · ':'')+
-    (boardRating(x,'away')?safe(boardPlayer(x,'away'))+'：'+safe(boardRating(x,'away'))+' · ':'')+
-    '<a href="https://www.goratings.org/en/" target="_blank" rel="noopener noreferrer">'+
-    (label?'Go Ratings 世界排名':'Go Ratings player rankings')+'</a>'+
-    ((x.home_player_url||x.away_player_url)?' · <a href="https://db.u-go.net/" target="_blank" rel="noopener noreferrer">u-go.net</a>':'')+
-    '<small> '+(label?'排名仅供参考，不代表比赛胜率':'Rankings are not win probabilities')+'</small></div>':'')+
+  (x.sport==='go'?
+   '<div class="fixtures-go-event">'+
+    '<div class="fixtures-go-event-name">'+safe(localize(x.league,x.sport))+
+      (x.stage?' · '+safe(localizeStage(x.stage,x.sport)):'')+'</div>'+
+    '<div class="fixtures-go-event-meta">'+
+     '<span class="fixtures-go-status">'+safe(state)+'</span>'+
+     '<span>'+safe(x.time_precision==='date'?
+       (x.display_date||String(x.start_time||'').slice(0,10)):when(x.start_time))+'</span>'+
+     '<span>'+safe(source)+'</span>'+
+    '</div>'+
+   '</div>'+
+   '<div class="fixtures-go-summary">'+
+    '<div class="fixtures-go-player-grid">'+
+     renderGoPlayerRating(x,'home',label)+renderGoPlayerRating(x,'away',label)+
+    '</div>'+
+    '<div class="fixtures-go-summary-foot">'+
+     '<div class="fixtures-go-source-links">'+
+      '<a href="https://www.goratings.org/en/" target="_blank" rel="noopener noreferrer">Go Ratings</a>'+
+      ((x.home_player_url||x.away_player_url)?
+       '<a href="https://db.u-go.net/" target="_blank" rel="noopener noreferrer">u-go.net</a>':'')+
+     '</div>'+
+     '<p>'+(label?'排名和等级分仅供参考，不代表比赛胜率。':'Rankings and ratings are estimates, not win probabilities.')+'</p>'+
+    '</div>'+
+   '</div>':
+   '<div class="fixtures-detail-meta">'+safe(localize(x.league,x.sport))+
+    (x.stage?' · '+safe(localizeStage(x.stage,x.sport)):'')+' · '+safe(state)+
+    ' · '+safe(whenAt)+' · '+safe(source)+'</div>')+
   (complete?'<div class="fixtures-detail-score">'+score+'</div>':'')+
   (x.result_detail&&x.sport!=='chess'?'<p class="fixtures-detail-caution">'+safe(x.result_detail)+'</p>':'')+
   (x.status==='live'?'<p class="fixtures-detail-caution">'+
