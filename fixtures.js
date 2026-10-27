@@ -45,7 +45,7 @@ zh:{title:'赛事日历与赛事资料',
  total:n=>'已收录未来7天 '+n+' 场',shown:(n,t)=>'已显示 '+n+' / '+t+' 场',
  more:'加载更多赛程',round:'轮次',draw:'待定',rank:'排名',
  team:'战队 / 球队',wins:'胜',losses:'负',feature:'重点赛事',vs:'对阵',
- source:'来源',note:'来源：PandaScore（电竞）、API-Sports（篮球赛程）、DunkAPI（NBA 排名）。足球数据由 football-data.org 提供（Data provided by football-data.org）。约每6小时采集，非实时比分；按赛事知名度排序，不代表真实观看人数。',
+ source:'来源',note:'来源：PandaScore（电竞）、BALLDONTLIE 与 API-Sports（篮球赛程）、DunkAPI（NBA 排名）、football-data.org（足球）、Lichess 与 Chess.com（国际象棋）。赛前赔率参考由 The Odds API 提供，与预测市场分开展示。数据定时核验，非实时比分。',
  market:'赛前预测市场'},
 en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
@@ -75,7 +75,7 @@ en:{title:'Calendar & tournament intelligence',
  total:n=>n+' upcoming this week',shown:(n,t)=>'Showing '+n+' of '+t,
  more:'More matches',round:'Round',draw:'TBD',rank:'Rank',
  team:'Team',wins:'W',losses:'L',feature:'Featured',vs:'vs',
- source:'Source',note:'Sources: PandaScore (esports), API-Sports (basketball fixtures), DunkAPI (NBA standings). Data provided by football-data.org for soccer. Updates about every six hours; not live scores. Popularity ordering is editorial.',
+ source:'Source',note:'Sources: PandaScore (esports), BALLDONTLIE and API-Sports (basketball), DunkAPI (NBA standings), football-data.org (football), Lichess and Chess.com (chess). The Odds API supplies separate pregame bookmaker references. Data is periodically verified, not live scores.',
  market:'Prediction markets'}
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
