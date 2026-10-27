@@ -100,6 +100,7 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
    start_time:'2026-10-27T10:00:00Z'}]
  });
  assert(swiss.includes('lyb-swiss-track')&&swiss.includes('lyb-round-results'));
+ assert(swiss.includes('lyb-swiss-links') && swiss.includes('ROUND 6'), 'Six-stage Swiss route must include outcomes and SVG links');
  assert(swiss.includes('T1')&&swiss.includes('BLG')&&swiss.includes('2 : 1'));
  const group=model.LiangYouBracketViz.groups({title:'PGL Masters · Group Stage',
   groups:[{team:'Team Liquid',wins:2,losses:1,rank:1}]},{lang:'en'});
@@ -114,7 +115,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.16') && html.includes('bracket-viz.js?v=20261027.2') && html.includes('fixtures.css?v=20261027.9'),
+assert(html.includes('fixtures.js?v=20261027.17') && html.includes('bracket-viz.js?v=20261027.3') && html.includes('fixtures.css?v=20261027.10'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
