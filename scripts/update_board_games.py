@@ -109,9 +109,13 @@ def chess(token):
         round_name=str(rd.get("name","") or "").strip()[:80]
         tourid=str(tour.get("id",""))
         for white,black,result,tags in games[:32]:
-            status="finished" if result!="*" else ("live" if state=="active" else "scheduled")
-            if state=="past" and status=="scheduled":continue
-            if state=="upcoming" and status=="live":status="scheduled"
+            # Lichess may list a broadcast as active before a round begins.
+            # Do not label an unplayed future round as live merely because the
+            # tour itself is active. An unplayed past broadcast is not a result.
+            status=("finished" if result!="*" else
+                    "scheduled" if start>NOW+timedelta(minutes=5) else
+                    "live" if state=="active" else "scheduled")
+            if state=="past" and result=="*":continue
             key=hashlib.sha1((rid+"|"+white+"|"+black).encode()).hexdigest()[:12]
             scores={"1-0":(1,0),"0-1":(0,1),"1/2-1/2":(.5,.5)}
             pair=scores.get(result,(None,None))
@@ -268,7 +272,7 @@ def main():
     # Ranking/player metadata never changes the verified fixture identity or status.
     sources.extend(enrich(clean))
     write_json(OUT,{"schema":1,"source_type":"board_game_fixtures","generated_at":iso(datetime.now(UTC)),
-        "interval_hours":6,"board_source_revision":4,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
+        "interval_hours":6,"board_source_revision":5,"status":"ok" if all(s["status"]=="ok" for s in sources[:3]) else "partial",
         "sources":sources,"events":clean[:180]})
 
 if __name__=="__main__":
