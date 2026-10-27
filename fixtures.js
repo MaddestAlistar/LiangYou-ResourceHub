@@ -15,6 +15,7 @@ const views=[...panel.querySelectorAll('[data-fixtures-view]')];
 const dates=[...panel.querySelectorAll('[data-fixtures-date]')];
 const safe=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const translations=window.LiangYouSportsI18n;
+const boardTranslations=window.LiangYouBoardI18n;
 const strings={
 zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
@@ -86,6 +87,7 @@ const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
 const t=()=>strings[lang()];
 const localize=(v,category='')=>{
  const raw=String(v??'').trim();
+ if(category==='chess'||category==='go')return boardTranslations?.league?.(raw,category,lang())||raw;
  if(raw==='LCK · Round 3-4 Legend Group')return lang()==='zh'
   ?'LCK 常规赛 · 第3—4轮 · 传奇组（阶段榜）'
   :'LCK Regular Season · Rounds 3–4 · Legend Group (stage standings)';
@@ -216,9 +218,11 @@ const team=(v,sport)=>{
  });
  return known[raw]||translations?.team?.(raw,sport,'zh')||raw;
 };
+const localizeStage=(value,sport)=>(sport==='chess'||sport==='go')?
+ (boardTranslations?.stage?.(value,sport,lang())||String(value??'')):localize(value,sport);
 const boardPlayer=(event,which)=>{
  const alias=lang()==='zh'?event[which+'_zh']:event[which+'_en'];
- return alias||team(event[which],event.sport);
+ return boardTranslations?.player?.(event[which],event.sport,lang(),alias)||alias||team(event[which],event.sport);
 };
 const boardRating=(event,which)=>Number.isInteger(event[which+'_rating'])?
  (lang()==='zh'?'世界第':'World #')+(Number.isInteger(event[which+'_world_rank'])?event[which+'_world_rank']:'—')+
@@ -459,7 +463,7 @@ function calendar(){
   if(refs.category.value!=='all'&&x.sport!==refs.category.value)return false;
   return !query||[x.home,x.away,x.league,x.stage,x.sport,
     team(x.home,x.sport),team(x.away,x.sport),boardPlayer(x,'home'),boardPlayer(x,'away'),
-    localize(x.league,x.sport),localize(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
+    localize(x.league,x.sport),localizeStage(x.stage,x.sport)].join(' ').normalize('NFKC').toLocaleLowerCase().includes(query);
  });
  // Past results should show the most recently completed matches first;
  // future schedules still show earliest kickoff first for time sorting.
@@ -472,7 +476,7 @@ function calendar(){
    Date.parse(a.start_time)-Date.parse(b.start_time)):topPriority(matches);
  }
  refs.grid.innerHTML=matches.length?matches.slice(0,limit).map(x=>{
-  const title=[localize(x.league,x.sport),localize(x.stage,x.sport),
+  const title=[localize(x.league,x.sport),localizeStage(x.stage,x.sport),
      Number.isInteger(x.best_of)?'BO'+x.best_of:null].filter(Boolean).join(' · ');
   const score=x.sport==='go'&&x.status==='finished'&&x.result_detail?
     '<span class="fixtures-score">'+safe(x.result_detail)+'</span>':
