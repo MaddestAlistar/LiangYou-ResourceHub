@@ -94,6 +94,11 @@ const matched=link.officialFor(markets[0],[{sport:'basketball',home:'Brooklyn Ne
 assert.equal(matched?.id,'match-1','Official match must link by time, sport and both teams');
 assert.equal(link.officialFor(markets[0],[matched,matched]),null,
  'Ambiguous official candidates must not be linked');
+const sameNamesBadTime={...markets[1],start_time:'2026-10-28T03:00:00Z'};
+assert.equal(link.groupMarkets([markets[0],sameNamesBadTime]).length,2,
+ 'Different kickoff times must never merge just because teams match');
+assert.equal(link.officialFor(sameNamesBadTime,[matched]),null,
+ 'Unverified 3-hour schedule offset must not be auto-linked');
 
 assert.equal(link.matchIdentity(markets[0],[matched]),'official:match-1',
  'Explicit official IDs must anchor linked market cards');
@@ -121,6 +126,16 @@ assert(fixtureJS.includes('LGC Rising') && fixtureJS.includes('LCK Challengers L
 assert(fixtureJS.includes('热门赛事优先'), 'Hot-first title missing');
 assert(fixtureJS.includes("real-sports.json"));
 const visualJS=readFileSync('bracket-viz.js','utf8');
+assert(visualJS.includes('data-exit-bracket') &&
+ readFileSync('fixtures.css','utf8').includes('.fixtures-diagrams.is-expanded .lyb-exit-bracket'),
+ 'Phone fullscreen bracket must have a visible built-in close control');
+assert(fixtureJS.includes('const ancestors=new Set([String(id)])') &&
+ fixtureJS.includes('const keep=new Set([...ancestors,...descendants])'),
+ 'Bracket highlighting must avoid unrelated sibling branches');
+assert(fixtureJS.includes("cache:'no-cache'") &&
+ ui.includes("cache:'no-cache'") &&
+ !fixtureJS.includes("'?v='+Date.now()"),
+ 'Verified feeds should support conditional HTTP revalidation rather than forced downloads');
 assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && visualJS.includes("lyb-knockout-map"));
 {
  const model={};
