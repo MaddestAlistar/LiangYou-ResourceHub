@@ -420,6 +420,26 @@ class FeedRules(unittest.TestCase):
         for tid in (100,101,200,201,300):
             self.assertIn("panda-"+str(tid),ids)
 
+    def test_same_league_bracket_chooses_recent_verified_tournament_first(self):
+        import update_real_sports as real
+        records=[
+            {"tournament_id":100,"sport":"lol","league":"LCK",
+             "tournament_name":"Playoffs","has_bracket":True,
+             "start_time":"2026-06-01T00:00:00Z"},
+            {"tournament_id":200,"sport":"lol","league":"LCK",
+             "tournament_name":"Playoffs","has_bracket":True,
+             "start_time":"2026-10-01T00:00:00Z"}]
+        def fake(url,headers):
+            self.assertEqual(headers.get("Authorization"),"Bearer demo")
+            if "/brackets?" in url:
+                return [{"round_name":"Final","opponents":[
+                    {"opponent":{"id":1,"name":"A"}},
+                    {"opponent":{"id":2,"name":"B"}}]}]
+            return []
+        with patch.object(real,"json_request",side_effect=fake):
+            brackets,_=real.tournament_extras(records,"demo")
+        self.assertEqual(brackets[0]["tournament_id"],200)
+
     def test_official_collectors_rate_budget(self):
         import update_real_sports as real
         self.assertEqual(len(real.FOOTBALL),5)
