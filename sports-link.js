@@ -76,7 +76,17 @@
   // An ambiguous team/time match is not a verified event association.
   return matches.length===1?matches[0]:null;
  };
- const marketsFor=(official,markets)=>groupMarkets((markets||[]).filter(m=>pairs(m,official,90)));
+ const marketsFor=(official,markets)=>{
+  const published=Array.isArray(root.LiangYouOfficialSportsEvents)?root.LiangYouOfficialSportsEvents:null;
+  return groupMarkets((markets||[]).filter(m=>{
+   if(!pairs(m,official,90))return false;
+   // If the calendar has multiple plausible official games, suppress rather
+   // than attach one market to two different fixtures.
+   if(!published)return true;
+   const matches=published.filter(x=>pairs(m,x,90));
+   return matches.length===1&&String(matches[0].id)===String(official.id);
+  }));
+ };
  // Stable, reviewable client-side identity: prefer an official provider event ID.
  // Unlinked market IDs are scoped to a market-only category and normalized sides.
  const matchIdentity=(record,fixtures=[])=>{
