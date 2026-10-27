@@ -422,6 +422,64 @@ function options(select,items,includeAll=false){
 function bracketRound(label){
  return localize(label,'esports').replace(/^(?:Upper|Lower) Bracket Round /i,m=>m);
 }
+function setupBracketControls(chosen){
+ const active=chosen?._visual==='knockout';
+ refs.bracketRound.hidden=!active;refs.bracketExpand.hidden=!active;
+ refs.bracketFocus.hidden=!active||!selectedBracketMatch;
+ const candidates=active&&typeof refs.bracket.querySelectorAll==='function'?
+  [...refs.bracket.querySelectorAll('.lyb-round-name[data-col]')]:[];
+ const unique=new Map();
+ candidates.forEach(x=>{const col=Number(x.dataset.col);
+  if(Number.isFinite(col)&&!unique.has(col))unique.set(col,x.textContent.trim());
+ });
+ refs.bracketRound.innerHTML=[...unique].sort((a,b)=>a[0]-b[0]).map(([col,name])=>
+  '<option value="'+col+'">'+safe(name)+'</option>').join('');
+ if(active&&selectedBracketMatch)highlightBracket(selectedBracketMatch);
+}
+function highlightBracket(id){
+ const root=refs.bracket;
+ if(typeof root.querySelectorAll!=='function')return;
+ const cards=[...root.querySelectorAll('.lyb-match[data-match-id]')];
+ const paths=[...root.querySelectorAll('.lyb-bracket-edge[data-from][data-to]')];
+ const target=cards.find(m=>m.dataset.matchId===String(id));
+ if(!target){selectedBracketMatch=null;refs.bracketFocus.hidden=true;return;}
+ const keep=new Set([String(id)]);
+ // Follow only provider-confirmed predecessor relationships in both directions.
+ for(let repeat=0;repeat<cards.length;repeat++){
+  let changed=false;
+  for(const path of paths){
+   if(keep.has(path.dataset.from)||keep.has(path.dataset.to)){
+    if(!keep.has(path.dataset.from)){keep.add(path.dataset.from);changed=true;}
+    if(!keep.has(path.dataset.to)){keep.add(path.dataset.to);changed=true;}
+   }
+  }
+  if(!changed)break;
+ }
+ for(const card of cards){
+  const selected=card.dataset.matchId===String(id);
+  card.classList.toggle('is-path',keep.has(card.dataset.matchId));
+  card.classList.toggle('is-focused',selected);
+  card.classList.toggle('is-muted',!keep.has(card.dataset.matchId));
+  card.setAttribute('aria-pressed',String(selected));
+ }
+ for(const path of paths){
+  const linked=keep.has(path.dataset.from)&&keep.has(path.dataset.to);
+  path.classList.toggle('is-path',linked);
+  path.classList.toggle('is-muted',!linked);
+ }
+ selectedBracketMatch=String(id);
+ refs.bracketFocus.hidden=false;
+ refs.bracketFocus.textContent=(lang()==='zh'?'已选中真实比赛 · ':'Verified selected match · ')+
+  target.textContent.trim().replace(/\s+/g,' ').slice(0,160);
+}
+function jumpBracketColumn(){
+ const scroll=refs.bracket.querySelector?.('.lyb-scroll');
+ const node=[...(refs.bracket.querySelectorAll?.('.lyb-round-name[data-col]')||[])]
+  .find(x=>x.dataset.col===refs.bracketRound.value);
+ if(!scroll||!node)return;
+ const left=Number(node.dataset.col)*((typeof window.innerWidth==='number'&&window.innerWidth<=680)?212:282);
+ if(typeof scroll.scrollTo==='function')scroll.scrollTo({left:Math.max(0,left-10),behavior:'smooth'});
+}
 function brackets(){
  const viz=window.LiangYouBracketViz,copy=t(),kind=refs.bracketSport.value;
  if(!viz){refs.bracket.innerHTML=empty(copy.unavailable);return;}
@@ -470,6 +528,7 @@ function brackets(){
  const markup=chosen._visual==='knockout'?viz.knockout(chosen,opts):
   chosen._visual==='swiss'?viz.swiss(chosen,opts):viz.groups(chosen,opts);
  refs.bracket.innerHTML=markup||empty(copy.unavailable);
+ setupBracketControls(chosen);
  if(chosen._visual==='swiss')viz.connect(refs.bracket,chosen,opts.events);
 }
 function standings(){
@@ -549,7 +608,7 @@ function render(){updateLabels();if(view==='calendar')calendar();else if(view===
 async function fetchData(){
  try{
   const fetchJson=async url=>{
-   const result=await fetch(url+'?v='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(16000)});
+   const result=await fetch(url,{cache:'no-cache',signal:AbortSignal.timeout(16000)});
    if(!result.ok)throw Error('Unavailable');
    return result.json();
   };
@@ -591,7 +650,12 @@ async function fetchData(){
     sources:[...(base.sources||[]),...(extra?.sources||[])],
     extraStatus:extra?.status||'unavailable',
     extraGeneratedAt:extra?.generated_at||null,
-    generated_at:base.generated_at};
+    generated_at:base.generated_at,officialSources:base.sources||[],
+    extraSources:extra?.sources||[]};
+  window.LiangYouOfficialSportsEvents=data.events;
+  if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
+    window.dispatchEvent(new CustomEvent('liangyou:fixtures-updated'));
+  dataHealth();
  }catch{data={...data,status:'failed'};}
  render();
 }
@@ -601,9 +665,55 @@ refs.search.addEventListener('input',()=>{limit=6;render();});
 refs.category.addEventListener('change',()=>{limit=6;render();});
 refs.sort.addEventListener('change',()=>{limit=6;render();});
 refs.more.addEventListener('click',()=>{limit+=6;render();});
-refs.bracketSport.addEventListener('change',render);
-refs.bracketStage.addEventListener('change',render);
-refs.bracketSelect.addEventListener('change',render);
+refs.state.addEventListener('change',()=>{detailId=null;refs.detail.hidden=true;limit=6;render();});
+refs.grid.addEventListener('click',event=>{
+ const button=event.target.closest?.('[data-fixture-id]');
+ if(button)showFixtureDetail(button.dataset.fixtureId);
+});
+refs.detail.addEventListener('click',event=>{
+ const close=event.target.closest?.('[data-close-fixture]');
+ if(close){detailId=null;refs.detail.hidden=true;refs.detail.innerHTML='';return;}
+ const bracket=event.target.closest?.('[data-fixture-bracket]');
+ if(bracket){view='brackets';refs.bracketStage.value='knockout';
+   refs.bracketSport.value='all';refs.bracketSelect.value='brk:'+bracket.dataset.fixtureBracket;render();
+   refs.bracket.scrollIntoView?.({behavior:'smooth',block:'start'});return;}
+ const standings=event.target.closest?.('[data-fixture-standings]');
+ if(standings){view='standings';refs.standingSport.value='all';
+   refs.standingSelect.value=standings.dataset.fixtureStandings;render();
+   refs.standing.scrollIntoView?.({behavior:'smooth',block:'start'});}
+});
+if(typeof window.addEventListener==='function'){
+ window.addEventListener('liangyou:open-fixture',event=>{
+  const id=event.detail?.id;if(!id)return;
+  view='calendar';const match=data.events.find(x=>String(x.id)===String(id));
+  refs.state.value=match?.status||'scheduled';date='week';limit=6;render();showFixtureDetail(id);
+  refs.detail.scrollIntoView?.({behavior:'smooth',block:'start'});
+ });
+ window.addEventListener('liangyou:markets-updated',()=>{if(detailId)showFixtureDetail(detailId);});
+}
+refs.bracketSport.addEventListener('change',()=>{selectedBracketMatch=null;render();});
+refs.bracketStage.addEventListener('change',()=>{selectedBracketMatch=null;render();});
+refs.bracketSelect.addEventListener('change',()=>{selectedBracketMatch=null;render();});
+refs.bracketRound.addEventListener('change',jumpBracketColumn);
+refs.bracketExpand.addEventListener('click',()=>{
+ const expanded=refs.bracket.classList.toggle('is-expanded');
+ refs.bracketExpand.setAttribute('aria-pressed',String(expanded));
+ render();
+});
+refs.bracket.addEventListener('click',event=>{
+ const match=event.target.closest?.('.lyb-match[data-match-id]');
+ if(match)highlightBracket(match.dataset.matchId);
+});
+refs.bracket.addEventListener('keydown',event=>{
+ if(event.key!=='Enter'&&event.key!==' ')return;
+ const match=event.target.closest?.('.lyb-match[data-match-id]');
+ if(match){event.preventDefault();highlightBracket(match.dataset.matchId);}
+});
+if(typeof document.addEventListener==='function')document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&refs.bracket.classList.contains('is-expanded')){
+   refs.bracket.classList.remove('is-expanded');refs.bracketExpand.setAttribute('aria-pressed','false');render();
+ }
+});
 refs.bracketQuick.addEventListener('click',e=>{
  const btn=e.target.closest('[data-fixtures-tournament]');
  if(!btn)return;
@@ -619,6 +729,10 @@ refs.standingQuick.addEventListener('click',event=>{
  render();
 });
 document.querySelectorAll('#sportsLanguage [data-sports-lang]').forEach(x=>x.addEventListener('click',()=>setTimeout(render,0)));
-render();fetchData();if(typeof window.setInterval==='function')window.setInterval(fetchData,15*60*1000);
+render();fetchData();if(typeof window.setInterval==='function')window.setInterval(()=>{
+ if(!document.hidden)fetchData();
+},30*60*1000);
+if(typeof document.addEventListener==='function')
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)fetchData();});
 if(typeof window.addEventListener==='function')window.addEventListener('resize',()=>{if(view==='brackets')render();},{passive:true});
 })();
