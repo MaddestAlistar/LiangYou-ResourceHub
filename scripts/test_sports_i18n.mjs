@@ -267,6 +267,10 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const raw = readFileSync('data/real-sports.json','utf8');
  const snapshot = JSON.parse(raw);
  const extra = JSON.parse(readFileSync('data/extra-sports.json','utf8'));
+ const archived = JSON.parse(readFileSync('data/verified-lol-2026.json','utf8'));
+ assert.equal(archived.source_type,'verified_completed_esports_standings');
+ assert.deepEqual(archived.standings.map(x=>x.groups.length),[10,12]);
+ assert(archived.standings.every(x=>x.historical_final&&/^https:\/\//.test(x.source_url)));
  assert(Array.isArray(snapshot.brackets) && Array.isArray(snapshot.standings));
  assert.equal(extra.source_type,'supplemental_fixtures');
  assert(extra.events.some(x=>x.provider==='football-data')&&extra.standings.some(x=>x.provider==='dunkapi'));
@@ -377,7 +381,8 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
  const doc={getElementById:id=>ui.get(id)||null,querySelectorAll:()=>[]};
  const win={LiangYouSportsI18n:tr,setInterval(){}};
   vm.runInNewContext(visualJS,{window:win,Intl,Date},{timeout:2000});
- const fetch=async(url)=>({ok:true,json:async()=>url.includes('extra-sports.json')?extra:snapshot});
+ const fetch=async(url)=>({ok:true,json:async()=>url.includes('verified-lol-2026.json')?archived:
+      url.includes('extra-sports.json')?extra:snapshot});
  vm.runInNewContext(localeSource,{document:doc,window:win,fetch,AbortSignal,console,Intl,setTimeout,Date},{timeout:2000});
  await new Promise(resolve=>setImmediate(resolve));
  modes[1].dispatch('click');
@@ -414,11 +419,18 @@ assert(sportsStyles.includes('.sports-metrics') && sportsStyles.includes('.sport
     assert((ui.get('officialStandingGrid').innerHTML.match(/fixtures-standing-card/g)||[]).length===1,
       'Only the chosen standings card should render');
     assert(ui.get('officialStandingGrid').innerHTML.includes('fixtures-ranking'));
-    ui.get('officialStandingSelect').value='lck-2026-round34';
+    ui.get('officialStandingSelect').value='archived-lck-2026-r34';
     ui.get('officialStandingSelect').dispatch('change');
-    assert(ui.get('officialStandingGrid').innerHTML.includes('第3—4轮') &&
-           ui.get('officialStandingGrid').innerHTML.includes('崛起组'),
-           'LCK Legend/Rise missing-group scope must be visible');
+    assert(ui.get('officialStandingGrid').innerHTML.includes('2026赛季第3—4轮') &&
+           ui.get('officialStandingGrid').innerHTML.includes('传奇组') &&
+           ui.get('officialStandingGrid').innerHTML.includes('崛起组') &&
+           ui.get('officialStandingGrid').innerHTML.includes('历史快照'),
+           'Final LCK two-group historical standings must be attributed and visible');
+    ui.get('officialStandingSelect').value='archived-lpl-2026-s3';
+    ui.get('officialStandingSelect').dispatch('change');
+    assert(ui.get('officialStandingGrid').innerHTML.includes('登峰组') &&
+           ui.get('officialStandingGrid').innerHTML.includes('涅槃组'),
+           'Final LPL two-group historical standings must be visible');
   }
   ui.get('officialStandingSport').value='basketball';
   ui.get('officialStandingSport').dispatch('change');
