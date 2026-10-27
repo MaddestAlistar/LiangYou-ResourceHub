@@ -138,20 +138,33 @@ function swiss(record,opt={}){
       games.map(matchCard).join('')+'</div>':'')+'</div>';
  }).join('');
  const loose=matches.filter(m=>!Number.isInteger(m.round)||m.round<1||m.round>5);
- const fixtureList=loose.slice(0,10).map(m=>{
-   const done=m.status==='finished',score=done&&Number.isInteger(m.score_home)&&Number.isInteger(m.score_away)?
-    num(m.score_home)+' : '+num(m.score_away):'VS';
-   const dt=Date.parse(m.start_time);
-   const date=Number.isFinite(dt)?new Intl.DateTimeFormat(lang==='en'?'en-US':'zh-CN',{
-     timeZone:'Asia/Shanghai',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(dt)):'';
-   return '<div class="lyb-fixture"><small>'+html(date)+'</small><span>'+html(team(m.home))+'</span><b>'+score+
-    '</b><span>'+html(team(m.away))+'</span></div>';
- }).join('');
+ const timelines=new Map();
+ const dayFormatter=new Intl.DateTimeFormat(lang==='en'?'en-US':'zh-CN',{
+  timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'});
+ const timeFormatter=new Intl.DateTimeFormat(lang==='en'?'en-US':'zh-CN',{
+  timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false});
+ for(const m of loose){
+  const stamp=Date.parse(m.start_time);
+  if(!Number.isFinite(stamp))continue;
+  const date=dayFormatter.format(new Date(stamp));
+  if(!timelines.has(date))timelines.set(date,[]);
+  timelines.get(date).push({...m,_clock:timeFormatter.format(new Date(stamp))});
+ }
+ const fixtureList=[...timelines].slice(0,14).map(([date,round])=>
+  '<div class="lyb-date-column"><h5>'+html(date)+'</h5>'+
+  round.slice(0,16).map(m=>{
+   const won=m.winner?norm(m.winner):'';
+   const side=(name,score)=>'<div class="lyb-date-team'+(won&&norm(name)===won?' is-winner':'')+
+     '"><span>'+html(team(name))+'</span><b>'+
+     (m.status==='finished'?num(score):'—')+'</b></div>';
+   return '<div class="lyb-date-match"><small>'+html(m._clock)+'</small>'+
+     side(m.home,m.score_home)+side(m.away,m.score_away)+'</div>';
+  }).join('')+'</div>').join('');
  return '<div class="lyb-visual lyb-swiss"><div class="lyb-visual-top"><strong>SWISS STAGE</strong>'+
   '<span>'+z('瑞士轮 · 战绩晋级路线','Swiss · progression by record',lang)+'</span></div>'+
   '<div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('瑞士轮晋级路线图','Swiss stage progression',lang)+'">'+
   '<div class="lyb-swiss-track"><svg class="lyb-swiss-links" aria-hidden="true"></svg>'+display+'</div></div>'+
-  (fixtureList?'<section class="lyb-upcoming"><h4>'+z('已采集对阵','Verified matchups',lang)+'</h4><div class="lyb-fixtures">'+fixtureList+'</div></section>':'')+
+  (fixtureList?'<section class="lyb-upcoming"><h4>'+z('赛程对阵时间线','Match timeline',lang)+'</h4><div class="lyb-scroll" tabindex="0" role="region" aria-label="'+z('按日期排列的已核验对阵','Verified fixtures by date',lang)+'"><div class="lyb-timeline-track">'+fixtureList+'</div></div></section>':'')+
   (count?'<p class="lyb-caption">'+z('战队显示已核验战绩，虚线代表赛制可能路线。','Teams show verified current records; pathways illustrate the format, not historical advancement.',lang)+'</p>':'')+
   '</div>';
 }
