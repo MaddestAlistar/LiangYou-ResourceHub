@@ -38,7 +38,6 @@ const goPlayers=new Map([
  ['스미레','仲邑堇'],
  ['김은지','金恩持'],
  ['김미리','金美里'],
- ['김주아','金凑笌'],
  ['박정환','朴廷桓'],
  ['신민준','申旻埈']
 ]);
@@ -135,9 +134,19 @@ function player(value,sport,language='zh',verified=''){
  }
  return raw;
 }
+// PGN result codes are game facts: home=White, away=Black in the Lichess feed.
+function chessResult(result,language='zh'){
+ const raw=blank(result);
+ if(language!=='zh')return raw;
+ const names={'1-0':'白方胜','0-1':'黑方胜','1/2-1/2':'和棋','*':'对局未结束'};
+ return names[raw]||raw;
+}
+function chessSide(which,language='zh'){
+ return language==='zh'?(which==='home'?'白方':'黑方'):(which==='home'?'White':'Black');
+}
 function searchTerms(value,sport,language='zh'){
  const raw=blank(value);
  return [raw,league(raw,sport,language),stage(raw,sport,language)].join(' ');
 }
-window.LiangYouBoardI18n=Object.freeze({league,stage,player,searchTerms});
+window.LiangYouBoardI18n=Object.freeze({league,stage,player,searchTerms,chessResult,chessSide});
 })();
