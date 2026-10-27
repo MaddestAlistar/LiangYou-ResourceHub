@@ -7,7 +7,14 @@ const css = text('style.css');
 const js = text('app.js');
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 assert.equal(new Set(ids).size, ids.length, 'Duplicate HTML IDs');
-for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert(ids.includes(id), 'Broken section anchor: ' + id);
+// Dynamic resource cards are rendered from the vetted catalog by app.js.
+const dynamicResourceIds = new Set(data.projects.filter(p => p.stage === 'live').map(p => 'resource-' + p.id));
+const rendersResourceIds = js.includes('id="resource-${escapeHTML(p.id)}"');
+for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) {
+  const inStaticHtml = ids.includes(id);
+  const inDynamicCatalog = rendersResourceIds && dynamicResourceIds.has(id);
+  assert(inStaticHtml || inDynamicCatalog, 'Broken section anchor: ' + id);
+}
 assert(Array.isArray(data.projects) && data.projects.length >= 3, 'Live projects missing');
 assert(Array.isArray(data.future) && data.future.length >= 1, 'Future roadmap missing');
 assert.equal(new Set([...data.projects, ...data.future].map(p => p.id)).size, data.projects.length + data.future.length, 'Duplicate catalog IDs');
@@ -99,7 +106,7 @@ assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store imag
 for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
-assert(html.includes('id="lab"') && html.includes('<h2 id="roadmap-title">资源实验室</h2>') && html.includes('<a href="#lab">实验室</a>'), 'Resource Lab section not found');
+assert(html.includes('id="lab"') && html.includes('<h2 id="roadmap-title">资源实验室</h2>') && html.includes('<a href="#lab">资源实验室</a>'), 'Resource Lab section not found');
 assert(!html.includes('v0.1 · 6 个仓库首版') && !html.includes('六个新项目，首版现已开放'), 'Stale first-version headings remain');
 assert.equal(data.future.length, 6, 'Expected six Resource Lab projects');
 for(const item of data.future){
