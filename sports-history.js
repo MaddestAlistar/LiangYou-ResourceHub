@@ -4,7 +4,7 @@
 (()=>{
 'use strict';
 const panel=document.getElementById('officialFixtures');if(!panel)return;
-let historyPromise=null;
+let historyPromise=null,historyLoadedAt=0;
 const encode=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const en=()=>document.getElementById('sports')?.getAttribute('lang')==='en';
 const texts=()=>en()?{
@@ -23,12 +23,15 @@ const texts=()=>en()?{
  failed:'历史快照暂时不可用。'
 };
 function load(){
- if(historyPromise)return historyPromise;
+ // Reuse a recent download without freezing the chart at one session's first snapshot.
+ if(historyPromise&&Date.now()-historyLoadedAt<10*60000)return historyPromise;
+ historyLoadedAt=Date.now();
  historyPromise=fetch('./data/market-history.json',{
   cache:'no-cache',signal:AbortSignal.timeout(14000)
  }).then(r=>{if(!r.ok)throw Error('Missing snapshot');return r.json();})
  .then(x=>x?.schema===1&&x.source_type==='verified_market_history'&&x.markets&&
-  typeof x.markets==='object'?x:null);
+  typeof x.markets==='object'&&!Array.isArray(x.markets)?x:null)
+ .catch(error=>{historyPromise=null;throw error;});
  return historyPromise;
 }
 function snapshots(fixture,raw){
@@ -111,7 +114,8 @@ panel.addEventListener('click',async ev=>{
   open.hidden=true;
   try{
    const feed=await load();
-   if(!feed||!target.isConnected)return;
+   if(!target.isConnected)return;
+   if(!feed){target.innerHTML='<p class="sports-trend-msg">'+encode(texts().failed)+'</p>';return;}
    const records=snapshots(fixture,feed);
    target._historyRecords=records;
    show(target,records);
