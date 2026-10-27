@@ -20,6 +20,8 @@
   const langButtons = [...languageGroup.querySelectorAll('[data-sports-lang]')];
   const sourceButtons = [...section.querySelectorAll('[data-source-filter]')];
   const sourceHint = document.getElementById('sportsSourceHint');
+  const healthPanel = document.getElementById('sportsProviderHealth');
+  const linker = window.LiangYouSportsLinks;
   const sections = ['lol', 'basketball', 'football', 'esports', 'other'];
   const initialLimit = () => window.matchMedia('(max-width: 760px)').matches ? 6 : 8;
   const esc = value => String(value ?? '').replace(/[&<>"']/g,
@@ -39,6 +41,7 @@
   let failed = false;
   let refreshPending = false;
   let sourcePartial = false;
+  let feedHealth = [];
   const copy = () => translation.ui[language];
 
   function time(value) {
@@ -54,7 +57,20 @@
     return formatted + ' ' + copy().timezone;
   }
 
+  function renderHealth(){
+    if(!healthPanel)return;
+    const label=language==='zh'?{ok:'已核验',missing:'暂不可用',old:'已过期',minute:'分钟前',at:'核验'}:
+      {ok:'Verified',missing:'Unavailable',old:'Expired',minute:'m ago',at:'Checked'};
+    healthPanel.innerHTML=feedHealth.map(item=>{
+      const age=Number.isFinite(item.timestamp)?Math.max(0,Math.floor((Date.now()-item.timestamp)/60000)):null;
+      const bad=!Number.isFinite(item.timestamp)||age>360;
+      return '<span class="sports-provider-state'+(bad?' is-stale':'')+'">'+esc(item.name)+
+        ' · '+esc(bad?(item.timestamp?label.old:label.missing):label.ok)+
+        (age!==null?' · '+esc(String(age))+label.minute:'')+'</span>';
+    }).join('');
+  }
   function updateStatus() {
+    renderHealth();
     if (failed) {
       status.textContent = copy().unavailable;
       count.textContent = copy().failed;
@@ -226,11 +242,25 @@
           esc(language === 'zh' ? '双方市场概率' : 'Two-outcome market probabilities') +
           '"><i style="width:' + percentages[0].toFixed(1) + '%"></i></div>';
 
+    const platformName=p=>p==='predict'?'Predict.fun':p==='kalshi'?'Kalshi':'Polymarket';
+    const sourceRows=(event.linkedSources||[event]);
+    const aggregated=sourceRows.length>1 && activeSource==='all'?
+      '<div class="sports-compare"><strong>'+esc(language==='zh'?'同场不同来源（非实时）':'Same match, independent market snapshots')+'</strong>'+
+      sourceRows.map(item=>{
+        const values=item.outcomes.filter(o=>!['draw','tie','平局'].includes(String(o.name).toLowerCase()));
+        const numbers=values.slice(0,2).map(o=>(o.probability*100).toFixed(1)+'%').join(' / ');
+        return '<div class="sports-compare-row"><span>'+esc(platformName(item.provider))+
+          '</span><b>'+esc(numbers)+'</b></div>';
+      }).join('')+'</div>':'';
+    const matchButton=event.official?
+      '<button type="button" class="sports-view-fixture" data-fixture-target="'+esc(event.official.id)+'">'+
+      esc(language==='zh'?'查看关联赛程与战绩':'Open verified schedule and result')+'</button>':'';
     return '<article class="sports-match' + (rich ? ' sports-match-rich' : '') + '"><div class="sports-match-top"><span>' +
       esc(league || labels.match) + '</span><span>' +
       (event.time_kind === 'market_close' ? esc(labels.marketDeadline) + ' ' : '') + esc(time(event.start_time)) +
       '</span></div><h3 title="' + esc(title) + '">' + esc(title) + '</h3>' +
-      extra.chips + prob + track + extra.summary + extra.detail + '<div class="sports-match-bottom"><span>' +
+      extra.chips + prob + track + aggregated + extra.summary + extra.detail + matchButton +
+      '<div class="sports-match-bottom"><span>' +
       esc(labels.prediction) + '</span><span class="sports-provider sports-provider-' + provider + '">' +
       (provider === 'predict' ? 'Predict.fun' : provider === 'kalshi' ? 'Kalshi' : 'Polymarket') + '</span>' +
       (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
@@ -295,18 +325,15 @@
       (Number.isFinite(Date.parse(m.start_time)) && Date.parse(m.start_time) > Date.now()) &&
       (!searchTerms || searchTerms.split(/\s+/).every(word => searchableText(m).includes(word)))
     );
-    let visible = filtered;
-    if (activeSource === 'all') {
-      const seen = new Set();
-      const canonical = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
-      visible = filtered.filter(event => {
-        const key = [event.category, Math.round(Date.parse(event.start_time) / 3600000),
-          ...event.outcomes.map(x => canonical(x.name)).sort()].join('|');
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-    }
+    // One visual card per matched fixture, preserving each venue's independent
+    // snapshot. Only exact normalized two-team + time matches are merged.
+    const visible=activeSource==='all' && linker?
+      linker.groupMarkets(filtered).map(group=>({
+        ...group.primary,linkedSources:group.sources,
+        official:linker.officialFor(group.primary,window.LiangYouOfficialSportsEvents||[])
+      })):
+      filtered.map(event=>({...event,linkedSources:[event],
+        official:linker?.officialFor(event,window.LiangYouOfficialSportsEvents||[])||null}));
     let ordered;
     if (sortMode === 'activity') {
       const ranks=activityRank(visible);
@@ -411,19 +438,27 @@
     refreshPending = true;
     try {
       const requests = await Promise.allSettled(feeds.map(async feed => {
-        const response = await fetch(feed.url + '?v=' + Date.now(), {
-          cache:'no-store', signal:AbortSignal.timeout(15000)
+        const response = await fetch(feed.url, {
+          cache:'no-cache', signal:AbortSignal.timeout(15000)
         });
         if (!response.ok) throw new Error('feed unavailable');
         return verifiedFeed(await response.json(), feed.provider);
       }));
       const good = requests.filter(x => x.status === 'fulfilled' && x.value).map(x => x.value);
+      feedHealth=requests.map((x,i)=>({
+        name:feeds[i].provider==='predict'?'Predict.fun':feeds[i].provider==='kalshi'?'Kalshi':'Polymarket',
+        timestamp:x.status==='fulfilled'&&x.value?x.value.timestamp:null,
+        state:x.status==='fulfilled'&&x.value?(x.value.partial?'partial':'ok'):'unavailable'
+      }));
       if (!good.length) throw new Error('no fresh sources');
       // Keep all providers, retaining independent prices for source-specific views.
       matches = good.flatMap(x => x.events).sort((a,b) =>
         Number(b.provider === 'predict') - Number(a.provider === 'predict'));
       lastUpdated = new Date(Math.max(...good.map(x => x.timestamp)));
       sourcePartial = good.length !== feeds.length || good.some(x => x.partial);
+      window.LiangYouMarketRecords=matches;
+      if(typeof window.dispatchEvent==='function'&&typeof CustomEvent==='function')
+        window.dispatchEvent(new CustomEvent('liangyou:markets-updated'));
       failed = false;
     } catch {
       failed = !lastUpdated;
@@ -434,6 +469,15 @@
       render();
     }
   }
+  grid.addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-fixture-target]');
+    if(!button)return;
+    const id=button.dataset.fixtureTarget;
+    if(typeof CustomEvent==='function' && typeof window.dispatchEvent==='function')
+      window.dispatchEvent(new CustomEvent('liangyou:open-fixture',{detail:{id}}));
+  });
+  if(typeof window.addEventListener==='function')
+    window.addEventListener('liangyou:fixtures-updated',()=>{if(matches.length)render();});
   renderStatic();
   refresh();
   window.setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
