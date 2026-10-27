@@ -28,6 +28,7 @@ jobs:
           node --check daily-free.js
           node --check sports-i18n.js
           node --check sports.js
+          node --check fixtures.js
           python3 -m py_compile scripts/*.py
       - name: Verify icon publisher regressions
         run: node --test scripts/test_icon*.mjs
