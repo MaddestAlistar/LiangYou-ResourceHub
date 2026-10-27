@@ -79,6 +79,7 @@ en:{title:'Calendar & tournament intelligence',
 };
 let data={events:[],brackets:[],standings:[],generated_at:null,status:'pending'};
 let view='calendar',date='week',limit=6,detailId=null,selectedBracketMatch=null;
+let autoBoardStatus=false;
 let fetchPending=false,archiveCache=null,extraCache=null,lastSnapshotSignature='';
 const linker=window.LiangYouSportsLinks;
 const lang=()=>panel.closest('#sports')?.getAttribute('lang')==='en'?'en':'zh';
@@ -790,6 +791,7 @@ dates.forEach(x=>x.addEventListener('click',()=>{date=x.dataset.fixturesDate;lim
 refs.search.addEventListener('input',()=>{limit=6;render();});
 refs.category.addEventListener('change',()=>{
  limit=6;detailId=null;refs.detail.hidden=true;
+ if(autoBoardStatus){refs.state.value='scheduled';autoBoardStatus=false;}
  // Chess broadcast pairings are often first published as games start, not a week ahead.
  // If this category has no verified future fixtures, show real live/recent games
  // instead of an apparently empty schedule. The status selector remains explicit.
@@ -799,15 +801,18 @@ refs.category.addEventListener('change',()=>{
    const hasFuture=data.events.some(x=>valid(x)&&x.status==='scheduled'&&
      Date.parse(x.start_time)>=now-120000&&Date.parse(x.start_time)<=now+7*86400000);
    if(!hasFuture){
-     if(data.events.some(x=>valid(x)&&x.status==='live'&&Date.parse(x.start_time)>=now-48*3600000))refs.state.value='live';
-     else if(data.events.some(x=>valid(x)&&x.status==='finished'&&Date.parse(x.start_time)>=now-7*86400000))refs.state.value='finished';
+     if(data.events.some(x=>valid(x)&&x.status==='live'&&Date.parse(x.start_time)<=now+5*60000&&Date.parse(x.start_time)>=now-48*3600000)){
+       refs.state.value='live';autoBoardStatus=true;
+     }else if(data.events.some(x=>valid(x)&&x.status==='finished'&&Date.parse(x.start_time)>=now-7*86400000)){
+       refs.state.value='finished';autoBoardStatus=true;
+     }
    }
  }
  render();
 });
 refs.sort.addEventListener('change',()=>{limit=6;render();});
 refs.more.addEventListener('click',()=>{limit+=6;render();});
-refs.state.addEventListener('change',()=>{detailId=null;refs.detail.hidden=true;limit=6;render();});
+refs.state.addEventListener('change',()=>{autoBoardStatus=false;detailId=null;refs.detail.hidden=true;limit=6;render();});
 refs.grid.addEventListener('click',event=>{
  const button=event.target.closest?.('[data-fixture-id]');
  if(button){if(detailId===String(button.dataset.fixtureId))hideFixtureDetail();
