@@ -67,5 +67,16 @@
   return matches.length===1?matches[0]:null;
  };
  const marketsFor=(official,markets)=>groupMarkets((markets||[]).filter(m=>pairs(m,official,45)));
- root.LiangYouSportsLinks=Object.freeze({keyName,category,sides,pairs,groupMarkets,officialFor,marketsFor});
+ // Stable, reviewable client-side identity: prefer an official provider event ID.
+ // Unlinked market IDs are scoped to a market-only category and normalized sides.
+ const matchIdentity=(record,fixtures=[])=>{
+  const published=Array.isArray(record?.outcomes)?officialFor(record,fixtures):record;
+  if(published&&published.id)return 'official:'+String(published.id);
+  const teams=sides(record).slice().sort();
+  const epoch=time(record);
+  if(teams.length!==2||!Number.isFinite(epoch))return null;
+  return 'market:'+category(record)+':'+teams.join(':')+':'+
+    new Date(epoch).toISOString().slice(0,10);
+ };
+ root.LiangYouSportsLinks=Object.freeze({keyName,category,sides,pairs,groupMarkets,officialFor,marketsFor,matchIdentity});
 })(window);
