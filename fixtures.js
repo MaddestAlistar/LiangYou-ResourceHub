@@ -349,8 +349,9 @@ function brackets(){
  // Only visual bracket trees or stage progression diagrams live in this view.
  const knockout=data.brackets.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.rounds)&&x.rounds.length)
   .map(x=>({...x,_key:'brk:'+x.tournament_id,_visual:'knockout'}));
- const phases=data.standings.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length)
-  .map(x=>({...x,_key:'phase:'+x.id,_visual:viz.stageOf(x)})).filter(x=>x._visual==='swiss'||x._visual==='group');
+ const phases=consolidatedStandings(data.standings.filter(x=>x?.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length))
+  .map(x=>({...x,_key:'phase:'+x.id,_visual:x.is_combined?'group':viz.stageOf(x)}))
+  .filter(x=>x._visual==='swiss'||x._visual==='group');
  // When the provider has matches but no published standings, retain the
  // real Swiss fixture diagram without inventing a standings position.
  const knownIds=new Set(phases.map(x=>String(x.id).replace(/^panda-/,'')));
