@@ -102,9 +102,24 @@
    if(!records.length){refs.bracketSelect.hidden=true;refs.bracket.innerHTML=empty(t.unavailable);return;}
    refs.bracketSelect.hidden=false;setOptions(refs.bracketSelect,records,'Tournament');
    const selected=records[Number(refs.bracketSelect.value)]||records[0];
-   refs.bracket.innerHTML=selected.rounds.slice(0,10).map(round=>
-     '<section class="fixtures-round"><h4>'+safe(round.round||t.round)+'</h4>'+
-     (Array.isArray(round.matches)?round.matches.slice(0,12):[]).map(match=>
+   // Group provider match-specific labels into their actual bracket stages,
+   // without inferring which winner feeds which subsequent match.
+   const grouped=new Map();
+   for(const round of selected.rounds){
+     const raw=String(round.round||t.round);
+     const label=raw.replace(/^(Upper|Lower) Bracket Round (\d+)(?: Match.*)?$/i,'$1 Bracket R$2');
+     if(!grouped.has(label))grouped.set(label,[]);
+     grouped.get(label).push(...(Array.isArray(round.matches)?round.matches:[]));
+   }
+   const roundTitle=key=>{
+     if(lang()!=='zh')return key;
+     const translated={'Quarterfinals':'四分之一决赛','Semifinals':'半决赛','Final':'决赛'};
+     return translated[key]||key.replace(/^Upper Bracket R(\d+)$/,'胜者组第$1轮')
+       .replace(/^Lower Bracket R(\d+)$/,'败者组第$1轮');
+   };
+   refs.bracket.innerHTML=[...grouped.entries()].slice(0,10).map(([roundName,matches])=>
+     '<section class="fixtures-round"><h4>'+safe(roundTitle(roundName))+'</h4>'+
+     matches.slice(0,12).map(match=>
        '<div class="fixtures-tie">'+[["home","score_home"],["away","score_away"]].map(([side,score])=>
          '<div class="fixtures-tie-line'+(match.winner===match[side]?' is-winner':'')+'"><span>'+
          safe(match[side]||t.draw)+'</span><b>'+safe(Number.isInteger(match[score])?match[score]:'—')+'</b></div>').join('')+
