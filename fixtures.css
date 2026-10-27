@@ -245,3 +245,16 @@
 .lyb-date-team b{color:#adbdcc;font-size:12px;flex:none;min-width:19px;text-align:right}
 .lyb-date-team.is-winner,.lyb-date-team.is-winner b{font-weight:750;color:#f2ce8e}
 @media(max-width:700px){.lyb-date-column{width:210px;flex-basis:210px}.lyb-timeline-track{gap:8px;padding-inline:10px}}
+
+/* Swiss rounds are independent heights; keep sparse rounds compact on phones. */
+.lyb-swiss-track{align-items:start}
+.lyb-swiss-column{align-self:start}
+.lyb-pool{flex:0 0 auto}
+.lyb-pool-team{padding:5px 0}
+.lyb-round-match{padding:5px 3px}
+@media(max-width:700px){
+ .lyb-swiss-track{grid-template-columns:repeat(6,200px)}
+ .lyb-pool{padding:8px}
+ .lyb-pool-team{font-size:10px;padding:4px 0}
+ .lyb-round-match{font-size:10px}
+}
