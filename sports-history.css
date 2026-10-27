@@ -1,0 +1,26 @@
+/* Lazy, verifiable market probability history inside official fixture detail. */
+.fixtures-trend{margin:10px 0;border-top:1px solid rgba(163,178,197,.18);padding-top:11px}
+.fixtures-trend>button{font:inherit;min-height:38px;font-size:11px;font-weight:700;color:#e1c391;background:rgba(36,55,76,.64);border:1px solid rgba(205,170,115,.43);border-radius:9px;padding:8px 12px;cursor:pointer}
+.fixtures-trend>button[hidden],.fixtures-trend [hidden]{display:none!important}
+.fixtures-trend [data-trend-content]{margin:12px 0 4px;padding:13px;border:1px solid rgba(154,177,202,.25);background:rgba(13,27,42,.78);border-radius:13px}
+.sports-trend-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+.sports-trend-bar>label{display:flex;align-items:center;gap:7px;color:#bdcbd9;font-size:11px}
+.sports-trend-bar select{min-width:105px;max-width:145px;border-radius:7px;border:1px solid rgba(169,184,204,.32);background:#102235;color:#e7e3de;font-size:11px;padding:6px 9px}
+.sports-trend-bar>div{display:flex;gap:5px}
+.sports-trend-bar button{font:inherit;padding:6px 11px;border-radius:7px;background:rgba(43,58,78,.7);border:1px solid rgba(153,178,204,.3);font-size:11px;color:#aebfd0;cursor:pointer}
+.sports-trend-bar button[aria-pressed=true]{background:rgba(164,124,65,.2);border-color:#caa46d;color:#f5d9a6}
+.sports-trend-chart{display:block;width:100%;height:auto;max-width:680px;margin:11px auto 4px;overflow:visible}
+.sports-trend-stat{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;justify-content:space-between;padding:2px 0;color:#ccd9e6;font-size:12px}
+.sports-trend-stat strong{font-variant-numeric:tabular-nums;color:#f1cc92;font-size:20px}
+.sports-trend-stat span:last-child{font-size:10px;color:#9dafc2}
+.sports-trend-note,.sports-trend-msg{font-size:11px;line-height:1.65;color:#91adc5;margin:9px 0 0}
+.sports-trend-msg{padding:8px}
+@media(max-width:500px){
+ .fixtures-trend [data-trend-content]{padding:10px}
+ .sports-trend-bar{align-items:stretch}
+ .sports-trend-bar>label{justify-content:space-between;flex:1 1 100%}
+ .sports-trend-bar select{flex:0 1 45%;max-width:50%}
+ .sports-trend-bar>div{justify-content:flex-end;flex:1}
+ .sports-trend-stat{justify-content:flex-start}
+ .sports-trend-stat span:last-child{flex:1 1 100%}
+}
