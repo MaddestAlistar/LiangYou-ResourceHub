@@ -436,7 +436,7 @@ function standings(){
   const rules=selected.phase_family==='lck-2026-round34'?
    (lang()==='zh'?'赛制规则：传奇组第1—2名进入季后赛第二轮，第3—4名进入季后赛第一轮，第5名进入入围赛；崛起组第1—3名进入入围赛，第4—5名淘汰。':'Format: Legend top 2 to playoff R2, next 2 to R1, fifth to play-in; Rise top 3 to play-in, bottom 2 eliminated.'):
    selected.phase_family==='lpl-2026-split3'?
-   (lang()==='zh'?'赛制规则：登峰组前6名进入季后赛；第7—8名与涅槃组前2名参加骑士之路，争夺季后赛名额；涅槃组后2名淘汰。':'Format: Ascend top six to playoffs; Ascend bottom two and Nirvana top two enter the Knights' Path playoff qualifier. Nirvana bottom two are eliminated.'):'';
+   (lang()==='zh'?'赛制规则：登峰组前6名进入季后赛；第7—8名与涅槃组前2名参加骑士之路，争夺季后赛名额；涅槃组后2名淘汰。':'Format: Ascend top six to playoffs; Ascend bottom two and Nirvana top two enter the Knights Path playoff qualifier. Nirvana bottom two are eliminated.'):'';
   const rulesNote=rules?'<p class="fixtures-ranking-note">'+safe(rules+(lang()==='zh'?' 仅说明赛制，当前排名不自动判定已晋级。':' Rules only; published ranks do not automatically confirm qualification.'))+'</p>':'';
   const missingNote=selected.missing_groups?.length?'<p class="fixtures-ranking-note is-stale">'+
    safe((lang()==='zh'?'以下分组暂未获得可靠数据：':'Missing verified groups: ')+selected.missing_groups.map(x=>localize(x)).join(' / '))+'</p>':'';
