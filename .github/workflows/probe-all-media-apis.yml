@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/probe-all-media-apis.yml'
+      - 'scripts/probe_media_apis.py'
   workflow_dispatch:
 
 permissions:
