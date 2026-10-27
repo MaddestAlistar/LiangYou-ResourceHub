@@ -115,6 +115,10 @@ assert(visualJS.includes("score_home") && visualJS.includes("SWISS STAGE") && vi
  assert(group.includes('lyb-group-flow')&&!group.includes('<table'));
 }
 assert(fixtureJS.includes('officialStandingSelect') && fixtureJS.includes('refs.standingQuick.innerHTML'), 'Standings selector missing');
+assert(fixtureJS.includes('LCK 常规赛 · 第3—4轮 · 传奇组（阶段榜）') &&
+ fixtureJS.includes('lckStageNote'), 'LCK stage label and scope note must be displayed');
+assert(fixtureJS.includes("x.groups.some(row=>Number.isInteger(row.wins)&&Number.isInteger(row.losses))"),
+ 'Rank-only esports standings must not be displayed as complete tables');
 assert(fixtureJS.includes('extraGeneratedAt') && fixtureJS.includes('selected.status===\'stale\'') && fixtureJS.includes('staleOption'),
  'Independent source timestamps and stale-table badges must remain visible');
 assert(fixtureJS.includes('extra-sports.json') && fixtureJS.includes('football-data') && fixtureJS.includes('winRate'),
@@ -130,7 +134,7 @@ assert(fixtureStyles.includes('.fixtures-subhead>.fixtures-multiselect{flex:0 0 
 assert(fixtureJS.includes("topPriority(matches)") && fixtureJS.includes("popularity(b)-popularity(a)"),
   'Featured calendar ordering missing');
 assert(html.includes('id="officialStandingQuick"'),'Standings navigation missing');
-assert(html.includes('fixtures.js?v=20261027.22') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.16'),
+assert(html.includes('fixtures.js?v=20261027.23') && html.includes('bracket-viz.js?v=20261027.7') && html.includes('fixtures.css?v=20261027.16'),
   'Changed assets must be cache-busted');
 assert(fixtureJS.includes("fixtures-card") && fixtureJS.includes("setAttribute('aria-pressed'"));
 assert(html.includes('data-fixtures-view="calendar"') && html.includes('data-fixtures-view="brackets"') && html.includes('data-fixtures-view="standings"'));
