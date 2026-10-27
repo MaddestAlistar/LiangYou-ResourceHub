@@ -22,9 +22,9 @@ const texts=()=>en()?{
  chart:'历史公开市场快照隐含概率',
  failed:'历史快照暂时不可用。'
 };
-function load(){
- // Reuse a recent download without freezing the chart at one session's first snapshot.
- if(historyPromise&&Date.now()-historyLoadedAt<10*60000)return historyPromise;
+function load(force=false){
+ // Reuse a recent download, but let the reader explicitly check for new samples.
+ if(!force&&historyPromise&&Date.now()-historyLoadedAt<10*60000)return historyPromise;
  historyLoadedAt=Date.now();
  historyPromise=fetch('./data/market-history.json',{
   cache:'no-cache',signal:AbortSignal.timeout(14000)
@@ -92,7 +92,10 @@ function plot(record,days){
   encode(labelTime(end.at))+'</text></svg>'+
   '<div class="sports-trend-stat"><span>'+encode(record.label)+'</span><strong>'+
   (end.p*100).toFixed(1)+'%</strong><span>'+encode(t.asOf)+' · '+encode(labelTime(end.at))+
-  ' · '+samples.length+(en()?' points':'个样本')+'</span></div>';
+  ' · '+samples.length+(en()?' points':'个样本')+
+  ' · '+(en()?'Change ':'相较首样本 ')+
+  ((end.p-first.p)>=0?'+':'')+((end.p-first.p)*100).toFixed(1)+
+  (en()?' pp':' 个百分点')+'</span></div>';
 }
 function show(container,records,range='1',selected=null){
  const t=texts();
@@ -116,16 +119,25 @@ panel.addEventListener('click',async ev=>{
   const fixture=(window.LiangYouOfficialSportsEvents||[]).find(x=>String(x.id)===String(id));
   if(!fixture||!target)return;
   target.hidden=false;target.innerHTML='<p class="sports-trend-msg">'+encode(texts().wait)+'</p>';
+  const retry=open.dataset.trendRetry==='1';
   open.hidden=true;
   try{
-   const feed=await load();
+   const feed=await load(retry);
    if(!target.isConnected)return;
-   if(!feed){target.innerHTML='<p class="sports-trend-msg">'+encode(texts().failed)+'</p>';return;}
    const records=snapshots(fixture,feed);
    target._historyRecords=records;
    show(target,records);
+   if(!records.length){
+    // One point is not a trend: keep a manual recheck available after the next collection.
+    open.hidden=false;open.dataset.trendRetry='1';
+    open.textContent=en()?'Check for new samples':'检查是否有新采样';
+   }else open.dataset.trendRetry='0';
   }catch{
-   if(target.isConnected)target.innerHTML='<p class="sports-trend-msg">'+encode(texts().failed)+'</p>';
+   if(target.isConnected){
+    target.innerHTML='<p class="sports-trend-msg">'+encode(texts().failed)+'</p>';
+    open.hidden=false;open.dataset.trendRetry='1';
+    open.textContent=en()?'Try again':'重新加载走势';
+   }
   }
   return;
  }
