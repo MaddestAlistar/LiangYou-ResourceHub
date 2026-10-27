@@ -249,8 +249,9 @@
     const aggregated=sourceRows.length>1 && activeSource==='all'?
       '<div class="sports-compare"><strong>'+esc(language==='zh'?'同场不同来源（非实时）':'Same match, independent market snapshots')+'</strong>'+
       sourceRows.map(item=>{
-        const values=item.outcomes.filter(o=>!['draw','tie','平局'].includes(String(o.name).toLowerCase()));
-        const numbers=values.slice(0,2).map(o=>(o.probability*100).toFixed(1)+'%').join(' / ');
+        const numbers=item.outcomes.map(o=>
+          translation.team(o.name,item.category,language)+' '+
+          (Number.isFinite(o.probability)?(o.probability*100).toFixed(1)+'%':'—')).join(' · ');
         return '<div class="sports-compare-row"><span>'+esc(platformName(item.provider))+
           '</span><b>'+esc(numbers)+'</b></div>';
       }).join('')+'</div>':'';
