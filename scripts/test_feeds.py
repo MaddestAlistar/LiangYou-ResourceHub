@@ -393,8 +393,8 @@ class FeedRules(unittest.TestCase):
             return []
         with patch.object(real,"json_request",side_effect=fake_get):
             _,standings=real.tournament_extras(records,"dummy")
-        self.assertEqual(len(standings),6)
-        self.assertEqual(sum(s["sport"]=="lol" for s in standings),4)
+        self.assertEqual(len(standings),10)
+        self.assertEqual(sum(s["sport"]=="lol" for s in standings),8)
         self.assertEqual(sum(s["sport"]=="esports" for s in standings),2)
         self.assertLessEqual(len(called),real.MAX_STANDINGS_REQUESTS)
 
@@ -404,11 +404,11 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(len(real.PANDA_ENDPOINTS),3)
         self.assertEqual(len(real.PANDA_LOL_MATCHES),2)
         self.assertEqual(len(real.PANDA_LOL_TOURNAMENTS),2)
-        self.assertEqual(real.MAX_BRACKET_REQUESTS,5)
-        self.assertEqual(real.MAX_STANDINGS_REQUESTS,6)
+        self.assertEqual(real.MAX_BRACKET_REQUESTS,6)
+        self.assertEqual(real.MAX_STANDINGS_REQUESTS,10)
         self.assertLessEqual(len(real.PANDA_ENDPOINTS)+len(real.PANDA_LOL_MATCHES)+
             len(real.PANDA_LOL_TOURNAMENTS)+real.MAX_BRACKET_REQUESTS+
-            real.MAX_STANDINGS_REQUESTS,18)
+            real.MAX_STANDINGS_REQUESTS,23)
 
 
 
@@ -422,7 +422,24 @@ class FeedRules(unittest.TestCase):
         self.assertEqual(result["rounds"][0]["round"],"Semifinals")
         self.assertEqual(result["rounds"][0]["matches"][0]["winner"],"T1")
         self.assertEqual(result["rounds"][0]["matches"][0]["score_home"],3)
+        self.assertEqual(result["rounds"][0]["matches"][0]["match_id"],"19")
         self.assertIsNone(real.official_bracket([{"name":"Unknown"}],345,"Worlds"))
+
+    def test_bracket_lineage_uses_real_provider_ids_only(self):
+        import update_real_sports as real
+        data=[{"round_name":"Upper Bracket Round 1","matches":[
+            {"id":10,"opponents":[{"opponent":{"id":1,"name":"Team A"}},
+                                  {"opponent":{"id":2,"name":"Team B"}}],
+             "winner_id":1},
+            {"id":20,"round_name":"Lower Bracket Round 1","opponents":[
+                {"opponent":{"id":2,"name":"Team B"}},
+                {"opponent":{"id":3,"name":"Team C"}}],
+             "previous_matches":[{"match_id":10,"type":"loser"}]}]}]
+        tree=real.official_bracket(data,42,"LCK · Playoffs")
+        matches=[m for r in tree["rounds"] for m in r["matches"]]
+        loser=next(m for m in matches if m["match_id"]=="20")
+        self.assertEqual(loser["previous_matches"],[{"match_id":"10","type":"loser"}])
+        self.assertEqual(loser["bracket_side"],"lower")
 
     def test_real_standings_no_inferred_ranks(self):
         import update_real_sports as real
