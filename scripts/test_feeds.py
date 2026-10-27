@@ -434,6 +434,25 @@ class FeedRules(unittest.TestCase):
 
 
 
+    def test_lck_playoffs_rank_before_older_road_to_msi(self):
+        import update_real_sports as real
+        rows=[
+            {"tournament_id":40,"sport":"lol","league":"LCK","tournament_name":"Road to MSI","has_bracket":True},
+            {"tournament_id":41,"sport":"lol","league":"LCK","tournament_name":"Playoffs","has_bracket":True},
+            {"tournament_id":42,"sport":"lol","league":"LPL","tournament_name":"Playoffs","has_bracket":True},
+            {"tournament_id":43,"sport":"lol","league":"Worlds","tournament_name":"Play-In","has_bracket":True},
+            {"tournament_id":44,"sport":"lol","league":"LEC","tournament_name":"Playoffs","has_bracket":True},
+        ]
+        queried=[]
+        def fake(url,headers):
+            self.assertEqual(headers.get("Authorization"),"Bearer dummy")
+            if "/brackets?" in url:queried.append(int(url.split("/tournaments/")[1].split("/")[0]))
+            return []
+        with patch.object(real,"json_request",side_effect=fake):
+            real.tournament_extras(rows,"dummy")
+        self.assertIn(41,queried)
+        self.assertLess(queried.index(41),queried.index(40) if 40 in queried else len(queried))
+
     def test_real_tournament_bracket_requires_provider_teams(self):
         import update_real_sports as real
         raw=[{"round_name":"Semifinals","matches":[
