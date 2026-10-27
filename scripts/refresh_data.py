@@ -9,6 +9,7 @@ import sys
 from feed_common import ROOT, date, iso, now, read_json, write_json
 
 JOBS = {
+    'media': ('update_media_intel.py', 'media-intel.json', 6),
     'apple': ('update_daily_free.py', 'daily-free.json', 3),
     'android': ('update_android_free.py', 'android-free.json', 3),
     'games': ('update_game_free.py', 'game-free.json', 3),
@@ -95,7 +96,7 @@ def main():
         jobs = dict(pool.map(refresh, JOBS))
     write_json(ROOT / 'data/update-status.json', {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai', 'watchdog_minutes': 30, 'jobs': jobs})
     # Optional official fixtures must not break the six established working feeds.
-    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles')))
+    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles', 'media')))
 
 if __name__ == '__main__':
     raise SystemExit(main())

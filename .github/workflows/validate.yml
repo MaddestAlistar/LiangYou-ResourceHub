@@ -23,6 +23,8 @@ jobs:
           package-manager-cache: false
       - name: Check JavaScript syntax
         run: |
+          node --check media-intel.js
+          python3 scripts/test_media_intel.py
           node --check app.js
           node --check design.js
           node --check navigation.js
