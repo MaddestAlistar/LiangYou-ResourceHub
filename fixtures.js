@@ -6,7 +6,7 @@ const el=id=>document.getElementById(id);
 const refs={grid:el('officialFixturesGrid'),status:el('officialFixturesStatus'),count:el('officialFixturesCount'),
  search:el('officialFixturesSearch'),category:el('officialFixturesCategory'),sort:el('officialFixturesSort'),
  more:el('officialFixturesMore'),showing:el('officialFixturesShowing'),
- bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),
+ bracket:el('officialBracketGrid'),bracketQuick:el('officialBracketQuick'),bracketSelect:el('officialBracketSelect'),bracketSport:el('officialBracketSport'),bracketStage:el('officialBracketStage'),
  standing:el('officialStandingGrid'),standingSummary:el('officialStandingSummary'),standingQuick:el('officialStandingQuick'),standingSelect:el('officialStandingSelect'),standingSport:el('officialStandingSport')};
 if(Object.values(refs).some(v=>!v))return;
 const views=[...panel.querySelectorAll('[data-fixtures-view]')];
@@ -18,9 +18,9 @@ zh:{title:'赛事日历与赛事资料',
  intro:'精选热门联赛赛程、英雄联盟与其他电竞淘汰赛、可核验的联赛排名。',
  views:['赛事日历','电竞晋级图','联赛积分榜'],dates:['今天','明天','未来7天'],
  placeholder:'搜索球队、战队或联赛',category:['全部项目','英雄联盟','其他电竞','篮球','足球'],
- sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],
+ sorts:['热门赛事优先','开赛时间优先'],formats:['全部电竞','英雄联盟','其他电竞'],stages:['全部阶段','小组赛 / 瑞士轮','淘汰赛'],
  ranks:['全部排名','英雄联盟','其他电竞','篮球'],
- bracketSubtitle:'电竞晋级图 · 英雄联盟世界赛、LCK 与其他电竞淘汰赛',
+ bracketSubtitle:'电竞阶段与晋级对阵',
  standingSubtitle:'多个联赛榜单可选择查看，点击榜单名称或展开卡片',
  hotHint:'按赛事知名度优先：世界赛、LPL/LCK、NBA 等；不代表真实观众人数',
  selectAllStandings:'全部可用榜单',
@@ -43,9 +43,9 @@ en:{title:'Calendar & tournament intelligence',
  intro:'Featured leagues, verified LoL and esports brackets, and published standings.',
  views:['Calendar','Esports brackets','Standings'],dates:['Today','Tomorrow','Next 7 days'],
  placeholder:'Search teams and competitions',category:['All sports','League of Legends','Other esports','Basketball','Football'],
- sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],
+ sorts:['Featured first','Kickoff time'],formats:['All esports','League of Legends','Other esports'],stages:['All stages','Groups / Swiss','Playoffs'],
  ranks:['All standings','League of Legends','Other esports','Basketball'],
- bracketSubtitle:'Verified LoL Worlds, LCK and other esports knockout brackets',
+ bracketSubtitle:'Esports stages and brackets',
  standingSubtitle:'Select a league or expand published ranking cards',
  hotHint:'Editorial prominence: Worlds, LPL/LCK, NBA, not live viewership',
  selectAllStandings:'All available rankings',
@@ -226,6 +226,7 @@ function updateLabels(){
  [...refs.category.options].forEach((x,i)=>x.textContent=copy.category[i]);
  [...refs.sort.options].forEach((x,i)=>x.textContent=copy.sorts[i]);
  [...refs.bracketSport.options].forEach((x,i)=>x.textContent=copy.formats[i]);
+ [...refs.bracketStage.options].forEach((x,i)=>x.textContent=copy.stages[i]);
  [...refs.standingSport.options].forEach((x,i)=>x.textContent=copy.ranks[i]);
  refs.more.textContent=copy.more;
  for(const [id,mode] of [['fixtureCalendarPanel','calendar'],['fixtureBracketsPanel','brackets'],['fixtureStandingsPanel','standings']])
@@ -234,8 +235,7 @@ function updateLabels(){
  el('officialBracketSubtitle').textContent=copy.bracketSubtitle;
  el('officialStandingSubtitle').textContent=copy.standingSubtitle;
  const node=data.generated_at?Date.parse(data.generated_at):NaN;
- refs.status.textContent=Number.isFinite(node)?(Date.now()-node>18*3600000?copy.stale:
-  (data.status==='partial'?copy.partial+' · ':'')+copy.updated+'：'+when(data.generated_at)+' · '+copy.time):copy.first;
+ refs.status.textContent=Number.isFinite(node)?(lang()==='zh'?'更新 ':'Updated ')+when(data.generated_at):'';
 }
 function calendar(){
  const copy=t(),now=Date.now(),until=now+7*86400000;
@@ -275,40 +275,61 @@ function kindOf(v){
 function options(select,items,includeAll=false){
  const current=select.value;
  select.innerHTML=(includeAll?'<option value="all">'+safe(t().selectAllStandings)+'</option>':'')+
-  items.map((x,i)=>'<option value="'+safe(String(x.tournament_id||x.id||i))+'">'+
+  items.map((x,i)=>'<option value="'+safe(String(x._key||x.tournament_id||x.id||i))+'">'+
   safe(localize(x.title,kindOf(x)))+'</option>').join('');
  if(includeAll&&(current==='all'||!current))select.value='all';
- else if(items.some(x=>String(x.tournament_id||x.id)===current))select.value=current;
- else if(items[0])select.value=String(items[0].tournament_id||items[0].id);
+ else if(items.some(x=>String(x._key||x.tournament_id||x.id)===current))select.value=current;
+ else if(items[0])select.value=String(items[0]._key||items[0].tournament_id||items[0].id);
 }
 function bracketRound(label){
  return localize(label,'esports').replace(/^(?:Upper|Lower) Bracket Round /i,m=>m);
 }
 function brackets(){
- const copy=t(),kind=refs.bracketSport.value;
- const records=[...data.brackets].filter(x=>x&&x.provider==='pandascore'&&
-  Array.isArray(x.rounds)&&x.rounds.length&&(kind==='all'||kindOf(x)===kind))
-  .sort((a,b)=>popularity(b)-popularity(a));
+ const copy=t(),kind=refs.bracketSport.value,stage=refs.bracketStage.value;
+ // Ranking is rendered as a group stage; promotion is never inferred without a bracket.
+ const knockout=data.brackets.filter(x=>x&&x.provider==='pandascore'&&Array.isArray(x.rounds)&&x.rounds.length)
+  .map(x=>({...x,_mode:'knockout',_key:'k-'+x.tournament_id}));
+ const group=data.standings.filter(x=>x&&x.provider==='pandascore'&&Array.isArray(x.groups)&&x.groups.length&&
+  /group|swiss|regular season|round robin|小组|瑞士|常规赛/i.test(x.title||''))
+  .map(x=>({...x,_mode:'group',_key:'g-'+x.id}));
+ const records=[...knockout,...group].filter(x=>(kind==='all'||kindOf(x)===kind)&&
+  (stage==='all'||x._mode===stage))
+  .sort((a,b)=>popularity(b)-popularity(a)||
+   (a._mode==='group'?0:1)-(b._mode==='group'?0:1)||
+   String(a.title).localeCompare(String(b.title)));
+ refs.bracketQuick.innerHTML='';
  if(!records.length){
-  refs.bracketSelect.hidden=true;refs.bracketQuick.innerHTML='';
+  refs.bracketSelect.hidden=true;refs.bracket.classList.remove('is-groups');
   refs.bracket.innerHTML=empty(copy.unavailable);return;
  }
  refs.bracketSelect.hidden=false;options(refs.bracketSelect,records);
- const selected=records.find(x=>String(x.tournament_id)===refs.bracketSelect.value)||records[0];
- // Show every LoL bracket as a visible, tappable option instead of hiding it in a select.
- refs.bracketQuick.innerHTML='<span class="fixtures-quick-label">'+
-  safe(copy.bracketCount(records.length))+'</span>'+
-  records.slice(0,8).map(x=>{
-   const active=String(x.tournament_id)===String(selected.tournament_id);
-   return '<button type="button" class="fixtures-quick-btn'+(active?' is-active':'')+
-     '" data-fixtures-tournament="'+safe(x.tournament_id)+'" aria-pressed="'+active+'">'+
-     '<span>'+safe(kindOf(x)==='lol'?copy.esportsKind[0]:copy.esportsKind[1])+'</span> · '+
-     safe(localize(x.title,kindOf(x)))+'</button>';
-  }).join('');
+ const selected=records.find(x=>x._key===refs.bracketSelect.value)||records[0];
+ if(selected._mode==='group'){
+  refs.bracket.classList.add('is-groups');
+  const groups=new Map();
+  for(const row of selected.groups){
+   if(!row||!Number.isInteger(row.rank)||!row.team)continue;
+   const group=row.group||'';
+   if(!groups.has(group))groups.set(group,[]);
+   groups.get(group).push(row);
+  }
+  refs.bracket.innerHTML=[...groups.entries()].map(([group,rows])=>
+   '<section class="fixtures-standing-group"><h4>'+safe(group?localize(group,kindOf(selected)):
+    (lang()==='zh'?'阶段排名':'Stage standings'))+'</h4>'+
+   '<table class="fixtures-ranking"><thead><tr><th>'+safe(copy.rank)+'</th><th>'+safe(copy.team)+
+   '</th><th>'+safe(copy.wins)+'</th><th>'+safe(copy.losses)+'</th></tr></thead><tbody>'+
+   rows.sort((a,b)=>a.rank-b.rank).slice(0,32).map(row=>'<tr><td>'+safe(row.rank)+'</td><td>'+
+   safe(team(row.team,kindOf(selected)))+'</td><td>'+
+   safe(Number.isInteger(row.wins)?row.wins:'—')+'</td><td>'+
+   safe(Number.isInteger(row.losses)?row.losses:'—')+'</td></tr>').join('')+
+   '</tbody></table></section>').join('')||empty(copy.unavailable);
+  return;
+ }
+ refs.bracket.classList.remove('is-groups');
  const grouped=new Map();
  for(const round of selected.rounds){
   let key=String(round.round||copy.round);
-  key=key.replace(/^(Upper|Lower) Bracket Round (\d+)(?: Match .*)?$/i,'$1 Bracket Round $2');
+  key=key.replace(/^(Upper|Lower) Bracket Round (\\d+)(?: Match .*)?$/i,'$1 Bracket Round $2');
   if(!grouped.has(key))grouped.set(key,[]);
   grouped.get(key).push(...(Array.isArray(round.matches)?round.matches:[]));
  }
@@ -317,10 +338,10 @@ function brackets(){
   '<section class="fixtures-round"><h4>'+safe(bracketRound(label))+'</h4>'+
   matches.slice(0,12).map(m=>
    '<div class="fixtures-tie">'+[['home','score_home'],['away','score_away']].map(([side,score])=>
-     '<div class="fixtures-tie-line'+(m.winner===m[side]?' is-winner':'')+'"><span>'+
-     safe(team(m[side]||copy.draw,sport))+'</span><b>'+
-     safe(Number.isInteger(m[score])?m[score]:'—')+'</b></div>').join('')+
-   '</div>').join('')+'</section>').join('');
+    '<div class="fixtures-tie-line'+(m.winner===m[side]?' is-winner':'')+'"><span>'+
+    safe(team(m[side]||copy.draw,sport))+'</span><b>'+
+    safe(Number.isInteger(m[score])?m[score]:'—')+'</b></div>').join('')+
+  '</div>').join('')+'</section>').join('');
 }
 function standings(){
  const copy=t(),kind=refs.standingSport.value;
@@ -332,22 +353,11 @@ function standings(){
   refs.standingSummary.textContent=kind==='basketball'?copy.noNba:copy.noStanding;
   refs.standing.innerHTML=empty(kind==='basketball'?copy.noNba:copy.noStanding);return;
  }
- refs.standingSelect.hidden=false;options(refs.standingSelect,records,true);
+ refs.standingSelect.hidden=false;options(refs.standingSelect,records);
  const selectedId=refs.standingSelect.value;
- const selection=selectedId==='all'?records.slice(0,8):
-  records.filter(x=>String(x.id)===selectedId).slice(0,1);
- refs.standingSummary.textContent=copy.rankingCount(records.length)+
-   (kind==='all'&&!records.some(x=>kindOf(x)==='basketball')?' · '+copy.noNba:'');
- refs.standingQuick.innerHTML='<span class="fixtures-quick-label">'+safe(copy.rankingCount(records.length))+'</span>'+
-   '<button type="button" class="fixtures-quick-btn'+(selectedId==='all'?' is-active':'')+
-   '" data-fixtures-standing="all" aria-pressed="'+(selectedId==='all')+'">'+safe(copy.selectAllStandings)+'</button>'+
-   records.map(x=>{
-     const key=String(x.id);
-     return '<button type="button" class="fixtures-quick-btn'+(selectedId===key?' is-active':'')+
-       '" data-fixtures-standing="'+safe(key)+'" aria-pressed="'+(selectedId===key)+'">'+
-       '<span>'+safe(kindOf(x)==='lol'?copy.esportsKind[0]:kindOf(x)==='esports'?copy.esportsKind[1]:copy.ranks[3])+'</span> · '+
-       safe(localize(x.title,kindOf(x)))+'</button>';
-   }).join('');
+ const selection=records.filter(x=>String(x.id)===selectedId).slice(0,1);
+ refs.standingSummary.textContent='';
+ refs.standingQuick.innerHTML='';
  refs.standing.innerHTML=selection.map((selected,i)=>{
   const groups=new Map();
   for(const item of selected.groups){
@@ -379,8 +389,8 @@ async function fetchData(){
   if(!result.ok)throw Error('Unavailable');
   const next=await result.json();
   if(next.schema!==1||next.source_type!=='official_fixtures'||!Array.isArray(next.events))throw Error('Invalid schema');
-  data={...next,events:next.events.slice(0,300),brackets:Array.isArray(next.brackets)?next.brackets.slice(0,8):[],
-    standings:Array.isArray(next.standings)?next.standings.slice(0,12):[]};
+  data={...next,events:next.events.slice(0,300),brackets:Array.isArray(next.brackets)?next.brackets.slice(0,16):[],
+    standings:Array.isArray(next.standings)?next.standings.slice(0,24):[]};
  }catch{data={...data,status:'failed'};}
  render();
 }
@@ -391,6 +401,7 @@ refs.category.addEventListener('change',()=>{limit=6;render();});
 refs.sort.addEventListener('change',()=>{limit=6;render();});
 refs.more.addEventListener('click',()=>{limit+=6;render();});
 refs.bracketSport.addEventListener('change',render);
+refs.bracketStage.addEventListener('change',render);
 refs.bracketSelect.addEventListener('change',render);
 refs.bracketQuick.addEventListener('click',e=>{
  const btn=e.target.closest('[data-fixtures-tournament]');
