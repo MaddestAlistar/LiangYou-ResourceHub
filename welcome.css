@@ -1,11 +1,11 @@
 /* Immersive, accessible first-visit screen. Existing interactive iframe is moved here. */
 .welcome-screen{
   position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
-  min-height:100vh;min-height:100svh;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(28px + env(safe-area-inset-bottom,0px));
+  min-height:0;padding:clamp(16px,2.8vw,32px) 16px clamp(10px,1.9vw,22px);
   overflow:hidden;color:#f5f4f1;
   background:radial-gradient(ellipse 70% 53% at 50% 42%,rgba(50,78,129,.34),transparent 82%),
     radial-gradient(ellipse 60% 45% at 12% 94%,rgba(64,43,93,.2),transparent 75%),
-    linear-gradient(155deg,#080d18,#121d35 67%,#070b15);
+    linear-gradient(180deg,#0b1120 0%,#121f36 57%,#0b1423 100%);
 }
 .welcome-screen:before{
   content:"";position:absolute;inset:0;z-index:-1;opacity:.55;pointer-events:none;
@@ -40,7 +40,7 @@
 .hero.hero-after-welcome .hero-copy{max-width:790px}
 .hero.hero-after-welcome .hero-shortcuts{grid-column:1}
 @media(max-width:700px){
-  .welcome-screen{padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(22px + env(safe-area-inset-bottom,0px))}
+  .welcome-screen{padding:15px 14px 8px}
   .welcome-inner{gap:7px}
   .welcome-eyebrow{font-size:10px;letter-spacing:.12em}
   .welcome-title{font-size:clamp(19px,5.5vw,26px)}
@@ -56,3 +56,40 @@
   .welcome-screen .hero-fullscreen{min-height:46px}
 }
 @media(prefers-reduced-motion:reduce){.welcome-enter{transition:none}}
+
+/* Seamless transition from the welcome art to the site content. */
+main{background:linear-gradient(180deg,#0b1423 0,rgba(11,20,35,.72) 165px,rgba(11,20,35,0) 500px)}
+.hero.hero-after-welcome{padding-top:clamp(18px,3vw,32px)}
+@media(max-width:700px){
+  .welcome-screen{min-height:0;justify-content:flex-start}
+  .welcome-inner{margin:0 auto}
+  .welcome-screen .hero-logo-space{height:clamp(280px,49svh,450px)}
+  .hero.hero-after-welcome{padding-top:20px}
+}
+@media(max-height:690px) and (max-width:700px){
+  .welcome-screen .hero-logo-space{height:clamp(240px,42svh,320px)}
+}
+
+/* Browser-native site bookmarking guidance; no deceptive success claims. */
+.bookmark-dialog{width:min(440px,calc(100vw - 28px));max-height:min(85dvh,700px);
+  padding:0;border:1px solid rgba(220,192,142,.45);border-radius:21px;color:#e9eff9;
+  background:linear-gradient(160deg,#243149,#111a2b 73%);box-shadow:0 24px 70px rgba(0,0,0,.62)}
+.bookmark-dialog::backdrop{background:rgba(2,7,16,.76);backdrop-filter:blur(5px)}
+.bookmark-dialog[open]{display:block}
+.bookmark-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:20px 21px 8px}
+.bookmark-dialog-head h2{font-size:20px;color:#f3d9a4;margin:0}
+.bookmark-close{display:grid;place-items:center;width:37px;height:37px;flex:none;border-radius:11px;
+  border:1px solid rgba(196,209,228,.25);background:rgba(255,255,255,.06);color:#e0e5ef;font-size:22px;line-height:1}
+.bookmark-dialog-body{padding:7px 21px 21px}
+.bookmark-dialog-help{font-size:13px;line-height:1.75;color:#c4d0df;margin:0 0 13px}
+.bookmark-steps{margin:0;padding:13px 15px;border:1px solid rgba(179,194,221,.23);border-radius:13px;
+  background:rgba(8,19,34,.42);color:#e5ebf4;font-size:13px;line-height:1.85}
+.bookmark-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:15px}
+.bookmark-actions button{min-height:43px;border-radius:10px;font-weight:650;font-size:12px;
+  border:1px solid rgba(235,202,141,.38);background:rgba(231,184,107,.12);color:#f0d5a1;padding:10px 7px}
+.bookmark-actions button:hover{background:rgba(231,184,107,.24)}
+.bookmark-actions button:focus-visible,.bookmark-close:focus-visible{outline:2px solid #f7dfa9;outline-offset:3px}
+.bookmark-actions button[hidden]{display:none}
+.bookmark-status{font-size:12px;line-height:1.65;color:#c4dcba;min-height:0;margin:9px 0 0}
+.bookmark-status:empty{display:none}
+@media(max-width:380px){.bookmark-dialog-head{padding:15px 16px 7px}.bookmark-dialog-body{padding:7px 16px 16px}}
