@@ -21,24 +21,24 @@ jobs:
           python-version: '3.12'
       - name: Verify providers using GitHub Secrets (no credential output)
         env:
-          OMDB_API_KEY: \${{ secrets.OMDB_API_KEY }}
-          MDBLIST_API_KEY: \${{ secrets.MDBLIST_API_KEY }}
-          MDB_LIST_API_KEY: \${{ secrets.MDB_LIST_API_KEY }}
-          KOFIC_API_KEY: \${{ secrets.KOFIC_API_KEY }}
-          KOBIS_API_KEY: \${{ secrets.KOBIS_API_KEY }}
-          MAL_CLIENT_ID: \${{ secrets.MAL_CLIENT_ID }}
-          MYANIMELIST_CLIENT_ID: \${{ secrets.MYANIMELIST_CLIENT_ID }}
-          TASTEDIVE_API_KEY: \${{ secrets.TASTEDIVE_API_KEY }}
-          FANARTTV_API_KEY: \${{ secrets.FANARTTV_API_KEY }}
-          FANART_API_KEY: \${{ secrets.FANART_API_KEY }}
-          THETVDB_API_KEY: \${{ secrets.THETVDB_API_KEY }}
-          TVDB_API_KEY: \${{ secrets.TVDB_API_KEY }}
-          THETVDB_API_V4_KEY: \${{ secrets.THETVDB_API_V4_KEY }}
-          THETVDB_PIN: \${{ secrets.THETVDB_PIN }}
-          TVDB_PIN: \${{ secrets.TVDB_PIN }}
-          YOUTUBE_API_KEY: \${{ secrets.YOUTUBE_API_KEY }}
-          YOUTUBE_DATA_API_KEY: \${{ secrets.YOUTUBE_DATA_API_KEY }}
-          YOUTUBE_DATA_API_V3_KEY: \${{ secrets.YOUTUBE_DATA_API_V3_KEY }}
-          GUARDIAN_API_KEY: \${{ secrets.GUARDIAN_API_KEY }}
-          THE_GUARDIAN_API_KEY: \${{ secrets.THE_GUARDIAN_API_KEY }}
+          OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          MDBLIST_API_KEY: ${{ secrets.MDBLIST_API_KEY }}
+          MDB_LIST_API_KEY: ${{ secrets.MDB_LIST_API_KEY }}
+          KOFIC_API_KEY: ${{ secrets.KOFIC_API_KEY }}
+          KOBIS_API_KEY: ${{ secrets.KOBIS_API_KEY }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+          MYANIMELIST_CLIENT_ID: ${{ secrets.MYANIMELIST_CLIENT_ID }}
+          TASTEDIVE_API_KEY: ${{ secrets.TASTEDIVE_API_KEY }}
+          FANARTTV_API_KEY: ${{ secrets.FANARTTV_API_KEY }}
+          FANART_API_KEY: ${{ secrets.FANART_API_KEY }}
+          THETVDB_API_KEY: ${{ secrets.THETVDB_API_KEY }}
+          TVDB_API_KEY: ${{ secrets.TVDB_API_KEY }}
+          THETVDB_API_V4_KEY: ${{ secrets.THETVDB_API_V4_KEY }}
+          THETVDB_PIN: ${{ secrets.THETVDB_PIN }}
+          TVDB_PIN: ${{ secrets.TVDB_PIN }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          YOUTUBE_DATA_API_KEY: ${{ secrets.YOUTUBE_DATA_API_KEY }}
+          YOUTUBE_DATA_API_V3_KEY: ${{ secrets.YOUTUBE_DATA_API_V3_KEY }}
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+          THE_GUARDIAN_API_KEY: ${{ secrets.THE_GUARDIAN_API_KEY }}
         run: python scripts/probe_media_apis.py
