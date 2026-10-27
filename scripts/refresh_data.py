@@ -45,6 +45,17 @@ def main():
     def refresh(name):
         script, filename, hours = JOBS[name]
         path = ROOT / 'data' / filename
+        # Check NBA game-day snapshots every 2h, otherwise preserve 6h cadence.
+        # Only a verified future/ongoing fixture can enable the faster cycle.
+        if name == 'nba':
+            recent_snapshot = read_json(path)
+            active = any(
+                e.get('status') in ('scheduled','live')
+                and (kickoff := date(e.get('start_time'))) is not None
+                and instant - timedelta(hours=3) <= kickoff <= instant + timedelta(hours=12)
+                for e in recent_snapshot.get('events',[]) if isinstance(e,dict)
+            )
+            hours = 2 if active else 6
         previous = verified_time(name, read_json(path))
         entry = dict(old.get('jobs', {}).get(name, {}))
         # A maintainer may have rerun a collector independently after a failed
