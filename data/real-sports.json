@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "fixture_schema_version": 6,
+  "fixture_schema_version": 7,
   "source_type": "official_fixtures",
-  "generated_at": "2026-10-27T05:50:50Z",
+  "generated_at": "2026-10-27T08:08:54Z",
   "interval_hours": 6,
   "sources": [
     {
@@ -14,27 +14,67 @@
     {
       "tag": "pandascore",
       "status": "ok",
-      "count": 83,
+      "count": 89,
       "failed_groups": 0
     }
   ],
   "status": "partial",
   "events": [
     {
-      "id": "panda-1763029",
+      "id": "panda-1763030",
       "provider": "pandascore",
       "sport": "esports",
       "league": "DFRAG Invitational",
       "stage": "Group B",
       "tournament_id": 22274,
       "tournament_name": "Group B",
-      "start_time": "2026-10-27T03:10:00Z",
+      "start_time": "2026-10-27T07:30:00Z",
       "status": "live",
       "status_detail": "",
-      "home": "Rooster",
+      "home": "Staqued",
       "away": "Abyssal",
-      "score_home": 1,
-      "score_away": 1,
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1763031",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "DFRAG Invitational",
+      "stage": "Group B",
+      "tournament_id": 22274,
+      "tournament_name": "Group B",
+      "start_time": "2026-10-27T07:40:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "FlyQuest",
+      "away": "Rooster",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1763043",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Tesla Cup",
+      "stage": "Group A",
+      "tournament_id": 22276,
+      "tournament_name": "Group A",
+      "start_time": "2026-10-27T08:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "B8",
+      "away": "K27",
+      "score_home": 0,
+      "score_away": 0,
       "best_of": 3,
       "winner_id": null,
       "prominence": 90,
@@ -605,26 +645,6 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1763043",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "Tesla Cup",
-      "stage": "Group A",
-      "tournament_id": 22276,
-      "tournament_name": "Group A",
-      "start_time": "2026-10-27T08:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "B8",
-      "away": "K27",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
       "id": "panda-1727905",
       "provider": "pandascore",
       "sport": "esports",
@@ -697,6 +717,26 @@
       "status_detail": "",
       "home": "oveA",
       "away": "Zero Tenacity",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1774327",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Exort Fiesta",
+      "stage": "Group Stage",
+      "tournament_id": 22298,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-10-27T09:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Johnny Speeds",
+      "away": "Just Players",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -865,21 +905,21 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1773661",
+      "id": "panda-1774328",
       "provider": "pandascore",
       "sport": "esports",
-      "league": "PARI Universe",
-      "stage": "Group B",
-      "tournament_id": 22230,
-      "tournament_name": "Group B",
-      "start_time": "2026-10-27T13:00:00Z",
+      "league": "Exort Fiesta",
+      "stage": "Group Stage",
+      "tournament_id": 22298,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-10-27T12:00:00Z",
       "status": "scheduled",
       "status_detail": "",
-      "home": "Astra Invicta",
-      "away": "LEGION",
+      "home": "Azuolas",
+      "away": "Saint Sinners",
       "score_home": null,
       "score_away": null,
-      "best_of": 1,
+      "best_of": 3,
       "winner_id": null,
       "prominence": 90,
       "source_url": "https://www.pandascore.co/"
@@ -1041,7 +1081,9 @@
       ],
       "provider": "pandascore",
       "sport": "lol",
-      "prominence": 500
+      "prominence": 500,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "tournament_id": 21657,
@@ -1081,7 +1123,9 @@
       ],
       "provider": "pandascore",
       "sport": "lol",
-      "prominence": 430
+      "prominence": 430,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "tournament_id": 21726,
@@ -1199,7 +1243,9 @@
       ],
       "provider": "pandascore",
       "sport": "lol",
-      "prominence": 430
+      "prominence": 430,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "tournament_id": 21534,
@@ -1260,7 +1306,9 @@
       ],
       "provider": "pandascore",
       "sport": "lol",
-      "prominence": 385
+      "prominence": 385,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "tournament_id": 22225,
@@ -1391,48 +1439,12 @@
       ],
       "provider": "pandascore",
       "sport": "esports",
-      "prominence": 325
+      "prominence": 325,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     }
   ],
   "standings": [
-    {
-      "id": "panda-22046",
-      "title": "Worlds · Play-In",
-      "kind": "esports",
-      "provider": "pandascore",
-      "groups": [
-        {
-          "rank": 1,
-          "team": "Karmine Corp",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 2,
-          "team": "FURIA Esports",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 3,
-          "team": "MVK Esports",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 4,
-          "team": "Cloud9",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        }
-      ],
-      "sport": "lol",
-      "prominence": 500
-    },
     {
       "id": "panda-22047",
       "title": "Worlds · Group Stage",
@@ -1553,7 +1565,9 @@
         }
       ],
       "sport": "lol",
-      "prominence": 500
+      "prominence": 500,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "id": "panda-21364",
@@ -1598,7 +1612,9 @@
         }
       ],
       "sport": "lol",
-      "prominence": 430
+      "prominence": 430,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "id": "panda-21445",
@@ -1664,7 +1680,9 @@
         }
       ],
       "sport": "lol",
-      "prominence": 430
+      "prominence": 430,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     },
     {
       "id": "panda-22222",
@@ -1786,450 +1804,18 @@
         }
       ],
       "sport": "esports",
-      "prominence": 325
-    },
-    {
-      "id": "panda-22225",
-      "title": "VCT · Playoffs",
-      "kind": "esports",
-      "provider": "pandascore",
-      "groups": [
-        {
-          "rank": 1,
-          "team": "G2 Gozen",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 2,
-          "team": "FENNEL Female",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 3,
-          "team": "Nova Esports GC",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 4,
-          "team": "Gen.G GC",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "Shopify Rebellion Gold",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "SK Nebula",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 7,
-          "team": "MIBR GC",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 8,
-          "team": "KRÜ Blaze",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 9,
-          "team": "Gentle Mates GC",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        },
-        {
-          "rank": 10,
-          "team": "Team Liquid Brazil",
-          "wins": null,
-          "losses": null,
-          "group": ""
-        }
-      ],
-      "sport": "esports",
-      "prominence": 325
+      "prominence": 325,
+      "status": "stale",
+      "verified_at": "2026-10-27T05:50:50Z"
     }
   ],
-  "stage_matches": [
-    {
-      "id": "stage-1710932",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Gen.G",
-      "away": "Invictus Gaming",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Gen.G",
-      "start_time": "2026-10-23T17:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710936",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Hanwha Life Esports",
-      "away": "Top Esports",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Hanwha Life Esports",
-      "start_time": "2026-10-23T18:15:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710939",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Bilibili Gaming",
-      "away": "Movistar KOI",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Movistar KOI",
-      "start_time": "2026-10-23T19:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710934",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Anyone's Legend",
-      "away": "Karmine Corp",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Karmine Corp",
-      "start_time": "2026-10-23T20:15:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710935",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "G2 Esports",
-      "away": "Dplus KIA",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Dplus KIA",
-      "start_time": "2026-10-23T21:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710933",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Team Liquid",
-      "away": "CTBC Flying Oyster",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "CTBC Flying Oyster",
-      "start_time": "2026-10-23T22:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710937",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "LOS",
-      "away": "T1",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "T1",
-      "start_time": "2026-10-23T23:15:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710938",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Team Secret Whales",
-      "away": "LYON",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "LYON",
-      "start_time": "2026-10-24T00:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710946",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Top Esports",
-      "away": "Anyone's Legend",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Top Esports",
-      "start_time": "2026-10-24T17:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710941",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "CTBC Flying Oyster",
-      "away": "Movistar KOI",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Movistar KOI",
-      "start_time": "2026-10-24T18:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710944",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "G2 Esports",
-      "away": "LOS",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "G2 Esports",
-      "start_time": "2026-10-24T19:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710943",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "LYON",
-      "away": "Karmine Corp",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "LYON",
-      "start_time": "2026-10-24T20:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710945",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Invictus Gaming",
-      "away": "Team Secret Whales",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Invictus Gaming",
-      "start_time": "2026-10-24T21:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710942",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Hanwha Life Esports",
-      "away": "Gen.G",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Gen.G",
-      "start_time": "2026-10-24T22:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710940",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Dplus KIA",
-      "away": "T1",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Dplus KIA",
-      "start_time": "2026-10-24T23:15:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710947",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Team Liquid",
-      "away": "Bilibili Gaming",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Bilibili Gaming",
-      "start_time": "2026-10-25T00:20:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710954",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Hanwha Life Esports",
-      "away": "Invictus Gaming",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Invictus Gaming",
-      "start_time": "2026-10-25T17:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710953",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Top Esports",
-      "away": "G2 Esports",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "Top Esports",
-      "start_time": "2026-10-25T18:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710956",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Dplus KIA",
-      "away": "Movistar KOI",
-      "score_home": 2,
-      "score_away": 0,
-      "winner": "Dplus KIA",
-      "start_time": "2026-10-25T19:10:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710955",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Gen.G",
-      "away": "LYON",
-      "score_home": 2,
-      "score_away": 1,
-      "winner": "Gen.G",
-      "start_time": "2026-10-25T20:55:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710998",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "T1",
-      "away": "CTBC Flying Oyster",
-      "score_home": 1,
-      "score_away": 0,
-      "winner": "T1",
-      "start_time": "2026-10-26T17:05:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710997",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Karmine Corp",
-      "away": "Bilibili Gaming",
-      "score_home": 0,
-      "score_away": 1,
-      "winner": "Bilibili Gaming",
-      "start_time": "2026-10-26T18:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1710999",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "LOS",
-      "away": "Team Secret Whales",
-      "score_home": 2,
-      "score_away": 0,
-      "winner": "LOS",
-      "start_time": "2026-10-26T19:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1711000",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Team Liquid",
-      "away": "Anyone's Legend",
-      "score_home": 2,
-      "score_away": 0,
-      "winner": "Team Liquid",
-      "start_time": "2026-10-26T21:00:00Z",
-      "status": "finished"
-    },
-    {
-      "id": "stage-1711003",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Movistar KOI",
-      "away": "T1",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-28T20:00:00Z",
-      "status": "scheduled"
-    },
-    {
-      "id": "stage-1711002",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Invictus Gaming",
-      "away": "LYON",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-28T23:00:00Z",
-      "status": "scheduled"
-    },
-    {
-      "id": "stage-1711004",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Karmine Corp",
-      "away": "CTBC Flying Oyster",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-29T20:00:00Z",
-      "status": "scheduled"
-    },
-    {
-      "id": "stage-1711001",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Top Esports",
-      "away": "Bilibili Gaming",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-29T23:00:00Z",
-      "status": "scheduled"
-    },
-    {
-      "id": "stage-1711005",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Team Liquid",
-      "away": "LOS",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-30T20:00:00Z",
-      "status": "scheduled"
-    },
-    {
-      "id": "stage-1711006",
-      "tournament_id": 22047,
-      "round": null,
-      "home": "Hanwha Life Esports",
-      "away": "G2 Esports",
-      "score_home": null,
-      "score_away": null,
-      "winner": null,
-      "start_time": "2026-10-30T23:00:00Z",
-      "status": "scheduled"
-    }
-  ],
+  "phase_coverage": {
+    "lck_legend": true,
+    "lck_rise": false,
+    "lpl_ascend": true,
+    "lpl_nirvana": false
+  },
+  "verified_bracket_edges": 0,
+  "stage_matches": [],
   "notes": "Verified schedules, provider bracket trees and standings. No live score display; updates roughly every six hours."
 }
