@@ -535,9 +535,54 @@ def retrieve_pandascore(key,now):
     return results,failures
 
 
+def collect_stage_matches(key,tournament_id):
+    """Optional bounded provider history for round-by-round Swiss diagrams.
+
+    The provider's explicit round number is kept if present; never infer a
+    round or winner from a standings table. Failure leaves normal feeds intact.
+    """
+    headers={"Authorization":"Bearer "+key,"Accept":"application/json","User-Agent":UA}
+    url=PANDA_ROOT+"/tournaments/"+str(tournament_id)+"/matches?"+urlencode({
+        "page[size]":100,"page[number]":1,"sort":"-begin_at"})
+    raw=json_request(url,headers)
+    if not isinstance(raw,list):return []
+    output=[]
+    seen=set()
+    for match in raw[:100]:
+        if not isinstance(match,dict) or type(match.get("id")) is not int:continue
+        if match["id"] in seen:continue
+        seen.add(match["id"])
+        opponents=match.get("opponents") or []
+        if not isinstance(opponents,list) or len(opponents)!=2:continue
+        teams=[x.get("opponent") or {} for x in opponents if isinstance(x,dict)]
+        if len(teams)!=2 or not all(isinstance(x,dict) and x.get("name") for x in teams):continue
+        when=timestamp(match.get("scheduled_at")) or timestamp(match.get("begin_at"))
+        if not when:continue
+        state=name(match.get("status")).lower()
+        status={"finished":"finished","running":"live","not_started":"scheduled"}.get(state)
+        if not status:continue
+        results=match.get("results") or []
+        scoring={x.get("team_id"):score(x.get("score"))
+                 for x in results if isinstance(x,dict)}
+        winner_id=match.get("winner_id")
+        winner=next((name(x["name"]) for x in teams if x.get("id")==winner_id),None) if type(winner_id) is int else None
+        round_value=match.get("round_number",match.get("round"))
+        if type(round_value) is str and re.fullmatch(r"(?:round\s*)?[1-5]",round_value,re.I):
+            round_value=int(re.sub(r"\D","",round_value))
+        round_number=round_value if type(round_value) is int and 1<=round_value<=5 else None
+        output.append({"id":"stage-"+str(match["id"]),
+            "tournament_id":tournament_id,"round":round_number,
+            "home":name(teams[0]["name"]),"away":name(teams[1]["name"]),
+            "score_home":scoring.get(teams[0].get("id")) if status!="scheduled" else None,
+            "score_away":scoring.get(teams[1].get("id")) if status!="scheduled" else None,
+            "winner":winner,"start_time":iso(when),"status":status})
+    output.sort(key=lambda x:x["start_time"])
+    return output[:80]
+
+
 def main():
     now=dt.datetime.now(UTC)
-    events={};sources=[];brackets=[];standings=[]
+    events={};sources=[];brackets=[];standings=[];stage_matches=[]
     pairs=(("api-sports","API_SPORTS_KEY",retrieve_api_sports),
            ("pandascore","PANDASCORE_API_TOKEN",retrieve_pandascore))
     for provider,keyname,func in pairs:
@@ -553,6 +598,19 @@ def main():
             if provider=="pandascore":
                 b,t=tournament_extras(matches,secret,discover_lol_tournaments(secret,now))
                 brackets.extend(b);standings.extend(t)
+                # One supplementary Swiss history request at most per cycle.
+                focus=next((x for x in t if
+                    re.search(r"worlds|全球总决赛",x.get("title",""),re.I) and
+                    re.search(r"group|swiss|小组|瑞士",x.get("title",""),re.I)),None)
+                if focus:
+                    try:
+                        identifier=int(focus["id"].removeprefix("panda-"))
+                        stage_matches=collect_stage_matches(secret,identifier)
+                        print("PandaScore Swiss match history: %d verified matches"%
+                              len(stage_matches),flush=True)
+                    except Exception:
+                        print("Swiss match history not available; retaining verified standings",flush=True)
+
             elif provider=="api-sports":
                 try:
                     nba=nba_standings(secret,now)
@@ -591,6 +649,7 @@ def main():
             "interval_hours":6,"sources":sources,
             "status":"ok" if all(src["status"]=="ok" for src in sources) else "partial",
             "events":selected,"brackets":brackets[:MAX_BRACKET_REQUESTS],"standings":standings[:MAX_STANDINGS_REQUESTS+1],
+             "stage_matches":stage_matches,
             "notes":"Verified schedules, provider bracket trees and standings. No live score display; updates roughly every six hours."}
     write_json(OUT,output)
     print("Official fixtures published: "+str(len(selected)),flush=True)
