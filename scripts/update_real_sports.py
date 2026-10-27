@@ -507,11 +507,11 @@ def tournament_extras(matches,key,discoveries=None):
         bonus=0
         if re.search(r"worlds|world championship",title) and re.search(r"knockout|playoffs",title):
             bonus=250
-        elif re.search(r"\\blck\\b",title) and re.search(r"playoffs",title):
+        elif re.search(r"\blck\b",title) and re.search(r"playoffs",title):
             bonus=240
-        elif re.search(r"\\blpl\\b",title) and re.search(r"playoffs",title):
+        elif re.search(r"\blpl\b",title) and re.search(r"playoffs",title):
             bonus=235
-        elif re.search(r"\\blck\\b",title) and "road to msi" in title:
+        elif re.search(r"\blck\b",title) and "road to msi" in title:
             bonus=-140
         return item["priority"]+bonus
     # Keep at least one other-esports bracket when available, even during Worlds.
