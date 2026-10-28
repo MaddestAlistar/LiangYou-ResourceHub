@@ -250,27 +250,6 @@
       if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
     }
   }
-  // Collapsed global source registry: clarify what each API actually supplies.
-  const registry=document.createElement('details');
-  registry.className='mi-source-registry';
-  const domains=[
-    ['评分','Ratings','TMDB · IMDb/OMDb · MDBList · Trakt · TVmaze · Bangumi · AniList · Simkl · Kitsu · Bilibili · Filmarks · Maoyan · Douban · Taopiaopiao'],
-    ['影视资料','Metadata','TMDB · TVmaze · TheTVDB · Fanart.tv · MyAnimeList v2 (verified anime ID)'],
-    ['人物关系','People','TMDB Credits · Wikidata (verified cross-ID)'],
-    ['票房','Box office','OMDb (US) · Box Office Archive · Maoyan (CN) · KOFIC (KR) · CN third-party aggregate'],
-    ['播放渠道','Streaming','Watchmode · JustWatch via TMDB · OpenSubtitles · assrt.net'],
-    ['资讯推荐','Discover','TMDB · YouTube Data v3 · The Guardian · TasteDive (optional)']
-  ];
-  function registryUI(){
-    registry.innerHTML='<summary>'+t('六类数据源与分工','Six data domains & sources')+'</summary>'+
-      '<p class="mi-caption">'+t('接口已部署不代表每部作品都有数据；第三方实验来源与官方 API 分开标识。','An installed API does not guarantee title coverage. Experimental sources remain separate from official APIs.')+'</p>'+
-      '<div class="mi-source-registry-grid">'+domains.map(([zh,en,sources])=>'<div><b>'+t(zh,en)+'</b><span>'+esc(sources)+'</span></div>').join('')+'</div>';
-  }
-  registryUI();
-  const health=root.querySelector('.mi-health');
-  if(health)health.before(registry);
-  new MutationObserver(registryUI).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-
   root.addEventListener('click',ev=>{
     const button=ev.target.closest('button[data-mi-play-video]');
     if(!button)return;
