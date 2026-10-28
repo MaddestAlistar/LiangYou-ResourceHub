@@ -1,0 +1,37 @@
+name: Smoke test isolated film 60s Worker
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-film-60s.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Test worker and upstream independently
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.request, urllib.error, time
+          base='https://liangyou-film-60s.maddestalistar.workers.dev'
+          for path in ['/v2/douban/weekly/movie','/v2/douban/weekly/tv_chinese','/v2/douban/weekly/tv_global','/v2/douban/weekly/show_chinese','/v2/douban/weekly/show_global','/v2/maoyan/realtime/movie','/v2/maoyan/all/movie','/v2/maoyan/realtime/web','/v2/maoyan/realtime/tv','/v2/baidu/teleplay','/v2/60s']:
+            req=urllib.request.Request(base+path,headers={'User-Agent':'LiangYou-CN-Film-Smoke/1.0','Accept':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=15) as r:
+                http=r.status; raw=r.read(150000)
+            except urllib.error.HTTPError as e:
+              http=e.code;raw=e.read(6000)
+            except Exception as e:
+              print('FILM_60S_SMOKE '+json.dumps({'route':path,'http':None,'result':'network_error','error':type(e).__name__}),flush=True)
+              continue
+            try:d=json.loads(raw)
+            except ValueError:d={}
+            v=d.get('data')
+            if isinstance(v,dict):v=next((x for x in v.values() if isinstance(x,list)),[])
+            num=len(v) if isinstance(v,list) else 0
+            print('FILM_60S_SMOKE '+json.dumps({'route':path,'http':http,'code':d.get('code'),'count':num,'result':'data_ok' if http==200 and d.get('code')==200 and num else 'denied_ok' if path=='/v2/60s' and http==404 else 'bad_or_empty'},ensure_ascii=False),flush=True)
+            time.sleep(.4)
+          PY
