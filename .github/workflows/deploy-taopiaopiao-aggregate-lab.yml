@@ -1,0 +1,31 @@
+name: Deploy independent Taopiaopiao third-party rating lab
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'labs/taopiaopiao-aggregate-worker.mjs'
+      - '.github/workflows/deploy-taopiaopiao-aggregate-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: liangyou-taopiaopiao-aggregate-lab
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax validation
+        run: node --check labs/taopiaopiao-aggregate-worker.mjs
+      - name: Deploy separate Cloudflare service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx --yes wrangler@4 deploy labs/taopiaopiao-aggregate-worker.mjs --name liangyou-taopiaopiao-lab --compatibility-date 2025-11-05
