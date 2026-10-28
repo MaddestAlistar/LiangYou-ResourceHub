@@ -3,6 +3,7 @@
 import json,re,urllib.error,urllib.request
 cases=[
 ("filmarks_public_movie","https://filmarks.com/movies/14348"),
+("filmarks_second_movie","https://filmarks.com/movies/16650"),
 ("filmarks_home","https://filmarks.com/"),
 ("markuapi_primary","https://markuapi.apn.leapcell.app/movies/14348"),
 ("markuapi_vercel","https://markuapi.vercel.app/movies/14348"),
@@ -32,7 +33,7 @@ for label,url in cases:
                 obj=json.loads(match)
                 if isinstance(obj,dict) and obj.get("aggregateRating"):
                     ag=obj["aggregateRating"]
-                    out["jsonLdRating"].append({"ratingValue":ag.get("ratingValue"),"ratingCount":ag.get("ratingCount")})
+                    out["jsonLdRating"].append({"ratingValue":ag.get("ratingValue"),"ratingCount":ag.get("ratingCount"),"title":obj.get("name"),"type":obj.get("@type")})
             except Exception:pass
         out["htmlScoreHints"]={"review-score":body.find("review-score")>=0,"ratingValue":body.find("ratingValue")>=0}
     print("FILMARKS_CHECK "+json.dumps(out,ensure_ascii=False),flush=True)
