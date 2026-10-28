@@ -158,7 +158,7 @@ def tmdb_parental_rating(x,kind):
     invalid={'','NR','N/R','N/A','NA','NOT RATED','UNRATED','NONE','TBC','TBD','0'}
     def valid(value):
         v=str(value or '').strip().upper()
-        return v if v not in invalid and re.fullmatch(r'[A-Z0-9+\\-/ ]{1,14}',v) else ''
+        return v if v not in invalid and re.fullmatch(r'[A-Z0-9+ /-]{1,14}',v) else ''
     if kind=='movie':
         rows=(x.get('release_dates') or {}).get('results') or []
         for country in countries:
