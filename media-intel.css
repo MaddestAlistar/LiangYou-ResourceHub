@@ -202,3 +202,28 @@
 #media .mi-world-news .mi-editorial-grid{margin-top:9px}
 #media .mi-world-news-list{min-height:24px;font-size:12px;color:#a9bbd5}
 @media(max-width:760px){#media .mi-world-news .mi-editorial-card{display:grid;grid-template-columns:96px minmax(0,1fr)}}
+
+/* YouTube trailer lightbox: in-page playback, mobile-safe sizing and clear source fallback. */
+#media .mi-player-dialog{width:min(900px,calc(100vw - 28px));max-width:none;max-height:calc(100dvh - 24px);padding:0;margin:auto;overflow-y:auto;overscroll-behavior:contain;border:1px solid rgba(227,197,142,.45);border-radius:18px;background:#0b1423;color:#ecf2fb;box-shadow:0 28px 100px #000b}
+#media .mi-player-dialog::backdrop{background:rgba(2,6,15,.88);backdrop-filter:blur(9px)}
+#media .mi-player-shell{min-width:0;background:radial-gradient(ellipse at 90% 0,rgba(58,86,154,.24),transparent 55%),#0b1423}
+#media .mi-player-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px}
+#media .mi-player-heading{min-width:0;flex:1}
+#media .mi-player-kicker{display:block;color:#d9b982;font-size:10px;letter-spacing:.12em;margin-bottom:5px}
+#media #media-trailer-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.45;font-weight:650;margin:0;color:#f0f4fa}
+#media .mi-player-close{flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #acbcd448;background:#1a2940;color:#e4ebf8;border-radius:11px;cursor:pointer;font-size:22px;line-height:1}
+#media .mi-player-stage{aspect-ratio:16/9;width:100%;background:#03070d;display:block}
+#media .mi-player-stage iframe{display:block;width:100%;height:100%;border:0}
+#media .mi-player-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px}
+#media .mi-player-footer p{font-size:11px;line-height:1.65;color:#a5b6d0;margin:0}
+#media .mi-player-footer a{display:inline-flex;flex:none;align-items:center;min-height:34px;padding:7px 10px;font-size:11px;text-decoration:none;color:#efdaad;border-radius:9px;border:1px solid #caa56870;background:#d1a96c13}
+#media .mi-player-dialog button:focus-visible,#media .mi-player-dialog a:focus-visible{outline:2px solid #edc989;outline-offset:3px}
+@media(max-width:760px){
+ #media .mi-player-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:13px}
+ #media .mi-player-header{padding:10px 12px}
+ #media .mi-player-kicker{font-size:9px}
+ #media #media-trailer-title{font-size:13px}
+ #media .mi-player-close{width:34px;height:34px}
+ #media .mi-player-footer{padding:10px 12px;align-items:flex-start;flex-wrap:wrap}
+ #media .mi-player-footer a{margin-left:auto}
+}
