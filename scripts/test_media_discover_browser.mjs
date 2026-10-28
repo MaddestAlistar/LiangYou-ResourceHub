@@ -69,6 +69,46 @@ try{
  assert.equal(pageErrors.filter(x=>/discoverySections|suggestions is not defined|ReferenceError/.test(x)).length,0,
    'No uncaught Discover rendering exceptions');
  console.log('DISCOVER_BROWSER_OK',JSON.stringify(result).slice(0,1500));
+ // Regression for an unavailable optional Worker: publisher snapshots must
+ // continue rendering, and the trailer panel must not spin indefinitely.
+ const offlinePage=await context.newPage();
+ const offlineErrors=[];
+ offlinePage.on('pageerror',err=>offlineErrors.push(String(err)));
+ try{
+   await offlinePage.goto('http://127.0.0.1:8765/index.html#media',{waitUntil:'domcontentloaded',timeout:25000});
+   await offlinePage.waitForFunction(()=>document.querySelectorAll('#media-grid .mi-card').length>=2,{timeout:30000});
+   await offlinePage.route('**/data/media-world-news.json',route=>
+     route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+       schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' confirmed title match',
+         url:'https://variety.com/film/verified-source',date}]
+     })}));
+   await offlinePage.route('**/data/media-cn-news.json',route=>
+     route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+       schema:1,updatedAt:now,items:[{source:'新浪电影',title:'《'+title+'》最新电影资讯',
+         url:'https://ent.sina.com.cn/film/m/verified.shtml',date}]
+     })}));
+   // Context route aborts the external Worker; we deliberately do not stub it.
+   await offlinePage.locator('#media-grid .mi-card-open').first().click();
+   await offlinePage.locator('#media-dialog [data-mi-detail="discover"]').click();
+   await offlinePage.waitForFunction(()=>{
+     const d=document.querySelector('#media-dialog');
+     return d?.querySelector('[data-mi-discover-slot="domestic"] .mi-cn-news-list a')&&
+       d?.querySelector('[data-mi-discover-slot="international"] .mi-international-news')&&
+       d?.querySelector('[data-mi-discover-slot="trailers"] .mi-insight-host .mi-caption');
+   },{timeout:20000});
+   const offline=await offlinePage.evaluate(()=>{
+     const d=document.querySelector('#media-dialog');
+     const text=key=>d.querySelector('[data-mi-discover-slot="'+key+'"]')?.textContent||'';
+     return {trailer:text('trailers'),international:text('international'),domestic:text('domestic')};
+   });
+   assert.doesNotMatch(offline.trailer,/正在核对可播放的预告片/,'No endless spinner when YouTube enrichment fails');
+   if(worldName.length>=5)assert.match(offline.international,/Variety/,'Offline Worker must not block world RSS');
+   assert.match(offline.domestic,/新浪电影/,'Offline Worker must not block Chinese RSS');
+   assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
+     'Offline news fallback has no unhandled renderer error');
+   console.log('DISCOVER_WORKER_FAILURE_FALLBACK_OK',JSON.stringify(offline).slice(0,650));
+ }finally{await offlinePage.close();}
+
 }catch(e){
  await page.screenshot({path:'/tmp/media-discover-browser.png',fullPage:false}).catch(()=>{});
  console.error('DISCOVER_BROWSER_FAIL',String(e),pageErrors.slice(-7));
