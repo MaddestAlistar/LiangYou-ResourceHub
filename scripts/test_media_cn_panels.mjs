@@ -54,7 +54,7 @@ try{
  assert.equal(await page.locator('.mi-cn-auto .mi-score-tile').count(),3);
  const titles=await page.locator('.mi-cn-auto .mi-score-tile>span').allTextContents();
  assert.deepEqual(titles,['猫眼','豆瓣','淘票票']);
- assert.match(await page.locator('.mi-cn-auto').innerText(),/第三方公开汇总/);
+ assert.match(await page.locator('.mi-cn-auto').last().innerText(),/第三方公开汇总/);
  console.log('MAINLAND_INDEPENDENT_RATINGS_OK',JSON.stringify(titles));
  await send('boxoffice');
  await page.locator('.mi-cn-box-grid>div').first().waitFor({timeout:15000});
