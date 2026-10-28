@@ -191,18 +191,7 @@
       finally{find.disabled=false;}
       return;
     }
-    if(ev.target.id!=='mtk-box')return;
-    const btn=ev.target,pane=btn.parentElement.querySelector('#mtk-box-result');
-    btn.disabled=true;pane.textContent=t('读取票房榜单…','Loading box office…');
-    try{
-      const data=await requestJSON(maoyan+'/api/rankings/alltime');
-      if(!pane.isConnected)return;
-      const rows=data.data?.slice(0,10);
-      if(data.code!==0||!rows?.length||rows.some(x=>!x.title||!Number.isSafeInteger(x.movieId)||x.cumulativeBoxOffice?.unit!=='万元'||!Number.isFinite(x.cumulativeBoxOffice.value)))throw Error('invalid');
-      pane.innerHTML='<ol class="mtk-box-list">'+rows.map(x=>'<li><a target="_blank" rel="noopener noreferrer" href="https://m.maoyan.com/asgard/movie/'+x.movieId+'">'+escape(x.title)+'</a><b>'+escape((x.cumulativeBoxOffice.value/10000).toFixed(2))+t(' 亿元',' ×100M CNY')+'</b></li>').join('')+'</ol>'+
-        '<p class="mi-caption">'+t('猫眼公开榜单快照 · ','Maoyan public ranking snapshot · ')+escape(stamp(data.fetchedAt))+'</p>';
-    }catch{if(pane.isConnected)pane.textContent=t('票房数据暂不可用。','Box office unavailable.');}
-    finally{btn.disabled=false;}
+
   });
   root.addEventListener("liangyou:media-detail",function(ev){display(ev.detail);displayRatings(ev.detail);});
   dialog.addEventListener("change",function(ev){
