@@ -1,4 +1,4 @@
-name: Verify four-provider independent rating Worker
+name: Verify five-provider independent rating Worker
 on:
   push:
     branches: [main]
@@ -23,6 +23,8 @@ jobs:
             ("/api/kitsu/anime/1","Kitsu",100),
             ("/api/mydramalist/drama/58651-run-on","MyDramaList (third-party)",10),
             ("/api/simkl/10280","Simkl",10),
+            ("/api/filmarks/movie/14348","Filmarks",5),
+            ("/api/filmarks/movie/16650","Filmarks",5),
             ("/api/kitsu/anime/not_a_number",None,None),
           ]
           outcomes={}
@@ -47,6 +49,8 @@ jobs:
             if path=="/api/kitsu/anime/1":valid=valid and x.get("title")=="Cowboy Bebop" and x.get("libraryUserCount",0)>100000
             if path=="/api/mydramalist/drama/58651-run-on":valid=valid and x.get("title","").startswith("Run On")
             if path=="/api/simkl/10280":valid=valid and x.get("ratingCount",0)>3000
+            if path=="/api/filmarks/movie/14348":valid=valid and x.get("rating")==4.1 and "賢者の石" in x.get("title","")
+            if path=="/api/filmarks/movie/16650":valid=valid and x.get("rating")==3.9 and "秘密の部屋" in x.get("title","")
             outcomes[path]=bool(valid)
             print("RATING_WORKER_SMOKE "+json.dumps({"path":path,"http":status,"platform":x.get("platform"),
              "title":x.get("title"),"rating":rating,"scale":x.get("scale"),
