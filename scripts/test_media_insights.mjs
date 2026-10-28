@@ -26,6 +26,7 @@ function stub(data){
      return json({items:[{id:{videoId:'AbCdEf12345'},snippet:{title:'Fight Club Trailer Search',channelTitle:'Trailer Archive'}}]});
    if(uri.hostname==='tastedive.com')
      return json({Similar:{Results:[{Name:'Another Movie',Type:'movie'}]}});
+   if(uri.hostname==='api.myanimelist.net'&&uri.pathname==='/v2/anime/1')return json({id:1,title:'Cowboy Bebop',mean:8.73,rank:43,popularity:21,num_scoring_users:865433,num_episodes:26,studios:[{name:'Sunrise'}],genres:[{name:'Action'}]});
 
    throw Error('unexpected outbound URL: '+uri.hostname+uri.pathname);
  };
@@ -103,4 +104,19 @@ test('TasteDive names cannot silently enter verified movie IDs',async()=>{
  assert.equal(status,200);assert.equal(body.suggestions[0].title,'Another Movie');
  assert.equal(body.suggestions[0].verified,false);
  assert.equal(body.suggestions[0].tmdbId,undefined);
+});
+
+test('MyAnimeList v2 maps only exact MAL ID and preserves distinct rank/popularity',async()=>{
+ stub({});
+ const {status,body}=await invoke('/api/anime/mal/1',{MAL_CLIENT_ID:'test'});
+ assert.equal(status,200);
+ assert.equal(body.ok,true);assert.equal(body.malId,1);assert.equal(body.score,8.73);
+ assert.equal(body.rank,43);assert.equal(body.popularity,21);
+ assert.equal(body.ratingCount,865433);assert.deepEqual(body.studios,['Sunrise']);
+ assert.equal(Object.hasOwn(body,'tmdbId'),false);
+});
+test('Missing MAL Client ID does not silently produce scores',async()=>{
+ stub({});
+ const {body}=await invoke('/api/anime/mal/1');
+ assert.equal(body.status,'not_configured');assert.equal(body.score,undefined);
 });
