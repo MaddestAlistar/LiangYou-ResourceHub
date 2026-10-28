@@ -12,12 +12,132 @@ function reply(payload,status=200,seconds=0){
 const simplify=rows=>Array.isArray(rows)?rows.filter(x=>x&&typeof x.provider_name==="string"&&Number.isSafeInteger(x.provider_id)).slice(0,35).map(p=>({
  id:p.provider_id,name:p.provider_name,logo:p.logo_path&&/^\/[\w/.]+$/.test(p.logo_path)?"https://image.tmdb.org/t/p/w92"+p.logo_path:null
 })): [];
+
+const numericId=v=>Number.isSafeInteger(Number(v))&&Number(v)>0&&Number(v)<1e10;
+async function jsonRemote(uri,opts={},timeout=8500){
+ const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),timeout);
+ try{const r=await fetch(uri,{...opts,signal:ac.signal});if(!r.ok)throw Error("upstream_"+r.status);return await r.json();}
+ finally{clearTimeout(timer);}
+}
+function safeHttps(v,host){
+ try{const u=new URL(v);return u.protocol==="https:"&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
+}
+async function tmdbInfo(kind,id,env){
+ const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
+ if(!token&&!api)throw Error("TMDB credential missing");
+ const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
+ u.searchParams.set("append_to_response","external_ids");u.searchParams.set("language","en-US");
+ if(!token)u.searchParams.set("api_key",api);
+ const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
+ if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
+ return x;
+}
+async function mediaInsights(kind,id,env){
+ const title=await tmdbInfo(kind,id,env), ext=title.external_ids||{};
+ const imdb=/^tt\d{5,12}$/.test(title.imdb_id||ext.imdb_id||"")?(title.imdb_id||ext.imdb_id):null;
+ const tvdb=kind==="tv"&&numericId(ext.tvdb_id)?Number(ext.tvdb_id):null;
+ const wikidata=/^Q[1-9]\d{0,11}$/.test(ext.wikidata_id||"")?ext.wikidata_id:null;
+ const result={ok:true,kind,tmdbId:Number(id),imdbId:imdb,tvdbId:tvdb,wikidataId:wikidata,
+   originalTitle:title.original_title||title.original_name||"",title:title.title||title.name,
+   checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[]};
+ const jobs=[];
+ const task=(name,fn)=>jobs.push((async()=>{try{const x=await fn();result.sources[name]=x?"ok":"no_data";}catch{result.sources[name]="unavailable";}})());
+ if(wikidata){
+  task("wikidata",async()=>{
+   const d=await jsonRemote("https://www.wikidata.org/wiki/Special:EntityData/"+wikidata+".json");
+   const entity=d.entities?.[wikidata];if(!entity||entity.id!==wikidata)return null;
+   result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,
+     label:entity.labels?.zh?.value||entity.labels?.en?.value||""};return true;
+  });
+ }else result.sources.wikidata="identity_missing";
+ if(env.FANARTTV_API_KEY||env.FANART_TV_API_KEY){
+  task("fanart",async()=>{
+   const key=env.FANARTTV_API_KEY||env.FANART_TV_API_KEY,reference=kind==="movie"?id:tvdb;
+   if(!reference){result.sources.fanart="identity_missing";return null;}
+   const endpoint="https://webservice.fanart.tv/v3.2/"+(kind==="movie"?"movies/":"tv/")+reference;
+   const d=await jsonRemote(endpoint,{headers:{"api-key":key}});
+   if(kind==="movie"&&d.tmdb_id&&Number(d.tmdb_id)!==Number(id))return null;
+   const props=kind==="movie"?["moviebackground","moviethumb","movieposter"]:["showbackground","tvthumb","tvposter"];
+   result.artwork=props.flatMap(p=>(d[p]||[]).slice(0,2).map(a=>({type:p,url:safeHttps(a.url,"fanart.tv"),language:a.lang||null,source:"Fanart.tv"}))).filter(x=>x.url).slice(0,4);
+   return result.artwork.length>0;
+  });
+ }else result.sources.fanart="not_configured";
+ if(tvdb&&(env.THETVDB_API_KEY||env.TVDB_API_KEY)){
+  task("thetvdb",async()=>{
+   const login=await jsonRemote("https://api4.thetvdb.com/v4/login",
+     {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+       apikey:env.THETVDB_API_KEY||env.TVDB_API_KEY,...(env.THETVDB_PIN?{pin:env.THETVDB_PIN}:{})})});
+   const token=login.data?.token;if(!token)return null;
+   const d=await jsonRemote("https://api4.thetvdb.com/v4/series/"+tvdb+"/extended",
+     {headers:{Authorization:"Bearer "+token}},8500);
+   if(Number(d.data?.id)!==tvdb)return null;
+   result.tvdb={id:tvdb,url:"https://thetvdb.com/dereferrer/series/"+tvdb,
+     name:d.data.name||"",firstAired:d.data.firstAired||"",status:d.data.status?.name||"",
+     seasons:Array.isArray(d.data.seasons)?d.data.seasons.filter(s=>s.number>0).length:null,
+     summary:String(d.data.overview||"").slice(0,400)};
+   return true;
+  });
+ }else result.sources.thetvdb=tvdb?"not_configured":"identity_missing";
+ if(imdb&&(env.OMDB_API_KEY||env.OMDB_KEY)&&kind==="movie"){
+  task("omdb",async()=>{
+   const endpoint=new URL("https://www.omdbapi.com/");endpoint.searchParams.set("i",imdb);
+   endpoint.searchParams.set("apikey",env.OMDB_API_KEY||env.OMDB_KEY);
+   const d=await jsonRemote(endpoint);
+   if(d.Response!=="True"||d.imdbID!==imdb)return null;
+   if(/^\$[\d,]+$/.test(d.BoxOffice||""))result.boxOffice={label:"US domestic box office",amount:d.BoxOffice,source:"OMDb",sourceUrl:"https://www.imdb.com/title/"+imdb+"/"};
+   return !!result.boxOffice;
+  });
+ }else result.sources.omdb=kind==="movie"?"not_configured":"not_applicable";
+ const q=title.original_title||title.original_name||title.title||title.name||"";
+ if(env.THE_GUARDIAN_API_KEY&&q.length>=5&&q.length<=90){
+  task("guardian",async()=>{
+   const endpoint=new URL("https://content.guardianapis.com/search");
+   endpoint.searchParams.set("api-key",env.THE_GUARDIAN_API_KEY);
+   endpoint.searchParams.set("q",'"'+q.replace(/"/g,"")+'"');
+   endpoint.searchParams.set("page-size","5");
+   endpoint.searchParams.set("order-by","newest");
+   const d=await jsonRemote(endpoint.toString());
+   if(d.response?.status!=="ok")return null;
+   result.news=(d.response.results||[]).filter(x=>x.webUrl&&x.webTitle)
+     .slice(0,4).map(x=>({title:x.webTitle,url:safeHttps(x.webUrl,"theguardian.com"),date:x.webPublicationDate,source:"The Guardian"}))
+     .filter(x=>x.url);return result.news.length>0;
+  });
+ }else result.sources.guardian=env.THE_GUARDIAN_API_KEY?"not_applicable":"not_configured";
+ await Promise.all(jobs);
+ return result;
+}
+async function koreanBoxOffice(env){
+ if(!env.KOFIC_API_KEY)return {ok:true,status:"not_configured",source:"KOFIC",data:[]};
+ const date=new Date(Date.now()-3*86400000);
+ const ymd=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(date).replace(/-/g,"");
+ const uri=new URL("https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json");
+ uri.searchParams.set("key",env.KOFIC_API_KEY);uri.searchParams.set("targetDt",ymd);
+ const d=await jsonRemote(uri.toString());
+ const list=d.boxOfficeResult?.dailyBoxOfficeList;if(!Array.isArray(list))throw Error("KOFIC schema unavailable");
+ return {ok:true,status:"ok",source:"KOFIC official daily Korea box office",date:ymd,checkedAt:new Date().toISOString(),
+  data:list.slice(0,10).filter(r=>r.movieNm&&r.rank).map(r=>({rank:Number(r.rank),title:r.movieNm,releaseDate:r.openDt||"",salesKRW:Number(r.salesAmt)||null,audience:Number(r.audiCnt)||null}))};
+}
+
 export default {
  async fetch(request,env,ctx){
   const u=new URL(request.url);
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"access-control-allow-origin":cors,"access-control-allow-methods":"GET, OPTIONS"}});
   if(request.method!=="GET")return reply({ok:false,error:"GET only"},405);
   if(u.pathname==="/api/health")return reply({ok:true,status:"worker-online",note:"Check content routes for provider availability.",source:"JustWatch via TMDB",regions:[...regionCodes]});
+  // Optional enrichment is served by verified TMDB identity; all keys remain in Worker secrets.
+  const extra=u.pathname.match(/^\/api\/insights\/(movie|tv)\/([1-9]\d{0,9})$/);
+  if(extra){
+   const hit=await caches.default.match(request);if(hit)return hit;
+   try{const body=await mediaInsights(extra[1],extra[2],env);
+     const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
+   }catch{return reply({ok:false,error:"Insights currently unavailable"},502);}
+  }
+  if(u.pathname==="/api/boxoffice/kr"){
+   const hit=await caches.default.match(request);if(hit)return hit;
+   try{const body=await koreanBoxOffice(env);const response=reply(body,200,14400);
+     if(body.status==="ok")ctx.waitUntil(caches.default.put(request,response.clone()));return response;
+   }catch{return reply({ok:false,error:"KOFIC unavailable"},502);}
+  }
   // Exact-ID title dossiers for site-internal recommendations. No fuzzy title matching.
   const titleMatch=u.pathname.match(/^\/api\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(titleMatch){
