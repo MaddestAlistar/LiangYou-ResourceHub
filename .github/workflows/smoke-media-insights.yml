@@ -1,0 +1,51 @@
+name: Smoke test six-domain media insights
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/smoke-media-insights.yml'
+      - 'labs/streaming-availability-worker.mjs'
+      - 'media-insights.js'
+      - 'media-intel.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate front-end and Worker syntax
+        run: |
+          node --check labs/streaming-availability-worker.mjs
+          node --check media-intel.js
+          node --check media-insights.js
+          node --check media-toolkit.js
+      - name: Verify exact title IDs and optional service behavior
+        run: |
+          python - <<'PY'
+          import json,urllib.request,time
+          base='https://liangyou-streaming-availability.maddestalistar.workers.dev'
+          for kind,id in [('movie',550),('tv',1399)]:
+              u=f'{base}/api/insights/{kind}/{id}'
+              req=urllib.request.Request(u,headers={'Accept':'application/json','User-Agent':'LiangYou-Insights-Smoke/1.0'})
+              with urllib.request.urlopen(req,timeout=65) as r: data=json.load(r)
+              assert data.get('ok') is True,(kind,data)
+              assert data.get('kind')==kind and data.get('tmdbId')==id,data
+              assert isinstance(data.get('sources'),dict),data
+              assert isinstance(data.get('artwork'),list),data
+              assert isinstance(data.get('news'),list),data
+              assert all(p.get('url','').startswith('https://') for p in data['artwork']),data
+              print('VERIFIED_ID',kind,id,'SOURCES',data['sources'])
+          with urllib.request.urlopen(base+'/api/boxoffice/kr',timeout=65) as r: kr=json.load(r)
+          assert kr.get('ok') is True,kr
+          assert kr.get('status') in ('ok','not_configured'),kr
+          if kr['status']=='ok':
+              assert isinstance(kr.get('data'),list),kr
+              assert all(isinstance(x.get('rank'),int) and x.get('title') for x in kr['data']),kr
+          print('KOREAN_BOX_OFFICE',kr['status'])
+          PY
