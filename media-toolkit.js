@@ -96,37 +96,84 @@
     loadProviders(current,region);
   }
   dialog.addEventListener("close",()=>{if(controller)controller.abort();});
-  const explorer=document.createElement('details');explorer.className='mtk-details';
-  root.querySelector('.mi-health').before(explorer);
-  function explorerUI(){
-    explorer.innerHTML='<summary>'+t('票房与更多平台口碑','Box office & more ratings')+'</summary><p class="mi-caption">'+t('独立来源查询，不与作品档案自动合并。实验接口可能暂时不可用。','Independent lookups, not automatically merged into title profiles. Experimental sources may be unavailable.')+'</p><button type="button" id="mtk-box">'+t('查看中国内地累计票房前十','China all-time box office · Top 10')+'</button><div id="mtk-box-result" aria-live="polite"></div><form id="mtk-lookup"><label>'+t('评分平台','Rating source')+' <select id="mtk-rating-source"><option value="kitsu">Kitsu</option><option value="bilibili">Bilibili 番剧</option><option value="filmarks">Filmarks</option><option value="simkl">Simkl</option><option value="maoyan">猫眼 Maoyan</option></select></label><label>'+t('原站作品 ID','Original source title ID')+' <input id="mtk-rating-id" inputmode="numeric" pattern="[1-9][0-9]{0,9}" maxlength="10" required placeholder="'+t('输入原站数字 ID','Enter source numeric ID')+'"></label><button type="submit">'+t('查询评分','Look up rating')+'</button></form><p class="mi-caption">'+t('每个平台的 ID 不同。请核对返回片名；不要填写其他平台的 ID。Filmarks、猫眼为公开网页实验来源。','IDs differ by platform. Verify the returned title. Filmarks and Maoyan use experimental public-page sources.')+'</p><div id="mtk-rating-result" aria-live="polite"></div>';
-  }
-  explorerUI();
-  async function requestJSON(endpoint){const r=await fetch(endpoint,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('unavailable');return r.json();}
+  // Source-ID research lives in the actual film dossier, not on a second page.
+  // Research answers are deliberately NOT promoted to canonical ratings without a verified ID mapping.
   const maoyan='https://liangyou-maoyan-verified.maddestalistar.workers.dev';
-  explorer.addEventListener('click',async ev=>{
+  const extraRatings='https://liangyou-extra-ratings-lab.maddestalistar.workers.dev';
+  const ratingPaths={
+    kitsu:'/api/kitsu/anime/',bilibili:'/api/bilibili/season/',
+    filmarks:'/api/filmarks/movie/',simkl:'/api/simkl/',
+    maoyan:'/api/movie/',mydramalist:'/api/mydramalist/drama/'
+  };
+  async function requestJSON(endpoint){const r=await fetch(endpoint,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('unavailable');return r.json();}
+  function displayRatings(info){
+    if(!info||info.section!=='overview')return;
+    const section=dialog.querySelector('.mi-ratings-section');
+    if(!section)return;
+    const research=document.createElement('details');research.className='mtk-details mtk-rating-research';
+    research.innerHTML=
+      '<summary>'+t('核对更多评分平台','Check more rating sources')+'</summary>'+
+      '<p class="mi-caption">'+t('当前作品：','Current title: ')+'<b>'+escape(info.title)+'</b> · '+t('仅按各平台原站 ID 查询，结果核验后单独展示，不会误写进上方评分。','Look up exact source IDs. Research results remain separate until identity is verified.')+'</p>'+
+      '<form id="mtk-lookup"><label>'+t('评分平台','Rating source')+
+      '<select id="mtk-rating-source" aria-label="'+t('评分平台','Rating source')+'">'+
+      '<option value="simkl">Simkl</option><option value="kitsu">Kitsu</option><option value="bilibili">Bilibili 番剧</option><option value="filmarks">Filmarks</option><option value="maoyan">猫眼 Maoyan</option><option value="mydramalist">MyDramaList</option></select></label>'+
+      '<label>'+t('原站作品 ID','Source title ID')+'<input id="mtk-rating-id" inputmode="numeric" pattern="[1-9][0-9]{0,9}" maxlength="10" required placeholder="'+t('原站数字 ID','Original numeric ID')+'"></label>'+
+      '<button type="submit">'+t('查询评分','Look up')+'</button></form>'+
+      '<p class="mi-caption">'+t('各站 ID 不通用，请核对返回的作品名和年份；Filmarks、猫眼与 MyDramaList 为实验性或第三方来源。','Source IDs are not interchangeable. Verify title and year; Filmarks, Maoyan and MyDramaList use experimental or third-party sources.')+'</p>'+
+      '<div id="mtk-rating-result" aria-live="polite"></div>';
+    section.appendChild(research);
+    const ranking=document.createElement('details');ranking.className='mtk-details mtk-rankings';
+    ranking.innerHTML='<summary>'+t('中国内地累计票房榜','China all-time box office ranking')+'</summary>'+
+      '<p class="mi-caption">'+t('独立榜单，与本片评分无关。','Separate chart, not this title’s rating.')+'</p>'+
+      '<button type="button" id="mtk-box">'+t('查看前十名','View top 10')+'</button><div id="mtk-box-result" aria-live="polite"></div>';
+    section.appendChild(ranking);
+  }
+  dialog.addEventListener('change',function(ev){
+    if(ev.target.id!=='mtk-rating-source')return;
+    const box=dialog.querySelector('#mtk-rating-id'),slug=ev.target.value==='mydramalist';
+    if(!box)return;
+    box.value='';box.inputMode=slug?'text':'numeric';
+    box.pattern=slug?'[1-9][0-9]{2,8}-[a-z0-9-]{2,100}':'[1-9][0-9]{0,9}';
+    box.maxLength=slug?110:10;
+    box.placeholder=slug?'58651-run-on':t('原站数字 ID','Original numeric ID');
+    const result=dialog.querySelector('#mtk-rating-result');if(result)result.textContent='';
+  });
+  dialog.addEventListener('submit',async function(ev){
+    if(ev.target.id!=='mtk-lookup')return;
+    ev.preventDefault();
+    const scope=ev.target,id=scope.querySelector('#mtk-rating-id').value.trim(),provider=scope.querySelector('#mtk-rating-source').value;
+    if(!ratingPaths[provider]||!(provider==='mydramalist'?/^[1-9]\d{2,8}-[a-z0-9-]{2,100}$/:/^[1-9]\d{0,9}$/).test(id))return;
+    const pane=scope.parentElement.querySelector('#mtk-rating-result'),btn=scope.querySelector('[type="submit"]');
+    btn.disabled=true;pane.textContent=t('正在核对原站…','Checking source…');
+    try{
+      const data=await requestJSON((provider==='maoyan'?maoyan:extraRatings)+ratingPaths[provider]+encodeURIComponent(id));
+      if(!pane.isConnected)return;
+      const scale=provider==='maoyan'?10:data.scale;
+      if(data.code!==0||String(data.id??data.movieId)!==id||![5,10,100].includes(scale)||data.rating!==null&&(!Number.isFinite(data.rating)||data.rating<0||data.rating>scale))throw Error('invalid');
+      const link=window.LiangYouMedia.safeURL(data.pageUrl||data.sourceUrl);
+      pane.innerHTML='<div class="mtk-rating-result-card"><b>'+escape(data.title||data.platform||provider)+'</b><strong>'+(data.rating===null?t('暂无评分','No rating'):escape(data.rating)+'/'+scale)+'</strong></div>'+
+        '<p class="mi-caption">'+escape(data.platform||data.source||provider)+' · '+escape(stamp(data.verifiedSnapshotAt||data.fetchedAt))+
+        (Number.isSafeInteger(data.ratingCount)?' · '+escape(data.ratingCount.toLocaleString())+t(' 人评分',' ratings'):'')+'</p>'+
+        (link?'<a target="_blank" rel="noopener noreferrer" href="'+escape(link)+'">'+t('查看原站核对作品','Verify source title')+' ↗</a>':'')+
+        '<p class="mi-caption">'+t('这是独立查询结果；确认作品一致后才能建立持久 ID 对照。','Independent result: persistent identity mapping requires confirmation.')+'</p>';
+    }catch{if(pane.isConnected)pane.textContent=t('暂无法核实这个 ID，请核对作品或稍后重试。','Unable to verify this source ID. Check the title or try again.');}
+    finally{btn.disabled=false;}
+  });
+  dialog.addEventListener('click',async function(ev){
     if(ev.target.id!=='mtk-box')return;
-    const b=ev.target,pane=explorer.querySelector('#mtk-box-result');b.disabled=true;pane.textContent=t('读取票房快照…','Loading box office…');
-    try{const d=await requestJSON(maoyan+'/api/rankings/alltime');
-      const rows=d.data?.slice(0,10);if(d.code!==0||!rows?.length||rows.some(x=>!x.title||!Number.isSafeInteger(x.movieId)||x.cumulativeBoxOffice?.unit!=='万元'||!Number.isFinite(x.cumulativeBoxOffice.value)))throw Error('invalid');
-      pane.innerHTML='<ol class="mtk-box-list">'+rows.map(x=>'<li><a target="_blank" rel="noopener noreferrer" href="https://m.maoyan.com/asgard/movie/'+x.movieId+'">'+escape(x.title)+'</a><b>'+escape((x.cumulativeBoxOffice.value/10000).toFixed(2))+t(' 亿元',' ×100M CNY')+'</b></li>').join('')+'</ol><p class="mi-caption">'+t('猫眼公开总榜快照 · 抓取于 ','Maoyan public ranking snapshot · Fetched ')+escape(stamp(d.fetchedAt))+'</p>';
-    }catch{pane.textContent=t('票房源暂不可用，请稍后重试。','Box office unavailable. Please retry later.');}finally{b.disabled=false;}
+    const btn=ev.target,pane=btn.parentElement.querySelector('#mtk-box-result');
+    btn.disabled=true;pane.textContent=t('读取票房榜单…','Loading box office…');
+    try{
+      const data=await requestJSON(maoyan+'/api/rankings/alltime');
+      if(!pane.isConnected)return;
+      const rows=data.data?.slice(0,10);
+      if(data.code!==0||!rows?.length||rows.some(x=>!x.title||!Number.isSafeInteger(x.movieId)||x.cumulativeBoxOffice?.unit!=='万元'||!Number.isFinite(x.cumulativeBoxOffice.value)))throw Error('invalid');
+      pane.innerHTML='<ol class="mtk-box-list">'+rows.map(x=>'<li><a target="_blank" rel="noopener noreferrer" href="https://m.maoyan.com/asgard/movie/'+x.movieId+'">'+escape(x.title)+'</a><b>'+escape((x.cumulativeBoxOffice.value/10000).toFixed(2))+t(' 亿元',' ×100M CNY')+'</b></li>').join('')+'</ol>'+
+        '<p class="mi-caption">'+t('猫眼公开榜单快照 · ','Maoyan public ranking snapshot · ')+escape(stamp(data.fetchedAt))+'</p>';
+    }catch{if(pane.isConnected)pane.textContent=t('票房数据暂不可用。','Box office unavailable.');}
+    finally{btn.disabled=false;}
   });
-  explorer.addEventListener('submit',async ev=>{
-    ev.preventDefault();const id=explorer.querySelector('#mtk-rating-id').value.trim(),provider=explorer.querySelector('#mtk-rating-source').value;
-    if(!/^[1-9]\d{0,9}$/.test(id))return;
-    const paths={kitsu:'/api/kitsu/anime/',bilibili:'/api/bilibili/season/',filmarks:'/api/filmarks/movie/',simkl:'/api/simkl/',maoyan:'/api/movie/'};
-    if(!paths[provider])return;
-    const pane=explorer.querySelector('#mtk-rating-result'),b=explorer.querySelector('[type="submit"]');b.disabled=true;pane.textContent=t('核对来源中…','Checking source…');
-    try{const d=await requestJSON((provider==='maoyan'?maoyan:'https://liangyou-extra-ratings-lab.maddestalistar.workers.dev')+paths[provider]+id);
-      const scale=provider==='maoyan'?10:d.scale;
-      if(d.code!==0||String(d.id??d.movieId)!==id||![5,10,100].includes(scale)||d.rating!==null&&(!Number.isFinite(d.rating)||d.rating<0||d.rating>scale))throw Error('invalid');
-      const source=window.LiangYouMedia.safeURL(d.pageUrl||d.sourceUrl);
-      pane.innerHTML='<p><b>'+escape(d.title||provider+' #'+id)+'</b> · '+(d.rating===null?t('暂无评分','No rating'):escape(d.rating)+' / '+scale)+'</p><p class="mi-caption">'+escape(d.platform||d.source)+' · '+escape(stamp(d.verifiedSnapshotAt||d.fetchedAt))+(Number.isSafeInteger(d.ratingCount)?' · '+d.ratingCount+t(' 人评分',' ratings'):'')+'</p>'+(source?'<a target="_blank" rel="noopener noreferrer" href="'+escape(source)+'">'+t('核对原站作品 ↗','Verify on source ↗')+'</a>':'');
-    }catch{pane.textContent=t('无法核实此 ID 的评分，请核对原站或稍后重试。','Could not verify this ID. Check the source or retry later.');}finally{b.disabled=false;}
-  });
-  new MutationObserver(explorerUI).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-  root.addEventListener("liangyou:media-detail",function(ev){display(ev.detail);});
+  root.addEventListener("liangyou:media-detail",function(ev){display(ev.detail);displayRatings(ev.detail);});
   dialog.addEventListener("change",function(ev){
     if(!ev.target.matches(".mtk-region"))return;
     region=ev.target.value in regions?ev.target.value:"US";
