@@ -101,7 +101,7 @@ async function verifiedWikimedia(qid,kind,id,imdb){
    label:String(entry.labels?.zh?.value||entry.labels?.en?.value||"").slice(0,90),
    verified:true,wikipedia,boxOffice};
 }
-async function mediaInsights(kind,id,env,withMedia=false){
+async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
  const title=await tmdbInfo(kind,id,env,withMedia), ext=title.external_ids||{};
  const imdb=/^tt\d{5,12}$/.test(title.imdb_id||ext.imdb_id||"")?(title.imdb_id||ext.imdb_id):null;
  const tvdb=kind==="tv"&&numericId(ext.tvdb_id)?Number(ext.tvdb_id):null;
@@ -171,7 +171,7 @@ async function mediaInsights(kind,id,env,withMedia=false){
  if(wikidata){
   result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,label:"",verified:false};
   result.sources.wikidata="linked_via_tmdb";
-  task("wikimedia",async()=>{
+  if(withWiki)task("wikimedia",async()=>{
     const item=await verifiedWikimedia(wikidata,kind,id,imdb);
     if(!item)return false;
     result.wikidata=item;
@@ -364,7 +364,7 @@ export default {
   const extra=u.pathname.match(/^\/api\/insights\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(extra){
    const hit=await caches.default.match(request);if(hit)return hit;
-   try{const body=await mediaInsights(extra[1],extra[2],env,u.searchParams.get("media")==="1");
+   try{const body=await mediaInsights(extra[1],extra[2],env,u.searchParams.get("media")==="1",u.searchParams.get("wiki")==="1");
      const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,error:"Insights currently unavailable"},502);}
   }
