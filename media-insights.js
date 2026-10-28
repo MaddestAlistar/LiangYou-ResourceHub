@@ -543,7 +543,7 @@
       }
       if(!pane.isConnected)return;
       if(info.section==='discover'&&discoverSlots?.trailers){
-        const newsContext={...enriched,localTitle:info.title,aliases:info.aliases};
+        const newsContext={...enriched,localTitle:info.title,aliases:[...(Array.isArray(enriched.aliases)?enriched.aliases:[]),...(Array.isArray(info.aliases)?info.aliases:[])]};
         const sections=discoverySections(newsContext);
         trailerResult=enriched;
         trailerStatus='ready';
