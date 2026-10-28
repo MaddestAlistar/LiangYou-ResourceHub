@@ -140,7 +140,7 @@ def tmdb_subject_tags(x):
         word=clean(entry.get('name')) if isinstance(entry,dict) else ''
         if not isinstance(word,str):continue
         word=word.strip()
-        if not 2<=len(word)<=28 or any(c in word for c in '<>{}\\n\\r'):continue
+        if not 2<=len(word)<=28 or any(c in '<>{}' or ord(c)<32 for c in word):continue
         key=word.casefold()
         if key in seen:continue
         seen.add(key);result.append(word)
