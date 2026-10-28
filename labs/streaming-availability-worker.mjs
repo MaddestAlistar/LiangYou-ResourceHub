@@ -22,11 +22,11 @@ async function jsonRemote(uri,opts={},timeout=8500){
 function safeHttps(v,host){
  try{const u=new URL(v);return u.protocol==="https:"&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
 }
-async function tmdbInfo(kind,id,env,withMedia=false){
+async function tmdbInfo(kind,id,env,withMedia=false,language="en-US"){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles":""));u.searchParams.set("language","en-US");
+ u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits":""));u.searchParams.set("language",language);
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
  if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
