@@ -630,7 +630,7 @@ export default {
    const cached=await caches.default.match(request);if(cached)return cached;
    try{
     const body=await titleNews(titleNewsRoute[1],titleNewsRoute[2],env);
-    const response=reply(body,200,body.articles.length?21600:1800);
+    const response=reply(body,200,body.articles.length?21600:300);
     ctx.waitUntil(caches.default.put(request,response.clone()));
     return response;
    }catch{return reply({ok:true,kind:titleNewsRoute[1],tmdbId:Number(titleNewsRoute[2]),status:"unavailable",articles:[]},200,900);}
