@@ -136,6 +136,36 @@
         '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
         '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
   }
+  async function displayBoxOfficeArchive(info,target){
+    // Open Box Office Archive public lookup is indexed by the exact TMDB ID.
+    const id=Number(info.tmdbId);
+    if(info.kind!=='movie'||!Number.isSafeInteger(id)||id<1||id>9999999999)return;
+    const host=document.createElement('section');
+    host.className='mi-insight-block mi-archive-panel';
+    host.innerHTML='<p class="mi-caption">'+t('正在核查北美历史票房档案…','Checking historical North American grosses…')+'</p>';
+    target.appendChild(host);
+    try{
+      const response=await fetch('https://boxofficehistory.com/api/v1/lookup/tmdb/'+id+'.json',{
+        signal:AbortSignal.timeout(10000),mode:'cors'});
+      if(!host.isConnected)return;
+      if(response.status===404){host.remove();return;}
+      if(!response.ok)throw Error('archive_unavailable');
+      const d=await response.json(),archiveId=String(d.id||''),year=Number(d.year);
+      const matchingYear=Number(String(info.year||'').slice(0,4));
+      if(!/^[a-z0-9_-]{1,90}$/i.test(archiveId)||!Number.isSafeInteger(year)||year<1880||year>2100||
+          (matchingYear>1880&&Math.abs(matchingYear-year)>1)||
+          !Number.isFinite(Number(d.domestic))||Number(d.domestic)<0){
+        host.remove();return;
+      }
+      const dollars=new Intl.NumberFormat(english()?'en-US':'zh-CN',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(d.domestic));
+      host.innerHTML='<div class="mi-insight-head"><h3>'+t('北美历史票房档案','Historical North American box office')+'</h3><span class="mi-tech-tag">Box Office Archive</span></div>'+
+        '<div class="mi-insight-highlight"><small>'+t('北美累计票房 · 美国及加拿大','Domestic lifetime total · US & Canada')+'</small>'+
+        '<strong>'+esc(dollars)+'</strong></div>'+
+        '<p class="mi-caption">'+t('基于互联网档案馆保存的 Box Office Mojo 历史资料，可能与当前重新上映后的最新票房不同。','Archived Box Office Mojo figures from the Internet Archive. Later re-releases may change current totals.')+
+        ' · '+esc(year)+' · '+esc(d.title||'')+'</p>'+
+        '<div class="mi-insight-links">'+a('https://boxofficehistory.com/api/v1/movies/'+archiveId+'.json',t('查看历史票房来源','View archived film data'))+'</div>';
+    }catch{if(host.isConnected)host.innerHTML='<p class="mi-caption">'+t('历史票房档案暂时不可用。','The historical archive is temporarily unavailable.')+'</p>';}
+  }
   async function displayMAL(info,target){
     const id=Number(info.malId);
     if(!Number.isSafeInteger(id)||id<1||id>9999999999)return;
@@ -168,6 +198,7 @@
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target)return;
     if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
+    if(info.section==='boxoffice')displayBoxOfficeArchive(info,target);
     if(info.section==='ratings'||info.kind==='anime')return;
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
@@ -203,7 +234,7 @@
     ['评分','Ratings','TMDB · IMDb/OMDb · MDBList · Trakt · TVmaze · Bangumi · AniList · Simkl · Kitsu · Bilibili · Filmarks · Maoyan · Douban · Taopiaopiao'],
     ['影视资料','Metadata','TMDB · TVmaze · TheTVDB · Fanart.tv · MyAnimeList v2 (verified anime ID)'],
     ['人物关系','People','TMDB Credits · Wikidata (verified cross-ID)'],
-    ['票房','Box office','OMDb (US film) · Maoyan (CN charts) · KOFIC (KR daily) · CN third-party aggregate'],
+    ['票房','Box office','OMDb (US) · Box Office Archive · Maoyan (CN) · KOFIC (KR) · CN third-party aggregate'],
     ['播放渠道','Streaming','Watchmode · JustWatch via TMDB · OpenSubtitles · assrt.net'],
     ['资讯推荐','Discover','TMDB · YouTube Data v3 · The Guardian · TasteDive (optional)']
   ];
