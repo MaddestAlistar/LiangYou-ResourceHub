@@ -42,11 +42,14 @@ KEY_NAMES = {
  'assrt': ('ASSRT_TOKEN','ASSRT_API_TOKEN','ASSRT_API_KEY','SHOOTER_API_KEY'),
  'mdblist': ('MDBLIST_API_KEY','MDB_LIST_API_KEY'),
 }
-SOURCE_REVISIONS = {"omdb": 2, "assrt": 2, "tmdb": 3, "tvmaze": 3, "anilist": 3, "trakt": 3, "simkl": 3}
+SOURCE_REVISIONS = {"omdb": 2, "assrt": 2, "tmdb": 3, "tvmaze": 3, "anilist": 3, "trakt": 3, "simkl": 3, "mdblist": 2}
 CACHE = {}
 TMDB_MEM = {}
 
 class FeedError(Exception): pass
+
+class CollectedItems(list):
+    failures=0
 
 def key(source, required=True):
     value = next((os.environ[n].strip() for n in KEY_NAMES.get(source,()) if os.environ.get(n,'').strip()), '')
@@ -83,7 +86,7 @@ def get(url, params=None, headers=None, body=None):
             except Exception: pass
         raise FeedError('http_'+str(e.code)) from None
     except FeedError: raise
-    except Exception: raise FeedError('network_or_response_error') from None
+    except Exception as exc: raise FeedError('network_or_response_error_'+type(exc).__name__) from None
 
 def clean(v): return html.unescape(re.sub(r'<[^>]*>', '',str(v or ''))).strip()
 def num(v):
@@ -279,7 +282,7 @@ def collect_simkl():
     return items
 
 def enrich(source,candidates):
-    token=key(source); out=[]
+    token=key(source); out=CollectedItems();consecutive=0;last_error='no_matching_titles'
     limit={'omdb':12,'mdblist':32,'watchmode':4,'opensubtitles':6,'assrt':6}[source]
     for item in candidates[:limit]:
         imdb=item.get('imdb_id',''); ident=item['id']
@@ -297,7 +300,11 @@ def enrich(source,candidates):
             try: x=get(f'https://api.mdblist.com/tmdb/{kind}/{item["tmdb_id"]}',{'apikey':token})
             except FeedError as exc:
                 if str(exc)=='http_404': continue
-                raise
+                out.failures+=1;consecutive+=1;last_error=str(exc)
+                print(f'mdblist: tmdb-{kind}-{item["tmdb_id"]}: {last_error}',flush=True)
+                if consecutive>=3 or last_error in ('http_401','http_403','http_429'): break
+                continue
+            consecutive=0
             if x.get('error'): raise FeedError('api_error')
             if imdb and x.get('imdb_id') and x['imdb_id']!=imdb: continue
             entry['ratings']=normalized_ratings(x.get('ratings',[]),'MDBList',entry['checked_at'])
@@ -324,7 +331,7 @@ def enrich(source,candidates):
             if x.get('status')!=0: raise FeedError('api_error')
             entry['results']=assrt_results(x,item)
         out.append(entry)
-    if not out: raise FeedError('no_matching_titles')
+    if not out: raise FeedError(last_error)
     return out
 
 def omdb_ratings(data):
@@ -383,6 +390,10 @@ def refresh_source(source,previous,loader):
         items=loader()
         if not isinstance(items,list): raise FeedError('invalid_schema')
         result.update(status='ok',items=items,updated_at=iso(),error=None)
+        if getattr(items,'failures',0):
+            ids={i.get('target_id') for i in items}
+            result['items']=list(items)+[i for i in (previous or {}).get('items',[]) if i.get('target_id') not in ids]
+            result.update(status='partial',error='partial_response',failed_lookups=items.failures)
     except FeedError as e:
         result.update(status='stale' if result.get('items') else 'unavailable',error=str(e))
         result.setdefault('items',[])
@@ -440,7 +451,7 @@ def main():
     sources['mdblist']=refresh_source('mdblist',sources.get('mdblist'),lambda:enrich('mdblist',rating_candidates))
     localize_images(sources)
     works,aliases=build_catalog(sources)
-    output={'schema':1,'media_source_version':3,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
+    output={'schema':1,'media_source_version':4,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
     serialized=json.dumps([output,CACHE],ensure_ascii=False)

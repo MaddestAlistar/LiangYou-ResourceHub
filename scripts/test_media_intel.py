@@ -46,6 +46,13 @@ class MediaTests(unittest.TestCase):
                                  {'site':'YouTube','official':False,'type':'Trailer','key':'abcdefghijk'}]}}
         p=m.tmdb_profile(x,'movie')['profile']
         self.assertEqual(len(p['videos']),1);self.assertEqual(p['cast'][0]['name'],'Actor')
+    def test_one_mdblist_timeout_does_not_discard_other_ratings(self):
+        rows=[{'id':f'tmdb-movie-{n}','kind':'movie','tmdb_id':n} for n in (1,2)]
+        with patch.object(m,'key',return_value='test'),patch.object(m,'get',side_effect=[m.FeedError('network_or_response_error_TimeoutError'),{'ratings':[{'source':'imdb','value':8}]}]):
+            result=m.enrich('mdblist',rows)
+        self.assertEqual(len(result),1);self.assertEqual(result.failures,1)
+        snapshot=m.refresh_source('mdblist',{},lambda:result)
+        self.assertEqual(snapshot['status'],'partial');self.assertEqual(len(snapshot['items']),1)
     def test_failure_preserves_real_timestamp_and_content(self):
         old={'status':'ok','items':[{'id':'1'}],'updated_at':'2026-01-01T00:00:00Z','checked_at':'2026-01-01T00:00:00Z'}
         with patch.object(m,'now',return_value=m.date('2026-02-01T00:00:00Z')):
