@@ -104,12 +104,14 @@ function headlineMatch(headline,info){
   const quoted=['《'+name+'》','〈'+name+'〉','「'+name+'」','『'+name+'』','“'+name+'”',"'"+name+"'"]
    .some(q=>raw.toLowerCase().includes(q.toLowerCase()));
   if(quoted){score=Math.max(score,100+Math.min(n.length,20));continue;}
-  if(/[\u3400-\u9fff]/.test(n)){
+  if(/[\u3400-\u9fff\uac00-\ud7af]/.test(n)){
    if(n.length>=4&&s.includes(n))score=Math.max(score,70+Math.min(n.length,20));
   }else if(n.length>=4){
-   // Complete Latin title words, avoiding unrelated substring matches.
-   const words=x=>' '+String(x).normalize('NFKC').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()+' ';
-   if(words(raw).includes(words(name)))score=Math.max(score,65+Math.min(n.length,20));
+   // Only complete Latin titles can match. An empty normalized query must never match.
+   const words=x=>String(x).normalize('NFKC').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+   const needle=words(name),haystack=words(raw);
+   if(needle.length>=4&&haystack&&(' '+haystack+' ').includes(' '+needle+' '))
+    score=Math.max(score,65+Math.min(n.length,20));
   }
  }
  return score;
