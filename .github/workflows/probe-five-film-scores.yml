@@ -1,0 +1,27 @@
+name: Probe five film rating providers (read-only)
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/probe_five_movie_scores.py
+      - .github/workflows/probe-five-film-scores.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      SIMKL_CLIENT_ID_V2: ${{ secrets.SIMKL_CLIENT_ID_V2 }}
+      SIMKL_V2_CLIENT_ID: ${{ secrets.SIMKL_V2_CLIENT_ID }}
+      SIMKL_CLIENT_ID: ${{ secrets.SIMKL_CLIENT_ID }}
+      SIMKL_CLIENT_KEY: ${{ secrets.SIMKL_CLIENT_KEY }}
+      SIMKL_API_KEY: ${{ secrets.SIMKL_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe scores, IDs, and response structure (no secrets in logs)
+        run: python scripts/probe_five_movie_scores.py
