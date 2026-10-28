@@ -228,10 +228,11 @@ export default {
     if(d.response?.status!=="ok"||!Array.isArray(d.response.results))throw Error("invalid_guardian_response");
     const articles=d.response.results.filter(v=>v.webTitle&&v.webUrl)
      .map(v=>({
-       title:String(v.webTitle).slice(0,180),
+       title:String(v.webTitle),
        url:safeHttps(v.webUrl,"theguardian.com"),
        date:v.webPublicationDate||null,section:String(v.sectionName||"Film").slice(0,45),
        summary:String(v.fields?.trailText||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,200),
+       byline:String(v.fields?.byline||""),
        thumbnail:safeHttps(v.fields?.thumbnail,"guim.co.uk")||null,source:"The Guardian"
      })).filter(v=>v.url).slice(0,6);
     const body={ok:true,status:articles.length?"ok":"no_data",source:"The Guardian",checkedAt:new Date().toISOString(),articles};
