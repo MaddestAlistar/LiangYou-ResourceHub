@@ -39,7 +39,7 @@ async function mediaInsights(kind,id,env,withMedia=false){
  const wikidata=/^Q[1-9]\d{0,11}$/.test(ext.wikidata_id||"")?ext.wikidata_id:null;
  const result={ok:true,kind,tmdbId:Number(id),imdbId:imdb,tvdbId:tvdb,wikidataId:wikidata,
    originalTitle:title.original_title||title.original_name||"",title:title.title||title.name,
-   checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[],trailers:[],suggestions:[]};
+   checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[],trailers:[],suggestions:[],financials:kind==="movie"?{revenueUSD:Number.isFinite(title.revenue)&&title.revenue>0?title.revenue:null,budgetUSD:Number.isFinite(title.budget)&&title.budget>0?title.budget:null,source:"TMDB",region:"not_specified"}:null};
  const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
  const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&v.official===true&&
    ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
