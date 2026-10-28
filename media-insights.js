@@ -123,7 +123,7 @@
   function trailerGallery(d){
     const videos=Array.isArray(d.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
     if(!videos.length)return '<section class="mi-insight-block"><h3>'+t('视频情报','Trailer intelligence')+'</h3><p class="mi-caption">'+t('暂无核验过的预告片。可在下方打开 TMDB 提供的原视频链接。','No verified trailers. Source links may appear above.')+'</p></section>';
-    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片 · 视频情报','Trailers · video intelligence')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
+    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片','Trailers')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
       '<p class="mi-caption">'+t('优先展示 TMDB 标注的视频，非官方搜索结果单独标识；公开视频点击封面即可免登录尝试播放；年龄限制与禁止嵌入的视频只显示原站入口。','Prioritizes TMDB-curated videos; unverified results are labeled. Tap to play public trailers without signing in; restricted videos use their original links.')+'</p>'+
       '<div class="mi-trailer-grid">'+videos.map(v=>{
         const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
@@ -143,13 +143,12 @@
           '<div class="mi-insight-links">'+a(v.url,'YouTube')+'</div></div></article>';
       }).join('')+'</div></section>';
   }
-  function discover(d){
-    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
+  function discoverySections(d){
+    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\\u3400-\\u9fff]+/g,' ').trim();
     const targetName=clean(d.originalTitle||d.title||'');
     const rows=Array.isArray(d.news)&&targetName.length>=5?d.news.filter(x=>clean(x.title+' '+(x.summary||'')).includes(targetName)).slice(0,5):[];
     const suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
-    return trailerGallery(d)+
-      '<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('当前作品相关报道 · 国际','Coverage for this title · International')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
+    const international='<section class="mi-insight-block mi-international-news"><div class="mi-insight-head"><h3>'+t('国际新闻','International news')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
       '<p class="mi-caption">'+t('按作品原名匹配影视报道，显示摘要与来源日期；同名作品仍需人工核对。','Title-matched film coverage with date and preview. Same-name works still need verification.')+'</p>'+
       (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
         const image=safe(x.thumbnail);
@@ -158,10 +157,12 @@
           '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+
           (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':
-        '<p class="mi-caption">'+t('暂未找到与本片准确对应的 Guardian 报道。','No Guardian coverage reliably matching this title.')+'</p>')+'</section>'+
-      (suggestions.length?'<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('相似题材探索','Similar-title discovery')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
-        '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
-        '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
+        '<p class="mi-caption">'+t('暂未找到与本片准确对应的 Guardian 报道。','No Guardian coverage reliably matching this title.')+'</p>')+'</section>';
+    const similar='<section class="mi-insight-block mi-similar-themes"><div class="mi-insight-head"><h3>'+t('相似主题探索','Similar themes')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
+      '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
+      (suggestions.length?'<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div>':
+      '<p class="mi-caption">'+t('暂无核验过的相似主题推荐。','No matching theme suggestions verified yet.')+'</p>')+'</section>';
+    return {trailers:trailerGallery(d),international,similar};
   }
   async function displayBoxOfficeArchive(info,target){
     // Open Box Office Archive public lookup is indexed by the exact TMDB ID.
@@ -230,9 +231,15 @@
     if(info.section==='ratings'||info.kind==='anime')return;
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
+    const discoverSlots=info.section==='discover'?{
+      trailers:target.querySelector('[data-mi-discover-slot="trailers"]'),
+      international:target.querySelector('[data-mi-discover-slot="international"]'),
+      similar:target.querySelector('[data-mi-discover-slot="similar"]')
+    }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
-    target.appendChild(pane);
+    if(discoverSlots?.trailers)discoverSlots.trailers.prepend(pane);
+    else target.appendChild(pane);
     if(!kind||!Number.isSafeInteger(id)||id<1){
       pane.innerHTML='<p class="mi-caption">'+t('未建立准确的 TMDB ID，暂不自动关联外部数据。','No verified TMDB identity; external data will not be merged.')+'</p>';
       return;
@@ -268,7 +275,17 @@
           enriched={...data,suggestions:extra.suggestions};
       }
       if(!pane.isConnected)return;
-      pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):discover(enriched);
+      if(info.section==='discover'&&discoverSlots?.trailers){
+        const sections=discoverySections(enriched);
+        pane.innerHTML=sections.trailers;
+        const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
+        // Keep TMDB's original trailer links as a fallback if YouTube returns nothing.
+        if(fallback)fallback.hidden=Array.isArray(enriched.trailers)&&enriched.trailers.some(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||''));
+        if(discoverSlots.international?.isConnected)discoverSlots.international.innerHTML=sections.international;
+        if(discoverSlots.similar?.isConnected)discoverSlots.similar.innerHTML=sections.similar;
+      }else{
+        pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):'';
+      }
     }catch{
       if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
     }
