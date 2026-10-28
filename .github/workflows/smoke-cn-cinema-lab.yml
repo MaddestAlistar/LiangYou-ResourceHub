@@ -31,6 +31,9 @@ jobs:
             first=[{"title":x.get("title"),"cumulative":x.get("cumulativeBoxOffice"),"current":x.get("currentBoxOffice")} for x in samples]
             verdict="DATA_OK" if code==200 and count and samples[0].get("title") else "SERVICE_OK" if path=="/api/health" and code==200 else "FAIL"
             print("CHINA_CINEMA_SMOKE "+json.dumps({"route":path,"http":code,"verdict":verdict,"count":count,"source":data.get("source"),"sample":first,"error":data.get("error")},ensure_ascii=False),flush=True)
+            if path=="/api/global-boxoffice" and verdict=="DATA_OK":
+              box=first[0].get("cumulative")
+              print("CHINA_CINEMA_GLOBAL_BOX_VALID "+json.dumps({"valid":bool(box),"value":box},ensure_ascii=False),flush=True)
             if verdict=="DATA_OK":
               title=samples[0].get("title")
               url=path+"?name="+urllib.parse.quote(title,safe="")
