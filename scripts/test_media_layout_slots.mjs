@@ -55,7 +55,7 @@ test('changed assets invalidate old browser cache',()=>{
  const versions={
   'media-intel.js':'20261029.liveguides6',
   'media-toolkit.js':'20261029.autoscore1',
-  'media-insights.js':'20261029.liveguides4',
+  'media-insights.js':'20261029.classlight1',
   'media-cn-enhance.js':'20261029.stablelayout1',
   'media-exact-scores.js':'20261029.stablelayout1',
   'media-boxoffice-rankings.js':'20261029.noarchive1'
