@@ -210,6 +210,27 @@
     const u=new URL(location.href);u.searchParams.set('film',activeId);u.hash='media';history.replaceState(null,'',u);
     if(cat.works[target]?._needsFetch)hydrateRelated(target);
   }
+  root.addEventListener('liangyou:media-classification',ev=>{
+    const d=ev.detail;
+    if(!d||d.id!==activeId||!['movie','tv'].includes(d.kind))return;
+    const w=cat.works[d.id],m=/^tmdb-(movie|tv)-([1-9]\\d{0,9})$/.exec(d.id);
+    if(!w||w.kind!==d.kind||Number(w.tmdb_id||m?.[2])!==Number(d.tmdbId))return;
+    const before=classificationData(w);
+    const incoming=classificationData({profile:d.classification});
+    const genres=before.genres.length?before.genres:incoming.genres;
+    const keywords=before.keywords.length?before.keywords:incoming.keywords;
+    const parental_rating=before.age?w.profile.parental_rating:incoming.age?d.classification.parental_rating:null;
+    if(!genres.length&&!keywords.length&&!parental_rating)return;
+    if(JSON.stringify({genres,keywords,parental_rating})===
+       JSON.stringify({genres:before.genres,keywords:before.keywords,parental_rating:w.profile?.parental_rating||null}))return;
+    w.profile={...(w.profile||{}),genres,keywords,parental_rating};
+    render();
+    const dialog=$('#media-dialog');
+    if(!dialog?.open)return;
+    const view=classificationDetail(w),old=dialog.querySelector('.mi-classification-detail');
+    if(old)old.outerHTML=view;
+    else if(view)dialog.querySelector('.mi-detail-head')?.insertAdjacentHTML('afterend',view);
+  });
   function closeDetails(){const u=new URL(location.href);u.searchParams.delete('film');history.replaceState(null,'',u);activeEpisode=null;}
   async function share(){
     const u=new URL(location.href);u.searchParams.set('film',activeId);u.hash='media';
