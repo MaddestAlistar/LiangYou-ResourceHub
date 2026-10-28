@@ -68,9 +68,10 @@ test('broad arts stories cannot be presented as matched Korean drama headlines',
  ])assert.equal(match(item,fixture),0,item);
  assert.ok(match('《我的有罪之人》任时完、薛仁雅最新剧评',fixture)>0);
 });
-test('YouTube extras and domestic related clips are separately limited',()=>{
- assert.ok(clips.includes('result.relatedVideos=matched.slice(0,2)'));
- assert.ok(ui.includes('domesticRelated.slice(0,6)'));
- assert.ok(ui.includes('domesticRelated.slice(0,6)'));
+test('the universal gallery now uses six shared slots and four optional domestic overflow slots',()=>{
+ assert.ok(clips.includes('result.relatedVideos=matched.slice(0,16)'));
+ assert.ok(ui.includes('function rankFilmVideos(rows)'));
+ assert.ok(ui.includes('ranked.slice(0,6)'));
+ assert.ok(ui.includes('slice(0,4)'));
  assert.ok(!ui.includes("relatedCards.length+'/5'"));
 });
