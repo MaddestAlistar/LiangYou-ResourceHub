@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 
 const source=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../data/media-domestic-trailers.json',import.meta.url),'utf8'));
-const start=source.indexOf('  function trailerGallery(d={},info={},domesticRows=[],status=');
+const start=source.indexOf('  function verifiedDomesticTrailers(info,records=[]){');
 const end=source.indexOf('  let worldNewsPromise=null;',start);
 assert.ok(start>=0&&end>start,'Merged trailer gallery and domestic matching must exist');
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
