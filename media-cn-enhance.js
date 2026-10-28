@@ -95,22 +95,29 @@ async function news(){
 function domesticNews(info){
  if(info.section!=='discover')return;
  const target=root.querySelector('#media-dialog .mi-detail-content');if(!target)return;
- const box=document.createElement('details');box.className='mi-cn-news-drawer';
- box.innerHTML='<summary>'+t('中国电影资讯 · 国内快讯','Chinese cinema news · China film wire')+'</summary>'+
- '<p class="mi-caption">'+t('国产电影、行业与政策动态；不等同于猫眼或淘票票官方资讯。','Mainland cinema and film-industry headlines, not an official ticketing-app news feed.')+'</p>'+ '<div class="mi-cn-news-links"><a href="https://www.1905.com/news/" target="_blank" rel="noopener noreferrer">1905 电影网 ↗</a><a href="https://www.chinafilm.gov.cn/xwzx/gzdt/" target="_blank" rel="noopener noreferrer">国家电影局 ↗</a></div>'+ '<div class="mi-cn-news-results" aria-live="polite"></div>';
+ const box=document.createElement('section');box.className='mi-insight-block mi-cn-title-news';
+ box.innerHTML='<h3>'+t('当前作品相关报道 · 国内','Coverage for this title · China')+'</h3>'+
+  '<p class="mi-caption">'+t('按完整片名核对国内新闻，不显示与本片无关的综合资讯。','Only full-title-matched Chinese coverage is shown.')+'</p>'+
+  '<div class="mi-cn-news-results" aria-live="polite">'+t('正在核对…','Checking coverage…')+'</div>';
  target.appendChild(box);
- box.addEventListener('toggle',async()=>{
-  if(!box.open||box.dataset.loaded)return;
-  const pane=box.querySelector('.mi-cn-news-results');pane.textContent=t('读取国内影视资讯…','Loading Chinese film news…');
-  const d=await news();
-  if(!pane.isConnected)return;
-  const age=Date.now()-Date.parse(d?.updatedAt||'');
-  if(d?.schema!==1||!Array.isArray(d.items)||d.items.length<1||!Number.isFinite(age)||age<0||age>7*86400000){pane.innerHTML='<p class="mi-caption">'+t('资讯源暂未更新，可直接查看 1905 电影网。','Source snapshot unavailable; open 1905.com directly.')+'</p><a href="https://www.1905.com/news/" target="_blank" rel="noopener noreferrer">1905 电影网 ↗</a>';return;}
-  const cards=d.items.slice(0,9).filter(x=>safe(x.url)&&x.title);
-  pane.innerHTML='<div class="mi-cn-news-list">'+cards.map(x=>'<article><small>'+esc(x.source||'')+' · '+esc(fmtDate(x.date))+'</small><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title)+' ↗</a></article>').join('')+'</div>'+
-    '<p class="mi-caption">'+t('仅聚合标题、日期与原文链接。','Headlines, dates and original links only.')+'</p>';
-  box.dataset.loaded='1';
- });
+ (async()=>{
+  const d=await news(),pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
+  const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
+  if(d?.schema!==1||!Array.isArray(d.items)||!Number.isFinite(age)||age<0||age>7*86400000){
+   pane.innerHTML='<p class="mi-caption">'+t('国内新闻快照暂不可用，未展示未经确认的报道。','Chinese news snapshot unavailable; no unverified articles displayed.')+'</p>';
+   return;
+  }
+  const names=[info.title,info.originalTitle].map(s=>String(s||'').normalize('NFKC').trim())
+    .filter(s=>s.length>=3).map(s=>sameTitle(s));
+  const matching=d.items.filter(x=>{
+   if(!x.title||!safe(x.url))return false;
+   const line=sameTitle(x.title);
+   return names.some(n=>n.length>=3&&line.includes(n));
+  }).slice(0,5);
+  if(!matching.length){pane.innerHTML='<p class="mi-caption">'+t('目前暂无与这部作品明确对应的国内报道。','No Chinese headlines reliably matching this title.')+'</p>';return;}
+  pane.innerHTML='<div class="mi-cn-news-list">'+matching.map(x=>'<article><small>'+esc(x.source||'')+' · '+esc(fmtDate(x.date))+'</small>'+
+    '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title)+' ↗</a></article>').join('')+'</div>';
+ })().catch(()=>{if(box.isConnected)box.querySelector('.mi-cn-news-results').textContent=t('相关报道暂不可用。','Coverage temporarily unavailable.');});
 }
 root.addEventListener('liangyou:media-detail',e=>{
  const info=e.detail;if(!info)return;
