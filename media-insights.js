@@ -55,7 +55,7 @@
   }
   function get(kind,id,withMedia=false,withWiki=false){
     const key=kind+':'+id+':'+(withMedia?'discover':'base')+':'+(withWiki?'wikimedia':'plain');
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=9'+(withMedia?'&media=1':'')+(withWiki?'&wiki=1':'')).catch(e=>{cache.delete(key);throw e;}));
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=10'+(withMedia?'&media=1':'')+(withWiki?'&wiki=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   const classificationCache=new Map();
@@ -549,6 +549,7 @@
       paintTrailers();
       Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
         const all=[...rows,...(index?.videos||[])];
+        verifiedAliases=[...new Set([...verifiedAliases,...(index?.aliases||[])])];
         domesticRows=all;paintTrailers();
         const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)).slice(0,20);
         if(!relevant.length)return;
