@@ -174,7 +174,7 @@ async function mediaInsights(kind,id,env){
    endpoint.searchParams.set("q",q);
    endpoint.searchParams.set("type",kind==="movie"?"movie":"show");
    endpoint.searchParams.set("limit","5");
-   const d=await jsonRemote(endpoint.toString(),{},7000);
+   const d=await jsonRemote(endpoint.toString(),{},2000);
    const rows=d.Similar?.Results||d.similar?.results||[];
    if(!Array.isArray(rows))return null;
    result.suggestions=rows.filter(x=>typeof x.Name==="string"||typeof x.name==="string")
