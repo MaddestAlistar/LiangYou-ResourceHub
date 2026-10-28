@@ -437,6 +437,7 @@ async function titleNews(kind,id,env){
  if(hangul)add(hangul,'"'+hangul+'" 드라마 OR 영화','ko');
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
+ const stats={rssOk:0,rssHttpError:0,rssInvalidXml:0,rssNetworkError:0,rssItems:0,rssMatched:0,guardianItems:0};
  const requests=queries.slice(0,6).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
   // Permit historical coverage of older catalog films; the old two-year window excluded it.
@@ -455,12 +456,15 @@ async function titleNews(kind,id,env){
   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),7200);
   try{
    const res=await fetch(endpoint.toString(),{signal:ac.signal,headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
-   if(!res.ok)return [];
+   if(!res.ok){stats.rssHttpError++;return [];}
    const xml=(await res.text()).slice(0,400000);
-   if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml))return [];
+   if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml)){stats.rssInvalidXml++;return [];}
+   stats.rssOk++;
    const now=Date.now(),ctx={year,people,requireEdition};
    const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
-   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50).map(m=>{
+   const parsed=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50);
+   stats.rssItems+=parsed.length;
+   const accepted=parsed.map(m=>{
     const raw=m[1],title=rssField(raw,"title"),url=safeHttps(rssField(raw,"link"),"news.google.com");
     const stamp=Date.parse(rssField(raw,"pubDate"));
     // Use the query alias and independent movie identity signals. A random
@@ -472,7 +476,9 @@ async function titleNews(kind,id,env){
       source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:/[\u3400-\u9fff]/.test(title)?"zh":
       /[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
    }).filter(Boolean);
-  }catch{return [];}finally{clearTimeout(timer);}
+   stats.rssMatched+=accepted.length;
+   return accepted;
+  }catch{stats.rssNetworkError++;return [];}finally{clearTimeout(timer);}
  });
  // Independent licensed publisher API fallback: the Guardian can return real
  // historical articles even when an unofficial RSS search is empty or blocked.
@@ -488,6 +494,7 @@ async function titleNews(kind,id,env){
    api.searchParams.set("show-fields","thumbnail,trailText");
    const response=await jsonRemote(api.toString(),{},7500);
    if(response.response?.status!=="ok"||!Array.isArray(response.response.results))return [];
+   stats.guardianItems+=response.response.results.length;
    return response.response.results.map(article=>{
     const title=String(article.webTitle||"").slice(0,180);
     const url=safeHttps(article.webUrl,"theguardian.com");
@@ -507,7 +514,7 @@ async function titleNews(kind,id,env){
   seen.add(x.url);seenTitle.add(signature);return true;
  }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
  return {ok:true,kind,tmdbId:Number(id),year:Number(year)||null,
-   status:articles.length?"ok":"no_data",articles,source:"Google News RSS title search"};
+   status:articles.length?"ok":"no_data",articles,source:"Film title search",sourceDiagnostics:stats};
 }
 
 async function koreanBoxOffice(env){
