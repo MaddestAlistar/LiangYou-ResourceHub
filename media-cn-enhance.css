@@ -18,3 +18,21 @@
 #media .mi-cn-news-drawer .mi-caption{margin:9px 0}
 @media(max-width:760px){#media .mi-cn-box-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#media .mi-cn-box-grid strong{font-size:14px}}
 @media(max-width:360px){#media .mi-cn-box-grid{grid-template-columns:1fr}}
+
+
+/* Clearly separated charts after all individual title totals. */
+#media .mi-independent-rankings{margin-top:20px;padding:15px 0 8px;border-top:1px solid #b6c3d33a}
+#media .mi-ranking-header h3{font-size:15px;margin:0 0 7px;color:#e9d5ae}
+#media .mi-ranking-drawer{margin:9px 0;background:#101e32;border:1px solid #8b9ebc50;border-radius:11px;padding:11px}
+#media .mi-ranking-drawer summary{cursor:pointer;color:#ddc595;font-size:12px;line-height:1.6;font-weight:650}
+#media .mi-ranking-result{min-height:20px;margin:8px 0;font-size:12px}
+#media .mi-ranking-list{list-style:none;margin:8px 0;padding:0;display:grid;gap:6px}
+#media .mi-ranking-list li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:7px;background:#0a1525;border:1px solid #a1b4d22f;border-radius:8px;padding:8px 9px;font-size:11px}
+#media .mi-ranking-list .mi-ranking-index{font-variant-numeric:tabular-nums;color:#f3d29b}
+#media .mi-ranking-name{min-width:0;overflow-wrap:anywhere;line-height:1.4}
+#media .mi-ranking-name a{color:#cddcf2;font-size:11px}
+#media .mi-ranking-list strong{white-space:nowrap;color:#e6d09f;font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+#media .mi-exact-scores{border-top:1px solid #b2c2d232;padding-top:11px;margin-top:12px}
+#media .mi-exact-scores h4{font-size:13px;color:#e7d2aa;margin:0 0 9px}
+#media .mi-cn-title-news{margin-top:13px}
+@media(max-width:380px){#media .mi-ranking-list li{grid-template-columns:17px minmax(0,1fr);gap:5px}#media .mi-ranking-list strong{grid-column:2;justify-self:start}}
