@@ -163,24 +163,46 @@
       if(!verified||ids.has(p+':'+id))continue;
       ids.add(p+':'+id);
       found.push({...x,videoId:id,url:u});
-      if(found.length>=15)break;
+      if(found.length>=36)break;
     }
     return found;
   }
+  // Select one cross-platform gallery: 6 strongest matched clips, and only when
+  // there are more than six candidates, up to four additional Chinese-platform clips.
+  // This applies equally to trailers, teasers, interviews, reviews and scene clips.
+  function rankFilmVideos(rows){
+    const seen=new Set();
+    const unique=(Array.isArray(rows)?rows:[]).filter(v=>{
+      if(!v||typeof v.key!=='string'||!v.key||seen.has(v.key))return false;
+      seen.add(v.key);return true;
+    });
+    const merit=v=>{
+      const likes=Number.isSafeInteger(v.likes)&&v.likes>=0?v.likes:0;
+      const role=v.type==='trailer'?(v.official?130:108):75;
+      const playable=v.playable===false?-45:0;
+      return role+Math.log10(likes+1)*10+playable;
+    };
+    const ranked=unique.slice().sort((a,b)=>merit(b)-merit(a)||
+      Number(b.domestic)-Number(a.domestic)||a.key.localeCompare(b.key));
+    const main=ranked.slice(0,6),picked=new Set(main.map(x=>x.key));
+    const extra=ranked.length>6?ranked.filter(x=>x.domestic&&!picked.has(x.key)).slice(0,4):[];
+    return [...main,...extra];
+  }
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
-    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
+    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,12):[];
     const domestic=verifiedDomesticTrailers(info,domesticRows);
+    const ytIds=new Set(youtube.map(x=>x.id));
     const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
-      .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&v.ageRestricted!==true&&
-        Number.isFinite(v.likes)&&v.likes>0&&!youtube.some(x=>x.id===v.id))
-      .sort((a,b)=>b.likes-a.likes).slice(0,2):[];
+      .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&
+        v.ageRestricted!==true&&Number.isSafeInteger(v.likes)&&v.likes>0&&!ytIds.has(v.id))
+      .sort((a,b)=>b.likes-a.likes).slice(0,16):[];
     function youtubeCard(v,related=false){
       const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
       const duration=formatDuration(v.duration);
       const fmt=n=>new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(n);
       const views=Number.isFinite(v.views)?fmt(v.views)+t(' 播放',' views'):'';
       const likes=Number.isFinite(v.likes)&&v.likes>0?fmt(v.likes)+t(' 赞',' likes'):'';
-      const label=related?t('高赞相关视频','Highly liked related video'):
+      const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
         v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Unverified search match');
       const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
@@ -194,12 +216,16 @@
       return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(related||v.official?'':'mi-warning-source')+'">'+label+'</span></div>'+
         '<strong>'+esc(v.title||'Video')+'</strong><small>'+esc(v.channel||'YouTube')+
-          (likes?'<span class="mi-video-likes"> · '+esc(likes)+'</span>':'')+(views?' · '+esc(views):'')+'</small>'+
+        (likes?'<span class="mi-video-likes"> · '+esc(likes)+'</span>':'')+(views?' · '+esc(views):'')+'</small>'+
         '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
     }
-    const videos=youtube.map(v=>youtubeCard(v));
-    const relatedCards=verifiedRelated.map(v=>youtubeCard(v,true));
-    const domesticRelated=[];
+    const candidates=[];
+    for(const v of youtube)candidates.push({key:'youtube:'+v.id,domestic:false,
+      type:['Trailer','Teaser'].includes(v.type)?'trailer':'related',
+      official:v.official===true,playable:v.embeddable!==false&&v.ageRestricted!==true,
+      likes:Number.isSafeInteger(v.likes)?v.likes:-1,card:youtubeCard(v)});
+    for(const v of verifiedRelated)candidates.push({key:'youtube:'+v.id,domestic:false,
+      type:'related',official:false,playable:true,likes:v.likes,card:youtubeCard(v,true)});
     for(const x of domestic){
       const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':x.platform==='youku'?'优酷':'爱奇艺';
       const name=String(x.name||t('影视预告片','Trailer'));
@@ -217,12 +243,11 @@
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
           (Number.isSafeInteger(x.likes)&&x.likes>=0?' · '+esc(new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact'}).format(x.likes))+t(' 赞',' likes'):'')+'</small>'+
         '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>';
-      if(x.type==='Related'){domesticRelated.push({card,likes:Number.isSafeInteger(x.likes)?x.likes:-1});}
-      else videos.push(card);
+      candidates.push({key:x.platform+':'+x.videoId,domestic:true,type:x.type==='Related'?'related':'trailer',
+        official:x.official===true,playable:supportedPlayer,likes:Number.isSafeInteger(x.likes)?x.likes:-1,card});
     }
-    domesticRelated.sort((a,b)=>b.likes-a.likes);
-    const limitedDomesticRelated=domesticRelated.slice(0,6).map(x=>x.card);
-    // Search entries are optional discovery links, not purported verified videos.
+    const selected=rankFilmVideos(candidates);
+    // Platform search links are discovery fallbacks, not unverified embedded videos.
     const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
     const q=encodeURIComponent(title+' 预告片');
     const year=Number(String(info?.year||'').slice(0,4));
@@ -242,18 +267,14 @@
       a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
         cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
-    if(!videos.length&&!relatedCards.length&&!limitedDomesticRelated.length){
+    if(!selected.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
       else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
       else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
-    }else if(status==='loading'){
-      state=t('YouTube 预告片仍在加载，已核实的国内视频可直接播放。','YouTube trailers are still loading; verified domestic videos are ready.');
     }
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
-      (videos.length?'<div class="mi-trailer-grid">'+videos.join('')+'</div>':'')+
-      (limitedDomesticRelated.length||relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('相关视频','Related videos')+
-        '</h4><div class="mi-trailer-grid">'+[...limitedDomesticRelated,...relatedCards].join('')+'</div>':'')+
+      (selected.length?'<div class="mi-trailer-grid">'+selected.map(x=>x.card).join('')+'</div>':'')+
       (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
   }
 
