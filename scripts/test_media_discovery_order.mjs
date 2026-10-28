@@ -52,6 +52,6 @@ test('source attribution follows all discovery slots and cache-busted scripts ar
   const rendered=core.slice(core.indexOf('  function renderDetail(){'),core.indexOf('  async function hydrateRelated('));
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")>=0);
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")<rendered.indexOf("text('资料来源','Sources')"));
-  for(const [name,version] of Object.entries({'media-intel.js':'20261029.guides1','media-insights.js':'20261029.standard1','media-cn-enhance.js':'20261029.stablelayout1'}))
+  for(const [name,version] of Object.entries({'media-intel.js':'20261029.liveguides2','media-insights.js':'20261029.liveguides2','media-cn-enhance.js':'20261029.stablelayout1'}))
     assert.ok(index.includes('./'+name+'?v='+version),name+' must use the new script version');
 });
