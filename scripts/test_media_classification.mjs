@@ -50,3 +50,14 @@ test('HTML special characters are escaped and excessive keywords are capped',()=
  const detail=classificationDetail({profile:{keywords:tags}});
  assert.ok((detail.match(/mi-keyword-pill/g)||[]).length<=6);
 });
+
+test('visible-card metadata requests are bounded and do not block the film grid',()=>{
+ const insights=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
+ assert.match(src,/liangyou:media-visible/);
+ assert.match(insights,/root\.addEventListener\('liangyou:media-visible'/);
+ assert.match(insights,/visibleInFlight<2/);
+ assert.match(insights,/visibleAttempts\.size<24/);
+ assert.match(insights,/hydrateClassification\(info\)/);
+ assert.match(src,/insertAdjacentHTML\('afterend',markup\)/);
+ assert.doesNotMatch(src,/w\.profile=\{\.\.\.\(w\.profile\|\|\{\}\),genres,keywords,parental_rating\};\s*render\(\)/);
+});
