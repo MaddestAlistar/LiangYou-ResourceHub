@@ -95,11 +95,12 @@ async function news(){
 function domesticNews(info){
  if(info.section!=='discover')return;
  const target=root.querySelector('#media-dialog .mi-detail-content');if(!target)return;
+ const holder=target.querySelector('[data-mi-discover-slot="domestic"]');
  const box=document.createElement('section');box.className='mi-insight-block mi-cn-title-news';
- box.innerHTML='<h3>'+t('当前作品相关报道 · 国内','Coverage for this title · China')+'</h3>'+
+ box.innerHTML='<h3>'+t('国内新闻','Chinese news')+'</h3>'+
   '<p class="mi-caption">'+t('按完整片名核对国内新闻，不显示与本片无关的综合资讯。','Only full-title-matched Chinese coverage is shown.')+'</p>'+
   '<div class="mi-cn-news-results" aria-live="polite">'+t('正在核对…','Checking coverage…')+'</div>';
- target.appendChild(box);
+ if(holder)holder.replaceChildren(box);else target.appendChild(box);
  (async()=>{
   const d=await news(),pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
   const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
