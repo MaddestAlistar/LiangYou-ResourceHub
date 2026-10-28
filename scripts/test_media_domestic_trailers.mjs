@@ -37,11 +37,15 @@ test('missing YouTube data still shows verified mainland videos in exactly the s
 });
 test('1905 is a collapsible search/source link and not a fake playable video',()=>{
  const h=gallery({},selected,catalog.items,'ready');
- assert.match(h,/1905\.com\/news\/yg\//);
+ assert.match(h,/1905\.com\/mdb\/film\/2255731\//);
+ assert.match(h,/1905 · 当前作品资料/);
  assert.match(h,/search\.bilibili\.com\/all\?keyword=/);
  assert.match(h,/v\.qq\.com\/x\/search\/\?q=/);
  assert.doesNotMatch(h,/data-mi-play-cn="1905"/);
  assert.doesNotMatch(h,/mi-domestic-video-grid|国内预告片/);
+ const unmatched=gallery({}, {...selected,year:'2026'},catalog.items);
+ assert.match(unmatched,/1905\.com\/news\/yg\//);
+ assert.doesNotMatch(unmatched,/mdb\/film\/2255731/);
 });
 test('unmatched title/year never attaches another movie trailer',()=>{
  for(const incorrect of [
