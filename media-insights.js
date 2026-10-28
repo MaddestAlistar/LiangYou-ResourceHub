@@ -55,7 +55,7 @@
   }
   function get(kind,id,withMedia=false){
     const key=kind+':'+id+':'+(withMedia?'discover':'base');
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=4'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=5'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   async function filmNewsFeed(){
