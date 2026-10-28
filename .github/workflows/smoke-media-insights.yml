@@ -66,6 +66,17 @@ jobs:
                   assert n.get("url","").startswith("https://www.theguardian.com/"),n
               assert all(p.get('url','').startswith('https://') for p in data['artwork']),data
               print('VERIFIED_ID',kind,id,'SOURCES',data['sources'])
+          # A card only needs the lightweight TMDB classification route.
+          for kind,id in [('movie',550),('tv',1399)]:
+              u=f'{base}/api/classification/{kind}/{id}?schema=1'
+              req=urllib.request.Request(u,headers={'Accept':'application/json','User-Agent':'LiangYou-Card-Classification-Smoke/1.0'})
+              with urllib.request.urlopen(req,timeout=35) as r: lightweight=json.load(r)
+              assert lightweight.get('ok') is True and lightweight.get('kind')==kind and lightweight.get('tmdbId')==id
+              assert lightweight.get('source')=='TMDB' and isinstance(lightweight.get('classification'),dict)
+              values=lightweight['classification']
+              assert isinstance(values.get('genres'),list) and isinstance(values.get('keywords'),list)
+              print('LIVE_LIGHTWEIGHT_CLASSIFICATION',kind,id,'GENRES',len(values['genres']),'KEYWORDS',len(values['keywords']),
+                    'RATING',values.get('parental_rating'))
           try:
               with urllib.request.urlopen(base+'/api/news/film',timeout=25) as r: film_news=json.load(r)
               assert film_news.get('status') in ('ok','no_data','not_configured'),film_news
