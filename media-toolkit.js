@@ -128,7 +128,7 @@
     ranking.innerHTML='<summary>'+t('中国内地累计票房榜','China all-time box office ranking')+'</summary>'+
       '<p class="mi-caption">'+t('独立榜单，与本片评分无关。','Separate chart, not this title’s rating.')+'</p>'+
       '<button type="button" id="mtk-box">'+t('查看前十名','View top 10')+'</button><div id="mtk-box-result" aria-live="polite"></div>';
-    if(info.section==='boxoffice')section.appendChild(ranking);
+    if(info.section==='boxoffice'&&info.kind==='movie')section.appendChild(ranking);
   }
   dialog.addEventListener('change',function(ev){
     if(ev.target.id!=='mtk-rating-source')return;
