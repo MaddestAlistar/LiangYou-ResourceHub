@@ -112,7 +112,16 @@
     const pane=e.target.querySelector('.mi-kr-boxoffice');if(!pane||pane.dataset.loaded)return;
     pane.dataset.loaded='1';pane.textContent=t('读取 KOFIC…','Loading KOFIC…');
     try{
-      const d=await json('/api/kobis/daily');
+      let d=null;
+      // Prefer a verified, recent GitHub Actions snapshot when Cloudflare-to-KOFIC is blocked.
+      try{
+        const r=await fetch('./data/kofic-boxoffice.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});
+        if(r.ok){
+          const x=await r.json(),age=Date.now()-Date.parse(x.checkedAt);
+          if(x.ok===true&&x.status==='ok'&&/^\d{8}$/.test(x.date)&&Array.isArray(x.data)&&x.data.length>=3&&age>=0&&age<72*3600000)d=x;
+        }
+      }catch{}
+      if(!d)d=await json('/api/kobis/daily');
       if(!pane.isConnected)return;
       if(d.status==='not_configured'){pane.textContent=t('KOFIC 凭证尚未配置；不展示猜测票房。','KOFIC key is not configured; no guessed chart.');return;}
       if(d.ok!==true||!Array.isArray(d.data)||d.status!=='ok')throw Error('invalid');
