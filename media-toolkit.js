@@ -120,7 +120,8 @@
         '<button type="submit">'+t('查询评分','Look up')+'</button></form>'+
       '<p class="mi-caption">'+t('只有原站作品 ID 一致的独立结果才会展示，不会自动合并到其他评分。','Only exact title IDs are queried; results are not merged into other rating sources.')+'</p>'+
       '<div id="mtk-rating-result" aria-live="polite"></div>';
-    section.appendChild(research);
+    const slot=section.querySelector('[data-mi-ratings-slot="manual"]');
+    if(slot)slot.appendChild(research);else section.appendChild(research);
   }
   dialog.addEventListener('submit',async function(ev){
     if(ev.target.id!=='mtk-lookup')return;
