@@ -63,6 +63,15 @@ try{
  assert.deepEqual(result.ordered,['trailers','international','domestic','related','similar']);
  assert.ok(result.trailerCount>=1,'Trailer gallery must display sourced videos');
  assert.equal(result.hasPlayButton,true,'Official YouTube trailer should play in-page');
+ // Text in the DOM is not enough: CSS must leave all three cards actually visible.
+ for(const selector of [
+   '#media-dialog [data-mi-discover-slot="trailers"] .mi-trailer-card',
+   '#media-dialog [data-mi-discover-slot="international"] .mi-international-news',
+   '#media-dialog [data-mi-discover-slot="domestic"] .mi-cn-news-list a'
+ ]){
+   assert.equal(await page.locator(selector).first().isVisible(),true,
+      'Discover component must be visually visible: '+selector);
+ }
  if(worldName.length>=5)assert.match(result.internationalText,/Variety/,'World publisher article must appear');
  assert.match(result.domesticText,/新浪电影/,'Domestic matching article must appear');
  assert.match(result.similarText,/Suggested related title/);
