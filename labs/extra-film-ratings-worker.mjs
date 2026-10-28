@@ -116,7 +116,7 @@ export default {
             delivery:"GitHub Actions validated source snapshot"});
         }
       });
-      // Official Kitsu cross-site mappings: MAL ID -> uniquely linked Kitsu anime.
+      // Uniquely match official Kitsu mapping by MAL ID, then follow its related anime resource.
       const km=u.pathname.match(/^\/api\/kitsu\/by-mal\/([1-9]\d{0,9})$/);
       if(km)return await cached(req,ctx,async()=>{
         const map=new URL("https://kitsu.io/api/edge/mappings");
@@ -124,17 +124,19 @@ export default {
         map.searchParams.set("filter[externalId]",km[1]);
         const d=await retrieve(map.toString(),{"accept":"application/vnd.api+json"},16000);
         const exact=(d.data||[]).filter(x=>x.attributes?.externalSite==="myanimelist/anime"&&
-          String(x.attributes.externalId)===km[1]&&x.relationships?.item?.data?.type==="anime");
-        const ids=[...new Set(exact.map(x=>x.relationships.item.data.id))];
-        if(ids.length!==1||!/^[1-9]\d{0,9}$/.test(ids[0]))throw Error("kitsu_mapping_not_unique");
-        const src="https://kitsu.io/api/edge/anime/"+ids[0];
-        const record=await retrieve(src,{"accept":"application/vnd.api+json"},16000);
-        const x=record.data||{},a=x.attributes||{};
-        if(String(x.id)!==ids[0]||x.type!=="anime"||!a.canonicalTitle)throw Error("kitsu_anime_identity_mismatch");
+          String(x.attributes.externalId)===km[1]&&/^[1-9]\d{0,9}$/.test(String(x.id||"")));
+        if(exact.length!==1)throw Error("kitsu_mal_mapping_not_unique");
+        const mappingId=exact[0].id;
+        const linked=await retrieve("https://kitsu.io/api/edge/mappings/"+mappingId+"/item",
+          {"accept":"application/vnd.api+json"},16000);
+        const x=linked.data||{},a=x.attributes||{};
+        if(x.type!=="anime"||!/^[1-9]\d{0,9}$/.test(String(x.id||""))||!a.canonicalTitle)
+          throw Error("kitsu_linked_anime_identity_missing");
+        const src="https://kitsu.io/api/edge/anime/"+x.id;
         return wrap("Kitsu",src,{
-          id:ids[0],malId:km[1],title:a.canonicalTitle,
+          id:String(x.id),malId:km[1],title:a.canonicalTitle,
           rating:num(a.averageRating,100),scale:100,ratingCount:null,
-          pageUrl:"https://kitsu.app/anime/"+(a.slug||ids[0]),mappingMethod:"official_kitsu_mal_mapping"
+          pageUrl:"https://kitsu.app/anime/"+(a.slug||x.id),mappingMethod:"official_kitsu_mal_mapping"
         });
       });
       const k=u.pathname.match(/^\/api\/kitsu\/anime\/([1-9]\d{0,9})$/);
