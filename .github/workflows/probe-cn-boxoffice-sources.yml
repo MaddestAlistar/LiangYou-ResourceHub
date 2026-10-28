@@ -1,0 +1,21 @@
+name: Probe China box office and Taopiaopiao / Dengta sources
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe_cn_boxoffice_sources.py'
+      - '.github/workflows/probe-cn-boxoffice-sources.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check public data and authenticated-only gateway signatures
+        run: python scripts/probe_cn_boxoffice_sources.py
