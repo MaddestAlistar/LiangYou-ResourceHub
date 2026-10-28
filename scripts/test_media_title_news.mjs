@@ -41,7 +41,7 @@ test('optional remotely searched headlines are ID-bound and cannot erase local a
      calls++;
      return new Response(JSON.stringify({
        ok:true,kind:'tv',tmdbId:303745,articles:[
-         {title:'《我的有罪之人》公开采访',date:'2026-10-28',source:'Film Publisher',
+         {title:'《我的有罪之人》公开采访',titleMatchVerified:true,date:'2026-10-28',source:'Film Publisher',
            url:'https://news.google.com/rss/articles/verified',language:'zh'},
          {title:'无关的新闻',date:'2026-10-28',source:'Unrelated',
            url:'https://bad.example/test',language:'zh'}
