@@ -67,7 +67,19 @@ function classificationFor(title,kind){
 async function verifiedWikimedia(qid,kind,id,imdb){
  if(!/^Q[1-9]\d{0,11}$/.test(String(qid||"")))return null;
  const endpoint="https://www.wikidata.org/wiki/Special:EntityData/"+qid+".json";
- const payload=await jsonRemote(endpoint,{headers:{"User-Agent":"LiangYouResourceHub/1.0 (film metadata verification; public records)"}},6500);
+ let payload=null;
+ try{
+   payload=await jsonRemote(endpoint,{headers:{"User-Agent":"LiangYouResourceHub/1.0 (public film metadata verification)"}},5000);
+ }catch{
+   // Use Wikimedia's documented Action API when the JSON entity export is blocked.
+   const api=new URL("https://www.wikidata.org/w/api.php");
+   api.searchParams.set("action","wbgetentities");
+   api.searchParams.set("ids",qid);
+   api.searchParams.set("props","claims|labels|sitelinks");
+   api.searchParams.set("format","json");
+   api.searchParams.set("formatversion","2");
+   payload=await jsonRemote(api.toString(),{headers:{"User-Agent":"LiangYouResourceHub/1.0 (public film metadata verification)"}},4500);
+ }
  const entry=payload.entities?.[qid];
  if(!entry||entry.id!==qid||entry.missing!==undefined)return null;
  const claims=entry.claims||{};
