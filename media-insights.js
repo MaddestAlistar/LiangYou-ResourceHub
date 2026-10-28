@@ -497,10 +497,11 @@
     }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
-    let domesticRows=[],trailerResult=null,trailerStatus='loading';
+    let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[];
     function paintTrailers(){
       if(!discoverSlots?.trailers||!pane.isConnected)return;
-      pane.innerHTML=trailerGallery(trailerResult||{},info,domesticRows,trailerStatus);
+      const enrichedInfo={...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]};
+      pane.innerHTML=trailerGallery(trailerResult||{},enrichedInfo,domesticRows,trailerStatus);
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
@@ -602,7 +603,11 @@
       }
       if(!pane.isConnected)return;
       if(info.section==='discover'&&discoverSlots?.trailers){
+        verifiedAliases=Array.isArray(enriched.aliases)?enriched.aliases:[];
         const newsContext={...enriched,localTitle:info.title,aliases:[...(Array.isArray(enriched.aliases)?enriched.aliases:[]),...(Array.isArray(info.aliases)?info.aliases:[])]};
+        if(verifiedAliases.length)root.dispatchEvent(new CustomEvent('liangyou:media-verified-aliases',{
+          detail:{...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]}
+        }));
         const sections=discoverySections(newsContext);
         trailerResult=enriched;
         trailerStatus='ready';
