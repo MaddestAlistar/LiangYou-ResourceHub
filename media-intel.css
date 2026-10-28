@@ -114,3 +114,35 @@
 #media .mi-seasons-drawer>summary{cursor:pointer;font-size:12px;color:#e7d2a8;font-weight:600;padding:3px 0}
 #media .mi-seasons-drawer[open]>summary{margin-bottom:8px}
 #media .mi-seasons-drawer .mi-detail-block{margin-top:8px;padding-top:9px}
+
+
+/* Card baseline alignment: same poster geometry, equal row heights, anchored actions. */
+#media .mi-grid{align-items:stretch}
+#media .mi-grid .mi-card{display:flex;flex-direction:column;min-width:0;height:100%}
+#media .mi-grid .mi-card-open{display:flex;flex:1 1 auto;flex-direction:column;height:auto;min-height:0;text-align:left}
+#media .mi-grid .mi-card .mi-poster{flex:0 0 auto;aspect-ratio:2/3;width:100%;height:auto;min-height:0}
+#media .mi-grid .mi-card .mi-poster img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover}
+#media .mi-grid .mi-card-copy{display:flex;flex:1 1 auto;flex-direction:column;min-width:0;padding:12px}
+#media .mi-grid .mi-card h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;min-height:2.9em;margin:0 0 7px}
+#media .mi-grid .mi-card .mi-original{line-height:1.5;min-height:1.5em;margin:0 0 8px}
+#media .mi-grid .mi-card .mi-meta{line-height:1.55;min-height:1.55em;margin:0 0 10px}
+#media .mi-grid .mi-card .mi-scores{align-content:flex-start;align-items:flex-start;gap:5px;margin-bottom:9px;min-height:27px}
+#media .mi-grid .mi-card .mi-open-label{margin-top:auto;padding-top:10px;min-height:36px;flex:0 0 auto}
+#media .mi-grid .mi-quick-save{flex:0 0 auto;min-height:40px;display:grid;place-items:center}
+@media(min-width:1100px){
+ #media .mi-grid .mi-card-open{display:grid;grid-template-columns:40% minmax(0,1fr);align-items:stretch}
+ #media .mi-grid .mi-card .mi-poster{height:100%;min-height:220px;aspect-ratio:auto}
+ #media .mi-grid .mi-card-copy{justify-content:flex-start}
+}
+@media(max-width:760px){
+ #media .mi-grid .mi-card-copy{padding:10px}
+ #media .mi-grid .mi-card .mi-scores{min-height:60px;gap:5px}
+ #media .mi-grid .mi-card .mi-scores .mi-rating{max-width:100%;line-height:1.5;white-space:normal}
+ #media .mi-grid .mi-card .mi-original{font-size:11px}
+ #media .mi-grid .mi-card .mi-open-label{font-size:10px}
+}
+@media(max-width:380px){
+ #media .mi-grid{gap:9px}
+ #media .mi-grid .mi-card-copy{padding:9px}
+ #media .mi-grid .mi-card .mi-scores{min-height:67px}
+}
