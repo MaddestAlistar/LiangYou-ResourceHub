@@ -65,7 +65,7 @@ function classificationFor(title,kind){
 // Wikimedia records are optional background facts. A TMDB Wikidata ID alone is
 // not sufficient: cross-check the entity's TMDB or IMDb statement before displaying.
 async function verifiedWikimedia(qid,kind,id,imdb){
- if(!/^Q[1-9]\\d{0,11}$/.test(String(qid||"")))return null;
+ if(!/^Q[1-9]\d{0,11}$/.test(String(qid||"")))return null;
  const endpoint="https://www.wikidata.org/wiki/Special:EntityData/"+qid+".json";
  const payload=await jsonRemote(endpoint,{headers:{"User-Agent":"LiangYouResourceHub/1.0 (film metadata verification; public records)"}},6500);
  const entry=payload.entities?.[qid];
