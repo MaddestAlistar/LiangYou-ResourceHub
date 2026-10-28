@@ -135,7 +135,9 @@ function domesticNews(info){
   const seenUrl=new Set(),seenTitle=new Set();
   const matched=[...identityNews,...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
    .filter(x=>x.confidence>0&&safe(x.url)&&x.title)
-   .sort((a,b)=>b.confidence-a.confidence||Date.parse(b.date||0)-Date.parse(a.date||0))
+   .sort((a,b)=>b.confidence-a.confidence||
+     (Number.isSafeInteger(b.likes)?b.likes:-1)-(Number.isSafeInteger(a.likes)?a.likes:-1)||
+     Date.parse(b.date||0)-Date.parse(a.date||0))
    .filter(x=>{
     const u=safe(x.url),name=sameTitle(x.title);
     if(seenUrl.has(u)||seenTitle.has(name))return false;
