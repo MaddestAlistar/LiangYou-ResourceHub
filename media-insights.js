@@ -290,26 +290,5 @@
     host.replaceChildren(frame);
   });
   root.addEventListener('liangyou:media-detail',ev=>display(ev.detail));
-  root.addEventListener('toggle',async e=>{
-    if(!e.target.matches('.mi-rankings-drawer')||!e.target.open)return;
-    const pane=e.target.querySelector('.mi-kr-boxoffice');if(!pane||pane.dataset.loaded)return;
-    pane.dataset.loaded='1';pane.textContent=t('读取 KOFIC…','Loading KOFIC…');
-    try{
-      let d=null;
-      // Prefer a verified, recent GitHub Actions snapshot when Cloudflare-to-KOFIC is blocked.
-      try{
-        const r=await fetch('./data/kofic-boxoffice.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});
-        if(r.ok){
-          const x=await r.json(),age=Date.now()-Date.parse(x.checkedAt);
-          if(x.ok===true&&x.status==='ok'&&/^\d{8}$/.test(x.date)&&Array.isArray(x.data)&&x.data.length>=3&&age>=0&&age<72*3600000)d=x;
-        }
-      }catch{}
-      if(!d)d=await json('/api/kobis/daily');
-      if(!pane.isConnected)return;
-      if(d.status==='not_configured'){pane.textContent=t('KOFIC 凭证尚未配置；不展示猜测票房。','KOFIC key is not configured; no guessed chart.');return;}
-      if(d.ok!==true||!Array.isArray(d.data)||d.status!=='ok')throw Error('invalid');
-      pane.innerHTML='<p class="mi-caption">'+esc(d.date)+' · '+t('韩国单日票房 / 韩元','Korean daily box office / KRW')+'</p>'+
-        '<ol>'+d.data.slice(0,8).map(x=>'<li><b>'+esc(x.title)+'</b><small>'+t('当日观众 ','Daily admissions ')+esc(x.audience==null?'—':x.audience.toLocaleString())+'</small></li>').join('')+'</ol>';
-    }catch{if(pane.isConnected){pane.dataset.loaded='';pane.textContent=t('KOFIC 榜单暂时不可用。','KOFIC chart unavailable.');}}
-  },true);
+
 })();
