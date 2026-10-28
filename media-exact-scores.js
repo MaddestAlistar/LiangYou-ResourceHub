@@ -30,6 +30,15 @@
      if(fm&&info.kind==='movie'&&!candidates.some(x=>x.source==='Filmarks'))
        candidates.push({source:'Filmarks',id:fm[1],path:'/api/filmarks/movie/'+fm[1]});
    }
+   const tmdbId=Number(info.tmdbId);
+   if(!candidates.some(x=>x.source==='Simkl')){
+     if(['movie','tv'].includes(info.kind)&&Number.isSafeInteger(tmdbId)&&tmdbId>0&&tmdbId<1e10)
+       candidates.push({source:'Simkl',externalSite:'tmdb',externalId:String(tmdbId),
+         path:'/api/simkl/by-tmdb/'+info.kind+'/'+tmdbId});
+     else if(info.kind==='anime'&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)
+       candidates.push({source:'Simkl',externalSite:'mal',externalId:String(info.malId),
+         path:'/api/simkl/by-mal/anime/'+info.malId});
+   }
    const malId=Number(info.malId);
    if((info.kind==='anime'||info.kind==='tv')&&Number.isSafeInteger(malId)&&malId>0&&malId<1e10)
      candidates.push({source:'Kitsu',id:String(malId),path:'/api/kitsu/by-mal/'+malId});
@@ -47,7 +56,10 @@
      if(entry.source==='Kitsu'){
        return String(d.malId)===entry.id&&d.mappingMethod==='official_kitsu_mal_mapping'&&d.scale===100&&d.rating<=100;
      }
-     if(String(d.id)!==entry.id)return false;
+     if(entry.externalSite){
+       if(d.matchedExternalSite!==entry.externalSite||String(d.matchedExternalId)!==entry.externalId||
+          d.mappingMethod!==(entry.externalSite==='tmdb'?'official_simkl_tmdb_lookup':'official_simkl_mal_lookup'))return false;
+     }else if(String(d.id)!==entry.id)return false;
      if(entry.source==='Simkl'){
        const remoteYear=Number(d.releaseYear);
        if(year>1850&&remoteYear>1850&&Math.abs(remoteYear-year)>1)return false;
@@ -67,6 +79,6 @@
        t('原站作品 ID 已关联','Exact source ID')+
        (Number.isSafeInteger(d.ratingCount)?' · '+esc(d.ratingCount.toLocaleString())+t(' 票',' votes'):'')+'</small></div>'
      ).join('')+'</div><p class="mi-caption">'+
-     t('按 Simkl 原始 ID、Kitsu↔MAL 官方映射等准确标识查询；未关联的来源不会猜测评分。','Exact Simkl IDs and Kitsu–MAL mappings only. Unlinked scores are not guessed.')+'</p>';
+     t('Simkl 支持 TMDB/MAL 准确 ID 查询，Kitsu 使用 MAL 官方映射；无原站标识的来源不猜分。','Simkl resolves exact TMDB/MAL IDs, and Kitsu uses MAL mapping; no fuzzy score matching.')+'</p>';
  });
 })();
