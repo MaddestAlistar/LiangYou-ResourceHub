@@ -1,0 +1,37 @@
+name: Smoke test verified Maoyan film data
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-verified-maoyan.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check actual JSON, expected title and rating
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error
+          base="https://liangyou-maoyan-verified.maddestalistar.workers.dev"
+          for path in ["/api/health","/api/movie/1294273","/api/rankings/alltime","/api/movie/1292052","/api/movie/invalid"]:
+            req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-Verified-Maoyan-Smoke/1.0","Accept":"application/json"})
+            try:
+              with urllib.request.urlopen(req,timeout=20) as r:
+                http=r.status;d=json.load(r)
+            except urllib.error.HTTPError as e:
+              http=e.code;d=json.loads(e.read(5000))
+            except Exception as e:
+              http=None;d={"error":type(e).__name__}
+            v={ "route":path,"http":http,"title":d.get("title"),
+                "rating":d.get("rating"),"ratingCount":d.get("ratingCount"),
+                "cumulativeBoxOffice":d.get("cumulativeBoxOffice"),
+                "count":d.get("count"),"error":d.get("error"),"reason":d.get("reason")}
+            if path=="/api/movie/1294273":
+              v["verified"]=bool(http==200 and d.get("movieId")==1294273 and d.get("title")=="哪吒之魔童闹海" and d.get("rating")==9.8 and d.get("ratingCount") and d.get("cumulativeBoxOffice",{}).get("value")==1544614)
+            if path=="/api/rankings/alltime":
+              v["verified"]=bool(http==200 and d.get("count",0)>=10 and d.get("data",[{}])[0].get("movieId")==1294273 and d.get("data",[{}])[0].get("cumulativeBoxOffice",{}).get("value")==1544614)
+            print("VERIFIED_MAOYAN_SMOKE "+json.dumps(v,ensure_ascii=False),flush=True)
+          PY
