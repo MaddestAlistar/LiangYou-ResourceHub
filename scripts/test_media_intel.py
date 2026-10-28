@@ -46,6 +46,17 @@ class MediaTests(unittest.TestCase):
         ratings=m.omdb_ratings(data)
         self.assertEqual(len(ratings),3)
         self.assertEqual(ratings[-1],{'source':'Metacritic','display':'67/100'})
+    def test_subtitle_candidates_must_match_work(self):
+        movie={'title':'末世行者','original_title':'The Dog Stars','date':'2026-08-26'}
+        for title in ['CSI S6','One Man and His Dog S25E01 2009 Championships','The Dog Stars 1998']:
+            self.assertFalse(m.subtitle_title_matches(title,movie),title)
+        for title in ['The.Dog.Stars.2026.1080p.WEB-DL','末世行者 2026 简英双语']:
+            self.assertTrue(m.subtitle_title_matches(title,movie),title)
+        self.assertFalse(m.subtitle_title_matches('Hopeless 2026',{'title':'Hope','date':'2026'}))
+        self.assertFalse(m.subtitle_title_matches('Hope',{'title':'Hope','date':'2026'}))
+        self.assertTrue(m.subtitle_title_matches('Hope 2026',{'title':'Hope','date':'2026'}))
+        response={'sub':{'subs':[{'id':123,'native_name':'CSI S6','lang':'简体'}]}}
+        self.assertEqual(m.assrt_results(response,movie),[])
     def test_omdb_key_url_never_becomes_request_key(self):
         with patch.dict(m.os.environ,{'OMDB_API_KEY':'https://www.omdbapi.com/?i=tt0137523&apikey=unit-test'}):
             self.assertEqual(m.key('omdb'),'unit-test')

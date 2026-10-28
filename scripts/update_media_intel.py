@@ -286,7 +286,7 @@ def enrich(source,candidates):
             if len(q)<3: continue
             x=get('https://api.assrt.net/v1/sub/search',{'q':q,'cnt':5},{'Authorization':'Bearer '+token})
             if x.get('status')!=0: raise FeedError('api_error')
-            entry['results']=assrt_results(x)
+            entry['results']=assrt_results(x,item)
         out.append(entry)
     if not out: raise FeedError('no_matching_titles')
     return out
@@ -302,7 +302,25 @@ def omdb_ratings(data):
             result.append({'source':name,'display':str(data[field])+'/'+scale})
     return result
 
-def assrt_results(data):
+def subtitle_title_matches(title,item):
+    """Search results are candidates, not verified work identities."""
+    normalized=lambda value: re.sub(r'[\W_]+',' ',str(value).casefold()).strip()
+    haystack=normalized(title)
+    year=str(item.get('date',''))[:4]
+    years=set(re.findall(r'\b(?:19|20)\d{2}\b',str(title)))
+    if year.isdigit() and years and year not in years: return False
+    for field in ('title','original_title','english_title'):
+        name=normalized(item.get(field,''))
+        if len(name)<3: continue
+        if name.startswith('the ') and len(name.split())>2: name=name[4:]
+        if re.search(r'[\u3400-\u9fff]',name):
+            if name in haystack: return True
+        elif ' '+name+' ' in ' '+haystack+' ':
+            # A single common word alone (e.g. Hope) is not enough evidence.
+            if len(name.split())>1 or (year.isdigit() and year in years): return True
+    return False
+
+def assrt_results(data,item=None):
     payload=data.get('sub') or {}
     if not isinstance(payload,dict): raise FeedError('invalid_subtitle_schema')
     rows=payload.get('subs') or []
@@ -312,7 +330,9 @@ def assrt_results(data):
         if not isinstance(row,dict) or not str(row.get('id','')).isdigit(): continue
         lang=row.get('lang') or {}
         language=lang.get('desc','') if isinstance(lang,dict) else str(lang)
-        result.append({'title':clean(row.get('native_name') or row.get('videoname')),'language':language,
+        title=clean(row.get('native_name') or row.get('videoname'))
+        if item is not None and not subtitle_title_matches(title,item): continue
+        result.append({'title':title,'language':language,
                        'url':'https://assrt.net/xml/sub/'+str(row['id'])+'.xml'})
     return result
 
