@@ -193,3 +193,12 @@
 }
 @media(max-width:360px){#media .mi-trailer-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){#media .mi-trailer-trigger img{transition:none}#media .mi-trailer-trigger:hover img{transform:none}}
+
+/* Optional film-world headlines remain collapsed until requested. */
+#media .mi-world-news{margin:15px 0;border:1px solid #a3b7d241;background:#0d192c;border-radius:12px;padding:11px}
+#media .mi-world-news>summary{cursor:pointer;color:#e4d0a3;font-size:12px;font-weight:600;line-height:1.7}
+#media .mi-world-news>p{margin:9px 0}
+#media .mi-world-news .mi-editorial-card{min-width:0;border:1px solid #a6b7ce30;border-radius:10px;background:#0b1729;overflow:hidden}
+#media .mi-world-news .mi-editorial-grid{margin-top:9px}
+#media .mi-world-news-list{min-height:24px;font-size:12px;color:#a9bbd5}
+@media(max-width:760px){#media .mi-world-news .mi-editorial-card{display:grid;grid-template-columns:96px minmax(0,1fr)}}
