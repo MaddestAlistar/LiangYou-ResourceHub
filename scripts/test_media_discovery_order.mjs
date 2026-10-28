@@ -40,7 +40,7 @@ test('international and similar suggestions render inside their corresponding sl
   assert.match(insights,/discoverSlots\.trailers\.prepend\(pane\)/);
   assert.match(insights,/discoverSlots\.international\.innerHTML=sections\.international/);
   assert.match(insights,/discoverSlots\.similar\.innerHTML=sections\.similar/);
-  assert.match(insights,/function discoverySections\(d\)/);
+  assert.match(insights,/function discoverySections\(d[,)]/);
   assert.match(insights,/t\('相似主题探索','Similar themes'\)/);
 });
 test('domestic news updates its fixed third slot even when asynchronous',()=>{
