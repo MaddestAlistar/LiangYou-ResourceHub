@@ -1,0 +1,39 @@
+name: Test mobile film cards and footer alignment
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'media-intel.css'
+      - 'media-intel.js'
+      - 'media-insights.js'
+      - 'index.html'
+      - 'scripts/test_media_mobile_layout.mjs'
+      - '.github/workflows/test-media-mobile-layout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve repository locally
+        run: |
+          nohup python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/media-http.log 2>&1 &
+          sleep 2
+      - name: Check 360px and 390px card alignment
+        run: node scripts/test_media_mobile_layout.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: film-mobile-layout-debug
+          path: /tmp/mobile-film-*.png
+          if-no-files-found: ignore
