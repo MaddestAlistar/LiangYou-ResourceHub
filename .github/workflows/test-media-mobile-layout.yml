@@ -5,6 +5,11 @@ on:
     paths:
       - 'media-intel.css'
       - 'media-intel.js'
+      - 'data/media-worldwide-archive.json'
+      - 'scripts/test_media_exact_scores.mjs'
+      - 'media-boxoffice-rankings.css'
+      - 'media-boxoffice-rankings.js'
+      - 'media-exact-scores.js'
       - 'media-insights.js'
       - 'scripts/test_media_cn_panels.mjs'
       - 'media-cn-enhance.css'
@@ -36,6 +41,8 @@ jobs:
         run: node scripts/test_media_mobile_layout.mjs
       - name: Check domestic independent rating cards and news interactions
         run: node scripts/test_media_cn_panels.mjs
+      - name: Check cross-platform verified ratings and worldwide charts
+        run: node scripts/test_media_exact_scores.mjs
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
