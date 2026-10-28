@@ -212,7 +212,11 @@
     pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
     try{
       const data=await get(kind,id,info.section==='discover');
-      if(!pane.isConnected||data.ok!==true||data.kind!==kind||data.tmdbId!==id)return;
+      if(!pane.isConnected)return;
+      if(data.ok!==true||data.kind!==kind||data.tmdbId!==id){
+        pane.innerHTML='<p class="mi-caption">'+t('补充接口返回的作品标识不匹配，已跳过这批资料。','Additional data did not match the verified title ID and was skipped.')+'</p>';
+        return;
+      }
       let enriched=data;
       if(info.section==='discover'&&!(Array.isArray(data.suggestions)&&data.suggestions.length)){
         const snapshot=await sourceSnapshot();
