@@ -43,11 +43,19 @@ jobs:
           import json,urllib.request,urllib.error,time
           base='https://liangyou-streaming-availability.maddestalistar.workers.dev'
           for kind,id in [('movie',550),('tv',1399)]:
-              u=f'{base}/api/insights/{kind}/{id}?schema=4&media=1'
+              u=f'{base}/api/insights/{kind}/{id}?schema=6&media=1'
               req=urllib.request.Request(u,headers={'Accept':'application/json','User-Agent':'LiangYou-Insights-Smoke/1.0'})
               with urllib.request.urlopen(req,timeout=65) as r: data=json.load(r)
               assert data.get('ok') is True,(kind,data)
               assert data.get('kind')==kind and data.get('tmdbId')==id,data
+              assert isinstance(data.get('classification'),dict),(kind,id,'classification_not_deployed')
+              classification=data['classification']
+              assert isinstance(classification.get('genres'),list),(kind,id,'genres_not_list')
+              assert isinstance(classification.get('keywords'),list),(kind,id,'keywords_not_list')
+              rating=classification.get('parental_rating')
+              if rating is not None:
+                  assert rating.get('source')=='TMDB' and rating.get('country') in ('CN','HK','TW','US','GB','AU','SG','JP','KR') and rating.get('rating'),rating
+              print('LIVE_CLASSIFICATION',kind,id,'GENRES',len(classification['genres']),'KEYWORDS',len(classification['keywords']),'RATING',rating)
               assert isinstance(data.get('sources'),dict),data
               assert isinstance(data.get('artwork'),list),data
               assert isinstance(data.get('news'),list),data
