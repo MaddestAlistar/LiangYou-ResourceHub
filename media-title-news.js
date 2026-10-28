@@ -42,7 +42,7 @@
     if(!remoteCache.has(key))remoteCache.set(key,(async()=>{
       try{
         const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=3',{
-          signal:AbortSignal.timeout(10500)});
+          signal:AbortSignal.timeout(21000)});
         if(!r.ok)return null;
         const d=await r.json();
         if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||!Array.isArray(d.articles))return null;
