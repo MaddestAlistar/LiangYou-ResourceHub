@@ -123,6 +123,30 @@ test('missing and conflicting parental classifications are omitted, not guessed'
  assert.equal(result.body.classification.parental_rating.rating,'TV-14');
  assert.deepEqual(result.body.classification.keywords,['family relationships']);
 });
+test('Bilibili likes are returned only from matching public video metadata',async()=>{
+ const origin=globalThis.fetch;
+ const id='BV1spJR6yEci';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.bilibili.com'&&u.searchParams.get('bvid')===id)
+   return json({code:0,data:{bvid:id,stat:{like:250,view:87500}}});
+  throw Error('unexpected request');
+ };
+ try{
+  const {status,body}=await invoke('/api/video/bilibili/'+id);
+  assert.equal(status,200);assert.equal(body.ok,true);
+  assert.equal(body.bvid,id);assert.equal(body.likes,250);assert.equal(body.views,87500);
+ }finally{globalThis.fetch=origin;}
+});
+test('Bilibili mismatched IDs and unavailable like counters cannot be shown as popularity',async()=>{
+ const origin=globalThis.fetch,id='BV1spJR6yEci';
+ globalThis.fetch=async()=>json({code:0,data:{bvid:'BV1F3aF6mEQn',stat:{like:999999,view:99999}}});
+ try{
+  const {body}=await invoke('/api/video/bilibili/'+id);
+  assert.equal(body.ok,false);
+  assert.equal(body.likes,undefined);
+ }finally{globalThis.fetch=origin;}
+});
 test('TMDB official YouTube IDs get metadata without guessing the video title',async()=>{
  stub({movie:{videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official Film Trailer'}]}}});
  const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
