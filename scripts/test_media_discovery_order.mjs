@@ -38,7 +38,7 @@ test('empty title still displays ordered headings and empty related-state rather
 });
 test('international and similar suggestions render inside their corresponding slots only',()=>{
   assert.match(insights,/discoverSlots\.trailers\.prepend\(pane\)/);
-  assert.match(insights,/discoverSlots\.international\.innerHTML=sections\.international/);
+  assert.match(insights,/discoverSlots\.international\.innerHTML=discoverySections/);
   assert.match(insights,/discoverSlots\.similar\.innerHTML=sections\.similar/);
   assert.match(insights,/function discoverySections\(d[,)]/);
   assert.match(insights,/t\('相似主题探索','Similar themes'\)/);
