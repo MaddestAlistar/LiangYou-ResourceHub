@@ -63,6 +63,10 @@ try{
  assert.deepEqual(result.ordered,['trailers','international','domestic','related','similar']);
  assert.ok(result.trailerCount>=1,'Trailer gallery must display sourced videos');
  assert.equal(result.hasPlayButton,true,'Official YouTube trailer should play in-page');
+ for(const fragment of ['search.bilibili.com/all?keyword=','v.qq.com/x/search/?q=','1905.com/news/yg/']){
+   assert.equal(await page.locator('#media-dialog .mi-domestic-search a[href*="'+fragment+'"]').count(),1,
+       'Mainland source link must be available without a provider API: '+fragment);
+ }
  // Text in the DOM is not enough: CSS must leave all three cards actually visible.
  for(const selector of [
    '#media-dialog [data-mi-discover-slot="trailers"] .mi-trailer-card',
@@ -115,6 +119,8 @@ try{
      'Only one clear trailer error should be visible');
    if(worldName.length>=5)assert.match(offline.international,/Variety/,'Offline Worker must not block world RSS');
    assert.match(offline.domestic,/新浪电影/,'Offline Worker must not block Chinese RSS');
+   assert.equal(await offlinePage.locator('#media-dialog .mi-domestic-search a').count(),3,
+     'Mainland trailer source searches must survive Worker outages');
    assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
      'Offline news fallback has no unhandled renderer error');
    console.log('DISCOVER_WORKER_FAILURE_FALLBACK_OK',JSON.stringify(offline).slice(0,650));
