@@ -371,7 +371,7 @@ function rssArticleMatches(headline,alias,context={}){
  const year=String(context.year||""),oldYear=String(Number(context.year||0)-10);
  const hasYear=year.length===4&&headline.includes(year);
  const isRemake=/live[\s-]?action|真人[版电影]|真人化|重制|翻拍|remake/i.test(headline);
- const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|导演|演员|院线|票房|影片|上映|真人版/i.test(headline);
+ const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版/i.test(headline);
  const person=(Array.isArray(context.people)?context.people:[]).some(p=>p.length>=5&&
    normalizedHeadline(headline).includes(normalizedHeadline(p)));
  // Moana (2016) vs the identically named live-action Moana (2026), or any
@@ -429,6 +429,7 @@ async function titleNews(kind,id,env){
   if(rare){
    add(originalLatin,'"'+originalLatin+'" '+year+' '+(genre||"movie")+' film','en');
    if(people.length)add(originalLatin,'"'+originalLatin+'" "'+people[0]+'" movie','en');
+   add(originalLatin,'"'+originalLatin+'" movie review','en');
   }else{
    add(originalLatin,'"'+originalLatin+'" '+year+' movie','en');
    add(originalLatin,'"'+originalLatin+'" movie review','en');
