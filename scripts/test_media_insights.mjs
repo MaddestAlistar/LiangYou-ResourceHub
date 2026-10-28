@@ -74,7 +74,7 @@ test('invalid TMDB identity cannot be enriched',async()=>{
 
 test('TMDB official YouTube IDs get metadata without guessing the video title',async()=>{
  stub({movie:{videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official Film Trailer'}]}}});
- const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+ const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
  assert.equal(status,200);assert.equal(body.sources.youtube,'ok');
  assert.equal(body.trailers.length,1);assert.equal(body.trailers[0].id,'AbCdEf12345');
  assert.equal(body.trailers[0].official,true);assert.equal(body.trailers[0].duration,'PT2M14S');
@@ -83,7 +83,7 @@ test('TMDB official YouTube IDs get metadata without guessing the video title',a
 });
 test('YouTube search-only results remain explicitly unverified',async()=>{
  stub({});
- const {body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+ const {body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
  assert.equal(body.trailers[0].official,false);
  assert.equal(body.trailers[0].verifiedBy,'YouTube search');
 });
@@ -93,14 +93,14 @@ test('Guardian preview is sanitized, title-related and source attributed',async(
    webPublicationDate:'2026-10-20T00:00:00Z',fields:{trailText:'<p>Fight Club retrospective <b>review</b>.</p>',thumbnail:'https://media.guim.co.uk/test.jpg'}},
   {sectionId:'film',webTitle:'Unrelated movie news',webUrl:'https://www.theguardian.com/film/unrelated'}
  ]}}});
- const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
+ const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
  assert.equal(status,200);assert.equal(body.sources.guardian,'ok');
  assert.equal(body.news.length,1);assert.equal(body.news[0].thumbnail,'https://media.guim.co.uk/test.jpg');
  assert.equal(body.news[0].summary.includes('<'),false);
 });
 test('TasteDive names cannot silently enter verified movie IDs',async()=>{
  stub({});
- const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',TASTEDIVE_API_KEY:'test'});
+ const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',TASTEDIVE_API_KEY:'test'});
  assert.equal(status,200);assert.equal(body.suggestions[0].title,'Another Movie');
  assert.equal(body.suggestions[0].verified,false);
  assert.equal(body.suggestions[0].tmdbId,undefined);
@@ -119,4 +119,14 @@ test('Missing MAL Client ID does not silently produce scores',async()=>{
  stub({});
  const {body}=await invoke('/api/anime/mal/1');
  assert.equal(body.status,'not_configured');assert.equal(body.score,undefined);
+});
+
+test('non-Discover panels do not spend YouTube or Guardian quota',async()=>{
+ stub({});
+ const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test',THE_GUARDIAN_API_KEY:'test',TASTEDIVE_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.equal(body.sources.youtube,'not_requested');
+ assert.equal(body.sources.guardian,'not_requested');
+ assert.equal(body.sources.tastedive,'not_requested');
+ assert.deepEqual(body.trailers,[]);assert.deepEqual(body.news,[]);
 });
