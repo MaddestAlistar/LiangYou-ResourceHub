@@ -8,7 +8,11 @@ const english=()=>document.documentElement.lang.toLowerCase().startsWith('en');
 const t=(zh,en)=>english()?en:zh;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sameTitle=s=>String(s||'').normalize('NFKC').replace(/\s+/g,'').replace(/[·•\-–—:：.。"'“”‘’]/g,'').toLowerCase();
-const verifyYear=(v,year)=>String(v||'').includes(String(year));
+const knownYear=value=>{
+ const match=String(value||'').match(/(?:19|20)\d{2}/);
+ return match?Number(match[0]):null;
+};
+const verifyYear=(v,year)=>knownYear(v)===Number(year);
 async function fetchJSON(url,ms=12000){const r=await fetch(url,{signal:AbortSignal.timeout(ms)});if(!r.ok)throw Error('source_unavailable');return r.json();}
 function safe(u){try{const x=new URL(u);return x.protocol==='https:'&&!x.username&&!x.password?x.href:null;}catch{return null;}}
 function fmtDate(s){const n=Date.parse(s||'');return Number.isFinite(n)?new Intl.DateTimeFormat(english()?'en-US':'zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(n)):'';}
@@ -18,7 +22,9 @@ async function lookupFilm(info){
  const year=Number(String(info.year||'').slice(0,4));
  if(info.kind!=='movie'||!Number.isInteger(year)||year<2017||year>new Date().getFullYear()||!sameTitle(info.title))return null;
  const key=year+'|'+sameTitle(info.title);
- if(!lookupCache.has(key))lookupCache.set(key,(async()=>{
+ const existing=lookupCache.get(key);
+ if(existing&&existing.until>Date.now())return existing.promise;
+ const promise=(async()=>{
   const list=await fetchJSON(endpoint+'/api/search?year='+year+'&name='+encodeURIComponent(info.title),13000);
   if(list.code!==0||Number(list.year)!==year||!Array.isArray(list.data))return null;
   const rows=list.data.filter(x=>sameTitle(x.title)===sameTitle(info.title)&&/^\d{8,14}$/.test(String(x.movieCode||''))&&
@@ -26,13 +32,18 @@ async function lookupFilm(info){
   // Names which collide with another release or are absent never auto-join.
   if(rows.length!==1)return null;
   const found=rows[0],body=await fetchJSON(endpoint+'/api/movie/'+found.movieCode,12000);
+  const detailYear=knownYear(body.releaseDescription);
   if(body.code!==0||String(body.movieCode)!==String(found.movieCode)||sameTitle(body.title)!==sameTitle(info.title)||
-   !verifyYear(body.releaseDescription||found.releaseDate,year))return null;
+   !verifyYear(found.releaseDate,year)||(detailYear!==null&&detailYear!==year))return null;
   const valid=body.ratings&&['maoyan','douban','taopiaopiao'].every(k=>body.ratings[k]===null||
    Number.isFinite(body.ratings[k])&&body.ratings[k]>0&&body.ratings[k]<=10);
   return valid?body:null;
- })().catch(()=>null));
- return lookupCache.get(key);
+ })().catch(()=>null);
+ lookupCache.set(key,{promise,until:Date.now()+90000});
+ promise.then(result=>{
+  if(lookupCache.get(key)?.promise===promise)lookupCache.get(key).until=Date.now()+(result?30*60000:90000);
+ });
+ return promise;
 }
 function insertAutoRatings(info){
  if(info.section!=='ratings'||info.kind!=='movie')return;
