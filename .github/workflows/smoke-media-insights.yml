@@ -11,6 +11,10 @@ on:
       - 'scripts/test_media_insights.mjs'
       - 'scripts/test_media_discovery_order.mjs'
       - 'media-cn-enhance.js'
+      - 'media-toolkit.js'
+      - 'media-exact-scores.js'
+      - 'media-boxoffice-rankings.js'
+      - 'scripts/test_media_layout_slots.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,7 +34,7 @@ jobs:
           node --check media-insights.js
           node --check media-toolkit.js
       - name: Test anonymous YouTube playback and media enrichment
-        run: node --test scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_discovery_order.mjs
+        run: node --test scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_discovery_order.mjs scripts/test_media_layout_slots.mjs
       - name: Verify exact title IDs and optional service behavior
         run: |
           python - <<'PY'
