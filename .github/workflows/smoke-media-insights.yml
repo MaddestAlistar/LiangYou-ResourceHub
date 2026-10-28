@@ -7,6 +7,8 @@ on:
       - 'labs/streaming-availability-worker.mjs'
       - 'media-insights.js'
       - 'media-intel.js'
+      - 'scripts/test_media_player.mjs'
+      - 'scripts/test_media_insights.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,6 +27,8 @@ jobs:
           node --check media-intel.js
           node --check media-insights.js
           node --check media-toolkit.js
+      - name: Test anonymous YouTube playback and media enrichment
+        run: node --test scripts/test_media_player.mjs scripts/test_media_insights.mjs
       - name: Verify exact title IDs and optional service behavior
         run: |
           python - <<'PY'
