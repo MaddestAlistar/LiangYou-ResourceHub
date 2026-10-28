@@ -27,6 +27,7 @@ async function tmdbInfo(kind,id,env,withMedia=false,language="en-US"){
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
  u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits":""));u.searchParams.set("language",language);
+ if(withMedia)u.searchParams.set("include_video_language","en,zh,ja,ko,null");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
  if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
@@ -131,13 +132,14 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    .map(v=>String(v.title||v.name||"").normalize("NFKC").trim())
    .filter(v=>v.length>=2&&v.length<=100&&!/^(?:untitled|未定名|无标题)$/i.test(v)))].slice(0,35);
  const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
- const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&v.official===true&&
+ const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&
    ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
  const seenIds=new Set();
+ tmdbTrailerRows.sort((a,b)=>Number(b.official===true)-Number(a.official===true));
  result.trailers=tmdbTrailerRows.filter(v=>{if(seenIds.has(v.key))return false;seenIds.add(v.key);return true;})
    .slice(0,12).map(v=>({id:v.key,title:String(v.name||"Trailer").slice(0,140),
      type:v.type,language:v.iso_639_1||"",channel:"",publishedAt:v.published_at||null,
-     verifiedBy:"TMDB",official:true,embeddable:null,
+     verifiedBy:"TMDB",official:v.official===true,embeddable:null,
      thumbnail:"https://i.ytimg.com/vi/"+v.key+"/hqdefault.jpg",
      url:"https://www.youtube.com/watch?v="+v.key}));
  const jobs=[];
@@ -227,11 +229,12 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
     const compact=matchedName.replace(/ /g,"");
     if(compact.length<=6&&!/\b(movie|film|review|interview|scene|series|trailer|behind|analysis|episode|cast|teaser)\b/i.test(heading)&&
        !heading.includes(releaseYear)&&!/电影|电视剧|影评|预告|演员|幕后|剧情|花絮|剧集|影视|片段|캐스트|드라마/.test(heading))return false;
-    return Number.isSafeInteger(Number(v.statistics?.likeCount))&&Number(v.statistics.likeCount)>0;
+    // Hide unknown engagement instead of dropping a valid, playable film video.
+    return !v.statistics?.likeCount||Number.isSafeInteger(Number(v.statistics.likeCount))&&Number(v.statistics.likeCount)>=0;
    }).map(v=>({
     id:v.id,title:String(v.snippet.title).slice(0,150),channel:String(v.snippet.channelTitle||"").slice(0,90),
     verifiedBy:"YouTube title/year search + public metadata",type:"Related",official:false,
-    embeddable:true,ageRestricted:false,likes:Number(v.statistics.likeCount),
+    embeddable:true,ageRestricted:false,likes:/^\d+$/.test(String(v.statistics?.likeCount||""))?Number(v.statistics.likeCount):null,
     views:/^\d+$/.test(String(v.statistics?.viewCount||""))?Number(v.statistics.viewCount):null,
     duration:String(v.contentDetails?.duration||"").slice(0,35),
     thumbnail:"https://i.ytimg.com/vi/"+v.id+"/hqdefault.jpg",
