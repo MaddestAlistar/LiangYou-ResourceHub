@@ -1,0 +1,23 @@
+/* Movie toolkit: small-screen accessible region/source controls */
+#media .mi-toolkit{margin-top:18px;padding-top:18px}
+#media .mi-toolkit h3{margin:0 0 12px;font-size:15px;color:#e3eafd}
+#media .mtk-stream{background:rgba(117,147,205,.07);border:1px solid rgba(164,187,232,.14);border-radius:14px;padding:12px}
+#media .mtk-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+#media .mtk-heading label{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#b8c9e5}
+#media .mtk-region{max-width:150px;background:#17243b;color:#edf4ff;border:1px solid rgba(181,199,235,.3);border-radius:10px;padding:7px 8px;font-size:12px}
+#media .mtk-provider-result{padding-top:10px;min-height:34px;font-size:12px;color:#bdcce7}
+#media .mtk-group{margin:10px 0 12px;display:grid;gap:6px}
+#media .mtk-group>b{font-size:11px;color:#b4c9f4}
+#media .mtk-providers{display:flex;gap:6px;flex-wrap:wrap}
+#media .mtk-provider{display:inline-flex;padding:6px 9px;border:1px solid rgba(150,180,225,.25);border-radius:8px;background:rgba(86,115,171,.12);font-size:11px;max-width:100%;overflow-wrap:anywhere}
+#media .mtk-provider-result>a{display:inline-flex;margin-top:9px;color:#bfcff4;text-decoration:underline}
+#media .mtk-details{margin-top:10px;padding:12px;border:1px solid rgba(142,172,220,.15);border-radius:12px;background:rgba(44,64,100,.08)}
+#media .mtk-details>summary{cursor:pointer;color:#d6e4fc;font-size:12px;font-weight:600;line-height:1.65}
+#media .mtk-details[open]>summary{margin-bottom:12px}
+#media .mtk-statuses,#media .mtk-links{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#media .mtk-statuses button,#media .mtk-links button,#media .mtk-links a{font:inherit;font-size:11px;padding:8px 10px;border:1px solid rgba(165,192,233,.22);border-radius:9px;color:#d4e0f9;background:rgba(95,121,160,.14);cursor:pointer;line-height:1.45;text-decoration:none}
+#media .mtk-statuses button[aria-pressed=true]{background:rgba(89,135,219,.35);border-color:rgba(157,191,244,.65);color:white}
+#media .mtk-count{margin:8px 0}
+#media .mtk-links{margin-top:10px}
+#media .mtk-statuses button:focus-visible,#media .mtk-links button:focus-visible,#media .mtk-links a:focus-visible,#media .mtk-region:focus-visible{outline:2px solid #88bbff;outline-offset:2px}
+@media(max-width:760px){#media .mtk-heading{align-items:flex-start}#media .mtk-stream{padding:10px}#media .mtk-details{padding:10px}#media .mtk-statuses{gap:6px}#media .mtk-statuses button{flex:1 1 calc(50% - 6px);min-width:96px}}
