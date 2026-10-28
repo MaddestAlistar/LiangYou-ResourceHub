@@ -92,7 +92,7 @@ export default {
     if(req.method!=="GET")return json({code:405,error:"GET only"},405);
     const u=new URL(req.url);
     if(u.pathname==="/"||u.pathname==="/api/health")return json({
-      code:0,status:"worker_running_not_upstream_health",name:"LiangYou Four Film Ratings Research Lab",
+      code:0,status:"worker_running_not_upstream_health",name:"LiangYou Five Film Ratings Research Lab",
       endpoints:["/api/bilibili/season/26801","/api/kitsu/anime/1","/api/mydramalist/drama/58651-run-on","/api/simkl/10280","/api/filmarks/movie/14348"],
       limitations:"Individual upstream providers can fail. Simkl requires a server-side configured Client ID; Filmarks not verified."
     });
