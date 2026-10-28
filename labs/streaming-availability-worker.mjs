@@ -26,7 +26,7 @@ async function tmdbInfo(kind,id,env,withMedia=false,language="en-US",withReviews
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits":"")+(withReviews?",reviews":""));u.searchParams.set("language",language);
+ u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits,translations":"")+(withReviews?",reviews":""));u.searchParams.set("language",language);
  if(withMedia)u.searchParams.set("include_video_language","en,zh,ja,ko,null");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
@@ -128,9 +128,15 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
  const relevantCountries=new Set(["CN","HK","TW","US","GB","AU","JP","KR","SG"]);
  const aliases=title.alternative_titles?.titles||title.alternative_titles?.results||[];
  const aliasRows=Array.isArray(aliases)?aliases:[];
- result.aliases=[...new Set(aliasRows.filter(v=>relevantCountries.has(String(v.iso_3166_1||"").toUpperCase()))
-   .map(v=>String(v.title||v.name||"").normalize("NFKC").trim())
-   .filter(v=>v.length>=2&&v.length<=100&&!/^(?:untitled|未定名|无标题)$/i.test(v)))].slice(0,35);
+ const regional=(title.translations?.translations||[]).filter(v=>
+    ["zh","ja","ko","en"].includes(v.iso_639_1)&&
+    ["CN","HK","TW","US","GB","JP","KR","SG"].includes(String(v.iso_3166_1||"").toUpperCase()));
+ result.aliases=[...new Set([
+    ...aliasRows.filter(v=>relevantCountries.has(String(v.iso_3166_1||"").toUpperCase())).map(v=>v.title||v.name||""),
+    ...regional.map(v=>v.data?.title||v.data?.name||""),
+    title.title||title.name||"",title.original_title||title.original_name||""
+   ].map(v=>String(v).normalize("NFKC").trim())
+   .filter(v=>v.length>=2&&v.length<=100&&!/^(?:untitled|未定名|无标题)$/i.test(v)))].slice(0,45);
  const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
  const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&
    ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
