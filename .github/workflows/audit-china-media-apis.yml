@@ -1,0 +1,28 @@
+name: Audit Chinese film and Douban APIs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe_china_media_sources.py'
+      - '.github/workflows/audit-china-media-apis.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe all documented sources (unauthenticated)
+        run: python scripts/probe_china_media_sources.py
+      - name: Save structured results as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chinese-film-api-check
+          path: data/cn-media-api-probe.json
+          if-no-files-found: ignore
