@@ -55,3 +55,34 @@ test('source attribution follows all discovery slots and cache-busted scripts ar
   for(const [name,version] of Object.entries({'media-intel.js':'20261029.newsroom1','media-insights.js':'20261029.newsroom1','media-cn-enhance.js':'20261029.newsroom1'}))
     assert.ok(index.includes('./'+name+'?v='+version),name+' must use the new script version');
 });
+
+test('Discover renders trailer, international news and similar titles together without runtime exceptions',()=>{
+  const start=insights.indexOf('  function discoverySections(d,worldArticles=[]){');
+  const end=insights.indexOf('  async function displayBoxOfficeArchive(',start);
+  assert.ok(start>=0&&end>start,'Discovery renderer exists');
+  const source=insights.slice(start,end);
+  const render=new Function('t','esc','safe','a','format','trailerGallery',source+';return discoverySections;')(
+    (zh)=>zh,v=>String(v||''),url=>/^https:\/\//.test(url)?url:null,
+    (url,label)=>'<a href="'+url+'">'+label+'</a>',
+    s=>String(s||'').slice(0,10),
+    ()=>'<section class="mi-trailer-grid">VERIFIED_TRAILER</section>'
+  );
+  const d={title:'Fight Club',originalTitle:'Fight Club',
+    news:[{title:'Fight Club: the movie revisited',url:'https://www.theguardian.com/film/example',date:'2026-10-27',source:'The Guardian'}],
+    suggestions:[{title:'A related title'}]};
+  const world=[
+    {title:'Fight Club celebrates a new edition',url:'https://variety.com/story',date:'2026-10-28',source:'Variety'},
+    {title:'Unrelated headline',url:'https://deadline.com/story',date:'2026-10-28',source:'Deadline'},
+    {title:'Fight Club celebrates a new edition',url:'https://variety.com/story',date:'2026-10-28',source:'Variety'}
+  ];
+  const rendered=render(d,world);
+  assert.match(rendered.trailers,/VERIFIED_TRAILER/);
+  assert.match(rendered.international,/The Guardian/);
+  assert.match(rendered.international,/Variety/);
+  assert.doesNotMatch(rendered.international,/Unrelated headline/);
+  assert.equal((rendered.international.match(/variety\.com\/story/g)||[]).length,1);
+  assert.match(rendered.similar,/A related title/);
+  const empty=render({title:'Example Film',originalTitle:'Example Film',news:[],suggestions:[],trailers:[]},[]);
+  assert.match(empty.international,/暂无.*国际报道/);
+  assert.match(empty.similar,/暂无.*相似主题推荐/);
+});
