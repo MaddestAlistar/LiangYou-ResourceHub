@@ -65,17 +65,20 @@
     const videos=Array.isArray(d.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
     if(!videos.length)return '<section class="mi-insight-block"><h3>'+t('视频情报','Trailer intelligence')+'</h3><p class="mi-caption">'+t('暂无核验过的预告片。可在下方打开 TMDB 提供的原视频链接。','No verified trailers. Source links may appear above.')+'</p></section>';
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片 · 视频情报','Trailers · video intelligence')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
-      '<p class="mi-caption">'+t('来自 TMDB 的官方视频标识优先；搜索候选会单独标注。点击卡片才加载播放器。','TMDB-curated videos are prioritized; unverified search candidates are labeled. Playback loads on tap.')+'</p>'+
+      '<p class="mi-caption">'+t('优先展示 TMDB 标注的视频，非官方搜索结果单独标识；可嵌入视频点击后才加载播放器。','Prioritizes TMDB-curated videos; unverified results are labeled. Embeddable videos load on tap.')+'</p>'+
       '<div class="mi-trailer-grid">'+videos.map(v=>{
         const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
         const duration=formatDuration(v.duration);
         const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
         const label=v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Search candidate');
-        return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+
-          '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+
-          '<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
-          '<span class="mi-trailer-play" aria-hidden="true">▶</span>'+
-          (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'')+'</button></div>'+
+        const embedAllowed=v.embeddable!==false;
+        const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
+          '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
+          (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
+        const player=embedAllowed?
+          '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+thumb+'</button>':
+          '<a class="mi-trailer-trigger mi-video-external" href="'+esc(v.url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t('在 YouTube 查看预告片：','Open trailer on YouTube: ')+esc(v.title||'Trailer')+'">'+thumb+'</a>';
+        return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
           '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span class="'+(v.official?'':'mi-warning-source')+'">'+label+'</span>'+ (v.type&&v.type!=='Search'?'<span>'+esc(v.type)+'</span>':'')+'</div>'+
           '<strong>'+esc(v.title||'Trailer')+'</strong><small>'+esc(v.channel||'YouTube')+(views?' · '+esc(views):'')+'</small>'+
           '<div class="mi-insight-links">'+a(v.url,'YouTube')+'</div></div></article>';
