@@ -100,7 +100,20 @@
   }
   function peoplePanel(w){
     const p=w.profile||{};
-    return `<section class="mi-detail-block"><h3>${text("演职人员","Cast & creators")}</h3><p class="mi-caption">${text("按原站记录展示，不做同名模糊匹配。","Source credits only; no fuzzy-name matches.")}</p></section>${p.creators?.length||p.cast?.length?`<section class="mi-detail-block"><h3>${text('演职员','Cast & creators')}</h3><div class="mi-people">${(p.creators||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${a.role==='Director'?text('导演','Director'):text('主创','Creator')}</small></div>`).join('')}${(p.cast||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${esc(a.character)}</small></div>`).join('')}</div></section>`:''}`;
+    return `${p.creators?.length||p.cast?.length?`<section class="mi-detail-block"><h3>${text('演职员','Cast & creators')}</h3><div class="mi-people">${(p.creators||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${a.role==='Director'?text('导演','Director'):text('主创','Creator')}</small></div>`).join('')}${(p.cast||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${esc(a.character)}</small></div>`).join('')}</div></section>`:''}`+collaborationPanel(w);
+  }
+  function collaborationPanel(w){
+    const p=w.profile||{},cast=[...(p.creators||[]),...(p.cast||[])];
+    const connections=[];
+    for(const person of cast.slice(0,14)){
+      if(!/^https:\/\/www\.themoviedb\.org\/person\/[1-9]\d{0,9}$/.test(person.url||""))continue;
+      const related=Object.values(cat.works).filter(other=>other.id!==w.id&&
+        [...(other.profile?.creators||[]),...(other.profile?.cast||[])].some(a=>a.url===person.url));
+      for(const other of related.slice(0,2))if(connections.length<6&&!connections.some(x=>x.id===other.id))connections.push({id:other.id,person:person.name,work:other});
+      if(connections.length>=6)break;
+    }
+    if(!connections.length)return "";
+    return '<section class="mi-detail-block"><h3>'+text("同一演职人员的其他作品","Other works with shared credits")+"</h3><p class=\"mi-caption\">"+text("仅按 TMDB 人物 ID 精确关联，不按姓名猜测。","Matched by exact TMDB person ID, not name.")+"</p><div class=\"mi-related\">"+connections.map(x=>"<button type=\"button\" data-mi-related=\""+esc(x.id)+"\">"+esc(title(x.work))+" <small>· "+esc(x.person)+"</small></button>").join("")+"</div></section>";
   }
   function boxOfficePanel(){
     return `<section class="mi-detail-block"><h3>${text("票房情报","Box office")}</h3><p class="mi-caption">${text("单片、国家、币种和统计周期独立展示。","Keep film totals, regions, currencies and periods separate.")}</p></section>`;
