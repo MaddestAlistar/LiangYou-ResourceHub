@@ -1,0 +1,47 @@
+name: Smoke test Maoyan laboratory and alternative feeds
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-maoyan-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Verify independent Worker and inspect JSON payload shapes
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error,datetime
+          def read(url,timeout=19):
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'LiangYou-Maoyan-Lab-Smoke/1.0','Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=timeout) as res:
+                return res.status,res.read(600000)
+            except urllib.error.HTTPError as e:return e.code,e.read(30000)
+            except Exception as e:return None, str(type(e).__name__).encode()
+          for path in ['/api/status','/api/movie/1294273','/api/movie/not-a-movie','/']:
+            url='https://liangyou-maoyan-lab.maddestalistar.workers.dev'+path
+            http,raw=read(url)
+            try:j=json.loads(raw)
+            except Exception:j={}
+            movie=j.get('basic',{}) if isinstance(j,dict) else {}
+            verified=bool(http==200 and movie.get('movieName') not in (None,'','未知电影') and j.get('_meta',{}).get('success'))
+            code='MOVIE_DATA_OK' if verified else 'STATUS_OK' if path=='/api/status' and http==200 and j.get('status') else 'BLOCKED_OK' if path in ('/','/api/movie/not-a-movie') and http==404 else 'FAILED_OR_EMPTY'
+            print('MAOYAN_LAB_SMOKE '+json.dumps({'route':path,'http':http,'verdict':code,'title':movie.get('movieName'),'boxOffice':movie.get('boxOffice'),'rating':j.get('rating') if verified else None,'sample_message':str(j.get('error',''))[:100]},ensure_ascii=False),flush=True)
+          for path in ['/api/maoyan.php','/api/qqys.php']:
+            http,raw=read('https://api.qhsou.com'+path)
+            try:j=json.loads(raw)
+            except Exception:j=None
+            keys=list(j.keys())[:18] if isinstance(j,dict) else []
+            payload_type=type(j).__name__
+            nested={k:type(v).__name__ for k,v in j.items() if isinstance(v,(list,dict))} if isinstance(j,dict) else {}
+            nested_lengths={k:len(v) for k,v in j.items() if isinstance(v,list)} if isinstance(j,dict) else {}
+            first={k:list(v.keys())[:12] for k,v in j.items() if isinstance(v,dict)} if isinstance(j,dict) else {}
+            print('QHSOU_SHAPE '+json.dumps({'route':path,'http':http,'root_type':payload_type,'keys':keys,'nested':nested,'nested_lengths':nested_lengths,'first_level_nested_keys':first},ensure_ascii=False),flush=True)
+          # Alibaba gateway may return nonstandard JSONP; inspect only error code category.
+          http,raw=read('https://eco.taobao.com/router/rest?method=taobao.film.show.todayboxoffice.get&format=json&v=2.0')
+          print('ALI_GATEWAY_NO_KEY '+json.dumps({'http':http,'snippet':raw.decode('utf-8','replace')[:350]},ensure_ascii=False),flush=True)
+          PY
