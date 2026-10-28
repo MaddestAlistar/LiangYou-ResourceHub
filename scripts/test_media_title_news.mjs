@@ -20,6 +20,34 @@ test('verified Korean series and unofficial community coverage use one exact TMD
  assert.ok(data.videos.some(v=>v.platform==='bilibili'&&v.type==='Related'));
  assert.ok(data.articles.every(v=>v.url.startsWith('https://')));
 });
+test('optional remotely searched headlines are ID-bound and cannot erase local articles',async()=>{
+ let calls=0;
+ const runtime={};
+ const remoteFetch=async url=>{
+   if(String(url).includes('/api/news/title/tv/303745')){
+     calls++;
+     return new Response(JSON.stringify({
+       ok:true,kind:'tv',tmdbId:303745,articles:[
+         {title:'《我的有罪之人》公开采访',date:'2026-10-28',source:'Film Publisher',
+           url:'https://news.google.com/rss/articles/verified',language:'zh'},
+         {title:'无关的新闻',date:'2026-10-28',source:'Unrelated',
+           url:'https://bad.example/test',language:'zh'}
+       ]}),{status:200});
+   }
+   return new Response(JSON.stringify(index),{status:200});
+ };
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+    runtime,remoteFetch,AbortSignal);
+ const local=await helper.forInfo(fixture);
+ const remote=await helper.remoteForInfo(fixture);
+ const remoteCached=await helper.remoteForInfo(fixture);
+ assert.ok(local.articles.length>=4);
+ assert.equal(remote.articles.length,1);
+ assert.equal(remote.articles[0].source,'Film Publisher');
+ assert.deepEqual(remoteCached,remote);
+ assert.equal(calls,1);
+ assert.deepEqual(await helper.forInfo({...fixture,tmdbId:999999}),null);
+});
 test('wrong movie year or ID cannot receive the 2026 Korean series articles or videos',async()=>{
  for(const info of [
   {...fixture,tmdbId:303744},{...fixture,kind:'movie'},{...fixture,year:'2025-10-19'},
