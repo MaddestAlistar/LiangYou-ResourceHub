@@ -501,7 +501,7 @@ def main():
     sources['mdblist']=refresh_source('mdblist',sources.get('mdblist'),lambda:enrich('mdblist',rating_candidates))
     localize_images(sources)
     works,aliases=build_catalog(sources)
-    output={'schema':1,'media_source_version':5,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
+    output={'schema':1,'media_source_version':5,'classification_source_version':1,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
     serialized=json.dumps([output,CACHE],ensure_ascii=False)
