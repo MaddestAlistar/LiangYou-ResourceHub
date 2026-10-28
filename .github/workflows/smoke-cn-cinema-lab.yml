@@ -36,6 +36,16 @@ jobs:
               url=path+"?name="+urllib.parse.quote(title,safe="")
               xcode,xd=get(url)
               print("CHINA_CINEMA_LOOKUP "+json.dumps({"query":title,"http":xcode,"count":xd.get("count"),"match":xd.get("match"),"source":xd.get("source")},ensure_ascii=False),flush=True)
+          for label, target in [("domestic","https://api.qhsou.com/api/maoyan.php"),("global","https://api.qhsou.com/api/qqys.php")]:
+            try:
+              with urllib.request.urlopen(urllib.request.Request(target,headers={"User-Agent":"LiangYou-Lab-Smoke/1.0"}),timeout=15) as res:
+                body=json.load(res)
+              lst=body.get("movieList") if label=="domestic" else body.get("movies")
+              first=lst[0] if isinstance(lst,list) and lst else {}
+              values={k:(str(v)[:120] if not isinstance(v,(list,dict)) else type(v).__name__) for k,v in first.items()} if isinstance(first,dict) else {}
+              print("QHSOU_MOVIE_FIELDS "+json.dumps({"source":label,"first":values},ensure_ascii=False),flush=True)
+            except Exception as e:
+              print("QHSOU_MOVIE_FIELDS "+json.dumps({"source":label,"error":type(e).__name__}),flush=True)
           code,d=get("/api/boxoffice?name="+urllib.parse.quote("这是一部不存在于票房榜的电影测试名称ABCXYZ"))
           print("CHINA_CINEMA_MISSING "+json.dumps({"http":code,"count":d.get("count"),"match":d.get("match")},ensure_ascii=False),flush=True)
           PY
