@@ -22,7 +22,7 @@ function panel(work){
 test('visible discovery sections always occupy trailer, world news, mainland news, related, similar order',()=>{
   const html=panel({profile:{videos:[{url:'https://www.youtube.com/watch?v=AbCdEf12345',name:'Trailer'}],related:[{id:'tmdb-movie-550',title:'Related work'}]}});
   assert.deepEqual([...html.matchAll(/data-mi-discover-slot="([^"]+)"/g)].map(m=>m[1]),expected);
-  assert.match(html,/<h3>预告片<\/h3>/);
+  assert.match(html,/<h3>预告片\/相关视频<\/h3>/);
   assert.match(html,/<h3>国际新闻<\/h3>/);
   assert.match(html,/<h3>国内新闻<\/h3>/);
   assert.match(html,/<h3>还可以看看<\/h3>/);
@@ -52,7 +52,7 @@ test('source attribution follows all discovery slots and cache-busted scripts ar
   const rendered=core.slice(core.indexOf('  function renderDetail(){'),core.indexOf('  async function hydrateRelated('));
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")>=0);
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")<rendered.indexOf("text('资料来源','Sources')"));
-  for(const [name,version] of Object.entries({'media-intel.js':'20261029.newsroom1','media-insights.js':'20261029.cntrailers4','media-cn-enhance.js':'20261029.newsroom1'}))
+  for(const [name,version] of Object.entries({'media-intel.js':'20261029.newsroom1','media-insights.js':'20261029.newsvideo5','media-cn-enhance.js':'20261029.newsvideo5'}))
     assert.ok(index.includes('./'+name+'?v='+version),name+' must use the new script version');
 });
 
