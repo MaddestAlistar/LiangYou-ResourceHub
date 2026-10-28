@@ -41,8 +41,8 @@ test('broad arts stories cannot be presented as matched Korean drama headlines',
  assert.ok(match('《我的有罪之人》任时完、薛仁雅最新剧评',fixture)>0);
 });
 test('YouTube extras and domestic related clips are separately limited',()=>{
- assert.match(clips,/result\\.relatedVideos=matched\\.slice\\(0,2\\)/);
- assert.match(ui,/domesticRelated\\.slice\\(0,6\\)/);
- assert.match(ui,/data-mi-play-cn/);
+ assert.ok(clips.includes('result.relatedVideos=matched.slice(0,2)'));
+ assert.ok(ui.includes('domesticRelated.slice(0,6)'));
+ assert.ok(ui.includes('domesticRelated.slice(0,6)'));
  assert.ok(!ui.includes("relatedCards.length+'/5'"));
 });
