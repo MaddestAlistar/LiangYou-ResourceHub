@@ -98,10 +98,37 @@
         '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
         '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
   }
+  async function displayMAL(info,target){
+    const id=Number(info.malId);
+    if(!Number.isSafeInteger(id)||id<1||id>9999999999)return;
+    const host=document.createElement('section');
+    host.className='mi-insight-block mi-mal-panel';
+    host.innerHTML='<p class="mi-caption">'+t('核对 MyAnimeList 作品标识…','Checking MyAnimeList identity…')+'</p>';
+    target.appendChild(host);
+    try{
+      const d=await json('/api/anime/mal/'+id);
+      if(!host.isConnected)return;
+      if(d.ok!==true||d.status!=='ok'||d.malId!==id){host.remove();return;}
+      const score=Number.isFinite(d.score)&&d.scale===10?d.score.toFixed(2)+'/10':t('未评分','Not rated');
+      host.innerHTML='<div class="mi-insight-head"><h3>'+t('MyAnimeList 官方动画资料','MyAnimeList official anime data')+'</h3><span class="mi-tech-tag">MAL v2</span></div>'+
+       '<div class="mi-insight-highlight"><small>'+t('官方评分 · ','Official rating · ')+esc(d.title)+'</small><strong>'+esc(score)+'</strong>'+
+         (d.ratingCount!=null?'<small>'+esc(d.ratingCount.toLocaleString())+t(' 人评分',' ratings')+'</small>':'')+
+         a(d.url,'MyAnimeList')+'</div>'+
+       (info.section==='profile'?'<div class="mi-insight-facts">'+
+        item(t('官方排名','MAL rank'),d.rank?'#'+d.rank:'')+
+        item(t('人气排名','Popularity'),d.popularity?'#'+d.popularity:'')+
+        item(t('集数','Episodes'),d.episodes)+
+        item(t('制作公司','Studios'),Array.isArray(d.studios)?d.studios.join(' · '):'')+
+        item(t('类型','Genres'),Array.isArray(d.genres)?d.genres.join(' · '):'')+'</div>':'')+
+       '<p class="mi-caption">'+t('通过作品的原始 MAL ID 查询，不会把同名动画错误合并。','Looked up using original MAL ID, never a fuzzy title match.')+'</p>';
+    }catch{if(host.isConnected)host.innerHTML='<p class="mi-caption">'+t('MAL 补充资料暂不可用。','MAL source temporarily unavailable.')+'</p>';}
+  }
   async function display(info){
-    if(!info||!['profile','people','boxoffice','discover'].includes(info.section))return;
+    if(!info||!['ratings','profile','people','boxoffice','discover'].includes(info.section))return;
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target)return;
+    if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
+    if(info.section==='ratings')return;
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
     const pane=document.createElement('div');pane.className='mi-insight-host';
@@ -125,7 +152,7 @@
   registry.className='mi-source-registry';
   const domains=[
     ['评分','Ratings','TMDB · IMDb/OMDb · MDBList · Trakt · TVmaze · Bangumi · AniList · Simkl · Kitsu · Bilibili · Filmarks · Maoyan · Douban · Taopiaopiao'],
-    ['影视资料','Metadata','TMDB · TVmaze · TheTVDB · Fanart.tv · MyAnimeList'],
+    ['影视资料','Metadata','TMDB · TVmaze · TheTVDB · Fanart.tv · MyAnimeList v2 (verified anime ID)'],
     ['人物关系','People','TMDB Credits · Wikidata (verified cross-ID)'],
     ['票房','Box office','OMDb (US film) · Maoyan (CN charts) · KOFIC (KR daily) · CN third-party aggregate'],
     ['播放渠道','Streaming','Watchmode · JustWatch via TMDB · OpenSubtitles · assrt.net'],
