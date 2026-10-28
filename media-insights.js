@@ -352,6 +352,16 @@
     }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
+    if(info.section==='discover'&&discoverSlots?.international){
+      // World headlines are independent from the YouTube/Guardian Worker.
+      // A slow or failed trailer lookup must not erase matched publisher RSS.
+      worldNewsSnapshot().then(articles=>{
+        if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
+        discoverSlots.international.innerHTML=discoverySections({
+          title:info.title,originalTitle:info.originalTitle,news:[],suggestions:[]
+        },articles).international;
+      }).catch(()=>{});
+    }
     if(discoverSlots?.trailers)discoverSlots.trailers.prepend(pane);
     else if(info.section==='boxoffice'){
       const slot=target.querySelector('[data-mi-boxoffice-slot="international"]');
@@ -409,7 +419,13 @@
         pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):'';
       }
     }catch{
-      if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
+      if(pane.isConnected){
+        pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
+        if(info.section==='discover'&&discoverSlots?.trailers){
+          const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
+          if(fallback&&!fallback.querySelector('a'))fallback.innerHTML='<h3>'+t('预告片','Trailers')+'</h3><p class="mi-caption">'+t('预告片接口暂不可用，未显示未经核实的视频。','Trailer service unavailable; no unverified videos displayed.')+'</p>';
+        }
+      }
     }
   }
   // Public embeds need no viewer login. An account or age verification requirement
