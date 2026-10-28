@@ -161,21 +161,43 @@
           '<div class="mi-insight-links">'+a(v.url,'YouTube')+'</div></div></article>';
       }).join('')+'</div></section>';
   }
-  function discoverySections(d){
+  let worldNewsPromise=null;
+  function worldNewsSnapshot(){
+    if(!worldNewsPromise)worldNewsPromise=(async()=>{
+      try{
+        const r=await fetch('./data/media-world-news.json',{cache:'no-cache',signal:AbortSignal.timeout(6500)});
+        if(!r.ok)return [];
+        const doc=await r.json(),age=Date.now()-Date.parse(doc.updatedAt||'');
+        if(doc.schema!==1||!Array.isArray(doc.items)||!Number.isFinite(age)||age<0||age>8*86400000)return [];
+        return doc.items.filter(x=>x&&typeof x.title==='string'&&safe(x.url)&&
+          ['Variety','Deadline','The Hollywood Reporter','IndieWire','TheWrap','Collider'].includes(x.source));
+      }catch{return [];}
+    })();
+    return worldNewsPromise;
+  }
+  function discoverySections(d,worldArticles=[]){
     const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\\u3400-\\u9fff]+/g,' ').trim();
-    const targetName=clean(d.originalTitle||d.title||'');
-    const rows=Array.isArray(d.news)&&targetName.length>=5?d.news.filter(x=>clean(x.title+' '+(x.summary||'')).includes(targetName)).slice(0,5):[];
-    const suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
-    const international='<section class="mi-insight-block mi-international-news"><div class="mi-insight-head"><h3>'+t('国际新闻','International news')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
-      '<p class="mi-caption">'+t('按作品原名匹配影视报道，显示摘要与来源日期；同名作品仍需人工核对。','Title-matched film coverage with date and preview. Same-name works still need verification.')+'</p>'+
+    // Require a meaningful complete title, not a common word or loose topic tag.
+    const titles=[d.originalTitle,d.title].map(clean).filter(v=>v.length>=5);
+    const match=x=>titles.some(name=>(' '+clean(x.title||'')+' ').includes(' '+name+' '));
+    const sources=Array.isArray(worldArticles)?worldArticles:[];
+    const all=[...(Array.isArray(d.news)?d.news:[]),...sources].filter(x=>x&&safe(x.url)&&match(x));
+    const seen=new Set();
+    const rows=all.sort((a,b)=>Date.parse(b.date||0)-Date.parse(a.date||0)).filter(x=>{
+      const url=safe(x.url);
+      if(!url||seen.has(url))return false;
+      seen.add(url);return true;
+    }).slice(0,6);
+    const international='<section class="mi-insight-block mi-international-news"><div class="mi-insight-head"><h3>'+t('国际新闻','International news')+'</h3><span class="mi-tech-tag">'+t('多来源','Multiple sources')+'</span></div>'+
+      '<p class="mi-caption">'+t('仅显示可匹配当前作品原名的已核实标题，最多 6 条；未匹配不填充综合新闻。','Only publisher headlines matching this title; up to six, no unrelated filler.')+'</p>'+
       (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
         const image=safe(x.thumbnail);
         return '<article class="mi-editorial-card">'+(image?'<img src="'+esc(image)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
-          '<div class="mi-editorial-body"><span>'+esc(x.section||'The Guardian')+' · '+esc(format(x.date))+'</span>'+
+          '<div class="mi-editorial-body"><span>'+esc(x.source||x.section||'Publisher')+' · '+esc(format(x.date))+'</span>'+
           '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+
           (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':
-        '<p class="mi-caption">'+t('暂未找到与本片准确对应的 Guardian 报道。','No Guardian coverage reliably matching this title.')+'</p>')+'</section>';
+        '<p class="mi-caption">'+t('暂未找到与本片明确关联的国际报道。','No verifiable international headlines for this title.')+'</p>')+'</section>';
     const similar='<section class="mi-insight-block mi-similar-themes"><div class="mi-insight-head"><h3>'+t('相似主题探索','Similar themes')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
       '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
       (suggestions.length?'<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div>':
@@ -376,6 +398,11 @@
         // Keep TMDB's original trailer links as a fallback if YouTube returns nothing.
         if(fallback)fallback.hidden=Array.isArray(enriched.trailers)&&enriched.trailers.some(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||''));
         if(discoverSlots.international?.isConnected)discoverSlots.international.innerHTML=sections.international;
+        // Source RSS is loaded independently; the fixed slot keeps its position.
+        worldNewsSnapshot().then(world=>{
+          if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
+          discoverSlots.international.innerHTML=discoverySections(enriched,world).international;
+        });
         if(discoverSlots.similar?.isConnected)discoverSlots.similar.innerHTML=sections.similar;
       }else{
         pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):'';
