@@ -352,6 +352,15 @@
     }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
+    const discoverUnavailable=(zh,en)=>{
+      if(!discoverSlots?.trailers)return false;
+      const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
+      if(fallback&&!fallback.querySelector('a'))
+        fallback.innerHTML='<h3>'+t('预告片','Trailers')+'</h3><p class="mi-caption">'+t(zh,en)+'</p>';
+      // The trailer fallback owns its empty state; do not repeat an error above it.
+      pane.replaceChildren();
+      return true;
+    };
     if(info.section==='discover'&&discoverSlots?.international){
       // World headlines are independent from the YouTube/Guardian Worker.
       // A slow or failed trailer lookup must not erase matched publisher RSS.
@@ -368,7 +377,8 @@
       if(slot)slot.appendChild(pane);else target.appendChild(pane);
     }else target.appendChild(pane);
     if(!kind||!Number.isSafeInteger(id)||id<1){
-      pane.innerHTML='<p class="mi-caption">'+t('未建立准确的 TMDB ID，暂不自动关联外部数据。','No verified TMDB identity; external data will not be merged.')+'</p>';
+      if(!discoverUnavailable('尚无可核实的预告片来源。','No verified trailer source for this title.'))
+        pane.innerHTML='<p class="mi-caption">'+t('未建立准确的 TMDB ID，暂不自动关联外部数据。','No verified TMDB identity; external data will not be merged.')+'</p>';
       return;
     }
     pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
@@ -376,7 +386,8 @@
       const data=await get(kind,id,info.section==='discover',['profile','people','boxoffice'].includes(info.section));
       if(!pane.isConnected)return;
       if(data.ok!==true||data.kind!==kind||data.tmdbId!==id){
-        pane.innerHTML='<p class="mi-caption">'+t('补充接口返回的作品标识不匹配，已跳过这批资料。','Additional data did not match the verified title ID and was skipped.')+'</p>';
+        if(!discoverUnavailable('作品标识未通过核对，暂不显示预告片。','Trailer identity could not be verified.'))
+          pane.innerHTML='<p class="mi-caption">'+t('补充接口返回的作品标识不匹配，已跳过这批资料。','Additional data did not match the verified title ID and was skipped.')+'</p>';
         return;
       }
       // Guard against a catalog cross-ID mismatch: never show another work's trailer.
@@ -384,13 +395,18 @@
         const name=String(value||'').normalize('NFKC').trim();
         return name&&/^[A-Za-z0-9 \-:.,!?&'()]+$/.test(name)?name.toLowerCase().replace(/[^a-z0-9]+/g,''):'';
       };
-      const expected=latinName(info.originalTitle)||latinName(info.title);
-      const received=latinName(data.title);
+      // Localized and original film titles can differ while sharing one verified
+      // TMDB ID. Check both title forms before rejecting a correct trailer.
+      const expectedNames=[info.originalTitle,info.title].map(latinName).filter(Boolean);
+      const receivedNames=[data.originalTitle,data.title].map(latinName).filter(Boolean);
+      const namesConflict=expectedNames.length>0&&receivedNames.length>0&&
+        !expectedNames.some(name=>receivedNames.includes(name));
       const localYear=Number(String(info.year||'').slice(0,4));
       const remoteYear=Number(String(data.releaseDate||'').slice(0,4));
-      if(expected&&received&&expected!==received||Number.isInteger(localYear)&&localYear>1850&&
+      if(namesConflict||Number.isInteger(localYear)&&localYear>1850&&
           Number.isInteger(remoteYear)&&remoteYear>1850&&Math.abs(localYear-remoteYear)>1){
-        pane.innerHTML='<p class="mi-caption">'+t('作品来源身份未通过核对，已阻止其他影片的预告和资讯串入。','Title identity did not match, so unrelated trailers and articles were not displayed.')+'</p>';
+        if(!discoverUnavailable('作品信息存在冲突，未展示可能属于其他影片的视频。','Conflicting title details; unrelated trailers are withheld.'))
+          pane.innerHTML='<p class="mi-caption">'+t('作品来源身份未通过核对，已阻止其他影片的预告和资讯串入。','Title identity did not match, so unrelated trailers and articles were not displayed.')+'</p>';
         return;
       }
       let enriched=data;
@@ -419,13 +435,10 @@
         pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):'';
       }
     }catch{
-      if(pane.isConnected){
+      if(pane.isConnected&&!discoverUnavailable(
+        '预告片接口暂不可用，未显示未经核实的视频。',
+        'Trailer service unavailable; no unverified videos displayed.'))
         pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
-        if(info.section==='discover'&&discoverSlots?.trailers){
-          const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
-          if(fallback&&!fallback.querySelector('a'))fallback.innerHTML='<h3>'+t('预告片','Trailers')+'</h3><p class="mi-caption">'+t('预告片接口暂不可用，未显示未经核实的视频。','Trailer service unavailable; no unverified videos displayed.')+'</p>';
-        }
-      }
     }
   }
   // Public embeds need no viewer login. An account or age verification requirement
