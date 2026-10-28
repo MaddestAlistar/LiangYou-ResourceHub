@@ -526,9 +526,9 @@ async function titleNews(kind,id,env){
    originalLatin?{alias:originalLatin,q:'"'+originalLatin+'" '+year+' film review',market:"en-US"}:null
  ].filter(Boolean).slice(0,2);
  const bingRequests=bingNames.map(async ({alias,q,market})=>{
-   const url=new URL("https://www.bing.com/search");
+   const url=new URL("https://www.bing.com/news/search");
    url.searchParams.set("q",q);url.searchParams.set("format","rss");
-   url.searchParams.set("mkt",market);url.searchParams.set("setlang",market);
+   url.searchParams.set("setmkt",market);
    const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),6500);
    try{
     const res=await fetch(url.toString(),{signal:ac.signal,headers:{"Accept":"application/rss+xml, application/xml"}});
