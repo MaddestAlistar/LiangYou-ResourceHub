@@ -93,7 +93,8 @@ function domesticNews(info){
   const pane=box.querySelector('.mi-cn-news-results');pane.textContent=t('读取国内影视资讯…','Loading Chinese film news…');
   const d=await news();
   if(!pane.isConnected)return;
-  if(d?.schema!==1||!Array.isArray(d.items)||d.items.length<1){pane.innerHTML='<p class="mi-caption">'+t('资讯源暂未更新，可直接查看 1905 电影网。','Source snapshot unavailable; open 1905.com directly.')+'</p><a href="https://www.1905.com/news/" target="_blank" rel="noopener noreferrer">1905 电影网 ↗</a>';return;}
+  const age=Date.now()-Date.parse(d?.updatedAt||'');
+  if(d?.schema!==1||!Array.isArray(d.items)||d.items.length<1||!Number.isFinite(age)||age<0||age>7*86400000){pane.innerHTML='<p class="mi-caption">'+t('资讯源暂未更新，可直接查看 1905 电影网。','Source snapshot unavailable; open 1905.com directly.')+'</p><a href="https://www.1905.com/news/" target="_blank" rel="noopener noreferrer">1905 电影网 ↗</a>';return;}
   const cards=d.items.slice(0,9).filter(x=>safe(x.url)&&x.title);
   pane.innerHTML='<div class="mi-cn-news-list">'+cards.map(x=>'<article><small>'+esc(x.source||'')+' · '+esc(fmtDate(x.date))+'</small><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title)+' ↗</a></article>').join('')+'</div>'+
     '<p class="mi-caption">'+t('仅聚合标题、日期与原文链接。','Headlines, dates and original links only.')+'</p>';
