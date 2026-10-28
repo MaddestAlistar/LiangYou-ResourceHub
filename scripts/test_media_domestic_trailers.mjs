@@ -28,27 +28,32 @@ test('one section and one shared card grid contain YouTube and verified Bilibili
  assert.match(h,/data-mi-cn-id="BV1ULFPeEEBh"/);
  assert.doesNotMatch(h,/国内预告片|mi-domestic-trailers|mi-cn-video-card/);
 });
-test('six verified domestic related clips and two YouTube extras share the gallery without any displayed limits',()=>{
- const clips=Array.from({length:8},(_,i)=>({
-  id:'Video'+String(i).padStart(6,'0'),title:'Ne Zha 2 behind the scenes',likes:(i+1)*100,embeddable:true,
-  url:'https://www.youtube.com/watch?v=Video'+String(i).padStart(6,'0')
+test('all platforms share one six-video limit, with at most four additional Chinese clips',()=>{
+ const ytRows=Array.from({length:15},(_,i)=>({
+  id:'Video'+String(i).padStart(6,'0'),title:'Ne Zha 2 cast and filming',
+  likes:(i+1)*500,embeddable:true,official:false,type:'Related'
  }));
- const domestic=Array.from({length:9},(_,i)=>({
+ const domestic=Array.from({length:13},(_,i)=>({
   title:selected.title,kind:'movie',year:2025,platform:'bilibili',
-  videoId:'BV'+String(i).padStart(10,'0'),
-  name:'Ne Zha 2 cast clip '+i,likes:(i+1)*15,type:'Related',
-  verifiedSource:'https://www.bilibili.com/video/BV'+String(i).padStart(10,'0')+'/'
+  videoId:'BV'+String(i).padStart(10,'0'),name:'Ne Zha 2 cast clip '+i,
+  likes:(i+1)*900,type:'Related',verifiedSource:'https://www.bilibili.com/video/BV'+String(i).padStart(10,'0')+'/'
  }));
- const h=gallery({...yt,relatedVideos:clips},selected,domestic);
- assert.equal((h.match(/class="mi-trailer-grid"/g)||[]).length,2);
- assert.equal((h.match(/data-mi-play-video="Video/g)||[]).length,2);
- assert.equal((h.match(/data-mi-play-cn="bilibili"/g)||[]).length,6);
- assert.equal((h.match(/class="mi-trailer-card"/g)||[]).length,9);
- assert.match(h,/BV0000000008/);
- assert.doesNotMatch(h,/BV0000000000/);
- assert.doesNotMatch(h,/\/5<\/h4>|\/6<\/h4>/);
- const rejected=gallery({relatedVideos:[{id:'BadVideo123',likes:999,embeddable:false}]},selected,[]);
- assert.doesNotMatch(rejected,/data-mi-play-video="BadVideo123"/);
+ const content=gallery({trailers:ytRows.slice(0,4),relatedVideos:ytRows},selected,domestic);
+ assert.equal((content.match(/class="mi-trailer-grid"/g)||[]).length,1);
+ assert.equal((content.match(/class="mi-trailer-card"/g)||[]).length,10);
+ assert.ok((content.match(/data-mi-play-cn="bilibili"/g)||[]).length>=4);
+ assert.match(content,/data-mi-play-video/);
+ assert.doesNotMatch(content,/\/6<\/h4>|\/10<\/h4>/);
+ const onlyYouTube=gallery({relatedVideos:ytRows},selected,[]);
+ assert.equal((onlyYouTube.match(/class="mi-trailer-card"/g)||[]).length,6);
+ const onlyDomestic=gallery({},selected,domestic);
+ assert.equal((onlyDomestic.match(/class="mi-trailer-card"/g)||[]).length,10);
+ const exactlySix=gallery({},selected,domestic.slice(0,6));
+ assert.equal((exactlySix.match(/class="mi-trailer-card"/g)||[]).length,6);
+ const seven=gallery({},selected,domestic.slice(0,7));
+ assert.equal((seven.match(/class="mi-trailer-card"/g)||[]).length,7);
+ const wrong=gallery({relatedVideos:[{id:'BadVideo123',likes:999999,embeddable:false}]},selected,[]);
+ assert.doesNotMatch(wrong,/data-mi-play-video="BadVideo123"/);
 });
 test('missing YouTube data still shows verified mainland videos in exactly the same grid',()=>{
  const h=gallery({},selected,catalog.items,'error');
