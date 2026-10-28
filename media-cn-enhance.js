@@ -138,7 +138,7 @@ function domesticNews(info){
     const identityNews=(verified?.articles||[]).filter(x=>x.language==='zh')
       .map(x=>({...x,confidence:200}));
     const seenUrl=new Set(),seenTitle=new Set();
-    const matched=[...identityNews,...dynamic.map(x=>({...x,confidence:115})),...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
+    const matched=[...identityNews,...dynamic.map(x=>({...x,confidence:x.type==='community'?60:115})),...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
      .filter(x=>x.confidence>0&&safe(x.url)&&x.title)
      .sort((a,b)=>b.confidence-a.confidence||
        (Number.isSafeInteger(b.likes)?b.likes:-1)-(Number.isSafeInteger(a.likes)?a.likes:-1)||
