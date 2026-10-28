@@ -1,0 +1,42 @@
+name: Refresh verified Bilibili and Filmarks rating snapshot
+on:
+  schedule:
+    - cron: '17 */12 * * *'
+  push:
+    branches: [main]
+    paths:
+      - scripts/update_bilibili_filmarks_ratings.py
+      - .github/workflows/update-bilibili-filmarks-ratings.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: liangyou-bilibili-filmarks-snapshot
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Recheck all expected official public rating fields
+        run: python scripts/update_bilibili_filmarks_ratings.py
+      - name: Commit only fully verified ratings
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/bilibili-filmarks-ratings.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update verified Bilibili and Filmarks ratings [skip ci]"
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = 3 ]; then exit 1; fi
+            done
+          fi
