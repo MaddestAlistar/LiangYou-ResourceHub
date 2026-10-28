@@ -35,6 +35,7 @@
 - [票房两个年度+一日接口验证](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/40673561839)
 - [第一版 Worker 成功部署](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/40673914263)
 - [第一版6项校验全部成功](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/40673957532)
+- [最终版8项严格数据校验全部成功：含2026年度榜与中文片名查询](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/40674247265)
 
 ## 如需官方授权的替代方案
 
