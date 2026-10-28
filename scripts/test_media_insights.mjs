@@ -130,3 +130,21 @@ test('non-Discover panels do not spend YouTube or Guardian quota',async()=>{
  assert.equal(body.sources.tastedive,'not_requested');
  assert.deepEqual(body.trailers,[]);assert.deepEqual(body.news,[]);
 });
+
+test('on-demand Guardian film feed is separate and sanitizes article summary',async()=>{
+ stub({guardian:{response:{status:'ok',results:[{
+   webTitle:'Independent film spotlight',webUrl:'https://www.theguardian.com/film/film-spotlight',
+   sectionName:'Film',webPublicationDate:'2026-10-28T11:30:00Z',
+   fields:{trailText:'<p>New <b>film</b> coverage</p>',thumbnail:'https://media.guim.co.uk/still.jpg'}
+ }]}}});
+ const {status,body}=await invoke('/api/news/film',{THE_GUARDIAN_API_KEY:'test'});
+ assert.equal(status,200);assert.equal(body.status,'ok');assert.equal(body.source,'The Guardian');
+ assert.equal(body.articles.length,1);
+ assert.equal(body.articles[0].summary,'New film coverage');
+ assert.equal(body.articles[0].thumbnail,'https://media.guim.co.uk/still.jpg');
+});
+test('global film news absent credentials is explicitly unavailable',async()=>{
+ stub({});
+ const {body}=await invoke('/api/news/film');
+ assert.equal(body.ok,true);assert.equal(body.status,'not_configured');assert.deepEqual(body.articles,[]);
+});
