@@ -54,6 +54,8 @@ test('HTML special characters are escaped and excessive keywords are capped',()=
 test('visible-card metadata requests are bounded and do not block the film grid',()=>{
  const insights=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
  assert.match(src,/liangyou:media-visible/);
+ assert.doesNotMatch(src,/liangyou:media-tiles/);
+ assert.doesNotMatch(insights,/liangyou:media-tiles/);
  assert.match(insights,/root\.addEventListener\('liangyou:media-visible'/);
  assert.match(insights,/visibleInFlight<2/);
  assert.match(insights,/visibleAttempts\.size<24/);
