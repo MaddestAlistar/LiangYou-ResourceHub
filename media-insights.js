@@ -138,32 +138,96 @@
     const h=Number(m[1]||0),min=Number(m[2]||0),sec=Number(m[3]||0);
     return (h?h+':'+String(min).padStart(2,'0'):String(min))+':'+String(sec).padStart(2,'0');
   }
-  function trailerGallery(d){
-    const videos=Array.isArray(d.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
-    if(!videos.length)return '<section class="mi-insight-block"><h3>'+t('视频情报','Trailer intelligence')+'</h3><p class="mi-caption">'+t('暂无核验过的预告片。可在下方打开 TMDB 提供的原视频链接。','No verified trailers. Source links may appear above.')+'</p></section>';
-    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片','Trailers')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
-      '<p class="mi-caption">'+t('优先展示 TMDB 标注的视频，非官方搜索结果单独标识；公开视频点击封面即可免登录尝试播放；年龄限制与禁止嵌入的视频只显示原站入口。','Prioritizes TMDB-curated videos; unverified results are labeled. Tap to play public trailers without signing in; restricted videos use their original links.')+'</p>'+
-      '<div class="mi-trailer-grid">'+videos.map(v=>{
-        const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
-        const duration=formatDuration(v.duration);
-        const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
-        const label=v.ageRestricted===true?t('年龄限制 · 原站观看','Age restricted · YouTube only'):v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Search candidate');
-        const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
-        const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
-          '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
-          (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
-        const player=embedAllowed?
-          '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+thumb+'</button>':
-          '<a class="mi-trailer-trigger mi-video-external" href="'+esc(v.url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t('在 YouTube 查看预告片：','Open trailer on YouTube: ')+esc(v.title||'Trailer')+'">'+thumb+'</a>';
-        return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
-          '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span class="'+(v.official?'':'mi-warning-source')+'">'+label+'</span>'+ (v.type&&v.type!=='Search'?'<span>'+esc(v.type)+'</span>':'')+'</div>'+
-          '<strong>'+esc(v.title||'Trailer')+'</strong><small>'+esc(v.channel||'YouTube')+(views?' · '+esc(views):'')+'</small>'+
-          '<div class="mi-insight-links">'+a(v.url,'YouTube')+'</div></div></article>';
-      }).join('')+'</div></section>';
+  // One unified trailer gallery. Domestic videos are only attached with exact title,
+  // release year, publisher URL and a valid provider-specific video identifier.
+  function verifiedDomesticTrailers(info,records=[]){
+    const year=Number(String(info?.year||'').slice(0,4));
+    const kind=info?.kind;
+    const aliases=[info?.title,info?.originalTitle,...(Array.isArray(info?.aliases)?info.aliases:[])]
+      .filter(x=>typeof x==='string').map(x=>x.normalize('NFKC').trim().toLowerCase()).filter(Boolean);
+    if(!aliases.length||!Number.isSafeInteger(year)||year<1900||!['movie','tv'].includes(kind))return [];
+    const found=[],ids=new Set();
+    for(const x of Array.isArray(records)?records:[]){
+      if(!x||x.kind!==kind||Number(x.year)!==year||
+         !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase()))continue;
+      const u=safe(x.verifiedSource);
+      if(!u)continue;
+      const id=String(x.videoId||''),p=x.platform;
+      let verified=false;
+      if(p==='bilibili')verified=/^BV[A-Za-z0-9]{10}$/.test(id)&&u==='https://www.bilibili.com/video/'+id+'/';
+      if(p==='tencent')verified=/^[A-Za-z0-9]{11}$/.test(id)&&u==='https://v.qq.com/x/page/'+id+'.html';
+      // A 1905 movie profile is not a verified trailer playback URL. Show as
+      // source link only, never construct an unapproved streaming iframe.
+      if(!verified||ids.has(p+':'+id))continue;
+      ids.add(p+':'+id);
+      found.push({...x,videoId:id,url:u});
+      if(found.length>=5)break;
+    }
+    return found;
+  }
+  function trailerGallery(d={},info={},domesticRows=[],status='ready'){
+    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
+    const domestic=verifiedDomesticTrailers(info,domesticRows);
+    const videos=youtube.map(v=>{
+      const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
+      const duration=formatDuration(v.duration);
+      const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
+      const label=v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Unverified search match');
+      const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
+      const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
+        '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
+        (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
+      const url='https://www.youtube.com/watch?v='+v.id;
+      const player=embedAllowed?
+        '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+thumb+'</button>':
+        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t('前往 YouTube：','Open YouTube: ')+esc(v.title||'Trailer')+'">'+thumb+'</a>';
+      return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
+        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(v.official?'':'mi-warning-source')+'">'+label+'</span></div>'+
+        '<strong>'+esc(v.title||'Trailer')+'</strong><small>'+esc(v.channel||'YouTube')+(views?' · '+esc(views):'')+'</small>'+
+        '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
+    });
+    for(const x of domestic){
+      const provider=x.platform==='bilibili'?'Bilibili':'腾讯视频';
+      const name=String(x.name||t('影视预告片','Trailer'));
+      const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
+        '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
+        '" aria-haspopup="dialog" aria-label="'+t('播放预告片：','Play trailer: ')+esc(name)+'">'+
+        '<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
+        '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
+        '<span class="mi-trailer-play" aria-hidden="true">▶</span>'+
+        '<span class="mi-trailer-source-hint">'+t('点击播放','Tap to play')+'</span></span></button>';
+      videos.push('<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
+        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span><span>'+
+          t('已核实视频链接','Verified video link')+'</span></div>'+
+        '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+'</small>'+
+        '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>');
+    }
+    // Search entries are optional discovery links, not purported verified videos.
+    const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
+    const q=encodeURIComponent(title+' 预告片');
+    const finder=title?
+      '<details class="mi-trailer-search"><summary>'+t('其他平台查找预告片','Find trailers on other platforms')+'</summary>'+
+      '<div class="mi-insight-links">'+
+      a('https://search.bilibili.com/all?keyword='+q,'Bilibili')+
+      a('https://v.qq.com/x/search/?q='+q,t('腾讯视频','Tencent Video'))+
+      a('https://www.1905.com/news/yg/','1905电影网')+'</div></details>':'';
+    let state='';
+    if(!videos.length){
+      if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
+      else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
+      else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
+    }else if(status==='loading'){
+      state=t('YouTube 预告片仍在加载，已核实的国内视频可直接播放。','YouTube trailers are still loading; verified domestic videos are ready.');
+    }
+    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片','Trailers')+
+      '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
+      '<p class="mi-caption">'+t('YouTube、Bilibili、腾讯视频统一展示；只有准确匹配的公开视频才能站内播放，1905 等未核实嵌入权限的来源保留原站入口。',
+      'YouTube, Bilibili and Tencent Video in one gallery. Only verified embeddable videos play here; others open on the source site.')+'</p>'+
+      (videos.length?'<div class="mi-trailer-grid">'+videos.join('')+'</div>':'')+
+      (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
   }
 
-  // Domestic sources are deliberately independent of YouTube/TMDB Worker.
-  // Only exact title+release-year entries verified against publisher pages are embedded.
+  // Domestic snapshot is intentionally independent of the YouTube/TMDB Worker.
   let domesticVideoPromise=null;
   function domesticVideoSnapshot(){
     if(!domesticVideoPromise)domesticVideoPromise=(async()=>{
@@ -175,50 +239,6 @@
       }catch{return [];}
     })();
     return domesticVideoPromise;
-  }
-  function domesticTrailerPanel(info,records=[]){
-    const local=String(info.title||info.originalTitle||'').normalize('NFKC').trim();
-    if(!local)return '';
-    const year=Number(String(info.year||'').slice(0,4));
-    const aliases=[info.title,info.originalTitle,...(Array.isArray(info.aliases)?info.aliases:[])]
-      .filter(x=>typeof x==='string').map(x=>x.normalize('NFKC').trim().toLowerCase()).filter(Boolean);
-    const matching=(Array.isArray(records)?records:[]).filter(x=>{
-      if(!x||x.kind!=='movie'&&x.kind!=='tv'||x.kind!==info.kind)return false;
-      if(Number(x.year)!==year||!aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase()))return false;
-      const u=safe(x.verifiedSource);
-      if(!u)return false;
-      if(x.platform==='bilibili')return /^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
-        u==='https://www.bilibili.com/video/'+x.videoId+'/';
-      if(x.platform==='tencent')return /^[A-Za-z0-9]{11}$/.test(x.videoId||'')&&
-        u==='https://v.qq.com/x/page/'+x.videoId+'.html';
-      if(x.platform==='1905')return /^https:\/\/www\.1905\.com\/mdb\/film\/[1-9]\d{3,10}\/$/.test(u);
-      return false;
-    }).slice(0,4);
-    const searchTerm=encodeURIComponent(local+' 预告片');
-    const links='<div class="mi-domestic-search">'+
-      a('https://search.bilibili.com/all?keyword='+searchTerm,t('B站搜索','Search Bilibili'))+
-      a('https://v.qq.com/x/search/?q='+searchTerm,t('腾讯视频搜索','Search Tencent Video'))+
-      a('https://www.1905.com/news/yg/',t('1905 预告片频道','1905 trailer channel'))+
-      '</div>';
-    const cards=matching.map(x=>{
-      const src=safe(x.verifiedSource),name=esc(x.name||t('影视预告片','Trailer'));
-      const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':'1905电影网';
-      const canEmbed=x.platform==='bilibili'||x.platform==='tencent';
-      const visual=canEmbed?
-        '<button type="button" class="mi-cn-video-trigger" data-mi-play-cn="'+esc(x.platform)+'" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(src)+'" aria-label="'+t('播放：','Play: ')+name+'">'+
-          '<span aria-hidden="true">▶</span>'+t('网页内播放','Play here')+'</button>':
-        '<div class="mi-cn-video-source">'+t('原站查看影片预告资料','Open native trailer catalogue')+'</div>';
-      return '<article class="mi-cn-video-card"><div class="mi-cn-video-top"><strong>'+provider+'</strong>'+
-        '<span>'+t(canEmbed?'官方嵌入播放器':'影片预告资料','Source verified')+'</span></div>'+
-        visual+'<p>'+name+'</p><small>'+esc(x.publisher||provider)+'</small>'+
-        '<div class="mi-insight-links">'+a(src,t('原视频 / 来源','Original source'))+'</div></article>';
-    }).join('');
-    return '<section class="mi-insight-block mi-domestic-trailers"><div class="mi-insight-head"><h3>'+
-      t('国内预告片','China-accessible trailers')+'</h3><span class="mi-tech-tag">Bilibili · 腾讯视频 · 1905</span></div>'+
-      (cards?'<div class="mi-domestic-video-grid">'+cards+'</div>':
-      '<p class="mi-caption">'+t('当前作品暂无已核实的国内预告片，可前往平台查找。','No verified local trailer for this title; search each provider.')+'</p>')+
-      '<p class="mi-caption">'+t('B站和腾讯视频仅在找到准确视频 ID 时站内播放；1905 保留原站视频资料。以下为搜索入口，不代表已匹配。','Embedded playback needs a verified video ID. 1905 opens its original catalogue. Search links are not verified results.')+'</p>'+
-      links+'</section>';
   }
 
   let worldNewsPromise=null;
