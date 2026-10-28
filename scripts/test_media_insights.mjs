@@ -72,6 +72,29 @@ test('invalid TMDB identity cannot be enriched',async()=>{
  assert.equal(status,502);assert.equal(body.ok,false);
 });
 
+test('real TMDB movie classification is territory-specific and does not infer age suitability',async()=>{
+ stub({movie:{
+   genres:[{id:28,name:'Action'},{id:12,name:'Adventure'}],
+   keywords:{keywords:[{name:'space travel'},{name:'space travel'}]},
+   release_dates:{results:[{iso_3166_1:'US',release_dates:[{type:3,certification:'PG-13'}]}]}
+ }});
+ const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.deepEqual(body.classification.genres,['Action','Adventure']);
+ assert.deepEqual(body.classification.keywords,['space travel']);
+ assert.deepEqual(body.classification.parental_rating,{country:'US',rating:'PG-13',source:'TMDB'});
+});
+test('missing and conflicting parental classifications are omitted, not guessed',async()=>{
+ stub({movie:{genres:[],keywords:{keywords:[]},release_dates:{results:[{iso_3166_1:'US',release_dates:[
+  {type:3,certification:'R'},{type:3,certification:'PG-13'}]}]}}});
+ const {body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test'});
+ assert.equal(body.classification.parental_rating,null);
+ stub({tv:{content_ratings:{results:[{iso_3166_1:'US',rating:'TV-14'}]},
+  keywords:{results:[{name:'family relationships'}]}}});
+ const result=await invoke('/api/insights/tv/1399',{TMDB_API_KEY:'test'});
+ assert.equal(result.body.classification.parental_rating.rating,'TV-14');
+ assert.deepEqual(result.body.classification.keywords,['family relationships']);
+});
 test('TMDB official YouTube IDs get metadata without guessing the video title',async()=>{
  stub({movie:{videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official Film Trailer'}]}}});
  const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
