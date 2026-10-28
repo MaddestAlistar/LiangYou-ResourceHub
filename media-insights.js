@@ -19,6 +19,22 @@
     if(!r.ok)throw Error('unavailable');
     return await r.json();
   }
+  let sourceSnapshotPromise=null;
+  async function sourceSnapshot(){
+    if(!sourceSnapshotPromise)sourceSnapshotPromise=(async()=>{
+      try{
+        const r=await fetch('./data/media-discovery-snapshot.json',{cache:'no-cache',signal:AbortSignal.timeout(5000)});
+        if(!r.ok)return null;
+        const d=await r.json();
+        return d?.schema===1?d:null;
+      }catch{return null;}
+    })();
+    return sourceSnapshotPromise;
+  }
+  function snapshotFresh(section){
+    const age=Date.now()-Date.parse(section?.checked_at||'');
+    return Number.isFinite(age)&&age>=0&&age<72*3600000&&section?.status==='ok';
+  }
   function get(kind,id,withMedia=false){
     const key=kind+':'+id+':'+(withMedia?'discover':'base');
     if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=4'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
@@ -35,6 +51,9 @@
           value.articles.every(x=>x.title&&safe(x.url)&&x.date))return value;
       }
     }catch{}
+    const snap=await sourceSnapshot();
+    if(snapshotFresh(snap?.guardian)&&Array.isArray(snap.guardian.articles)&&snap.guardian.articles.length>=3)
+      return {ok:true,status:'ok',source:'The Guardian',articles:snap.guardian.articles};
     return json('/api/news/film');
   }
   function item(label,value){
@@ -125,7 +144,9 @@
     host.innerHTML='<p class="mi-caption">'+t('核对 MyAnimeList 作品标识…','Checking MyAnimeList identity…')+'</p>';
     target.appendChild(host);
     try{
-      const d=await json('/api/anime/mal/'+id);
+      const snapshot=await sourceSnapshot();
+      const cached=snapshotFresh(snapshot?.mal)?snapshot.mal.items?.[String(id)]:null;
+      const d=cached?{...cached,ok:true}:await json('/api/anime/mal/'+id);
       if(!host.isConnected)return;
       if(d.ok!==true||d.status!=='ok'||d.malId!==id){host.remove();return;}
       const score=Number.isFinite(d.score)&&d.scale===10?d.score.toFixed(2)+'/10':t('未评分','Not rated');
@@ -161,7 +182,16 @@
     try{
       const data=await get(kind,id,info.section==='discover');
       if(!pane.isConnected||data.ok!==true||data.kind!==kind||data.tmdbId!==id)return;
-      pane.innerHTML=info.section==='profile'?profile(data):info.section==='people'?people(data):info.section==='boxoffice'?boxoffice(data):discover(data);
+      let enriched=data;
+      if(info.section==='discover'&&!(Array.isArray(data.suggestions)&&data.suggestions.length)){
+        const snapshot=await sourceSnapshot();
+        const extra=snapshotFresh(snapshot?.tastedive)?snapshot.tastedive.items?.[info.id]:null;
+        const localName=String(info.originalTitle||info.title||'').normalize('NFKC').trim().toLowerCase();
+        if(extra?.queried_title&&extra.queried_title.normalize('NFKC').trim().toLowerCase()===localName&&Array.isArray(extra.suggestions))
+          enriched={...data,suggestions:extra.suggestions};
+      }
+      if(!pane.isConnected)return;
+      pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):discover(enriched);
     }catch{
       if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
     }
