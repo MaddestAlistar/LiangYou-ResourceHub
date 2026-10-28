@@ -230,7 +230,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
     url:"https://www.youtube.com/watch?v="+v.id
    }));
    matched.sort((a,b)=>b.likes-a.likes||(b.views||0)-(a.views||0));
-   result.relatedVideos=matched.slice(0,5);
+   result.relatedVideos=matched.slice(0,2);
    return result.relatedVideos.length>0;
   });
  }else result.sources.youtubeRelated=!withMedia?"not_requested":"not_configured";
@@ -384,6 +384,24 @@ export default {
     const body={ok:true,status:articles.length?"ok":"no_data",source:"The Guardian",checkedAt:new Date().toISOString(),articles};
     const response=reply(body,200,5400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,status:"unavailable",error:"Guardian film news unavailable"},502);}
+  }
+  // Bilibili public video statistics; counts are never inferred from view totals.
+  const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
+  if(bili){
+   const cached=await caches.default.match(request);if(cached)return cached;
+   try{
+    const id=bili[1],endpoint=new URL("https://api.bilibili.com/x/web-interface/view");
+    endpoint.searchParams.set("bvid",id);
+    const doc=await jsonRemote(endpoint.toString(),{headers:{
+      "Accept":"application/json","User-Agent":"Mozilla/5.0","Referer":"https://www.bilibili.com/"
+    }},6500);
+    if(doc?.code!==0||doc.data?.bvid!==id)throw Error("unverified_id");
+    const stats=doc.data?.stat||{};
+    const likes=Number(stats.like),views=Number(stats.view);
+    if(!Number.isSafeInteger(likes)||likes<0||!Number.isSafeInteger(views)||views<0)throw Error("unavailable_stats");
+    const result=reply({ok:true,bvid:id,source:"Bilibili",likes,views,checkedAt:new Date().toISOString()},200,14400);
+    ctx.waitUntil(caches.default.put(request,result.clone()));return result;
+   }catch{return reply({ok:false,status:"unavailable",source:"Bilibili"},200,1800);}
   }
   // MyAnimeList v2: join anime only by a verified MAL numeric ID, never by title search.
   const animeMatch=u.pathname.match(/^\/api\/anime\/mal\/([1-9]\d{0,9})$/);
