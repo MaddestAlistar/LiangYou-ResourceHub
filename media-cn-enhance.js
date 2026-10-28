@@ -6,7 +6,7 @@ const endpoint='https://liangyou-taopiaopiao-lab.maddestalistar.workers.dev';
 const lookupCache=new Map(),newsCache={promise:null};
 const english=()=>document.documentElement.lang.toLowerCase().startsWith('en');
 const t=(zh,en)=>english()?en:zh;
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sameTitle=s=>String(s||'').normalize('NFKC').replace(/\s+/g,'').replace(/[·•\-–—:：.。"'“”‘’]/g,'').toLowerCase();
 const verifyYear=(v,year)=>String(v||'').includes(String(year));
 async function fetchJSON(url,ms=12000){const r=await fetch(url,{signal:AbortSignal.timeout(ms)});if(!r.ok)throw Error('source_unavailable');return r.json();}
