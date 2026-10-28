@@ -75,7 +75,21 @@ def main():
  for args in FEEDS:rows.extend(fetch_feed(*args))
  unique={}
  for row in rows:unique[row["url"]]=row
- rows=sorted(unique.values(),key=lambda a:a["date"],reverse=True)[:180]
+ # Keep previously verified headlines instead of replacing the archive with today's 64 or so RSS rows.
+ # One-time editorial metadata per article; 1-year retention keeps older film titles discoverable.
+ try:
+  prior=json.loads(DEST.read_text(encoding="utf-8")) if DEST.exists() else {}
+  for row in prior.get("items",[]):
+   if not isinstance(row,dict) or row.get("source") not in {x[0] for x in FEEDS}:continue
+   host=next((x[2] for x in FEEDS if x[0]==row["source"]),None)
+   link=trusted(row.get("url"),host) if host else None
+   if not link or len(str(row.get("title","")))<8:continue
+   try:published=datetime.fromisoformat(str(row.get("date",""))).replace(tzinfo=timezone.utc)
+   except ValueError:continue
+   if published>datetime.now(timezone.utc) or published<datetime.now(timezone.utc)-timedelta(days=365):continue
+   unique.setdefault(link,{**row,"url":link})
+ except (OSError,ValueError,TypeError):pass
+ rows=sorted(unique.values(),key=lambda a:a["date"],reverse=True)[:1400]
  if not rows:
   print("WORLD_NEWS_NO_VERIFIED_PUBLISHER_FEEDS; keeping previous snapshot")
   return 0
