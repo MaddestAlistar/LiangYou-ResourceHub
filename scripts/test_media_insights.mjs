@@ -133,7 +133,7 @@ test('TMDB official YouTube IDs get metadata without guessing the video title',a
  assert.equal(body.trailers[0].views,1234567);
 });
 test('verified TMDB regional aliases and real YouTube likes improve related coverage safely',async()=>{
- stub({movie:{
+ stub({movie:{release_date:'1999-10-15',
    alternative_titles:{titles:[
      {iso_3166_1:'CN',title:'搏击俱乐部'},
      {iso_3166_1:'US',title:'Fight Club'},
