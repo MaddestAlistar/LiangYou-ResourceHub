@@ -168,24 +168,35 @@
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
     const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
     const domestic=verifiedDomesticTrailers(info,domesticRows);
-    const videos=youtube.map(v=>{
+    const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
+      .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&v.ageRestricted!==true&&
+        Number.isFinite(v.likes)&&v.likes>0&&!youtube.some(x=>x.id===v.id))
+      .sort((a,b)=>b.likes-a.likes).slice(0,5):[];
+    function youtubeCard(v,related=false){
       const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
       const duration=formatDuration(v.duration);
-      const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
-      const label=v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Unverified search match');
+      const fmt=n=>new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(n);
+      const views=Number.isFinite(v.views)?fmt(v.views)+t(' 播放',' views'):'';
+      const likes=Number.isFinite(v.likes)&&v.likes>0?fmt(v.likes)+t(' 赞',' likes'):'';
+      const label=related?t('高赞相关视频','Highly liked related video'):
+        v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
+        v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Unverified search match');
       const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
       const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
         (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
       const url='https://www.youtube.com/watch?v='+v.id;
       const player=embedAllowed?
-        '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+thumb+'</button>':
-        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+t('前往 YouTube：','Open YouTube: ')+esc(v.title||'Trailer')+'">'+thumb+'</a>';
+        '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(v.title||'Video')+'">'+thumb+'</button>':
+        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+thumb+'</a>';
       return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
-        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(v.official?'':'mi-warning-source')+'">'+label+'</span></div>'+
-        '<strong>'+esc(v.title||'Trailer')+'</strong><small>'+esc(v.channel||'YouTube')+(views?' · '+esc(views):'')+'</small>'+
+        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(related||v.official?'':'mi-warning-source')+'">'+label+'</span></div>'+
+        '<strong>'+esc(v.title||'Video')+'</strong><small>'+esc(v.channel||'YouTube')+
+          (likes?'<span class="mi-video-likes"> · '+esc(likes)+'</span>':'')+(views?' · '+esc(views):'')+'</small>'+
         '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
-    });
+    }
+    const videos=youtube.map(v=>youtubeCard(v));
+    const relatedCards=verifiedRelated.map(v=>youtubeCard(v,true));
     for(const x of domestic){
       const provider=x.platform==='bilibili'?'Bilibili':'腾讯视频';
       const name=String(x.name||t('影视预告片','Trailer'));
@@ -220,18 +231,18 @@
       a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
         cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
-    if(!videos.length){
+    if(!videos.length&&!relatedCards.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
       else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
       else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
     }else if(status==='loading'){
       state=t('YouTube 预告片仍在加载，已核实的国内视频可直接播放。','YouTube trailers are still loading; verified domestic videos are ready.');
     }
-    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片','Trailers')+
+    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
-      '<p class="mi-caption">'+t('YouTube、Bilibili、腾讯视频统一展示；只有准确匹配的公开视频才能站内播放，1905 等未核实嵌入权限的来源保留原站入口。',
-      'YouTube, Bilibili and Tencent Video in one gallery. Only verified embeddable videos play here; others open on the source site.')+'</p>'+
       (videos.length?'<div class="mi-trailer-grid">'+videos.join('')+'</div>':'')+
+      (relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('高赞相关视频','Highly liked related videos')+
+        ' · '+relatedCards.length+'/5</h4><div class="mi-trailer-grid">'+relatedCards.join('')+'</div>':'')+
       (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
   }
 
@@ -264,21 +275,35 @@
     return worldNewsPromise;
   }
   function discoverySections(d,worldArticles=[]){
-    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
-    // Require a meaningful complete title, not a common word or loose topic tag.
-    const titles=[d.originalTitle,d.title].map(clean).filter(v=>v.length>=5);
-    const match=x=>titles.some(name=>(' '+clean(x.title||'')+' ').includes(' '+name+' '));
+    const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
+    const rawTitles=[d.localTitle,d.originalTitle,d.title,...(Array.isArray(d.aliases)?d.aliases:[])].filter(v=>typeof v==='string').slice(0,36);
+    function matchScore(article){
+      const headline=String(article.title||'').normalize('NFKC'),line=' '+normalize(headline)+' ';
+      let confidence=0;
+      for(const label of rawTitles){
+        const name=normalize(label),compact=name.replace(/ /g,'');
+        if(compact.length<2)continue;
+        const quoted=['“'+label+'”',"'"+label+"'",'《'+label+'》','「'+label+'」'].some(q=>headline.toLowerCase().includes(q.toLowerCase()));
+        if(quoted){confidence=Math.max(confidence,100+Math.min(compact.length,20));continue;}
+        if(/[\u3400-\u9fff]/.test(name)){
+          if(compact.length>=4&&line.includes(' '+name+' '))confidence=Math.max(confidence,75+Math.min(compact.length,20));
+        }else if(compact.length>=4&&line.includes(' '+name+' ')){
+          confidence=Math.max(confidence,70+Math.min(compact.length,20));
+        }
+      }
+      return confidence;
+    }
     const suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
     const sources=Array.isArray(worldArticles)?worldArticles:[];
-    const all=[...(Array.isArray(d.news)?d.news:[]),...sources].filter(x=>x&&safe(x.url)&&match(x));
-    const seen=new Set();
-    const rows=all.sort((a,b)=>Date.parse(b.date||0)-Date.parse(a.date||0)).filter(x=>{
-      const url=safe(x.url);
-      if(!url||seen.has(url))return false;
-      seen.add(url);return true;
+    const all=[...(Array.isArray(d.news)?d.news:[]),...sources]
+      .filter(x=>x&&safe(x.url)).map(x=>({...x,confidence:matchScore(x)})).filter(x=>x.confidence>0);
+    const seen=new Set(),seenTitle=new Set();
+    const rows=all.sort((a,b)=>b.confidence-a.confidence||Date.parse(b.date||0)-Date.parse(a.date||0)).filter(x=>{
+      const url=safe(x.url),title=normalize(x.title);
+      if(!url||seen.has(url)||seenTitle.has(title))return false;
+      seen.add(url);seenTitle.add(title);return true;
     }).slice(0,6);
     const international='<section class="mi-insight-block mi-international-news"><div class="mi-insight-head"><h3>'+t('国际新闻','International news')+'</h3><span class="mi-tech-tag">'+t('多来源','Multiple sources')+'</span></div>'+
-      '<p class="mi-caption">'+t('仅显示可匹配当前作品原名的已核实标题，最多 6 条；未匹配不填充综合新闻。','Only publisher headlines matching this title; up to six, no unrelated filler.')+'</p>'+
       (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
         const image=safe(x.thumbnail);
         return '<article class="mi-editorial-card">'+(image?'<img src="'+esc(image)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
@@ -459,7 +484,7 @@
       worldNewsSnapshot().then(articles=>{
         if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
         discoverSlots.international.innerHTML=discoverySections({
-          title:info.title,originalTitle:info.originalTitle,news:[],suggestions:[]
+          title:info.title,localTitle:info.title,originalTitle:info.originalTitle,aliases:info.aliases,news:[],suggestions:[]
         },articles).international;
       }).catch(()=>{});
     }
@@ -518,7 +543,8 @@
       }
       if(!pane.isConnected)return;
       if(info.section==='discover'&&discoverSlots?.trailers){
-        const sections=discoverySections(enriched);
+        const newsContext={...enriched,localTitle:info.title,aliases:info.aliases};
+        const sections=discoverySections(newsContext);
         trailerResult=enriched;
         trailerStatus='ready';
         paintTrailers();
@@ -526,7 +552,7 @@
         // Source RSS is loaded independently; the fixed slot keeps its position.
         worldNewsSnapshot().then(world=>{
           if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
-          discoverSlots.international.innerHTML=discoverySections(enriched,world).international;
+          discoverSlots.international.innerHTML=discoverySections(newsContext,world).international;
         });
         if(discoverSlots.similar?.isConnected)discoverSlots.similar.innerHTML=sections.similar;
       }else{
