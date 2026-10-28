@@ -123,6 +123,39 @@ test('missing and conflicting parental classifications are omitted, not guessed'
  assert.equal(result.body.classification.parental_rating.rating,'TV-14');
  assert.deepEqual(result.body.classification.keywords,['family relationships']);
 });
+test('TMDB-ID news search accepts only matching film titles, not general arts news',async()=>{
+ stub({movie:{alternative_titles:{titles:[{iso_3166_1:'CN',title:'搏击俱乐部'}]}}});
+ const old=globalThis.fetch;
+ const date=new Date(Date.now()-86400000).toUTCString();
+ const item=(title,url,source)=>'<item><title>'+title+'</title><link>'+url+'</link><pubDate>'+date+
+   '</pubDate><source>'+source+'</source></item>';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='news.google.com')return new Response('<rss><channel>'+
+    item('《搏击俱乐部》电影幕后花絮','https://news.google.com/rss/articles/real-cn','Publisher A')+
+    item('艺术节举办：文学馆交流活动','https://news.google.com/rss/articles/unrelated','Publisher B')+
+    item('Fight Club movie cast reunion','https://news.google.com/rss/articles/real-en','Publisher C')+
+    '</channel></rss>',{status:200,headers:{'content-type':'application/rss+xml'}});
+  return old(input);
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.equal(body.kind,'movie');assert.equal(body.tmdbId,550);
+  assert.equal(body.articles.length,2);
+  assert.ok(body.articles.some(x=>x.title.includes('搏击俱乐部')));
+  assert.ok(body.articles.some(x=>x.title.includes('Fight Club')));
+  assert.ok(body.articles.every(x=>x.url.startsWith('https://news.google.com/')));
+  assert.ok(body.articles.every(x=>!x.title.includes('文学馆')));
+ }finally{globalThis.fetch=old;}
+});
+test('news search gracefully returns empty output when no trusted TMDB lookup is available',async()=>{
+ stub({});
+ const {status,body}=await invoke('/api/news/title/movie/550',{});
+ assert.equal(status,200);
+ assert.equal(body.status,'unavailable');
+ assert.deepEqual(body.articles,[]);
+});
 test('Bilibili likes are returned only from matching public video metadata',async()=>{
  const origin=globalThis.fetch;
  const id='BV1spJR6yEci';
