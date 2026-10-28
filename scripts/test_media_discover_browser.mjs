@@ -44,7 +44,7 @@ try{
    })}));
  await page.route('**/data/media-world-news.json',route=>
    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
-     schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' trailer news',
+     schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' '+year+' movie trailer news',
        url:'https://variety.com/film/real-film-story',date}]
    })}));
  await page.route('**/data/media-cn-news.json',route=>
@@ -121,7 +121,7 @@ try{
      })}));
    await offlinePage.route('**/data/media-world-news.json',route=>
      route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
-       schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' confirmed title match',
+       schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' '+year+' movie confirmed title match',
          url:'https://variety.com/film/verified-source',date}]
      })}));
    await offlinePage.route('**/data/media-cn-news.json',route=>
