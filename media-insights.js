@@ -224,13 +224,36 @@
        '<p class="mi-caption">'+t('通过作品的原始 MAL ID 查询，不会把同名动画错误合并。','Looked up using original MAL ID, never a fuzzy title match.')+'</p>';
     }catch{if(host.isConnected)host.innerHTML='<p class="mi-caption">'+t('MAL 补充资料暂不可用。','MAL source temporarily unavailable.')+'</p>';}
   }
+  // Optional live metadata repair for works whose scheduled TMDB profile is stale.
+  // Never merge on the title alone: the incoming TMDB ID and release year must match.
+  async function hydrateClassification(info){
+    const kind=info?.kind==='movie'?'movie':info?.kind==='tv'?'tv':null;
+    const id=Number(info?.tmdbId);
+    if(!kind||!Number.isSafeInteger(id)||id<1)return;
+    try{
+      const data=await get(kind,id,false);
+      if(data.ok!==true||data.kind!==kind||data.tmdbId!==id||!data.classification)return;
+      const expectedYear=Number(String(info.year||'').slice(0,4));
+      const actualYear=Number(String(data.releaseDate||'').slice(0,4));
+      if(expectedYear>1850&&actualYear>1850&&Math.abs(expectedYear-actualYear)>1)return;
+      const name=v=>String(v||'').normalize('NFKC').trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+      const original=String(info.originalTitle||'').trim();
+      if(/^[a-z0-9 \-:.,!?&'()]+$/i.test(original)&&name(original)!==name(data.originalTitle||data.title))return;
+      root.dispatchEvent(new CustomEvent('liangyou:media-classification',{
+        detail:{id:info.id,tmdbId:id,kind,classification:data.classification}
+      }));
+    }catch{
+      // Optional source failure must not hide existing scores and title data.
+    }
+  }
   async function display(info){
     if(!info||!['ratings','profile','people','boxoffice','discover'].includes(info.section))return;
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target)return;
     if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
     if(info.section==='boxoffice')displayBoxOfficeArchive(info,target);
-    if(info.section==='ratings'||info.kind==='anime')return;
+    if(info.section==='ratings'){hydrateClassification(info);return;}
+    if(info.kind==='anime')return;
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
     const discoverSlots=info.section==='discover'?{
