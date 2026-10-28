@@ -52,8 +52,8 @@ function insertAutoRatings(info){
  const shell=document.createElement('section');
  shell.className='mi-cn-auto mi-cn-scores';
  shell.innerHTML='<p class="mi-caption">'+t('正在核对电影与国内评分来源…','Checking identity for mainland rating sources…')+'</p>';
- const manual=target.querySelector('.mtk-rating-research');
- if(manual)manual.before(shell);else target.appendChild(shell);
+ const holder=target.querySelector('[data-mi-ratings-slot="domestic"]');
+ if(holder)holder.appendChild(shell);else target.appendChild(shell);
  lookupFilm(info).then(d=>{
   if(!shell.isConnected)return;
   const items=d?[['maoyan','猫眼'],['douban','豆瓣'],['taopiaopiao','淘票票']].filter(([k])=>d.ratings[k]!==null):[];
@@ -71,7 +71,8 @@ function insertBoxOffice(info){
  const target=root.querySelector('#media-dialog .mi-detail-content');
  if(!target)return;
  const shell=document.createElement('section');shell.className='mi-insight-block mi-cn-boxoffice';
- target.prepend(shell);
+ const slot=target.querySelector('[data-mi-boxoffice-slot="mainland"]');
+ if(slot)slot.appendChild(shell);else target.prepend(shell);
  if(info.kind!=='movie'){
   shell.innerHTML='<p class="mi-caption">'+t('当前作品为剧集或动画系列，院线单片票房不适用；下方地区榜单与本作品无直接关系。','The title is not a theatrical film; individual theatrical grosses do not apply. Regional charts below are separate.')+'</p>';
   return;
