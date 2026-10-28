@@ -112,7 +112,7 @@
       (cards.length?'<div class="mi-cn-box-grid">'+cards.map(([label,v])=>'<div><small>'+esc(label)+'</small><strong>'+esc(usd(v))+'</strong></div>').join('')+'</div>':'')+
       (!d.boxOffice&&!cards.length?'<p class="mi-caption">'+t('暂无经过核对的单片收入数据。','No matching individual film financial figures yet.')+'</p>':'')+
       '<p class="mi-caption">'+t('美元金额来自不同来源、不同统计口径。TMDB revenue 不等同于已验证的全球院线票房；预算不属于票房。','USD figures can have different scopes. TMDB revenue is not a verified worldwide theatrical gross, and budget is not box office.')+'</p>'+
-      '<details class="mi-rankings-drawer"><summary>'+t('韩国每日票房 · KOFIC（独立榜单）','Korean daily box office · KOFIC (separate chart)')+'</summary><div class="mi-kr-boxoffice" aria-live="polite">'+t('展开后读取官方榜单','Open to load the official chart')+'</div></details></section>';
+      '</section>';
   }
   function formatDuration(raw){
     const m=/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(String(raw||''));
@@ -144,9 +144,12 @@
       }).join('')+'</div></section>';
   }
   function discover(d){
-    const rows=Array.isArray(d.news)?d.news:[],suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
+    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
+    const targetName=clean(d.originalTitle||d.title||'');
+    const rows=Array.isArray(d.news)&&targetName.length>=5?d.news.filter(x=>clean(x.title+' '+(x.summary||'')).includes(targetName)).slice(0,5):[];
+    const suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
     return trailerGallery(d)+
-      '<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('媒体报道 · 资讯雷达','Editorial coverage · news radar')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
+      '<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('当前作品相关报道 · 国际','Coverage for this title · International')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
       '<p class="mi-caption">'+t('按作品原名匹配影视报道，显示摘要与来源日期；同名作品仍需人工核对。','Title-matched film coverage with date and preview. Same-name works still need verification.')+'</p>'+
       (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
         const image=safe(x.thumbnail);
@@ -155,10 +158,7 @@
           '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+
           (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':
-        '<p class="mi-caption">'+t('本片暂无匹配的 Guardian 文章，其他资讯与推荐仍可使用。','No matching Guardian stories; other recommendations remain available.')+'</p>')+'</section>'+
-      '<details class="mi-world-news"><summary>'+t('展开电影世界资讯 · Guardian 最新影视报道','Explore the wider film world · Guardian latest')+'</summary>'+
-      '<p class="mi-caption">'+t('以下是全球电影资讯，并非当前作品的相关新闻。按需加载，节省接口请求。','General film headlines, not necessarily related to this title. Loaded on demand.')+'</p>'+
-      '<div class="mi-world-news-list" aria-live="polite"></div></details>'+
+        '<p class="mi-caption">'+t('暂未找到与本片准确对应的 Guardian 报道。','No Guardian coverage reliably matching this title.')+'</p>')+'</section>'+
       (suggestions.length?'<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('相似题材探索','Similar-title discovery')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
         '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
         '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
@@ -289,30 +289,6 @@
     frame.allowFullscreen=true;
     host.replaceChildren(frame);
   });
-  root.addEventListener('toggle',async e=>{
-    if(!e.target.matches('.mi-world-news')||!e.target.open)return;
-    const pane=e.target.querySelector('.mi-world-news-list');
-    if(!pane||pane.dataset.loading==='1'||pane.dataset.loaded==='1')return;
-    pane.dataset.loading='1';
-    pane.textContent=t('正在读取 Guardian 电影资讯…','Loading Guardian film coverage…');
-    try{
-      const d=await filmNewsFeed();
-      if(!pane.isConnected)return;
-      if(d.status==='not_configured'){
-        pane.textContent=t('Guardian API 暂未配置。','Guardian API is not configured.');
-        pane.dataset.loaded='1';return;
-      }
-      if(d.ok!==true||!Array.isArray(d.articles))throw Error('news_not_available');
-      pane.innerHTML=d.articles.length?'<div class="mi-editorial-grid">'+d.articles.slice(0,6).map(x=>{
-        const picture=safe(x.thumbnail);
-        return '<article class="mi-editorial-card">'+(picture?'<img src="'+esc(picture)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
-          '<div class="mi-editorial-body"><span>'+esc(x.section||'Film')+' · '+esc(format(x.date))+'</span>'+
-          '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+(x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
-      }).join('')+'</div>':'<p class="mi-caption">'+t('暂时没有可用的电影资讯。','No film headlines are available.')+'</p>';
-      pane.dataset.loaded='1';
-    }catch{if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('电影资讯暂不可用，可稍后重新展开。','Film news is temporarily unavailable. Try expanding again later.')+'</p>';}
-    finally{if(pane.isConnected)delete pane.dataset.loading;}
-  },true);
   root.addEventListener('liangyou:media-detail',ev=>display(ev.detail));
   root.addEventListener('toggle',async e=>{
     if(!e.target.matches('.mi-rankings-drawer')||!e.target.open)return;
