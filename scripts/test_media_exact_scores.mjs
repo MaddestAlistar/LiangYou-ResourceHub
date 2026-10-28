@@ -23,6 +23,12 @@ await page.route('https://liangyou-extra-ratings-lab.maddestalistar.workers.dev/
     matchedExternalId:'999',matchedExternalSite:'tmdb',mappingMethod:'official_simkl_tmdb_lookup',
     rating:8.4,scale:10,releaseYear:2025,pageUrl:'https://simkl.com/movies/56789/test'})});
  }
+ if(u.pathname==='/api/simkl/by-tmdb/movie/909'){
+  return route.fulfill({status:200,headers,body:JSON.stringify({code:0,platform:'Simkl',id:'45678',
+    matchedExternalSite:'tmdb',matchedExternalId:'909',mappingMethod:'official_simkl_tmdb_lookup',
+    rating:7.8,scale:10,releaseYear:2025,pageUrl:'https://simkl.com/movies/45678/test',
+    ratingCount:177})});
+ }
  if(u.pathname==='/api/kitsu/by-mal/1'){
   calledKitsu++;
   return route.fulfill({status:200,headers,body:JSON.stringify({code:0,platform:'Kitsu',id:'5',malId:'1',
@@ -51,6 +57,10 @@ try{
    year:'2025-01-02',aliases:[]});
  await page.waitForFunction(()=>[...document.querySelectorAll('.mi-exact-scores')].some(n=>n.textContent.includes('8.4/10')),{timeout:12000});
  console.log('SIMKL_EXACT_TMDB_FALLBACK_OK');
+ await push({section:'ratings',kind:'movie',id:'tmdb-movie-909',tmdbId:909,title:'Test Lookup Film',
+   year:'2025-01-05',aliases:[]});
+ await page.waitForFunction(()=>[...document.querySelectorAll('.mi-exact-scores')].some(x=>x.textContent.includes('7.8/10')),{timeout:12000});
+ console.log('AUTO_SIMKL_BY_TMDB_ID_OK');
  await push({section:'ratings',kind:'movie',id:'tmdb-movie-666',title:'Unknown',year:'2025',aliases:[]});
  await page.waitForTimeout(250);
  assert.equal(await page.locator('.mi-exact-scores').filter({hasText:'Unknown'}).count(),0);
