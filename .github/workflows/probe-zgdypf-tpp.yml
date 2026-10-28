@@ -1,0 +1,19 @@
+name: Verify historical and current Taopiaopiao rating fields
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/probe_zgdypf_tpp_scores.py','.github/workflows/probe-zgdypf-tpp.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Inspect three public film records without login or spoofing
+        run: python scripts/probe_zgdypf_tpp_scores.py
