@@ -70,7 +70,7 @@ try{
  assert.equal(await unmatched.locator('.mi-score-tile').count(),0);
  console.log('MAINLAND_NO_FALSE_TITLE_JOIN_OK');
  await send('boxoffice','测试剧集','tv');
- assert.ok((await page.locator('.mi-cn-boxoffice').last().innerText()).includes('院线单片票房不适用'));
+ assert.ok((await page.locator('.mi-cn-boxoffice').first().innerText()).includes('院线单片票房不适用'));
  console.log('MAINLAND_NO_TV_BOX_OFFICE_OK');
  await send('discover');
  const drawer=page.locator('.mi-cn-news-drawer').last();
