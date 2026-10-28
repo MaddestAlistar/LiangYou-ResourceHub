@@ -32,7 +32,9 @@ jobs:
               with urllib.request.urlopen(req,timeout=25) as r:
                 code=r.status;d=json.load(r)
             except urllib.error.HTTPError as e:
-              code=e.code;d=json.load(e)
+              code=e.code
+              try:d=json.load(e)
+              except Exception:d={"error":"UpstreamNonJSON"}
             except Exception as e:code=None;d={"error":type(e).__name__}
             valid=code==expected
             if expected==200 and path!="/api/health":
