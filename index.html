@@ -27,10 +27,11 @@
   <link rel="stylesheet" href="./sports-personal.css?v=20261028.3">
   <link rel="stylesheet" href="./sports-share.css?v=20261028.1">
   <link rel="stylesheet" href="./sports-history.css?v=20261028.1">
-  <link rel="stylesheet" href="./media-intel.css?v=20261028.1">
-  <link rel="stylesheet" href="./media-toolkit.css?v=20261028.1">
-  <script src="./media-intel.js?v=20261028.2" defer></script>
-  <script src="./media-toolkit.js?v=20261028.1" defer></script>
+  <link rel="stylesheet" href="./media-intel.css?v=20261028.3">
+  <link rel="stylesheet" href="./media-toolkit.css?v=20261028.3">
+  <script src="./media-core.js?v=20261028.3" defer></script>
+  <script src="./media-intel.js?v=20261028.3" defer></script>
+  <script src="./media-toolkit.js?v=20261028.3" defer></script>
   <script src="./app.js?v=4.7" defer></script>
   <script src="./site-i18n.js?v=20261028.3" defer></script>
   <script src="./navigation.js?v=20261028.1" defer></script>
@@ -293,10 +294,12 @@
         <div class="mi-heading"><div><p id="media-kicker">LIANGYOU · SCREEN INTELLIGENCE</p><h2 id="media-title">影视情报中心</h2><p id="media-subtitle">今晚看什么，下一集什么时候来。</p></div><div class="mi-heading-mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="15" width="34" height="26" rx="4"/><path d="M7 23h34M8 15 38 7l3 8M14 13l6 7m3-10 6 8m3-11 6 7m-18 13 9 5-9 5Z"/></svg></div></div>
         <div class="mi-topline"><span class="mi-live-dot" aria-hidden="true"></span><span id="media-updated" role="status">正在读取影视情报…</span><span id="media-count"></span></div>
         <div id="media-tabs" class="mi-tabs" role="group" aria-label="影视分类"></div>
+        <div id="media-library-tools" class="mi-library-tools" hidden><p id="media-library-note"></p><div><button id="media-export" type="button">导出片单</button><button id="media-import" type="button">导入片单</button><input id="media-import-file" type="file" accept="application/json,.json" hidden></div></div>
         <div class="mi-toolbar"><div id="media-sources" class="mi-source-buttons" role="group" aria-label="选择数据来源"></div><div class="mi-search"><label id="media-search-label" for="media-search">片名筛选</label><input id="media-search" type="search" placeholder="搜索当前榜单的片名…" autocomplete="off"></div></div>
         <div class="mi-scope-line"><span id="media-scope"></span><span id="media-source-status" role="status"></span></div>
         <div id="media-days" class="mi-days" role="group" aria-label="日期 / Dates" hidden></div>
         <div id="media-grid" class="mi-grid"></div>
+        <p id="media-notice" class="mi-notice" role="status" aria-live="polite" hidden></p>
         <div id="media-pagination" class="mi-pagination" hidden><button id="media-prev" type="button">上一页</button><span id="media-page" aria-live="polite"></span><button id="media-next" type="button">下一页</button></div>
         <details class="mi-health"><summary id="media-health-title">数据来源与更新状态</summary><div id="media-health" class="mi-health-grid"></div></details>
         <div id="media-attribution" class="mi-attribution"></div>

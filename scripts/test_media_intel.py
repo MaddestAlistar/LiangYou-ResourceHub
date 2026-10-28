@@ -53,6 +53,11 @@ class MediaTests(unittest.TestCase):
         self.assertEqual(len(result),1);self.assertEqual(result.failures,1)
         snapshot=m.refresh_source('mdblist',{},lambda:result)
         self.assertEqual(snapshot['status'],'partial');self.assertEqual(len(snapshot['items']),1)
+    def test_tmdb_metadata_votes_cannot_be_assigned_to_trakt(self):
+        sources={'trakt':{'items':[{'id':'trakt-movie-1','kind':'movie','title':'A','source':'Trakt','votes':123,
+                    'ratings':[{'source':'TMDB','value':8},{'source':'Trakt','value':7}]}]}}
+        works,_=build_catalog(sources)
+        self.assertTrue(all(r['votes'] is None for r in works['trakt-movie-1']['ratings']))
     def test_failure_preserves_real_timestamp_and_content(self):
         old={'status':'ok','items':[{'id':'1'}],'updated_at':'2026-01-01T00:00:00Z','checked_at':'2026-01-01T00:00:00Z'}
         with patch.object(m,'now',return_value=m.date('2026-02-01T00:00:00Z')):

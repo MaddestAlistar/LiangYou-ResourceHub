@@ -35,7 +35,7 @@ jobs:
           assert html.count('src="./media-toolkit.js?')==1
           assert html.count('href="./media-toolkit.css?')==1
           assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
-          assert "data-mtk-status" in toolkit and "localStorage" in toolkit
+          assert "data-mi-status" in base and "LiangYouWatchlist" in toolkit
           assert "data-mtk-export" in toolkit and "tmdbID,imdbID,Title,Year" in toolkit
           assert "JustWatch via TMDB" in worker and "TMDB_READ_ACCESS_TOKEN" in worker
           assert "Authorization" in worker and "api_key" in worker

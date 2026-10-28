@@ -24,6 +24,8 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check media-intel.js
+          node --check media-core.js
+          node --test scripts/test_media_core.mjs
           python3 scripts/test_media_intel.py
           node --check app.js
           node --check design.js

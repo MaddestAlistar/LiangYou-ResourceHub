@@ -42,7 +42,7 @@ KEY_NAMES = {
  'assrt': ('ASSRT_TOKEN','ASSRT_API_TOKEN','ASSRT_API_KEY','SHOOTER_API_KEY'),
  'mdblist': ('MDBLIST_API_KEY','MDB_LIST_API_KEY'),
 }
-SOURCE_REVISIONS = {"omdb": 2, "assrt": 2, "tmdb": 3, "tvmaze": 3, "anilist": 3, "trakt": 3, "simkl": 3, "mdblist": 2}
+SOURCE_REVISIONS = {"omdb": 2, "assrt": 2, "tmdb": 4, "tvmaze": 3, "anilist": 3, "trakt": 3, "simkl": 3, "mdblist": 2}
 CACHE = {}
 TMDB_MEM = {}
 
@@ -163,6 +163,7 @@ def collect_tmdb():
             item=tmdb_item(x,'movie')
             try: item.update(detail(x['id'],'movie'))
             except FeedError: pass
+            item['date']=x.get('release_date','')
             item['category']='upcoming';items.append(item)
     if not items: raise FeedError('empty_response')
     return items
@@ -260,7 +261,7 @@ def collect_trakt():
             if not item: item={'id':f'trakt-{kind}-{ids["trakt"]}','title':x['title'],'original_title':x['title'],'kind':kind,'date':str(x.get('year') or ''),'overview':clean(x.get('overview')),'overview_language':'en','poster':'','ratings':[]}
             item={**item,'id':f'trakt-{kind}-{ids["trakt"]}','source':'Trakt','category':'movies' if kind=='movie' else 'series',
               'imdb_id':ids.get('imdb',''),'url':f'https://trakt.tv/{endpoint}/{ids.get("slug") or ids["trakt"]}',
-              'ratings':item.get('ratings',[])+rating('Trakt',x.get('rating')),'watchers':row.get('watchers')}
+              'ratings':item.get('ratings',[])+[{**r,'votes':x.get('votes')} for r in rating('Trakt',x.get('rating'))],'watchers':row.get('watchers')}
             items.append(item)
     if not items: raise FeedError('empty_response')
     return items
@@ -451,7 +452,7 @@ def main():
     sources['mdblist']=refresh_source('mdblist',sources.get('mdblist'),lambda:enrich('mdblist',rating_candidates))
     localize_images(sources)
     works,aliases=build_catalog(sources)
-    output={'schema':1,'media_source_version':4,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
+    output={'schema':1,'media_source_version':5,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
     serialized=json.dumps([output,CACHE],ensure_ascii=False)

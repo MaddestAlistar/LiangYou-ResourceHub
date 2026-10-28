@@ -83,7 +83,7 @@ def build_catalog(sources):
                 work['links'].append({'name':item.get('source',provider),'url':item['url']})
             ratings=[dict(r) for r in item.get('ratings',[])]
             for r in ratings:
-                if r.get('source')==item.get('source') and item.get('votes') is not None:r.setdefault('votes',item['votes'])
+                if provider in ('tmdb','bangumi') and r.get('source')==item.get('source') and item.get('votes') is not None:r.setdefault('votes',item['votes'])
             work['ratings']+=normalized_ratings(ratings,item.get('source',provider),snapshot.get('updated_at'))
             item['work_id']=wid
         for token in tokens: aliases[token]=wid

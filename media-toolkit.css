@@ -21,3 +21,8 @@
 #media .mtk-links{margin-top:10px}
 #media .mtk-statuses button:focus-visible,#media .mtk-links button:focus-visible,#media .mtk-links a:focus-visible,#media .mtk-region:focus-visible{outline:2px solid #88bbff;outline-offset:2px}
 @media(max-width:760px){#media .mtk-heading{align-items:flex-start}#media .mtk-stream{padding:10px}#media .mtk-details{padding:10px}#media .mtk-statuses{gap:6px}#media .mtk-statuses button{flex:1 1 calc(50% - 6px);min-width:96px}}
+
+#media #mtk-lookup{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px;align-items:end}
+#media #mtk-lookup label{display:grid;gap:6px;font-size:12px;color:#b8c9e5}
+#media #mtk-lookup input,#media #mtk-lookup select,#media #mtk-lookup button,#media #mtk-box{max-width:100%;padding:10px;border-radius:9px;background:#17243b;color:#edf4ff;border:1px solid #52617a;font:inherit;font-size:12px}
+#media .mtk-box-list{padding-left:26px;font-size:13px}#media .mtk-box-list li{padding:10px 0;border-bottom:1px solid #ffffff14}#media .mtk-box-list b{display:block;font-size:12px;color:#d9bc7e;margin-top:4px}#media #mtk-rating-result{font-size:13px;overflow-wrap:anywhere}#media .mtk-details a{color:#bfcff4}
