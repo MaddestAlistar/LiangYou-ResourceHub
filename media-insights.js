@@ -128,7 +128,7 @@
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target)return;
     if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
-    if(info.section==='ratings')return;
+    if(info.section==='ratings'||info.kind==='anime')return;
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
     const pane=document.createElement('div');pane.className='mi-insight-host';
