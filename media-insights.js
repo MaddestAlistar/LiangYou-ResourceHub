@@ -55,13 +55,48 @@
         '<p class="mi-caption">'+t('暂无经过 IMDb ID 核验的单片票房；此处不会把全球票房与美国票房混用。','No verified film total. Global and US figures are never mixed.')+'</p>')+
       '<details class="mi-rankings-drawer"><summary>'+t('韩国每日票房 · KOFIC','Korea daily box office · KOFIC')+'</summary><div class="mi-kr-boxoffice" aria-live="polite">'+t('展开后读取官方榜单','Open to load the official chart')+'</div></details></section>';
   }
+  function formatDuration(raw){
+    const m=/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(String(raw||''));
+    if(!m)return '';
+    const h=Number(m[1]||0),min=Number(m[2]||0),sec=Number(m[3]||0);
+    return (h?h+':'+String(min).padStart(2,'0'):String(min))+':'+String(sec).padStart(2,'0');
+  }
+  function trailerGallery(d){
+    const videos=Array.isArray(d.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
+    if(!videos.length)return '<section class="mi-insight-block"><h3>'+t('视频情报','Trailer intelligence')+'</h3><p class="mi-caption">'+t('暂无核验过的预告片。可在下方打开 TMDB 提供的原视频链接。','No verified trailers. Source links may appear above.')+'</p></section>';
+    return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片 · 视频情报','Trailers · video intelligence')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
+      '<p class="mi-caption">'+t('来自 TMDB 的官方视频标识优先；搜索候选会单独标注。点击卡片才加载播放器。','TMDB-curated videos are prioritized; unverified search candidates are labeled. Playback loads on tap.')+'</p>'+
+      '<div class="mi-trailer-grid">'+videos.map(v=>{
+        const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
+        const duration=formatDuration(v.duration);
+        const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
+        const label=v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Search candidate');
+        return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+
+          '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-label="'+t('播放预告片：','Play trailer: ')+esc(v.title||'Trailer')+'">'+
+          '<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
+          '<span class="mi-trailer-play" aria-hidden="true">▶</span>'+
+          (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'')+'</button></div>'+
+          '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span class="'+(v.official?'':'mi-warning-source')+'">'+label+'</span>'+ (v.type&&v.type!=='Search'?'<span>'+esc(v.type)+'</span>':'')+'</div>'+
+          '<strong>'+esc(v.title||'Trailer')+'</strong><small>'+esc(v.channel||'YouTube')+(views?' · '+esc(views):'')+'</small>'+
+          '<div class="mi-insight-links">'+a(v.url,'YouTube')+'</div></div></article>';
+      }).join('')+'</div></section>';
+  }
   function discover(d){
-    const rows=Array.isArray(d.news)?d.news:[];
-    return '<section class="mi-insight-block"><h3>'+t('延伸资讯','Related coverage')+'</h3>'+
-      '<p class="mi-caption">'+t('按作品原名检索 The Guardian；文章可能涉及同名作品，请核对标题。','Guardian articles are title-search matches, not guaranteed to refer to this exact work.')+'</p>'+
-      (rows.length?'<div class="mi-insight-news">'+rows.map(x=>'<div>'+a(x.url,x.title)+'<small>'+esc(format(x.date))+' · The Guardian</small></div>').join('')+'</div>':
-        '<p class="mi-caption">'+t('暂未找到可展示的外部新闻，仍可查看上方预告与站内相关推荐。','No external coverage found; trailers and on-site recommendations remain available.')+'</p>')+
-      '</section>';
+    const rows=Array.isArray(d.news)?d.news:[],suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
+    return trailerGallery(d)+
+      '<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('媒体报道 · 资讯雷达','Editorial coverage · news radar')+'</h3><span class="mi-tech-tag">The Guardian</span></div>'+
+      '<p class="mi-caption">'+t('按作品原名匹配影视报道，显示摘要与来源日期；同名作品仍需人工核对。','Title-matched film coverage with date and preview. Same-name works still need verification.')+'</p>'+
+      (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
+        const image=safe(x.thumbnail);
+        return '<article class="mi-editorial-card">'+(image?'<img src="'+esc(image)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
+          '<div class="mi-editorial-body"><span>'+esc(x.section||'The Guardian')+' · '+esc(format(x.date))+'</span>'+
+          '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+
+          (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
+      }).join('')+'</div>':
+        '<p class="mi-caption">'+t('本片暂无匹配的 Guardian 文章，其他资讯与推荐仍可使用。','No matching Guardian stories; other recommendations remain available.')+'</p>')+'</section>'+
+      (suggestions.length?'<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('相似题材探索','Similar-title discovery')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
+        '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
+        '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
   }
   async function display(info){
     if(!info||!['profile','people','boxoffice','discover'].includes(info.section))return;
@@ -94,7 +129,7 @@
     ['人物关系','People','TMDB Credits · Wikidata (verified cross-ID)'],
     ['票房','Box office','OMDb (US film) · Maoyan (CN charts) · KOFIC (KR daily) · CN third-party aggregate'],
     ['播放渠道','Streaming','Watchmode · JustWatch via TMDB · OpenSubtitles · assrt.net'],
-    ['资讯推荐','Discover','TMDB Recommendations · TMDB/YouTube Trailers · The Guardian']
+    ['资讯推荐','Discover','TMDB · YouTube Data v3 · The Guardian · TasteDive (optional)']
   ];
   function registryUI(){
     registry.innerHTML='<summary>'+t('六类数据源与分工','Six data domains & sources')+'</summary>'+
@@ -106,6 +141,22 @@
   if(health)health.before(registry);
   new MutationObserver(registryUI).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 
+  root.addEventListener('click',ev=>{
+    const button=ev.target.closest('button[data-mi-play-video]');
+    if(!button)return;
+    const id=button.dataset.miPlayVideo;
+    if(!/^[A-Za-z0-9_-]{11}$/.test(id))return;
+    const host=button.closest('.mi-trailer-preview');
+    if(!host)return;
+    const frame=document.createElement('iframe');
+    frame.title=t('YouTube 预告片播放器','YouTube trailer player');
+    frame.src='https://www.youtube-nocookie.com/embed/'+id+'?rel=0';
+    frame.loading='lazy';
+    frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.allowFullscreen=true;
+    host.replaceChildren(frame);
+  });
   root.addEventListener('liangyou:media-detail',ev=>display(ev.detail));
   root.addEventListener('toggle',async e=>{
     if(!e.target.matches('.mi-rankings-drawer')||!e.target.open)return;
