@@ -336,7 +336,7 @@
     external.href='https://www.youtube.com/watch?v='+id;
     external.textContent=t('原站观看 ↗','Open on YouTube ↗');
     // Wait until the visitor taps a trailer before making requests to YouTube.
-    showTrailerFrame(id,false);
+    showTrailerFrame(id,true);
     if(!trailerDialog.open)trailerDialog.showModal();
   });
   playerSwitch?.addEventListener('click',()=>{
