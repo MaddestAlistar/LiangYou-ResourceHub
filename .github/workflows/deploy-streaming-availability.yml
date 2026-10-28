@@ -57,3 +57,28 @@ jobs:
           done
       - name: Verify at least one credential configured
         run: test -n "$TMDB_READ_ACCESS_TOKEN" || test -n "$TMDB_API_KEY"
+      - name: Audit live news for movies without manually curated articles
+        continue-on-error: true
+        run: |
+          node --input-type=module <<'NODE'
+          const examples=[
+            {id:27205,title:'Inception (2010)'},
+            {id:603,title:'The Matrix (1999)'},
+            {id:129,title:'Spirited Away (2001)'},
+            {id:157336,title:'Interstellar (2014)'}
+          ];
+          const base='https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/movie/';
+          const results=await Promise.all(examples.map(async x=>{
+            try{
+              const response=await fetch(base+x.id+'?audit=global-v1',{signal:AbortSignal.timeout(40000)});
+              const json=await response.json();
+              return {title:x.title,status:json.status||'unknown',count:json.articles?.length||0,
+                chinese:(json.articles||[]).filter(v=>v.language==='zh').length,
+                international:(json.articles||[]).filter(v=>v.language!=='zh').length,
+                sourceCounts:Object.fromEntries([...new Set((json.articles||[]).map(v=>v.source))].map(name=>
+                  [name,json.articles.filter(v=>v.source===name).length]))};
+            }catch(error){return {title:x.title,status:'network_error',error:String(error).slice(0,120),count:0};}
+          }));
+          console.log('FILM_NEWS_LIVE_COVERAGE',JSON.stringify(results));
+          if(results.every(v=>v.count===0))console.log('::warning::All sampled uncurated films had zero live news results; check provider access and query matching');
+          NODE
