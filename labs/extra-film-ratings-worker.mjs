@@ -116,6 +116,27 @@ export default {
             delivery:"GitHub Actions validated source snapshot"});
         }
       });
+      // Official Kitsu cross-site mappings: MAL ID -> uniquely linked Kitsu anime.
+      const km=u.pathname.match(/^\/api\/kitsu\/by-mal\/([1-9]\d{0,9})$/);
+      if(km)return await cached(req,ctx,async()=>{
+        const map=new URL("https://kitsu.io/api/edge/mappings");
+        map.searchParams.set("filter[externalSite]","myanimelist/anime");
+        map.searchParams.set("filter[externalId]",km[1]);
+        const d=await retrieve(map.toString(),{"accept":"application/vnd.api+json"},16000);
+        const exact=(d.data||[]).filter(x=>x.attributes?.externalSite==="myanimelist/anime"&&
+          String(x.attributes.externalId)===km[1]&&x.relationships?.item?.data?.type==="anime");
+        const ids=[...new Set(exact.map(x=>x.relationships.item.data.id))];
+        if(ids.length!==1||!/^[1-9]\d{0,9}$/.test(ids[0]))throw Error("kitsu_mapping_not_unique");
+        const src="https://kitsu.io/api/edge/anime/"+ids[0];
+        const record=await retrieve(src,{"accept":"application/vnd.api+json"},16000);
+        const x=record.data||{},a=x.attributes||{};
+        if(String(x.id)!==ids[0]||x.type!=="anime"||!a.canonicalTitle)throw Error("kitsu_anime_identity_mismatch");
+        return wrap("Kitsu",src,{
+          id:ids[0],malId:km[1],title:a.canonicalTitle,
+          rating:num(a.averageRating,100),scale:100,ratingCount:null,
+          pageUrl:"https://kitsu.app/anime/"+(a.slug||ids[0]),mappingMethod:"official_kitsu_mal_mapping"
+        });
+      });
       const k=u.pathname.match(/^\/api\/kitsu\/anime\/([1-9]\d{0,9})$/);
       if(k)return await cached(req,ctx,async()=>{
         let o;let src;
