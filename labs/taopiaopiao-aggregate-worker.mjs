@@ -109,6 +109,7 @@ function parseYear(data,year){
     year,title:data.title||null,upstreamUpdatedAt:data.updateTimeDesc||null,
     fetchedAt:new Date().toISOString(),count:rows.length,data:rows};
 }
+function titleKey(s){return String(s||"").normalize("NFKC").trim().toLocaleLowerCase("zh-CN").replace(/\s+/g,"");}
 function parseDay(data,date){
   if(!data||typeof data!=="object"||!Array.isArray(data.list))throw new Error("day_list_missing");
   const rows=data.list.slice(0,300).map((v,i)=>{
@@ -145,7 +146,7 @@ export default {
     const url=new URL(req.url);
     if(url.pathname==="/"||url.pathname==="/api/health")return output({
       code:0,status:"worker_online",name:"LiangYou Film Score Aggregator Lab",
-      endpoints:["/api/movie/00102032025","/api/movie/00102782025","/api/year?year=2025","/api/day?date=2026-10-27"],
+      endpoints:["/api/movie/00102032025","/api/movie/00102782025","/api/search?year=2025&name=哪吒之魔童闹海","/api/year?year=2025","/api/day?date=2026-10-27"],
       note:"Independent research interface. Aggregated scores are not official certified scores."
     });
     try{
@@ -154,6 +155,21 @@ export default {
         const code=movie[1];
         return parseFilm(await getText("/movie/detail/"+code),code);
       });
+      if(url.pathname==="/api/search"){
+        const name=url.searchParams.get("name")?.trim()||"";
+        const year=url.searchParams.get("year")||"";
+        const currentYear=new Date().getUTCFullYear();
+        if(!name||name.length>100||!/^\d{4}$/.test(year)||Number(year)<2017||Number(year)>currentYear)
+          return output({code:400,error:"Valid name (1–100 characters) and year (2017 to current year) required"},400);
+        return await cached(req,ctx,async()=>{
+          const data=parseYear(JSON.parse(await getText("/getYearData?year="+year)),year);
+          const matching=data.data.filter(x=>titleKey(x.title)===titleKey(name));
+          return {code:0,source:data.source,sourceUrl:data.sourceUrl,year,query:name,
+            match:matching.length?"exact_title":"not_on_year_leaderboard",
+            count:matching.length,data:matching.map(x=>({...x,detailPath:"/api/movie/"+x.movieCode})),
+            fetchedAt:data.fetchedAt,note:"Search is limited to the year's public top 300; absence is not proof a film does not exist."};
+        });
+      }
       if(url.pathname==="/api/year"){
         const year=url.searchParams.get("year")||"";
         const currentYear=new Date().getUTCFullYear();
