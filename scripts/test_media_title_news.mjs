@@ -20,6 +20,19 @@ test('verified Korean series and unofficial community coverage use one exact TMD
  assert.ok(data.videos.some(v=>v.platform==='bilibili'&&v.type==='Related'));
  assert.ok(data.articles.every(v=>v.url.startsWith('https://')));
 });
+test('Moana live-action and Curry Barker Obsession have identity-safe Chinese and foreign articles and clips',async()=>{
+ for(const [id,title] of [[1108427,'海洋奇缘：启航'],[1339713,'痴迷']]){
+  const fixture={kind:'movie',tmdbId:id,year:'2026-07-10',title};
+  const item=await load.forInfo(fixture);
+  assert.ok(item&&item.articles.filter(x=>x.language==='zh').length>=5,title+' Chinese news');
+  assert.ok(item.articles.filter(x=>x.language!=='zh').length>=2,title+' foreign news');
+  assert.ok(item.articles.every(x=>x.verifiedByTitleId===true),title+' ID binding');
+  assert.ok(item.videos.length>=4,title+' preview/video entries');
+  assert.ok(item.videos.every(x=>x.kind==='movie'&&x.year===2026),title+' correct film identity');
+  assert.equal(await load.forInfo({...fixture,year:'2016-11-23'}),null,'older edition must not reuse new film news');
+  assert.equal(await load.forInfo({...fixture,kind:'tv'}),null,'series must not receive movie metadata');
+ }
+});
 test('optional remotely searched headlines are ID-bound and cannot erase local articles',async()=>{
  let calls=0;
  const runtime={};
