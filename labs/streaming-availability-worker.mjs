@@ -408,16 +408,18 @@ async function titleNews(kind,id,env){
   ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
  const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v)&&v.length>=4);
  const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
+ const hangul=distinct.find(v=>/[\uac00-\ud7af]/.test(v)&&v.length>=4);
  const genre=String(item.genres?.[0]?.name||"").trim();
  const queries=[];
  const add=(alias,query,locale,requireEdition=false)=>{if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale,requireEdition});};
  if(asian){
-  add(asian,'"'+asian+'" '+year,'zh');
+  add(asian,'"'+asian+'" '+year+' 电影','zh');
+  add(asian,'"'+asian+'" 电影','zh');
   // "海洋奇缘：启航" is widely covered as "真人版《海洋奇缘》".
   const root=asian.split(/[：:]/)[0].trim();
   if(root!==asian&&root.length>=4)
    add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)','zh',true);
-  else add(asian,'"'+asian+'" 电影 '+year,'zh');
+  else if(asian!==root)add(asian,'"'+asian+'" 影评','zh');
  }
  if(originalLatin){
   const rare=originalLatin.length<13&&!originalLatin.includes(" ");
@@ -426,17 +428,22 @@ async function titleNews(kind,id,env){
    if(people.length)add(originalLatin,'"'+originalLatin+'" "'+people[0]+'" movie','en');
   }else{
    add(originalLatin,'"'+originalLatin+'" '+year+' movie','en');
+   add(originalLatin,'"'+originalLatin+'" movie review','en');
   }
  }
+ if(hangul)add(hangul,'"'+hangul+'" 드라마 OR 영화','ko');
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
- const requests=queries.slice(0,4).map(async ({alias,query,locale,requireEdition})=>{
+ const requests=queries.slice(0,6).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
-  endpoint.searchParams.set("q",query+" when:2y");
+  // Permit historical coverage of older catalog films; the old two-year window excluded it.
+  endpoint.searchParams.set("q",query);
   if(locale==="zh"){
    endpoint.searchParams.set("hl","zh-CN");
-   endpoint.searchParams.set("gl","HK");
-   endpoint.searchParams.set("ceid","HK:zh-Hans");
+   endpoint.searchParams.set("gl","CN");
+   endpoint.searchParams.set("ceid","CN:zh-Hans");
+  }else if(locale==="ko"){
+   endpoint.searchParams.set("hl","ko");endpoint.searchParams.set("gl","KR");endpoint.searchParams.set("ceid","KR:ko");
   }else{
    endpoint.searchParams.set("hl","en-US");
    endpoint.searchParams.set("gl","US");
@@ -449,13 +456,14 @@ async function titleNews(kind,id,env){
    const xml=(await res.text()).slice(0,400000);
    if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml))return [];
    const now=Date.now(),ctx={year,people,requireEdition};
+   const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
    return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50).map(m=>{
     const raw=m[1],title=rssField(raw,"title"),url=safeHttps(rssField(raw,"link"),"news.google.com");
     const stamp=Date.parse(rssField(raw,"pubDate"));
     // Use the query alias and independent movie identity signals. A random
     // "obsession" article must not pass just because the word is in the title.
     const match=rssArticleMatches(title,alias,ctx);
-    if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<now-730*86400000)return null;
+    if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<oldest)return null;
     const publisher=rssField(raw,"source");
     return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
       source:publisher.slice(0,60)||"Google News",language:/[\u3400-\u9fff]/.test(title)?"zh":
