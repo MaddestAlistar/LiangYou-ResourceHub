@@ -382,7 +382,12 @@ function rssArticleMatches(headline,alias,context={}){
  if(context.requireEdition===true)return filmContext&&(hasYear||isRemake||person);
  if(asian&&tight.length<4)return (quoted&&filmContext)||hasYear&&filmContext||person&&filmContext;
  if(!asian&&!name.includes(" "))return hasYear&&filmContext||isRemake&&filmContext||
-   person&&filmContext||quoted&&filmContext;
+   person&&filmContext||quoted&&filmContext||
+   // The Guardian film section can safely supply distinctive title-led reviews
+   // even when headlines omit a year or cast member.
+   context.editorialFilm===true&&name.length>=5&&
+     /\b(review|trailer|movie|film|interview|director)\b/i.test(headline)&&
+     text.startsWith(name+" ");
  // Distinctive two-word film titles such as "Fight Club" can be verified
  // by a film-specific context even when the headline omits the release year.
  if(!asian&&name.includes(" ")&&name.length>=8&&filmContext)return true;
@@ -500,7 +505,7 @@ async function titleNews(kind,id,env){
     const url=safeHttps(article.webUrl,"theguardian.com");
     const date=String(article.webPublicationDate||"");
     const stamp=Date.parse(date);
-    if(!url||!Number.isFinite(stamp)||!rssArticleMatches(title,originalLatin,{year,people}))return null;
+    if(!url||!Number.isFinite(stamp)||!rssArticleMatches(title,originalLatin,{year,people,editorialFilm:true}))return null;
     return {title,url,date:new Date(stamp).toISOString(),source:"The Guardian",
       language:"en",matchType:"title_search",titleMatchVerified:true,
       thumbnail:safeHttps(article.fields?.thumbnail,"guim.co.uk")};
@@ -536,8 +541,13 @@ async function titleNews(kind,id,env){
         rawUrl=u.searchParams.get("url")||"";
       }catch{return null;}
       const target=safeHttps(rawUrl);
-      if(!target||/^(?:localhost|127\.0\.0\.1)$/i.test(new URL(target).hostname))return null;
-      if(/(?:wikipedia\.org|wikidata\.org|imdb\.com|themoviedb\.org|rottentomatoes\.com)/i.test(new URL(target).hostname))return null;
+      if(!target)return null;
+      const hostname=new URL(target).hostname.toLowerCase();
+      const nonEditorial=["localhost","127.0.0.1","wikipedia.org","wikidata.org",
+        "imdb.com","themoviedb.org","rottentomatoes.com","justwatch.com",
+        "youtube.com","youtu.be","vimeo.com","bilibili.com","letterboxd.com",
+        "netflix.com","disneyplus.com","metacritic.com","britannica.com"];
+      if(nonEditorial.some(domain=>hostname===domain||hostname.endsWith("."+domain)))return null;
       const date=rssField(row,"pubDate"),stamp=Date.parse(date);
       const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
       if(Number.isFinite(stamp)&&(stamp>Date.now()+86400000||stamp<oldest))return null;
