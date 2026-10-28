@@ -14,7 +14,7 @@ jobs:
       - name: Validate true aggregated scores, absence and film gross JSON
         run: |
           python - <<'PY'
-          import json,urllib.request,urllib.error
+          import json,urllib.request,urllib.error,urllib.parse
           base="https://liangyou-taopiaopiao-lab.maddestalistar.workers.dev"
           paths=[
             "/api/health",
@@ -29,7 +29,7 @@ jobs:
           ]
           checks={}
           for path in paths:
-            req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-TPP-Lab-Smoke/1.0","Accept":"application/json"})
+            req=urllib.request.Request(base+urllib.parse.quote(path,safe="/?=&"),headers={"User-Agent":"LiangYou-TPP-Lab-Smoke/1.0","Accept":"application/json"})
             try:
               with urllib.request.urlopen(req,timeout=30) as r:status=r.status;d=json.load(r)
             except urllib.error.HTTPError as e:
