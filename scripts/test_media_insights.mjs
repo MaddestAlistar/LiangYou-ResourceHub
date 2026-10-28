@@ -149,6 +149,54 @@ test('TMDB-ID news search accepts only matching film titles, not general arts ne
   assert.ok(body.articles.every(x=>!x.title.includes('文学馆')));
  }finally{globalThis.fetch=old;}
 });
+test('uncurated catalog films discover historical Chinese and English articles by exact TMDB ID',async()=>{
+ const original=globalThis.fetch;
+ const date='2011-04-18T00:00:00Z';
+ const origins=[];
+ const entries=[
+  {kind:'movie',id:27205,en:'Inception',zh:'盗梦空间',year:2010},
+  {kind:'movie',id:603,en:'The Matrix',zh:'黑客帝国',year:1999},
+  {kind:'movie',id:129,en:'Spirited Away',zh:'千与千寻',year:2001},
+  {kind:'movie',id:157336,en:'Interstellar',zh:'星际穿越',year:2014}
+ ];
+ for(const item of entries){
+  globalThis.fetch=async input=>{
+   const u=new URL(String(input)),host=u.hostname;
+   if(host==='api.themoviedb.org'){
+    const chinese=u.searchParams.get('language')==='zh-CN';
+    return json({id:item.id,adult:false,title:chinese?item.zh:item.en,original_title:item.en,
+      release_date:item.year+'-07-16',genres:[{name:'Science Fiction'}],
+      alternative_titles:{titles:[{iso_3166_1:'CN',title:item.zh}]},credits:{cast:[],crew:[]}});
+   }
+   if(host==='news.google.com'){
+    origins.push({q:u.searchParams.get('q'),ceid:u.searchParams.get('ceid')});
+    const chinese=u.searchParams.get('ceid')==='CN:zh-Hans';
+    const title=chinese?'《'+item.zh+'》电影深度影评':item.en+' 电影 movie retrospective';
+    return new Response('<rss><channel><item><title>'+title+'</title>'+
+      '<link>https://news.google.com/rss/articles/'+item.id+(chinese?'-zh':'-en')+'</link>'+
+      '<pubDate>'+date+'</pubDate><source>Film Magazine</source></item></channel></rss>');
+   }
+   if(host==='content.guardianapis.com')return json({response:{status:'ok',results:[
+    {webTitle:item.en+' movie review 2010',webUrl:'https://www.theguardian.com/film/2010/jul/18/review',
+     webPublicationDate:'2010-07-18T00:00:00Z'}]}});
+   throw Error('unexpected '+host);
+  };
+  try{
+   const {status,body}=await invoke('/api/news/title/movie/'+item.id,
+      {TMDB_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
+   assert.equal(status,200,item.en);
+   assert.equal(body.tmdbId,item.id,item.en);
+   assert.ok(body.articles.some(x=>x.language==='zh'),item.en+' Chinese archive');
+   assert.ok(body.articles.some(x=>x.language==='en'),item.en+' English archive');
+   assert.ok(body.articles.every(x=>x.titleMatchVerified===true),item.en+' verified per ID');
+   if(item.year<=2011)assert.ok(body.articles.some(x=>x.date.startsWith('2011')||x.date.startsWith('2010')),
+      item.en+' historical coverage');
+  }finally{globalThis.fetch=original;}
+ }
+ assert.ok(origins.some(x=>x.ceid==='CN:zh-Hans'));
+ assert.ok(origins.some(x=>x.ceid==='US:en'));
+ assert.ok(origins.every(x=>!x.q.includes('when:2y')));
+});
 test('Moana remake and Obsession movie headlines are separated from unrelated short-word coverage',async()=>{
  const old=globalThis.fetch;
  const today=new Date(Date.now()-86400000).toUTCString();
