@@ -123,14 +123,15 @@ function domesticNews(info){
   '<div class="mi-cn-news-results" aria-live="polite"><p class="mi-caption">'+t('正在匹配相关新闻…','Matching relevant articles…')+'</p></div>';
  if(holder)holder.replaceChildren(box);else target.appendChild(box);
  (async()=>{
-  const d=await news(),pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
+  // A verified TMDB-ID article is eligible regardless of whether it is official or community authored.
+  const [d,verified]=await Promise.all([news(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]);
+  const pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
   const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
-  if(d?.schema!==1||!Array.isArray(d.items)||!Number.isFinite(age)||age<0||age>7*86400000){
-   pane.innerHTML='<p class="mi-caption">'+t('国内新闻快照暂不可用。','Chinese news snapshot unavailable.')+'</p>';
-   return;
-  }
+  const live=d?.schema===1&&Array.isArray(d.items)&&Number.isFinite(age)&&age>=0&&age<=7*86400000?d.items:[];
+  const identityNews=(verified?.articles||[]).filter(x=>x.language==='zh')
+    .map(x=>({...x,confidence:200}));
   const seenUrl=new Set(),seenTitle=new Set();
-  const matched=d.items.map(x=>({...x,confidence:headlineMatch(x.title,info)}))
+  const matched=[...identityNews,...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
    .filter(x=>x.confidence>0&&safe(x.url)&&x.title)
    .sort((a,b)=>b.confidence-a.confidence||Date.parse(b.date||0)-Date.parse(a.date||0))
    .filter(x=>{
