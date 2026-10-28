@@ -55,7 +55,7 @@
   }
   function get(kind,id,withMedia=false,withWiki=false){
     const key=kind+':'+id+':'+(withMedia?'discover':'base')+':'+(withWiki?'wikimedia':'plain');
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=8'+(withMedia?'&media=1':'')+(withWiki?'&wiki=1':'')).catch(e=>{cache.delete(key);throw e;}));
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=9'+(withMedia?'&media=1':'')+(withWiki?'&wiki=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   const classificationCache=new Map();
