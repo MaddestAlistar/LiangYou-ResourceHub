@@ -113,7 +113,7 @@
     // Visible titles only: the enrichment Worker is requested lazily for cards
     // with verified TMDB IDs. Other sources are never guessed by title.
     const visibleClassifications=items.slice(page*size,page*size+size).map(item=>{
-      const w=workFor(item),match=/^tmdb-(movie|tv)-([1-9]\\d{0,9})$/.exec(w.id||'');
+      const w=workFor(item),match=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(w.id||'');
       const tmdbId=Number(w.tmdb_id||match?.[2]);
       return {id:w.id,kind:w.kind,tmdbId,year:w.date||'',
         originalTitle:w.original_title||'',title:w.title||''};
@@ -166,7 +166,7 @@
       ?`<section class="mi-detail-block mi-official-trailer-fallback"><h3>${text('预告片','Trailers')}</h3><div class="mi-detail-links">${p.videos.map(v=>link(v.url,'▶ '+esc(v.name))).join('')}</div><p class="mi-caption">${text('原始预告片链接由 TMDB 提供，可在 YouTube 查看。','Original trailer links from TMDB can be opened on YouTube.')}</p></section>`
       :`<section class="mi-insight-block mi-official-trailer-fallback"><h3>${text('预告片','Trailers')}</h3><p class="mi-caption">${text('正在核对可播放的预告片…','Checking available trailers…')}</p></section>`;
     const related=p.related?.length
-      ?`<div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return /^tmdb-(?:movie|tv)-[1-9]\\d{0,9}$/.test(target)?`<button type="button" data-mi-related="${esc(target)}">${esc(cat.works[target]?title(cat.works[target]):r.title)} <span aria-hidden="true">→</span></button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p>`
+      ?`<div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return /^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(target)?`<button type="button" data-mi-related="${esc(target)}">${esc(cat.works[target]?title(cat.works[target]):r.title)} <span aria-hidden="true">→</span></button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p>`
       :`<p class="mi-caption">${text('暂无可核验的相关作品推荐。','No verified related titles available.')}</p>`;
     return `<div class="mi-discover-slot" data-mi-discover-slot="trailers">${official}</div>
       <div class="mi-discover-slot" data-mi-discover-slot="international"><section class="mi-insight-block"><h3>${text('国际新闻','International news')}</h3><p class="mi-caption">${text('正在核对相关报道…','Checking related coverage…')}</p></section></div>
@@ -227,7 +227,7 @@
   root.addEventListener('liangyou:media-classification',ev=>{
     const d=ev.detail;
     if(!d||!['movie','tv'].includes(d.kind))return;
-    const w=cat.works[d.id],m=/^tmdb-(movie|tv)-([1-9]\\d{0,9})$/.exec(d.id);
+    const w=cat.works[d.id],m=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(d.id);
     if(!w||w.kind!==d.kind||Number(w.tmdb_id||m?.[2])!==Number(d.tmdbId))return;
     const before=classificationData(w);
     const incoming=classificationData({profile:d.classification});
@@ -238,7 +238,13 @@
     if(JSON.stringify({genres,keywords,parental_rating})===
        JSON.stringify({genres:before.genres,keywords:before.keywords,parental_rating:w.profile?.parental_rating||null}))return;
     w.profile={...(w.profile||{}),genres,keywords,parental_rating};
-    render();
+    // Patch just the matching visible card. Re-rendering the entire grid on
+    // every asynchronous Worker reply can interrupt taps and scroll position.
+    const card=[...root.querySelectorAll('.mi-card-open')].find(node=>node.dataset.miOpen===d.id);
+    const current=card?.querySelector('.mi-card-classification');
+    const markup=classificationCard(w);
+    if(current){if(markup)current.outerHTML=markup;else current.remove();}
+    else if(markup)card?.querySelector('.mi-meta')?.insertAdjacentHTML('afterend',markup);
     const dialog=$('#media-dialog');
     if(!dialog?.open||d.id!==activeId)return;
     const view=classificationDetail(w),old=dialog.querySelector('.mi-classification-detail');
