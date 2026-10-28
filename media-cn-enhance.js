@@ -164,4 +164,10 @@ root.addEventListener('liangyou:media-detail',e=>{
  const info=e.detail;if(!info)return;
  insertAutoRatings(info);insertBoxOffice(info);domesticNews(info);
 });
+// TMDB-ID-confirmed names help Chinese, Hong Kong and Taiwan film-title matches.
+root.addEventListener('liangyou:media-verified-aliases',e=>{
+ const info=e.detail;
+ if(info?.section==='discover'&&Number.isSafeInteger(Number(info.tmdbId)))
+   domesticNews(info);
+});
 })();
