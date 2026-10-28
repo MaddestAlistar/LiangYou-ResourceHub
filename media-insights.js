@@ -572,7 +572,7 @@
     let frameUrl='';
     if(platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(id)&&
        url==='https://www.bilibili.com/video/'+id+'/')
-      frameUrl='https://player.bilibili.com/player.html?bvid='+id+'&autoplay=0&danmaku=0&poster=1';
+      frameUrl='https://player.bilibili.com/player.html?bvid='+id+'&autoplay=1&danmaku=0&poster=1';
     if(platform==='tencent'&&/^[A-Za-z0-9]{11}$/.test(id)&&
        url==='https://v.qq.com/x/page/'+id+'.html')
       frameUrl='https://v.qq.com/txp/iframe/player.html?vid='+id;
