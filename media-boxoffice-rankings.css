@@ -1,0 +1,17 @@
+/* Independent box-office comparisons: always below the film dossier content. */
+#media .mi-independent-rankings{border-top:1px solid #a5b9d74b;margin:17px 0 19px;padding-top:16px}
+#media .mi-ranking-header h3{font-size:16px;color:#e9d8af;margin:0 0 6px}
+#media .mi-ranking-header p{margin:7px 0 13px}
+#media .mi-ranking-drawer{border:1px solid #91a9c438;border-radius:11px;padding:11px 12px;margin:8px 0;background:#0c192b}
+#media .mi-ranking-drawer[open]{background:#102037}
+#media .mi-ranking-drawer summary{cursor:pointer;color:#e6d2a6;font-size:12px;font-weight:650;line-height:1.55}
+#media .mi-ranking-result{margin:10px 0;color:#a9b9d0}
+#media .mi-ranking-list{margin:0;padding:0;list-style:none;display:grid;gap:4px;counter-reset:none}
+#media .mi-ranking-list li{display:grid;grid-template-columns:23px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;background:#0b1727;border:1px solid #97aec02a;border-radius:8px;font-size:11px}
+#media .mi-ranking-index{color:#d6bc8e;font-weight:800;font-variant-numeric:tabular-nums}
+#media .mi-ranking-name{min-width:0;overflow-wrap:anywhere;color:#dce6f5}
+#media .mi-ranking-name a{color:#dce6f5}
+#media .mi-ranking-list strong{color:#ebd6ae;font-variant-numeric:tabular-nums;font-size:11px;text-align:right}
+@media(max-width:760px){#media .mi-ranking-list li{grid-template-columns:17px minmax(0,1fr);gap:5px;padding:8px 7px}
+#media .mi-ranking-list strong{grid-column:2;justify-self:start;font-size:11px}
+#media .mi-ranking-drawer{padding:10px}}
