@@ -237,6 +237,8 @@
       '<div class="mi-insight-links">'+
       a('https://search.bilibili.com/all?keyword='+q,'Bilibili')+
       a('https://v.qq.com/x/search/?q='+q,t('腾讯视频','Tencent Video'))+
+      a('https://so.youku.com/search/q_'+encodeURIComponent(title),t('优酷','Youku'))+
+      a('https://so.iq.com/so/?q='+encodeURIComponent(title),t('爱奇艺','iQIYI'))+
       a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
         cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
