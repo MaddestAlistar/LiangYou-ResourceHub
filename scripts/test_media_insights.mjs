@@ -156,6 +156,29 @@ test('news search gracefully returns empty output when no trusted TMDB lookup is
  assert.equal(body.status,'unavailable');
  assert.deepEqual(body.articles,[]);
 });
+test('all catalog TV titles can use validated Chinese regional aliases to find international video metadata',async()=>{
+ stub({tv:{
+   first_air_date:'2011-04-17',
+   alternative_titles:{results:[{iso_3166_1:'CN',title:'权力的游戏'}]},
+   videos:{results:[]}
+  },
+  youtubeSearch:[{id:{videoId:'CNAlias1234'}},{id:{videoId:'BadMatch001'}}],
+  youtubeVideos:[
+   {id:'CNAlias1234',snippet:{title:'《权力的游戏》幕后采访',channelTitle:'Film discussion'},
+    status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT5M'},
+    statistics:{likeCount:'930',viewCount:'90000'}},
+   {id:'BadMatch001',snippet:{title:'其他电视剧花絮',channelTitle:'Unrelated'},
+    status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT3M'},
+    statistics:{likeCount:'999999',viewCount:'1000000'}}
+  ]});
+ const {status,body}=await invoke('/api/insights/tv/1399?media=1',
+   {TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.equal(body.tmdbId,1399);
+ assert.ok(body.aliases.includes('权力的游戏'));
+ assert.ok(body.relatedVideos.some(x=>x.id==='CNAlias1234'&&x.likes===930));
+ assert.ok(!body.relatedVideos.some(x=>x.id==='BadMatch001'));
+});
 test('Bilibili likes are returned only from matching public video metadata',async()=>{
  const origin=globalThis.fetch;
  const id='BV1spJR6yEci';
