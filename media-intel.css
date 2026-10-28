@@ -227,3 +227,10 @@
  #media .mi-player-footer{padding:10px 12px;align-items:flex-start;flex-wrap:wrap}
  #media .mi-player-footer a{margin-left:auto}
 }
+
+/* Explicit alternate YouTube embed method for public, anonymously viewable trailers. */
+#media .mi-player-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+#media .mi-player-footer .mi-player-switch{min-height:34px;padding:7px 10px;border-radius:9px;border:1px solid rgba(145,185,237,.45);background:rgba(90,127,192,.17);font:inherit;font-size:11px;color:#c9dbf8;cursor:pointer;white-space:nowrap}
+#media .mi-player-footer .mi-player-switch:hover{background:rgba(90,127,192,.3)}
+@media(max-width:760px){#media .mi-player-footer .mi-player-actions{width:100%;justify-content:space-between;gap:7px}#media .mi-player-footer .mi-player-actions a{margin-left:0}}
+@media(max-width:355px){#media .mi-player-stage{min-height:200px}}
