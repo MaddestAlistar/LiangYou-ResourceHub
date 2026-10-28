@@ -18,6 +18,11 @@ await page.route('https://liangyou-extra-ratings-lab.maddestalistar.workers.dev/
   return route.fulfill({status:200,headers,body:JSON.stringify({code:0,platform:'Simkl',id:'12345',rating:8.6,scale:10,
    releaseYear:2025,pageUrl:'https://simkl.com/movies/12345/test',ratingCount:200})});
  }
+ if(u.pathname==='/api/simkl/by-tmdb/movie/999'){
+  return route.fulfill({status:200,headers,body:JSON.stringify({code:0,platform:'Simkl',id:'56789',
+    matchedExternalId:'999',matchedExternalSite:'tmdb',mappingMethod:'official_simkl_tmdb_lookup',
+    rating:8.4,scale:10,releaseYear:2025,pageUrl:'https://simkl.com/movies/56789/test'})});
+ }
  if(u.pathname==='/api/kitsu/by-mal/1'){
   calledKitsu++;
   return route.fulfill({status:200,headers,body:JSON.stringify({code:0,platform:'Kitsu',id:'5',malId:'1',
@@ -42,6 +47,10 @@ try{
  await page.waitForFunction(()=>[...document.querySelectorAll('.mi-exact-scores')].some(x=>x.textContent.includes('Kitsu')),{timeout:12000});
  assert.equal(calledKitsu,1);
  console.log('EXACT_KITSU_MAL_MAPPING_OK');
+ await push({section:'ratings',kind:'movie',id:'tmdb-movie-999',tmdbId:999,title:'Example',
+   year:'2025-01-02',aliases:[]});
+ await page.waitForFunction(()=>[...document.querySelectorAll('.mi-exact-scores')].some(n=>n.textContent.includes('8.4/10')),{timeout:12000});
+ console.log('SIMKL_EXACT_TMDB_FALLBACK_OK');
  await push({section:'ratings',kind:'movie',id:'tmdb-movie-666',title:'Unknown',year:'2025',aliases:[]});
  await page.waitForTimeout(250);
  assert.equal(await page.locator('.mi-exact-scores').filter({hasText:'Unknown'}).count(),0);
