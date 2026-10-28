@@ -70,7 +70,7 @@ jobs:
           const base='https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/movie/';
           const results=await Promise.all(examples.map(async x=>{
             try{
-              const response=await fetch(base+x.id+'?audit=global-v1',{signal:AbortSignal.timeout(40000)});
+              const response=await fetch(base+x.id+'?audit='+encodeURIComponent(process.env.GITHUB_SHA||'unknown'),{signal:AbortSignal.timeout(40000)});
               const json=await response.json();
               return {title:x.title,status:json.status||'unknown',diagnostics:json.sourceDiagnostics||null,count:json.articles?.length||0,
                 chinese:(json.articles||[]).filter(v=>v.language==='zh').length,
