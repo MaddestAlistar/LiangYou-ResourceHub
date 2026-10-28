@@ -46,6 +46,45 @@ function wrap(name,originalUrl,fields,attribution=null){
     dataPolicy:attribution||"Public source data. Check provider terms before redistributing to a public website.",
     note:"A missing score is null; scores preserve the platform's native scale."};
 }
+
+const PUBLIC_SNAPSHOT_URL="https://raw.githubusercontent.com/MaddestAlistar/LiangYou-ResourceHub/main/data/bilibili-filmarks-ratings.json";
+async function snapshotRating(source,id,scale){
+  const o=await retrieve(PUBLIC_SNAPSHOT_URL,{},16000);
+  const stamp=Date.parse(o.updatedAt||"");
+  if(!Number.isFinite(stamp)||Date.now()-stamp>48*60*60*1000||stamp>Date.now()+10*60*1000)
+    throw Error("verified_snapshot_stale");
+  const d=o.sources?.[source]?.[id];
+  if(!d||String(d.id)!==id||!d.title||num(d.rating,scale)===null||d.scale!==scale)
+    throw Error("verified_snapshot_missing");
+  return {...d,snapshotUpdatedAt:o.updatedAt};
+}
+async function filmarksDirect(id){
+  const page="https://filmarks.com/movies/"+id;
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),17000);
+  try{
+    const r=await fetch(page,{signal:ctl.signal,headers:{
+      "accept":"text/html","user-agent":"LiangYouResourceHub/1.0 public rating research"}});
+    if(!r.ok||new URL(r.url).pathname!=="/movies/"+id)throw Error("filmarks_http_or_redirect");
+    const html=await r.text();
+    if(html.length>500000||html.length<1000)throw Error("filmarks_html_size");
+    const t=/<title[^>]*>([^<]+)<\/title>/i.exec(html)?.[1];
+    if(!t||!t.includes("Filmarks"))throw Error("filmarks_page_unexpected");
+    const found=[];
+    for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
+      let obj;try{obj=JSON.parse(m[1]);}catch{continue;}
+      for(const x of Array.isArray(obj)?obj:[obj]){
+        if(!x||typeof x!=="object"||!x.aggregateRating)continue;
+        const rating=num(x.aggregateRating.ratingValue,5);
+        const title=x.name;
+        if(rating!==null&&typeof title==="string"&&title.trim()&&t.includes(title.trim()))
+          found.push({rating,title:title.trim()});
+      }
+    }
+    if(found.length!==1)throw Error("filmarks_rating_ambiguous");
+    return {id,title:found[0].title,rating:found[0].rating,scale:5,
+      ratingCount:null,pageUrl:page,sourceUrl:page};
+  }finally{clearTimeout(timer);}
+}
 export default {
   async fetch(req,env,ctx){
     if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{
@@ -54,20 +93,28 @@ export default {
     const u=new URL(req.url);
     if(u.pathname==="/"||u.pathname==="/api/health")return json({
       code:0,status:"worker_running_not_upstream_health",name:"LiangYou Four Film Ratings Research Lab",
-      endpoints:["/api/bilibili/season/26801","/api/kitsu/anime/1","/api/mydramalist/drama/58651-run-on","/api/simkl/10280"],
+      endpoints:["/api/bilibili/season/26801","/api/kitsu/anime/1","/api/mydramalist/drama/58651-run-on","/api/simkl/10280","/api/filmarks/movie/14348"],
       limitations:"Individual upstream providers can fail. Simkl requires a server-side configured Client ID; Filmarks not verified."
     });
     try{
       const b=u.pathname.match(/^\/api\/bilibili\/season\/([1-9]\d{0,9})$/);
       if(b)return await cached(req,ctx,async()=>{
         const source="https://api.bilibili.com/pgc/view/web/season?season_id="+b[1];
-        const d=await retrieve(source);
-        const x=d.result||{};const r=x.rating||{};
-        if(d.code!==0||String(x.season_id)!==b[1]||!x.title)throw Error("source_id_name_mismatch");
-        const rating=num(r.score,10);
-        return wrap("Bilibili 番剧",source,{id:b[1],title:x.title,rating,scale:10,
-          ratingCount:int(r.count),cover:x.cover||null,
-          pageUrl:"https://www.bilibili.com/bangumi/play/ss"+b[1]});
+        try{
+          const d=await retrieve(source);
+          const x=d.result||{};const r=x.rating||{};
+          if(d.code!==0||String(x.season_id)!==b[1]||!x.title||num(r.score,10)===null)
+            throw Error("source_id_name_mismatch");
+          return wrap("Bilibili 番剧",source,{id:b[1],title:x.title,
+            rating:num(r.score,10),scale:10,ratingCount:int(r.count),
+            cover:x.cover||null,pageUrl:"https://www.bilibili.com/bangumi/play/ss"+b[1]});
+        }catch{
+          const record=await snapshotRating("bilibili",b[1],10);
+          return wrap("Bilibili 番剧",record.sourceUrl,{id:b[1],title:record.title,
+            rating:record.rating,scale:10,ratingCount:record.ratingCount,
+            cover:null,pageUrl:record.pageUrl,verifiedSnapshotAt:record.snapshotUpdatedAt,
+            delivery:"GitHub Actions validated source snapshot"});
+        }
       });
       const k=u.pathname.match(/^\/api\/kitsu\/anime\/([1-9]\d{0,9})$/);
       if(k)return await cached(req,ctx,async()=>{
@@ -89,6 +136,17 @@ export default {
           scale:10,ratingCount:null,
           pageUrl:"https://mydramalist.com/"+m[1]}, 
           "Data obtained via educational, unofficial MyDramaList API; verify original and redistribution rights.");
+      });
+      const fm=u.pathname.match(/^\/api\/filmarks\/movie\/([1-9]\d{2,8})$/);
+      if(fm)return await cached(req,ctx,async()=>{
+        let record,delivery="direct_public_page";
+        try{record=await filmarksDirect(fm[1]);}
+        catch{record=await snapshotRating("filmarks",fm[1],5);
+          delivery="GitHub Actions validated source snapshot";}
+        return wrap("Filmarks",record.sourceUrl,{id:fm[1],title:record.title,
+          rating:record.rating,scale:5,ratingCount:null,pageUrl:record.pageUrl,
+          delivery,verifiedSnapshotAt:record.snapshotUpdatedAt||null},
+          "Filmarks public webpage rating, not an authorized API. Verify source terms before redistribution.");
       });
       const s=u.pathname.match(/^\/api\/simkl\/([1-9]\d{1,9})$/);
       if(s){
