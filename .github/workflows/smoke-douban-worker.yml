@@ -1,0 +1,59 @@
+name: Smoke test deployed Douban API
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-douban-worker.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Validate Worker responses and Wikimedia fallback
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.request, urllib.parse, urllib.error
+          BASE="https://liangyou-douban-movie-api.maddestalistar.workers.dev"
+          def fetch(url,accept="application/json"):
+              req=urllib.request.Request(url,headers={"User-Agent":"LiangYou-ResourceHub-API-Smoke/1.0","Accept":accept})
+              try:
+                  with urllib.request.urlopen(req,timeout=22) as f:
+                      status=f.status; raw=f.read(220000)
+              except urllib.error.HTTPError as e:
+                  status=e.code; raw=e.read(6000)
+              except Exception as e:
+                  return {"http":None,"error":type(e).__name__}
+              try: body=json.loads(raw)
+              except Exception: body=None
+              return {"http":status,"body":body,"sample":raw[:600].decode("utf-8","replace")}
+          for path in ["/","/api/top250?page=1","/api/weekly","/api/chart","/api/nowplaying"]:
+              r=fetch(BASE+path); body=r.get("body") or {}
+              data=body.get("data") if isinstance(body,dict) else None
+              count=len(data) if isinstance(data,list) else 0
+              meaningful=bool(count and any(x.get("id") and x.get("title") for x in data if isinstance(x,dict)))
+              result="data_ok" if r.get("http")==200 and body.get("code")==0 and meaningful else ("route_ok" if path=="/" and r.get("http")==200 and "endpoints" in body else "empty_or_error")
+              first=data[0] if isinstance(data,list) and data else {}
+              print("DOUBAN_WORKER_SMOKE "+json.dumps({
+                "route":path,"result":result,"http":r.get("http"),"code":body.get("code") if isinstance(body,dict) else None,
+                "items":count,"first_title":first.get("title"),"first_rating":first.get("rating"),
+                "message":str(body.get("message",""))[:120] if isinstance(body,dict) else "",
+                "error":r.get("error")},ensure_ascii=False),flush=True)
+          for label,url in [
+            ("Wikidata entity JSON","https://www.wikidata.org/wiki/Special:EntityData/Q172241.json"),
+            ("Wikidata entity page","https://www.wikidata.org/wiki/Q172241")
+          ]:
+              r=fetch(url,"application/json, text/html;q=0.8")
+              b=r.get("body") or {}
+              claims=(b.get("entities",{}).get("Q172241",{}).get("claims",{})) if isinstance(b,dict) else {}
+              def claim_value(prop):
+                  try:return claims[prop][0]["mainsnak"]["datavalue"]["value"]
+                  except (KeyError,TypeError,IndexError):return None
+              douban=claim_value("P4529"); imdb=claim_value("P345")
+              page=r.get("sample","")
+              print("DOUBAN_WIKIDATA_SMOKE "+json.dumps({
+                "source":label,"http":r.get("http"),"douban":douban,"imdb":imdb,
+                "has_douban_label":"Douban" in page,"error":r.get("error")},ensure_ascii=False),flush=True)
+          PY
