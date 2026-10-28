@@ -128,8 +128,10 @@ function domesticNews(info){
   // Start optional source discovery in parallel with local snapshots to limit mobile waiting.
   const liveSearch=window.LiangYouTitleNews?.remoteForInfo?.(info);
   // A verified TMDB-ID article is eligible regardless of whether it is official or community authored.
-  const [d,verified]=await Promise.all([news(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]);
+  const feedPending=news();
+  const verified=await (window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null));
   const pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
+  let d=null,remoteArticles=[];
   function renderAdditional(dynamic=[]){
     const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
     const live=d?.schema===1&&Array.isArray(d.items)&&Number.isFinite(age)&&age>=0&&age<=7*86400000?d.items:[];
@@ -153,10 +155,14 @@ function domesticNews(info){
      '<a href="'+esc(safe(x.url))+'" target="_blank" rel="noopener noreferrer">'+esc(x.title)+'</a>'+
      '</strong></div></article>').join('')+'</div>';
   }
+  // Show ID-verified editorial articles as soon as the local index is ready.
+  // Do not wait for the global feed or an optional cross-border RSS service.
   renderAdditional();
+  feedPending.then(snapshot=>{if(!pane.isConnected)return;d=snapshot;renderAdditional(remoteArticles);}).catch(()=>{});
   if(liveSearch&&typeof liveSearch.then==='function')liveSearch.then(remote=>{
-    if(pane.isConnected&&Array.isArray(remote?.articles)&&remote.articles.length)
-      renderAdditional(remote.articles.filter(x=>x.language==='zh'));
+    if(!pane.isConnected)return;
+    remoteArticles=(remote?.articles||[]).filter(x=>x.language==='zh');
+    renderAdditional(remoteArticles);
   }).catch(()=>{});
  })().catch(()=>{if(box.isConnected)box.querySelector('.mi-cn-news-results').textContent=t('相关报道暂不可用。','Coverage temporarily unavailable.');});
 }
