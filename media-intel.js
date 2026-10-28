@@ -111,15 +111,6 @@
       const w=workFor(item),id=w.id,state=saved(id)?.status;
       return `<article class="mi-card"><button type="button" class="mi-card-open" data-mi-open="${esc(id)}" ${tab==='calendar'?`data-mi-episode="${esc(item.id)}"`:''} aria-label="${esc(text('查看详情：','View details: ')+title(w))}">${poster(w)}<span class="mi-rank">${String(page*size+index+1).padStart(2,'0')}</span><div class="mi-card-copy"><h3>${esc(title(w))}</h3><p class="mi-original">${esc(w.original_title!==title(w)?w.original_title:w.title!==title(w)?w.title:'')}</p><p class="mi-meta">${esc(metadata(['calendar','upcoming'].includes(tab)?item:w))}</p>${classificationCard(w)}<div class="mi-scores">${scores(w)}</div><span class="mi-open-label">${text('查看完整情报','Explore title')} <span aria-hidden="true">↗</span></span></div></button><button type="button" class="mi-quick-save ${state?'is-saved':''}" data-mi-save="${esc(id)}" aria-label="${esc((state?statusName(state)+' · ':text('加入想看：','Add to watchlist: '))+title(w))}">${state?'✓ '+statusName(state):text('＋ 想看','＋ Watchlist')}</button></article>`;
     }).join(''):`<div class="mi-empty"><span aria-hidden="true">◇</span><h3>${!data&&tab!=='library'?(loadFailed?text('暂时无法读取影视情报','Unable to load intelligence'):text('情报加载中','Loading…')):query?text('没有匹配的片名','No matching titles'):tab==='library'?text('把下一部想看的作品留在这里','Save your next watch here'):text('暂时没有可展示的情报','No titles available yet')}</h3><p>${tab==='library'?text('在作品卡片点击「＋ 想看」，或在详情中选择观影状态。','Choose “＋ Watchlist” on a card, or set your viewing status in its details.'):query?text('试试原名或切换分类。这里只搜索已收录的作品。','Try the original title or another category. Search covers collected titles.'):text('可切换日期或来源，定时采集会补充数据。','Try another date or source. Scheduled collection will refresh this view.')}</p>${!data&&tab!=='library'?'<button type="button" id="media-retry">'+text('重新加载','Retry')+'</button>':''}</div>`;
-    // Visible titles only: the enrichment Worker is requested lazily for cards
-    // with verified TMDB IDs. Other sources are never guessed by title.
-    const visibleClassifications=items.slice(page*size,page*size+size).map(item=>{
-      const w=workFor(item),match=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(w.id||'');
-      const tmdbId=Number(w.tmdb_id||match?.[2]);
-      return {id:w.id,kind:w.kind,tmdbId,year:w.date||'',
-        originalTitle:w.original_title||'',title:w.title||''};
-    }).filter(w=>['movie','tv'].includes(w.kind)&&Number.isSafeInteger(w.tmdbId)&&w.tmdbId>0);
-    if(visibleClassifications.length)root.dispatchEvent(new CustomEvent('liangyou:media-tiles',{detail:{items:visibleClassifications}}));
     $('#media-page').textContent=`${page+1} / ${totalPages}`;$('#media-prev').disabled=page===0;$('#media-next').disabled=page>=totalPages-1;
     $('#media-prev').textContent=text('上一页','Previous');$('#media-next').textContent=text('下一页','Next');$('#media-pagination').hidden=items.length<=size;
     $('#media-health-title').textContent=text('数据来源与更新状态','Sources & freshness');
