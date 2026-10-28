@@ -161,7 +161,7 @@
       if(!verified||ids.has(p+':'+id))continue;
       ids.add(p+':'+id);
       found.push({...x,videoId:id,url:u});
-      if(found.length>=5)break;
+      if(found.length>=15)break;
     }
     return found;
   }
@@ -171,7 +171,7 @@
     const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
       .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&v.ageRestricted!==true&&
         Number.isFinite(v.likes)&&v.likes>0&&!youtube.some(x=>x.id===v.id))
-      .sort((a,b)=>b.likes-a.likes).slice(0,5):[];
+      .sort((a,b)=>b.likes-a.likes).slice(0,2):[];
     function youtubeCard(v,related=false){
       const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
       const duration=formatDuration(v.duration);
@@ -197,21 +197,25 @@
     }
     const videos=youtube.map(v=>youtubeCard(v));
     const relatedCards=verifiedRelated.map(v=>youtubeCard(v,true));
+    const domesticRelated=[];
     for(const x of domestic){
-      const provider=x.platform==='bilibili'?'Bilibili':'腾讯视频';
+      const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':x.platform==='youku'?'优酷':'爱奇艺';
       const name=String(x.name||t('影视预告片','Trailer'));
-      const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
-        '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
-        '" aria-haspopup="dialog" aria-label="'+t('播放预告片：','Play trailer: ')+esc(name)+'">'+
-        '<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
+      const supportedPlayer=x.platform==='bilibili'||x.platform==='tencent'||x.platform==='youku';
+      const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
-        '<span class="mi-trailer-play" aria-hidden="true">▶</span>'+
-        '<span class="mi-trailer-source-hint">'+t('点击播放','Tap to play')+'</span></span></button>';
-      videos.push('<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
-        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span><span>'+
-          t('已核实视频链接','Verified video link')+'</span></div>'+
+        '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
+        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'点击播放':'原站观看','Open video')+'</span></span>';
+      const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
+        '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
+        '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
+        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+cover+'</a>';
+      const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
+        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+'</small>'+
-        '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>');
+        '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>';
+      if(x.type==='Related'){if(domesticRelated.length<6)domesticRelated.push(card);}
+      else videos.push(card);
     }
     // Search entries are optional discovery links, not purported verified videos.
     const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
@@ -231,7 +235,7 @@
       a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
         cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
-    if(!videos.length&&!relatedCards.length){
+    if(!videos.length&&!relatedCards.length&&!domesticRelated.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
       else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
       else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
@@ -241,8 +245,8 @@
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
       (videos.length?'<div class="mi-trailer-grid">'+videos.join('')+'</div>':'')+
-      (relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('高赞相关视频','Highly liked related videos')+
-        ' · '+relatedCards.length+'/5</h4><div class="mi-trailer-grid">'+relatedCards.join('')+'</div>':'')+
+      (domesticRelated.length||relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('相关视频','Related videos')+
+        '</h4><div class="mi-trailer-grid">'+[...domesticRelated,...relatedCards].join('')+'</div>':'')+
       (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
   }
 
@@ -481,18 +485,19 @@
       return true;
     };
     if(info.section==='discover'&&discoverSlots?.international){
-      worldNewsSnapshot().then(articles=>{
+      Promise.all([worldNewsSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([articles,index])=>{
         if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
         discoverSlots.international.innerHTML=discoverySections({
-          title:info.title,localTitle:info.title,originalTitle:info.originalTitle,aliases:info.aliases,news:[],suggestions:[]
+          title:info.title,localTitle:info.title,originalTitle:info.originalTitle,aliases:info.aliases,
+          news:(index?.articles||[]).filter(x=>x.language!=='zh'),suggestions:[]
         },articles).international;
       }).catch(()=>{});
     }
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
       paintTrailers();
-      domesticVideoSnapshot().then(rows=>{
-        domesticRows=rows;
+      Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([rows,index])=>{
+        domesticRows=[...rows,...(index?.videos||[])];
         paintTrailers();
       }).catch(()=>{});
     }
@@ -550,9 +555,11 @@
         paintTrailers();
         if(discoverSlots.international?.isConnected)discoverSlots.international.innerHTML=sections.international;
         // Source RSS is loaded independently; the fixed slot keeps its position.
-        worldNewsSnapshot().then(world=>{
+        Promise.all([worldNewsSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([world,index])=>{
           if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
-          discoverSlots.international.innerHTML=discoverySections(newsContext,world).international;
+          const articles=[...(Array.isArray(newsContext.news)?newsContext.news:[]),
+            ...(index?.articles||[]).filter(x=>x.language!=='zh')];
+          discoverSlots.international.innerHTML=discoverySections({...newsContext,news:articles},world).international;
         });
         if(discoverSlots.similar?.isConnected)discoverSlots.similar.innerHTML=sections.similar;
       }else{
@@ -610,6 +617,9 @@
     if(platform==='tencent'&&/^[A-Za-z0-9]{11}$/.test(id)&&
        url==='https://v.qq.com/x/page/'+id+'.html')
       frameUrl='https://v.qq.com/txp/iframe/player.html?vid='+id;
+    if(platform==='youku'&&/^[A-Za-z0-9=_-]{8,80}$/.test(id)&&
+       url==='https://v.youku.com/v_show/id_'+id+'.html')
+      frameUrl='https://player.youku.com/embed/'+encodeURIComponent(id);
     if(!frameUrl)return;
     const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
     const frame=document.createElement('iframe');
