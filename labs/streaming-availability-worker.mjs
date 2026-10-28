@@ -332,6 +332,79 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
  await Promise.all(jobs);
  return result;
 }
+// Title-scoped RSS discovery is supplemental to human-verified ID-linked articles.
+// A long-tail title is queried by verified TMDB aliases, not by popular/general headlines.
+const normalizedHeadline=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g," ").trim();
+function rssDecoded(value){
+ return String(value||"").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
+   .replace(/&#(x[0-9a-f]+|\d+);|&(amp|quot|apos|lt|gt);/gi,(_,num,named)=>{
+     if(num){const n=num[0].toLowerCase()==="x"?parseInt(num.slice(1),16):parseInt(num,10);
+       return n>0&&n<0x110000&&!(n>=0xD800&&n<=0xDFFF)?String.fromCodePoint(n):"";}
+     return ({amp:"&",quot:'"',apos:"'",lt:"<",gt:">"})[named.toLowerCase()]||"";
+   }).replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+}
+function rssField(xml,tag){
+ const re=new RegExp("<"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+tag+">","i");
+ return rssDecoded(re.exec(xml)?.[1]||"");
+}
+function rssArticleMatches(headline,alias){
+ const a=normalizedHeadline(alias),h=normalizedHeadline(headline);
+ if(!a||!h)return false;
+ const compact=a.replace(/ /g,"");
+ const isAsian=/[\u3400-\u9fff\uac00-\ud7af]/.test(a);
+ const quoted=["《"+alias+"》","“"+alias+"”",'"'+alias+'"',"'"+alias+"'"].some(v=>headline.toLowerCase().includes(v.toLowerCase()));
+ if(isAsian){
+  if(compact.length<4)return quoted&&compact.length>=2;
+  return h.replace(/ /g,"").includes(compact);
+ }
+ if(a.length<7)return false;
+ if(!(" "+h+" ").includes(" "+a+" "))return false;
+ const generic=a.split(" ").length<2||a.length<10;
+ return !generic||quoted||/\b(movie|film|series|season|episode|trailer|review|cinema|cast|tv|drama)\b/i.test(headline);
+}
+async function titleNews(kind,id,env){
+ const item=await tmdbInfo(kind,id,env,true);
+ const original=String(item.original_title||item.original_name||"").trim();
+ const name=String(item.title||item.name||"").trim();
+ const alt=Array.isArray(item.alternative_titles?.titles)?item.alternative_titles.titles:
+   Array.isArray(item.alternative_titles?.results)?item.alternative_titles.results:[];
+ const distinct=[...new Set([
+   ...alt.filter(v=>["CN","HK","TW"].includes(v.iso_3166_1)).map(v=>String(v.title||v.name||"").trim()),
+   original,name
+ ].filter(v=>v.length>=3&&v.length<=80&&!/[<>]/.test(v)))];
+ const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v));
+ const foreign=distinct.find(v=>!/[^\u0000-\u007f]/.test(v)&&v.split(" ").length>=2&&v.length>=7)||
+   distinct.find(v=>/[\uac00-\ud7af]/.test(v));
+ const queryNames=[...new Set([asian,foreign,original].filter(Boolean))].slice(0,2);
+ if(!queryNames.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
+ const items=await Promise.all(queryNames.map(async alias=>{
+  const endpoint=new URL("https://news.google.com/rss/search");
+  endpoint.searchParams.set("q",'"'+alias.replace(/"/g,"")+'" when:2y');
+  endpoint.searchParams.set("hl","en-US");endpoint.searchParams.set("gl","US");endpoint.searchParams.set("ceid","US:en");
+  const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),7200);
+  try{
+   const res=await fetch(endpoint.toString(),{signal:ac.signal,headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
+   if(!res.ok)return [];
+   const xml=(await res.text()).slice(0,400000);
+   if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml))return [];
+   const now=Date.now();
+   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,45).map(m=>{
+    const raw=m[1],title=rssField(raw,"title"),url=safeHttps(rssField(raw,"link"),"news.google.com");
+    const date=rssField(raw,"pubDate"),stamp=Date.parse(date);
+    const match=rssArticleMatches(title,alias);
+    if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<now-730*86400000)return null;
+    const publisher=rssField(raw,"source");
+    return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),source:publisher.slice(0,60)||"Google News",
+      language:/[\u3400-\u9fff]/.test(title)?"zh":/[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
+   }).filter(Boolean);
+  }catch{return [];}finally{clearTimeout(timer);}
+ }));
+ const seen=new Set(),articles=items.flat().filter(row=>{
+  if(seen.has(row.url))return false;seen.add(row.url);return true;
+ }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,18);
+ return {ok:true,kind,tmdbId:Number(id),status:articles.length?"ok":"no_data",articles,source:"Google News RSS title search"};
+}
+
 async function koreanBoxOffice(env){
  if(!env.KOFIC_API_KEY)return {ok:true,status:"not_configured",source:"KOFIC",data:[]};
  const date=new Date(Date.now()-3*86400000);
@@ -384,6 +457,17 @@ export default {
     const body={ok:true,status:articles.length?"ok":"no_data",source:"The Guardian",checkedAt:new Date().toISOString(),articles};
     const response=reply(body,200,5400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,status:"unavailable",error:"Guardian film news unavailable"},502);}
+  }
+  // Per-work exact ID contextual news search, cached for six hours.
+  const titleNewsRoute=u.pathname.match(/^\/api\/news\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
+  if(titleNewsRoute){
+   const cached=await caches.default.match(request);if(cached)return cached;
+   try{
+    const body=await titleNews(titleNewsRoute[1],titleNewsRoute[2],env);
+    const response=reply(body,200,body.articles.length?21600:1800);
+    ctx.waitUntil(caches.default.put(request,response.clone()));
+    return response;
+   }catch{return reply({ok:true,kind:titleNewsRoute[1],tmdbId:Number(titleNewsRoute[2]),status:"unavailable",articles:[]},200,900);}
   }
   // Bilibili public video statistics; counts are never inferred from view totals.
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
