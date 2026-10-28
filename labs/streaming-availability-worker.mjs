@@ -22,11 +22,11 @@ async function jsonRemote(uri,opts={},timeout=8500){
 function safeHttps(v,host){
  try{const u=new URL(v);return u.protocol==="https:"&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
 }
-async function tmdbInfo(kind,id,env,withMedia=false,language="en-US"){
+async function tmdbInfo(kind,id,env,withMedia=false,language="en-US",withReviews=false){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits":""));u.searchParams.set("language",language);
+ u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos,alternative_titles,credits":"")+(withReviews?",reviews":""));u.searchParams.set("language",language);
  if(withMedia)u.searchParams.set("include_video_language","en,zh,ja,ko,null");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
@@ -397,8 +397,8 @@ async function titleNews(kind,id,env){
  // Fetch both language records concurrently: waiting for them sequentially
  // regularly consumed the entire browser deadline on slower overseas networks.
  const [item,possibleLocal]=await Promise.all([
-  tmdbInfo(kind,id,env,true),
-  tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)
+  tmdbInfo(kind,id,env,true,"en-US",true),
+  tmdbInfo(kind,id,env,true,"zh-CN",true).catch(()=>null)
  ]);
  const local=Number(possibleLocal?.id)===Number(id)?possibleLocal:null;
  const release=String(item.release_date||item.first_air_date||local?.release_date||local?.first_air_date||"");
@@ -567,8 +567,29 @@ async function titleNews(kind,id,env){
   if(seen.has(x.url)||seenTitle.has(signature))return false;
   seen.add(x.url);seenTitle.add(signature);return true;
  }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
+ // Identity-linked community reviews are a clearly labeled fallback, not
+ // publisher headlines. Their URLs are attached to this exact TMDB title ID.
+ const community=[];
+ if(articles.length<6){
+  const knownAuthors=new Set();
+  for(const review of [...(local?.reviews?.results||[]),...(item.reviews?.results||[])]){
+   const url=safeHttps(review?.url,"themoviedb.org");
+   const author=String(review?.author||"").normalize("NFKC").trim().slice(0,36);
+   const content=String(review?.content||"");
+   if(!url||!author||content.length<35||knownAuthors.has(author.toLowerCase()))continue;
+   const published=Date.parse(review?.created_at||review?.updated_at||"");
+   if(!Number.isFinite(published))continue;
+   knownAuthors.add(author.toLowerCase());
+   const chinese=/[\u3400-\u9fff]/.test(content);
+   community.push({title:(localized||original||"Movie")+" · "+(chinese?"观众影评":"Community film review")+" ("+author+")",
+     url,date:new Date(published).toISOString(),source:"TMDB · Community reviews",
+     language:chinese?"zh":"en",type:"community",titleMatchVerified:true});
+   if(community.length>=4)break;
+  }
+ }
+ const finalArticles=[...articles,...community].slice(0,24);
  return {ok:true,kind,tmdbId:Number(id),year:Number(year)||null,
-   status:articles.length?"ok":"no_data",articles,source:"Film title search",sourceDiagnostics:stats};
+   status:finalArticles.length?"ok":"no_data",articles:finalArticles,source:"Film title search",sourceDiagnostics:stats};
 }
 
 async function koreanBoxOffice(env){
