@@ -100,10 +100,11 @@
   // Research answers are deliberately NOT promoted to canonical ratings without a verified ID mapping.
   const maoyan='https://liangyou-maoyan-verified.maddestalistar.workers.dev';
   const extraRatings='https://liangyou-extra-ratings-lab.maddestalistar.workers.dev';
+  const cnAggregate='https://liangyou-taopiaopiao-lab.maddestalistar.workers.dev';
   const ratingPaths={
     kitsu:'/api/kitsu/anime/',bilibili:'/api/bilibili/season/',
     filmarks:'/api/filmarks/movie/',simkl:'/api/simkl/',
-    maoyan:'/api/movie/',mydramalist:'/api/mydramalist/drama/'
+    maoyan:'/api/movie/',mydramalist:'/api/mydramalist/drama/','cn-aggregate':'/api/movie/'
   };
   async function requestJSON(endpoint){const r=await fetch(endpoint,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('unavailable');return r.json();}
   function displayRatings(info){
@@ -116,10 +117,11 @@
       '<p class="mi-caption">'+t('当前作品：','Current title: ')+'<b>'+escape(info.title)+'</b> · '+t('仅按各平台原站 ID 查询，结果核验后单独展示，不会误写进上方评分。','Look up exact source IDs. Research results remain separate until identity is verified.')+'</p>'+
       '<form id="mtk-lookup"><label>'+t('评分平台','Rating source')+
       '<select id="mtk-rating-source" aria-label="'+t('评分平台','Rating source')+'">'+
-      '<option value="simkl">Simkl</option><option value="kitsu">Kitsu</option><option value="bilibili">Bilibili 番剧</option><option value="filmarks">Filmarks</option><option value="maoyan">猫眼 Maoyan</option><option value="mydramalist">MyDramaList</option></select></label>'+
+      '<option value="simkl">Simkl</option><option value="kitsu">Kitsu</option><option value="bilibili">Bilibili 番剧</option><option value="filmarks">Filmarks</option><option value="maoyan">猫眼 Maoyan</option><option value="mydramalist">MyDramaList</option><option value="cn-aggregate">豆瓣 / 猫眼 / 淘票票（第三方汇总）</option></select></label>'+
       '<label>'+t('原站作品 ID','Source title ID')+'<input id="mtk-rating-id" inputmode="numeric" pattern="[1-9][0-9]{0,9}" maxlength="10" required placeholder="'+t('原站数字 ID','Original numeric ID')+'"></label>'+
       '<button type="submit">'+t('查询评分','Look up')+'</button></form>'+
-      '<p class="mi-caption">'+t('各站 ID 不通用，请核对返回的作品名和年份；Filmarks、猫眼与 MyDramaList 为实验性或第三方来源。','Source IDs are not interchangeable. Verify title and year; Filmarks, Maoyan and MyDramaList use experimental or third-party sources.')+'</p>'+
+      (info.kind==='movie'&&Number(info.year?.slice(0,4))>=2017&&Number(info.year?.slice(0,4))<=new Date().getFullYear()?'<button class="mtk-find-aggregate" type="button" data-mtk-find-year="'+escape(info.year.slice(0,4))+'" data-mtk-find-name="'+escape(info.title)+'">'+t('按片名与年份查找三站评分','Find aggregated scores by title & year')+'</button><div class="mtk-find-results" aria-live="polite"></div>':'')+
+      '<p class="mi-caption">'+t('各站 ID 不通用；三站汇总是第三方页面数据，未获各平台官方独立验证，年度检索仅覆盖前300名。','IDs are not interchangeable. The three-platform aggregation is third-party data, not independently verified with official platforms. Yearly search covers only the top 300.')+'</p>'+
       '<div id="mtk-rating-result" aria-live="polite"></div>';
     section.appendChild(research);
     const ranking=document.createElement('details');ranking.className='mtk-details mtk-rankings';
@@ -130,24 +132,35 @@
   }
   dialog.addEventListener('change',function(ev){
     if(ev.target.id!=='mtk-rating-source')return;
-    const box=dialog.querySelector('#mtk-rating-id'),slug=ev.target.value==='mydramalist';
+    const box=dialog.querySelector('#mtk-rating-id'),slug=ev.target.value==='mydramalist',aggregate=ev.target.value==='cn-aggregate';
     if(!box)return;
     box.value='';box.inputMode=slug?'text':'numeric';
-    box.pattern=slug?'[1-9][0-9]{2,8}-[a-z0-9-]{2,100}':'[1-9][0-9]{0,9}';
-    box.maxLength=slug?110:10;
-    box.placeholder=slug?'58651-run-on':t('原站数字 ID','Original numeric ID');
+    box.pattern=slug?'[1-9][0-9]{2,8}-[a-z0-9-]{2,100}':aggregate?'[0-9]{8,14}':'[1-9][0-9]{0,9}';
+    box.maxLength=slug?110:aggregate?14:10;
+    box.placeholder=slug?'58651-run-on':aggregate?'00102032025':t('原站数字 ID','Original numeric ID');
     const result=dialog.querySelector('#mtk-rating-result');if(result)result.textContent='';
   });
   dialog.addEventListener('submit',async function(ev){
     if(ev.target.id!=='mtk-lookup')return;
     ev.preventDefault();
     const scope=ev.target,id=scope.querySelector('#mtk-rating-id').value.trim(),provider=scope.querySelector('#mtk-rating-source').value;
-    if(!ratingPaths[provider]||!(provider==='mydramalist'?/^[1-9]\d{2,8}-[a-z0-9-]{2,100}$/:/^[1-9]\d{0,9}$/).test(id))return;
+    if(!ratingPaths[provider]||!(provider==='mydramalist'?/^[1-9]\d{2,8}-[a-z0-9-]{2,100}$/:provider==='cn-aggregate'?/^\d{8,14}$/:/^[1-9]\d{0,9}$/).test(id))return;
     const pane=scope.parentElement.querySelector('#mtk-rating-result'),btn=scope.querySelector('[type="submit"]');
     btn.disabled=true;pane.textContent=t('正在核对原站…','Checking source…');
     try{
-      const data=await requestJSON((provider==='maoyan'?maoyan:extraRatings)+ratingPaths[provider]+encodeURIComponent(id));
+      const data=await requestJSON((provider==='maoyan'?maoyan:provider==='cn-aggregate'?cnAggregate:extraRatings)+ratingPaths[provider]+encodeURIComponent(id));
       if(!pane.isConnected)return;
+      if(provider==='cn-aggregate'){
+        const values=data.ratings;
+        if(data.code!==0||String(data.movieCode)!==id||!data.title||!values||!['maoyan','douban','taopiaopiao'].every(k=>values[k]===null||Number.isFinite(values[k])&&values[k]>=0&&values[k]<=10))throw Error('invalid');
+        const labels=[['maoyan','猫眼'],['douban','豆瓣'],['taopiaopiao','淘票票']];
+        pane.innerHTML='<p class="mi-caption">'+t('第三方汇总资料 · 需人工核对作品与上映时间','Third-party aggregation · verify title and release date')+'</p>'+
+          '<b>'+escape(data.title)+'</b><p class="mi-caption">'+escape(data.releaseDescription||'')+'</p>'+
+          '<div class="mtk-cn-ratings">'+labels.map(([key,label])=>'<div><span>'+label+'</span><strong>'+(values[key]===null?t('未收录','N/A'):escape(values[key])+'/10')+'</strong></div>').join('')+'</div>'+
+          '<p class="mi-caption">'+escape(stamp(data.fetchedAt))+' · '+t('非豆瓣、猫眼、淘票票官方授权 API；不可直接并入上方评分。','Not an authorized API of the listed platforms; not auto-merged into canonical scores.')+'</p>'+
+          (window.LiangYouMedia.safeURL(data.upstreamUrl)?'<a target="_blank" rel="noopener noreferrer" href="'+escape(data.upstreamUrl)+'">'+t('核对第三方原始页','Verify third-party source')+' ↗</a>':'');
+        return;
+      }
       const scale=provider==='maoyan'?10:data.scale;
       if(data.code!==0||String(data.id??data.movieId)!==id||![5,10,100].includes(scale)||data.rating!==null&&(!Number.isFinite(data.rating)||data.rating<0||data.rating>scale))throw Error('invalid');
       const link=window.LiangYouMedia.safeURL(data.pageUrl||data.sourceUrl);
@@ -160,6 +173,28 @@
     finally{btn.disabled=false;}
   });
   dialog.addEventListener('click',async function(ev){
+    const chosen=ev.target.closest('[data-mtk-aggregate-code]');
+    if(chosen){
+      const scope=dialog.querySelector('#mtk-lookup'),source=scope?.querySelector('#mtk-rating-source'),input=scope?.querySelector('#mtk-rating-id');
+      if(!scope||!source||!input)return;
+      source.value='cn-aggregate';source.dispatchEvent(new Event('change',{bubbles:true}));
+      input.value=chosen.dataset.mtkAggregateCode;
+      scope.requestSubmit();return;
+    }
+    const find=ev.target.closest('.mtk-find-aggregate');
+    if(find){
+      const pane=find.parentElement.querySelector('.mtk-find-results'),year=find.dataset.mtkFindYear,name=find.dataset.mtkFindName;
+      if(!/^20[12][0-9]$/.test(year)||!name)return;
+      find.disabled=true;pane.textContent=t('正在核对年度榜单…','Checking yearly leaderboard…');
+      try{
+        const d=await requestJSON(cnAggregate+'/api/search?year='+year+'&name='+encodeURIComponent(name));
+        if(!pane.isConnected)return;
+        if(d.code!==0||d.query!==name||String(d.year)!==year||!Array.isArray(d.data))throw Error('invalid');
+        pane.innerHTML=d.data.length?d.data.filter(x=>/^\d{8,14}$/.test(String(x.movieCode||''))).slice(0,5).map(x=>'<button type="button" class="mtk-aggregate-choice" data-mtk-aggregate-code="'+escape(x.movieCode)+'">'+escape(x.title)+' · '+escape(x.movieCode)+'</button>').join(''):'<p class="mi-caption">'+t('年度前300名未找到精确同名作品，不代表影片不存在。','No exact-title match within yearly top 300.')+'</p>';
+      }catch{if(pane.isConnected)pane.textContent=t('第三方年度检索暂不可用。','Third-party lookup unavailable.');}
+      finally{find.disabled=false;}
+      return;
+    }
     if(ev.target.id!=='mtk-box')return;
     const btn=ev.target,pane=btn.parentElement.querySelector('#mtk-box-result');
     btn.disabled=true;pane.textContent=t('读取票房榜单…','Loading box office…');
