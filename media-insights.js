@@ -97,6 +97,9 @@
           (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':
         '<p class="mi-caption">'+t('本片暂无匹配的 Guardian 文章，其他资讯与推荐仍可使用。','No matching Guardian stories; other recommendations remain available.')+'</p>')+'</section>'+
+      '<details class="mi-world-news"><summary>'+t('展开电影世界资讯 · Guardian 最新影视报道','Explore the wider film world · Guardian latest')+'</summary>'+
+      '<p class="mi-caption">'+t('以下是全球电影资讯，并非当前作品的相关新闻。按需加载，节省接口请求。','General film headlines, not necessarily related to this title. Loaded on demand.')+'</p>'+
+      '<div class="mi-world-news-list" aria-live="polite"></div></details>'+
       (suggestions.length?'<section class="mi-insight-block"><div class="mi-insight-head"><h3>'+t('相似题材探索','Similar-title discovery')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
         '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
         '<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div></section>':'');
@@ -187,6 +190,30 @@
     frame.allowFullscreen=true;
     host.replaceChildren(frame);
   });
+  root.addEventListener('toggle',async e=>{
+    if(!e.target.matches('.mi-world-news')||!e.target.open)return;
+    const pane=e.target.querySelector('.mi-world-news-list');
+    if(!pane||pane.dataset.loading==='1'||pane.dataset.loaded==='1')return;
+    pane.dataset.loading='1';
+    pane.textContent=t('正在读取 Guardian 电影资讯…','Loading Guardian film coverage…');
+    try{
+      const d=await json('/api/news/film');
+      if(!pane.isConnected)return;
+      if(d.status==='not_configured'){
+        pane.textContent=t('Guardian API 暂未配置。','Guardian API is not configured.');
+        pane.dataset.loaded='1';return;
+      }
+      if(d.ok!==true||!Array.isArray(d.articles))throw Error('news_not_available');
+      pane.innerHTML=d.articles.length?'<div class="mi-editorial-grid">'+d.articles.slice(0,6).map(x=>{
+        const picture=safe(x.thumbnail);
+        return '<article class="mi-editorial-card">'+(picture?'<img src="'+esc(picture)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
+          '<div class="mi-editorial-body"><span>'+esc(x.section||'Film')+' · '+esc(format(x.date))+'</span>'+
+          '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+'</div></article>';
+      }).join('')+'</div>':'<p class="mi-caption">'+t('暂时没有可用的电影资讯。','No film headlines are available.')+'</p>';
+      pane.dataset.loaded='1';
+    }catch{if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('电影资讯暂不可用，可稍后重新展开。','Film news is temporarily unavailable. Try expanding again later.')+'</p>';}
+    finally{if(pane.isConnected)delete pane.dataset.loading;}
+  },true);
   root.addEventListener('liangyou:media-detail',ev=>display(ev.detail));
   root.addEventListener('toggle',async e=>{
     if(!e.target.matches('.mi-rankings-drawer')||!e.target.open)return;
