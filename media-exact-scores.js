@@ -46,8 +46,8 @@
    const section=root.querySelector('#media-dialog .mi-ratings-section');if(!section)return;
    const block=document.createElement('section');block.className='mi-exact-scores';
    block.innerHTML='<p class="mi-caption">'+t('正在按已核对的跨平台作品 ID 获取更多评分…','Loading ratings by verified source IDs…')+'</p>';
-   const manual=section.querySelector('.mtk-rating-research');
-   if(manual)manual.before(block);else section.append(block);
+   const slot=section.querySelector('[data-mi-ratings-slot="exact"]');
+   if(slot)slot.appendChild(block);else section.append(block);
    const returned=await Promise.all(candidates.map(async entry=>({entry,result:await load(entry.path)})));
    if(!block.isConnected)return;
    const year=Number(String(info.year||'').slice(0,4));
