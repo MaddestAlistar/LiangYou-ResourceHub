@@ -1,0 +1,36 @@
+name: Deploy independent four-provider film ratings lab
+on:
+  push:
+    branches: [main]
+    paths:
+      - labs/extra-film-ratings-worker.mjs
+      - .github/workflows/deploy-extra-film-ratings.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-extra-film-ratings
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SIMKL_CLIENT_ID: ${{ secrets.SIMKL_CLIENT_ID_V2 || secrets.SIMKL_V2_CLIENT_ID || secrets.SIMKL_CLIENT_ID || secrets.SIMKL_CLIENT_KEY || vars.SIMKL_CLIENT_ID || vars.SIMKL_CLIENT_ID_V2 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Worker JS
+        run: node --check labs/extra-film-ratings-worker.mjs
+      - name: Publish isolated Worker
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx --yes wrangler@4 deploy labs/extra-film-ratings-worker.mjs --name liangyou-extra-ratings-lab --compatibility-date 2025-11-05
+      - name: Configure Simkl ID using encrypted Worker secret
+        if: env.SIMKL_CLIENT_ID != ''
+        run: |
+          printf '%s' "$SIMKL_CLIENT_ID" | npx --yes wrangler@4 secret put SIMKL_CLIENT_ID --name liangyou-extra-ratings-lab
