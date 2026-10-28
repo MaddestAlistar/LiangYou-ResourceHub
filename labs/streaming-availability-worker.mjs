@@ -355,62 +355,113 @@ function rssField(xml,tag){
  const re=new RegExp("<"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)<\\/"+tag+">","i");
  return rssDecoded(re.exec(xml)?.[1]||"");
 }
-function rssArticleMatches(headline,alias){
- const a=normalizedHeadline(alias),h=normalizedHeadline(headline);
- if(!a||!h)return false;
- const compact=a.replace(/ /g,"");
- const isAsian=/[\u3400-\u9fff\uac00-\ud7af]/.test(a);
- const quoted=["《"+alias+"》","“"+alias+"”",'"'+alias+'"',"'"+alias+"'"].some(v=>headline.toLowerCase().includes(v.toLowerCase()));
- if(isAsian){
-  if(compact.length<4)return quoted&&compact.length>=2;
-  return h.replace(/ /g,"").includes(compact);
- }
- if(a.length<7)return false;
- if(!(" "+h+" ").includes(" "+a+" "))return false;
- const generic=a.split(" ").length<2||a.length<10;
- return !generic||quoted||/\b(movie|film|series|season|episode|trailer|review|cinema|cast|tv|drama)\b/i.test(headline);
+function rssArticleMatches(headline,alias,context={}){
+ const name=normalizedHeadline(alias),text=normalizedHeadline(headline);
+ if(!name||!text)return false;
+ const tight=name.replace(/ /g,""),asian=/[\u3400-\u9fff\uac00-\ud7af]/.test(name);
+ const quoted=["《"+alias+"》","“"+alias+"”",'"'+alias+'"',"'"+alias+"'"].some(v=>
+   headline.toLowerCase().includes(v.toLowerCase()));
+ const exists=asian?text.replace(/ /g,"").includes(tight):(" "+text+" ").includes(" "+name+" ");
+ if(!exists)return false;
+ const distinctive=asian?tight.length>=6:name.length>=12&&name.includes(" ");
+ if(distinctive)return true;
+ const year=String(context.year||""),oldYear=String(Number(context.year||0)-10);
+ const hasYear=year.length===4&&headline.includes(year);
+ const isRemake=/live[\s-]?action|真人[版电影]|真人化|重制|翻拍|remake/i.test(headline);
+ const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|导演|演员|院线|票房|影片|上映|真人版/i.test(headline);
+ const person=(Array.isArray(context.people)?context.people:[]).some(p=>p.length>=5&&
+   normalizedHeadline(headline).includes(normalizedHeadline(p)));
+ // Moana (2016) vs the identically named live-action Moana (2026), or any
+ // generic-word movie title: never match on the word alone.
+ if(oldYear.length===4&&headline.includes(oldYear)&&!hasYear&&!isRemake&&!person)return false;
+ if(asian&&tight.length<4)return (quoted&&filmContext)||hasYear&&filmContext||person&&filmContext;
+ if(!asian&&!name.includes(" "))return hasYear&&filmContext||isRemake&&filmContext||
+   person&&filmContext||quoted&&filmContext;
+ return quoted||hasYear&&filmContext||person&&filmContext;
 }
 async function titleNews(kind,id,env){
  const item=await tmdbInfo(kind,id,env,true);
+ // Use the localized title from the same numeric TMDB identity. The English
+ // original alone cannot discover Chinese coverage of remakes or local releases.
+ let local=null;
+ try{
+  const v=await tmdbInfo(kind,id,env,true,"zh-CN");
+  if(Number(v.id)===Number(id))local=v;
+ }catch{/* English title / regional alt names remain available. */}
+ const release=String(item.release_date||item.first_air_date||local?.release_date||local?.first_air_date||"");
+ const year=release.slice(0,4);
  const original=String(item.original_title||item.original_name||"").trim();
- const name=String(item.title||item.name||"").trim();
- const alt=Array.isArray(item.alternative_titles?.titles)?item.alternative_titles.titles:
-   Array.isArray(item.alternative_titles?.results)?item.alternative_titles.results:[];
- const distinct=[...new Set([
-   ...alt.filter(v=>["CN","HK","TW"].includes(v.iso_3166_1)).map(v=>String(v.title||v.name||"").trim()),
-   original,name
- ].filter(v=>v.length>=3&&v.length<=80&&!/[<>]/.test(v)))];
- const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v));
- const foreign=distinct.find(v=>!/[^\u0000-\u007f]/.test(v)&&v.split(" ").length>=2&&v.length>=7)||
-   distinct.find(v=>/[\uac00-\ud7af]/.test(v));
- const queryNames=[...new Set([asian,foreign,original].filter(Boolean))].slice(0,2);
- if(!queryNames.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
- const items=await Promise.all(queryNames.map(async alias=>{
+ const localized=String(local?.title||local?.name||"").trim();
+ const names=[original,String(item.title||item.name||"").trim(),localized];
+ const alt=[...(item.alternative_titles?.titles||item.alternative_titles?.results||[]),
+  ...(local?.alternative_titles?.titles||local?.alternative_titles?.results||[])];
+ names.push(...alt.filter(v=>["CN","HK","TW","US","GB","KR","JP"].includes(v.iso_3166_1))
+   .map(v=>String(v.title||v.name||"").trim()));
+ const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
+ const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
+  ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
+ const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v)&&v.length>=4);
+ const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
+ const genre=String(item.genres?.[0]?.name||"").trim();
+ const queries=[];
+ const add=(alias,query,locale)=>{if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale});};
+ if(asian){
+  add(asian,'"'+asian+'" '+year,'zh');
+  // "海洋奇缘：启航" is widely covered as "真人版《海洋奇缘》".
+  const root=asian.split(/[：:]/)[0].trim();
+  if(root!==asian&&root.length>=4)
+   add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)','zh');
+  else add(asian,'"'+asian+'" 电影 '+year,'zh');
+ }
+ if(originalLatin){
+  const rare=originalLatin.length<13&&!originalLatin.includes(" ");
+  if(rare){
+   add(originalLatin,'"'+originalLatin+'" '+year+' '+(genre||"movie")+' film','en');
+   if(people.length)add(originalLatin,'"'+originalLatin+'" "'+people[0]+'" movie','en');
+  }else{
+   add(originalLatin,'"'+originalLatin+'" '+year+' movie','en');
+  }
+ }
+ if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
+ // Limit the number of uncached upstream searches per opened work.
+ const requests=queries.slice(0,4).map(async ({alias,query,locale})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
-  endpoint.searchParams.set("q",'"'+alias.replace(/"/g,"")+'" when:2y');
-  endpoint.searchParams.set("hl","en-US");endpoint.searchParams.set("gl","US");endpoint.searchParams.set("ceid","US:en");
+  endpoint.searchParams.set("q",query+" when:2y");
+  if(locale==="zh"){
+   endpoint.searchParams.set("hl","zh-CN");
+   endpoint.searchParams.set("gl","HK");
+   endpoint.searchParams.set("ceid","HK:zh-Hans");
+  }else{
+   endpoint.searchParams.set("hl","en-US");
+   endpoint.searchParams.set("gl","US");
+   endpoint.searchParams.set("ceid","US:en");
+  }
   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),7200);
   try{
    const res=await fetch(endpoint.toString(),{signal:ac.signal,headers:{"Accept":"application/rss+xml, application/xml, text/xml"}});
    if(!res.ok)return [];
    const xml=(await res.text()).slice(0,400000);
    if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml))return [];
-   const now=Date.now();
-   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,45).map(m=>{
+   const now=Date.now(),ctx={year,people};
+   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50).map(m=>{
     const raw=m[1],title=rssField(raw,"title"),url=safeHttps(rssField(raw,"link"),"news.google.com");
-    const date=rssField(raw,"pubDate"),stamp=Date.parse(date);
-    const match=rssArticleMatches(title,alias);
+    const stamp=Date.parse(rssField(raw,"pubDate"));
+    // Use the query alias and independent movie identity signals. A random
+    // "obsession" article must not pass just because the word is in the title.
+    const match=rssArticleMatches(title,alias,ctx);
     if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<now-730*86400000)return null;
     const publisher=rssField(raw,"source");
-    return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),source:publisher.slice(0,60)||"Google News",
-      language:/[\u3400-\u9fff]/.test(title)?"zh":/[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
+    return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
+      source:publisher.slice(0,60)||"Google News",language:/[\u3400-\u9fff]/.test(title)?"zh":
+      /[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
    }).filter(Boolean);
   }catch{return [];}finally{clearTimeout(timer);}
- }));
- const seen=new Set(),articles=items.flat().filter(row=>{
-  if(seen.has(row.url))return false;seen.add(row.url);return true;
- }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,18);
- return {ok:true,kind,tmdbId:Number(id),status:articles.length?"ok":"no_data",articles,source:"Google News RSS title search"};
+ });
+ const batches=await Promise.all(requests),seen=new Set();
+ const articles=batches.flat().filter(x=>{if(seen.has(x.url))return false;seen.add(x.url);return true;})
+   .sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
+ return {ok:true,kind,tmdbId:Number(id),year:Number(year)||null,
+   status:articles.length?"ok":"no_data",articles,source:"Google News RSS title search"};
 }
 
 async function koreanBoxOffice(env){
