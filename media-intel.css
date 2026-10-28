@@ -98,3 +98,13 @@
  #media .mi-insight-highlight strong{font-size:18px}
  #media .mi-people{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* Collapsed six-domain source registry, no clutter on narrow screens. */
+#media .mi-source-registry{margin:14px 0 4px;padding:11px 12px;border:1px solid var(--mi-line);background:#111c2d;border-radius:12px}
+#media .mi-source-registry summary{color:#cbd9ef;font-size:12px;font-weight:600;cursor:pointer}
+#media .mi-source-registry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+#media .mi-source-registry-grid>div{min-width:0;padding:9px 11px;background:#0c1524;border-radius:9px;border:1px solid #aec0d523}
+#media .mi-source-registry-grid b{display:block;font-size:11px;color:#eed3a0;margin-bottom:5px}
+#media .mi-source-registry-grid span{display:block;font-size:10px;line-height:1.6;color:#aab9d1;overflow-wrap:anywhere}
+@media(max-width:600px){#media .mi-source-registry-grid{grid-template-columns:1fr}}
