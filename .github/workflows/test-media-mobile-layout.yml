@@ -6,6 +6,9 @@ on:
       - 'media-intel.css'
       - 'media-intel.js'
       - 'media-insights.js'
+      - 'scripts/test_media_cn_panels.mjs'
+      - 'media-cn-enhance.css'
+      - 'media-cn-enhance.js'
       - 'index.html'
       - 'scripts/test_media_mobile_layout.mjs'
       - '.github/workflows/test-media-mobile-layout.yml'
@@ -31,6 +34,8 @@ jobs:
           sleep 2
       - name: Check 360px and 390px card alignment
         run: node scripts/test_media_mobile_layout.mjs
+      - name: Check domestic independent rating cards and news interactions
+        run: node scripts/test_media_cn_panels.mjs
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
