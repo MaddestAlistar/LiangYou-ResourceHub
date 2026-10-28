@@ -5,6 +5,8 @@ on:
     paths:
       - index.html
       - media-intel.js
+      - media-intel.css
+      - media-insights.js
       - media-toolkit.js
       - media-toolkit.css
       - labs/streaming-availability-worker.mjs
@@ -27,6 +29,7 @@ jobs:
       - name: Validate JavaScript syntax and no public credentials
         run: |
           node --check media-intel.js
+          node --check media-insights.js
           node --check media-toolkit.js
           node --check labs/streaming-availability-worker.mjs
           python - <<'PY'
@@ -38,6 +41,9 @@ jobs:
           assert html.count('src="./media-toolkit.js?')==1
           assert html.count('href="./media-toolkit.css?')==1
           assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
+          assert "media-insights.js" in html
+          assert "mi-trailer-trigger" in Path("media-insights.js").read_text()
+          assert "mi-grid .mi-card-copy" in Path("media-intel.css").read_text()
           assert "data-mi-status" in base and "LiangYouWatchlist" in toolkit
           assert "data-mtk-export" in toolkit and "tmdbID,imdbID,Title,Year" in toolkit
           assert "JustWatch via TMDB" in worker and "TMDB_READ_ACCESS_TOKEN" in worker
