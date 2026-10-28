@@ -84,6 +84,10 @@
     $('#media-dialog-body').innerHTML=`<div class="mi-detail-head">${poster(i)}<div><p class="mi-kicker">${escape(i.source)} · ${escape(i.date?.slice(0,4)||'')}</p><h2 id="media-dialog-title">${escape(title(i))}</h2><p class="mi-original">${escape(i.original_title!==title(i)?i.original_title:'')}</p><div class="mi-scores">${scores(merged)}</div>${omdb?`<p class="mi-caption">OMDb · ${format(omdb.checked_at)}</p>`:''}<div class="mi-detail-links">${link(i.url,escape(i.source))}${i.imdb_id?link('https://www.imdb.com/title/'+i.imdb_id+'/', 'IMDb'):''}${i.source==='Simkl'?'<img src="./assets/media-simkl.png" width="24" height="24" alt="Simkl">':''}</div></div></div><p class="mi-overview">${escape(i.overview||text('简介暂缺，请查看原站详情。','No synopsis available. Visit the source for details.'))}</p>${i.air_at?`<p class="mi-caption">${text('播出时间（北京）','Airing (UTC+8)')} ${format(i.air_at)}${i.episode?' · E'+escape(i.episode):''}</p>`:''}<div class="mi-detail-block"><h3>${text('在哪里看','Where to watch')}</h3>${providers}${link('https://www.watchmode.com','Watchmode')}</div><div class="mi-detail-block"><h3>${text('字幕情报','Subtitle intelligence')}</h3><p class="mi-caption">${text('结果仅供检索，请核对年份、季集、语言与片源版本。','Check the year, episode, language and release before choosing subtitles.')}</p>${subtitles}<div class="mi-detail-links">${link('https://assrt.net/sub/?searchword='+encodeURIComponent(i.original_title||i.title),text('伪射手网继续搜索','Search on assrt.net'))}${link('https://www.opensubtitles.com',text('打开 OpenSubtitles','Open OpenSubtitles'))}</div></div>`;
     $('#media-dialog-close').textContent=text('关闭','Close');
     const dialog=$('#media-dialog');if(!dialog.open)dialog.showModal();
+    root.dispatchEvent(new CustomEvent('liangyou:media-detail',{detail:{
+      id:i.id,title:i.title,originalTitle:i.original_title||i.english_title||'',
+      year:i.date||'',kind:i.kind,tmdbId:i.tmdb_id,imdbId:i.imdb_id
+    }}));
     dialog.querySelectorAll('.mi-poster img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;},{once:true}));
   }
   root.addEventListener('click',e=>{
