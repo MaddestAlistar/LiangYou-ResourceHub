@@ -65,6 +65,7 @@ jobs:
           TRAKT_CLIENT_ID: ${{ secrets.TRAKT_CLIENT_ID || vars.TRAKT_CLIENT_ID }}
           SIMKL_CLIENT_ID_V2: ${{ secrets.SIMKL_CLIENT_ID_V2 || secrets.SIMKL_V2_CLIENT_ID || secrets.SIMKL_CLIENT_ID || secrets.SIMKL_CLIENT_KEY || vars.SIMKL_CLIENT_ID }}
           OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+          MDBLIST_API_KEY: ${{ secrets.MDBLIST_API_KEY || secrets.MDB_LIST_API_KEY }}
           WATCHMODE_API_KEY: ${{ secrets.WATCHMODE_API_KEY }}
           OPENSUBTITLES_API_KEY: ${{ secrets.OPENSUBTITLES_API_KEY || secrets.OPEN_SUBTITLES_API_KEY }}
           ASSRT_TOKEN: ${{ secrets.ASSRT_TOKEN || secrets.ASSRT_API_TOKEN || secrets.ASSRT_API_KEY || secrets.SHOOTER_API_KEY }}

@@ -5,6 +5,7 @@ Per-source caches survive failures. Watchmode: <= 4 searches + 4 sources/day.
 from __future__ import annotations
 import hashlib, html, io, json, os, re, sys
 from concurrent.futures import ThreadPoolExecutor
+from itertools import zip_longest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode, urlparse, parse_qs
@@ -12,6 +13,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from zoneinfo import ZoneInfo
 from feed_common import ROOT, now, iso, date, read_json, write_json
+from media_catalog import build_catalog, normalized_ratings
 
 UA = 'LiangYouResourceHub/1.0 (https://github.com/MaddestAlistar/LiangYou-ResourceHub)'
 PATH = ROOT / 'data/media-intel.json'
@@ -27,6 +29,7 @@ SOURCES = {
  'watchmode': ('Watchmode','https://www.watchmode.com',24),
  'opensubtitles': ('OpenSubtitles','https://www.opensubtitles.com',24),
  'assrt': ('伪射手网','https://assrt.net',24),
+ 'mdblist': ('MDBList','https://mdblist.com',24),
 }
 KEY_NAMES = {
  'tmdb': ('TMDB_READ_ACCESS_TOKEN','TMDB_ACCESS_TOKEN','TMDB_API_TOKEN','TMDB_API_KEY','TMDB_TOKEN'),
@@ -37,8 +40,9 @@ KEY_NAMES = {
  'watchmode': ('WATCHMODE_API_KEY',),
  'opensubtitles': ('OPENSUBTITLES_API_KEY','OPEN_SUBTITLES_API_KEY'),
  'assrt': ('ASSRT_TOKEN','ASSRT_API_TOKEN','ASSRT_API_KEY','SHOOTER_API_KEY'),
+ 'mdblist': ('MDBLIST_API_KEY','MDB_LIST_API_KEY'),
 }
-SOURCE_REVISIONS = {"omdb": 2, "assrt": 2}
+SOURCE_REVISIONS = {"omdb": 2, "assrt": 2, "tmdb": 3, "tvmaze": 3, "anilist": 3, "trakt": 3, "simkl": 3}
 CACHE = {}
 TMDB_MEM = {}
 
@@ -121,8 +125,26 @@ def tmdb_item(x, kind):
 def detail(tid,kind):
     ident=f'{kind}-{tid}'
     if ident not in TMDB_MEM:
-        TMDB_MEM[ident]=cached('tmdb-detail',ident,72,lambda:tmdb(f'{kind}/{tid}',append_to_response='external_ids'))
-    return tmdb_item(TMDB_MEM[ident],kind)
+        TMDB_MEM[ident]=cached('tmdb-profile-v2',ident,72,lambda:tmdb_profile(tmdb(f'{kind}/{tid}',append_to_response='external_ids,credits,videos,recommendations'),kind))
+    return dict(TMDB_MEM[ident])
+
+def tmdb_profile(x,kind):
+    item=tmdb_item(x,kind);credits=x.get('credits') or {}
+    creators=[{'name':p.get('name',''),'role':'Director','url':f'https://www.themoviedb.org/person/{p["id"]}'} for p in credits.get('crew',[]) if p.get('job')=='Director']
+    creators += [{'name':p.get('name',''),'role':'Creator','url':f'https://www.themoviedb.org/person/{p["id"]}'} for p in x.get('created_by',[])]
+    item['profile']={
+      'checked_at':iso(),'via':'TMDB','tagline':clean(x.get('tagline')),
+      'genres':[g['name'] for g in x.get('genres',[])],'runtime':x.get('runtime') or next(iter(x.get('episode_run_time') or []),None),
+      'status':x.get('status',''),'languages':[v.get('name') or v.get('english_name') for v in x.get('spoken_languages',[])],
+      'countries':[v.get('name') for v in x.get('production_countries',[])],
+      'creators':creators[:6],
+      'cast':[{'name':p.get('name',''),'character':p.get('character',''),'url':f'https://www.themoviedb.org/person/{p["id"]}'} for p in credits.get('cast',[])[:10]],
+      'seasons':[{'number':s['season_number'],'name':s.get('name',''),'episodes':s.get('episode_count'),'date':s.get('air_date',''),'url':f'https://www.themoviedb.org/tv/{x["id"]}/season/{s["season_number"]}'} for s in x.get('seasons',[]) if s.get('season_number',0)>0],
+      'videos':[{'name':v.get('name',''),'url':'https://www.youtube.com/watch?v='+v['key']} for v in (x.get('videos') or {}).get('results',[]) if v.get('site')=='YouTube' and v.get('official') and v.get('type') in ('Trailer','Teaser') and re.fullmatch(r'[A-Za-z0-9_-]{11}',v.get('key',''))][:3],
+      'related':[{'id':f'tmdb-{kind}-{r["id"]}','title':r.get('title') or r.get('name',''),'url':f'https://www.themoviedb.org/{kind}/{r["id"]}'} for r in (x.get('recommendations') or {}).get('results',[])[:6]],
+      'episodes':x.get('number_of_episodes'),'season_count':x.get('number_of_seasons'),
+    }
+    return item
 
 def collect_tmdb():
     items=[]
@@ -130,13 +152,15 @@ def collect_tmdb():
         for x in tmdb(f'trending/{kind}/week')['results'][:20]:
             if x.get('adult'): continue
             item=tmdb_item(x,kind);item['category']=category
-            if len(items)<8 or (kind=='tv' and sum(i['kind']=='tv' for i in items)<8):
-                try: item.update(detail(x['id'],kind))
-                except FeedError: pass
+            try: item.update(detail(x['id'],kind))
+            except FeedError: pass
             items.append(item)
     for x in tmdb('movie/upcoming',region='CN')['results'][:16]:
         if not x.get('adult') and x.get('release_date','') >= now().astimezone(ZoneInfo('Asia/Shanghai')).date().isoformat():
-            item=tmdb_item(x,'movie');item['category']='upcoming';items.append(item)
+            item=tmdb_item(x,'movie')
+            try: item.update(detail(x['id'],'movie'))
+            except FeedError: pass
+            item['category']='upcoming';items.append(item)
     if not items: raise FeedError('empty_response')
     return items
 
@@ -182,6 +206,7 @@ def collect_tvmaze():
           'poster':loc.get('poster') or (s.get('image') or {}).get('medium',''),
           'ratings':rating('TVmaze',(s.get('rating') or {}).get('average')),
           'imdb_id':(s.get('externals') or {}).get('imdb',''),'url':safe_url(e.get('url')),
+          'tmdb_id':loc.get('tmdb_id'),'tvmaze_id':s['id'],'tvdb_id':(s.get('externals') or {}).get('thetvdb'),
           'air_at':iso(stamp),'season':e.get('season'),'episode':e.get('number'),
           'episode_title':e.get('name',''),'channel':channel.get('name',''),'source':'TVmaze'})
     return items
@@ -203,7 +228,7 @@ def collect_bangumi():
 
 def collect_anilist():
     d=now().astimezone(ZoneInfo('Asia/Shanghai'))
-    query='''query($year:Int,$season:MediaSeason){Page(page:1,perPage:30){media(type:ANIME,seasonYear:$year,season:$season,sort:TRENDING_DESC,isAdult:false){id title{native romaji english} description coverImage{large} averageScore episodes siteUrl startDate{year month day} nextAiringEpisode{episode airingAt}}}}'''
+    query='''query($year:Int,$season:MediaSeason){Page(page:1,perPage:30){media(type:ANIME,seasonYear:$year,season:$season,sort:TRENDING_DESC,isAdult:false){id idMal title{native romaji english} description coverImage{large} averageScore episodes siteUrl startDate{year month day} nextAiringEpisode{episode airingAt}}}}'''
     data=get('https://graphql.anilist.co',body={'query':query,'variables':{'year':d.year,'season':['WINTER','SPRING','SUMMER','FALL'][(d.month-1)//3]}})
     items=[]
     for x in data['data']['Page']['media']:
@@ -213,6 +238,7 @@ def collect_anilist():
           'overview':clean(x.get('description')),'overview_language':'en','poster':x['coverImage'].get('large',''),
           'date':'-'.join(str(start[k]).zfill(2) for k in ('year','month','day')) if all(start.get(k) for k in ('year','month','day')) else '',
           'ratings':rating('AniList',x.get('averageScore'),100),'episodes':x.get('episodes'),'episode':a.get('episode'),
+          'mal_id':x.get('idMal'),
           'air_at':iso(datetime.fromtimestamp(a['airingAt'],timezone.utc)) if a.get('airingAt') else '',
           'url':safe_url(x.get('siteUrl')),'source':'AniList'})
     if not items: raise FeedError('empty_response')
@@ -254,10 +280,10 @@ def collect_simkl():
 
 def enrich(source,candidates):
     token=key(source); out=[]
-    limit={'omdb':12,'watchmode':4,'opensubtitles':6,'assrt':6}[source]
+    limit={'omdb':12,'mdblist':32,'watchmode':4,'opensubtitles':6,'assrt':6}[source]
     for item in candidates[:limit]:
         imdb=item.get('imdb_id',''); ident=item['id']
-        if not imdb and source!='assrt': continue
+        if not imdb and source not in ('assrt','mdblist'): continue
         entry={'target_id':ident,'imdb_id':imdb,'checked_at':iso()}
         if source=='omdb':
             x=get('https://www.omdbapi.com/',{'apikey':token,'i':imdb,'plot':'short'})
@@ -265,6 +291,16 @@ def enrich(source,candidates):
                 if 'limit' in x.get('Error','').lower() or 'key' in x.get('Error','').lower(): raise FeedError('api_error')
                 continue
             entry['ratings']=omdb_ratings(x)
+        elif source=='mdblist':
+            if not item.get('tmdb_id') or item.get('kind') not in ('movie','tv'): continue
+            kind='movie' if item['kind']=='movie' else 'show'
+            try: x=get(f'https://api.mdblist.com/tmdb/{kind}/{item["tmdb_id"]}',{'apikey':token})
+            except FeedError as exc:
+                if str(exc)=='http_404': continue
+                raise
+            if x.get('error'): raise FeedError('api_error')
+            if imdb and x.get('imdb_id') and x['imdb_id']!=imdb: continue
+            entry['ratings']=normalized_ratings(x.get('ratings',[]),'MDBList',entry['checked_at'])
         elif source=='watchmode':
             # Exact external ID lookup. No fuzzy title matching, US availability only.
             x=get('https://api.watchmode.com/v1/search/',{'apiKey':token,'search_field':'imdb_id','search_value':imdb})
@@ -396,8 +432,15 @@ def main():
             seen.add(imdb);candidates.append(i)
     for name in ('omdb','watchmode','opensubtitles','assrt'):
         sources[name]=refresh_source(name,sources.get(name),lambda n=name:enrich(n,candidates))
+    # Alternate movies and shows so a daily rating budget covers both equally.
+    tmdb_items=sources['tmdb'].get('items',[])
+    movies=[i for i in tmdb_items if i.get('category')=='movies']
+    shows=[i for i in tmdb_items if i.get('category')=='series']
+    rating_candidates=[i for pair in zip_longest(movies,shows) for i in pair if i]
+    sources['mdblist']=refresh_source('mdblist',sources.get('mdblist'),lambda:enrich('mdblist',rating_candidates))
     localize_images(sources)
-    output={'schema':1,'media_source_version':2,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources}
+    works,aliases=build_catalog(sources)
+    output={'schema':1,'media_source_version':3,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
     serialized=json.dumps([output,CACHE],ensure_ascii=False)

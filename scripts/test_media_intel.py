@@ -2,8 +2,50 @@ import unittest
 from unittest.mock import patch
 from datetime import timedelta
 import update_media_intel as m
+from media_catalog import build_catalog, normalized_ratings
 
 class MediaTests(unittest.TestCase):
+    def test_cross_source_identity_and_episode_series_identity(self):
+        sources={'tmdb':{'items':[{'id':'tmdb-tv-10','kind':'tv','tmdb_id':10,'imdb_id':'tt1234567','title':'A'}]},
+          'tvmaze':{'items':[{'id':'tvmaze-episode-1','tvmaze_id':9,'imdb_id':'tt1234567','kind':'tv','title':'A'},
+                              {'id':'tvmaze-episode-2','tvmaze_id':9,'kind':'tv','title':'A'}]},
+          'trakt':{'items':[{'id':'trakt-tv-77','tmdb_id':10,'kind':'tv','title':'English'}]}}
+        works,aliases=build_catalog(sources)
+        self.assertEqual(len(works),1)
+        self.assertEqual(aliases['tvmaze-episode-2'],'tmdb-tv-10')
+        self.assertEqual(aliases['trakt-tv-77'],'tmdb-tv-10')
+    def test_equal_names_and_numeric_ids_do_not_merge_movies_with_shows(self):
+        sources={'tmdb':{'items':[{'id':'tmdb-movie-10','kind':'movie','tmdb_id':10,'title':'Same'},
+                                  {'id':'tmdb-tv-10','kind':'tv','tmdb_id':10,'title':'Same'}]},
+                 'bangumi':{'items':[{'id':'bangumi-10','kind':'anime','title':'Same'}]}}
+        works,_=build_catalog(sources)
+        self.assertEqual(len(works),3)
+    def test_rating_scales_dedupe_and_critic_audience_separation(self):
+        sources={'tmdb':{'name':'TMDB','items':[{'id':'tmdb-movie-1','kind':'movie','tmdb_id':1,'imdb_id':'tt1234567','title':'A','source':'TMDB','ratings':[{'source':'TMDB','value':8,'scale':10}]}]},
+          'omdb':{'name':'OMDb','items':[{'target_id':'tmdb-movie-1','ratings':[{'source':'Internet Movie Database','display':'8.8/10'}]}]},
+          'mdblist':{'name':'MDBList','items':[{'target_id':'tmdb-movie-1','ratings':[{'source':'imdb','value':8.7},{'source':'tomatoes','value':80},{'source':'popcorn','value':95},{'source':'letterboxd','value':4.1},{'source':'bogus','value':4}]}]}}
+        works,_=build_catalog(sources);scores={r['source']:r for r in works['tmdb-movie-1']['ratings']}
+        self.assertEqual(scores['IMDb']['value'],8.8)
+        self.assertEqual(scores['IMDb']['via'],'OMDb')
+        self.assertEqual(scores['Letterboxd']['scale'],5)
+        self.assertEqual(scores['Rotten Tomatoes']['display'],'80%')
+        self.assertEqual(scores['RT Audience']['display'],'95%')
+        self.assertNotIn('bogus',scores)
+        self.assertEqual(normalized_ratings([{'source':'imdb','value':None},{'source':'imdb','value':float('nan')},{'source':'imdb','value':80}],'MDBList',None),[])
+    def test_mdblist_exact_id_budget_and_wrong_work_rejection(self):
+        rows=[{'id':f'tmdb-movie-{n}','kind':'movie','tmdb_id':n,'imdb_id':'tt1234567'} for n in range(1,41)]
+        with patch.object(m,'key',return_value='test'),patch.object(m,'get',return_value={'ratings':[{'source':'imdb','value':8.2}]}) as get:
+            result=m.enrich('mdblist',rows)
+            self.assertEqual(len(result),32);self.assertEqual(get.call_count,32)
+            self.assertEqual(get.call_args_list[0].args[0],'https://api.mdblist.com/tmdb/movie/1')
+        with patch.object(m,'key',return_value='test'),patch.object(m,'get',return_value={'imdb_id':'tt9999999','ratings':[]}):
+            with self.assertRaises(m.FeedError):m.enrich('mdblist',rows[:1])
+    def test_tmdb_profile_keeps_only_official_video_links(self):
+        x={'id':1,'title':'A','credits':{'cast':[{'id':2,'name':'Actor','character':'Role'}]},
+           'videos':{'results':[{'site':'YouTube','official':True,'type':'Trailer','key':'abcdefghijk','name':'Trailer'},
+                                 {'site':'YouTube','official':False,'type':'Trailer','key':'abcdefghijk'}]}}
+        p=m.tmdb_profile(x,'movie')['profile']
+        self.assertEqual(len(p['videos']),1);self.assertEqual(p['cast'][0]['name'],'Actor')
     def test_failure_preserves_real_timestamp_and_content(self):
         old={'status':'ok','items':[{'id':'1'}],'updated_at':'2026-01-01T00:00:00Z','checked_at':'2026-01-01T00:00:00Z'}
         with patch.object(m,'now',return_value=m.date('2026-02-01T00:00:00Z')):
