@@ -55,6 +55,7 @@ def test(row):
   verdict="STATUS_ONLY" if good else "FAIL"
  elif kind=="ahua_detail":
   good=code==200 and isinstance(d,dict) and d.get("_meta",{}).get("success") is True and d.get("basic",{}).get("movieName") not in (None,"","未知电影")
+  movie=d.get("basic",{}) if isinstance(d,dict) else {}
   has_rating=bool(isinstance(d,dict) and any((d.get("rating") or {}).values()))
   has_box=bool(movie.get("boxOffice") and movie.get("boxOffice")!="未找到票房数据")
   verdict=("DATA_OK" if has_rating and has_box else "PARTIAL_DATA") if good else "FAIL_OR_EMPTY"
