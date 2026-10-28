@@ -39,7 +39,10 @@
     const kind=info?.kind,id=Number(info?.tmdbId);
     if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return Promise.resolve(null);
     const key=kind+':'+id;
-    if(!remoteCache.has(key))remoteCache.set(key,(async()=>{
+    const previous=remoteCache.get(key);
+    if(previous&&Date.now()-previous.at<previous.ttl)return previous.promise;
+    const entry={at:Date.now(),ttl:120000,promise:null};
+    entry.promise=(async()=>{
       try{
         const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=4',{
           signal:AbortSignal.timeout(21000)});
@@ -54,8 +57,14 @@
           .slice(0,18).map(x=>({...x,url:safeUrl(x.url)}));
         return {articles};
       }catch{return null;}
-    })());
-    return remoteCache.get(key);
+    })().then(result=>{
+      // Empty or failed searches may recover later; successful exact-ID matches
+      // can stay cached for longer without hammering external providers.
+      entry.ttl=result?.articles?.length?3600000:120000;
+      return result;
+    });
+    remoteCache.set(key,entry);
+    return entry.promise;
   }
   window.LiangYouTitleNews=Object.freeze({forInfo,remoteForInfo});
 })();
