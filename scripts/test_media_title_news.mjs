@@ -44,5 +44,5 @@ test('YouTube extras and domestic related clips are separately limited',()=>{
  assert.match(clips,/result\\.relatedVideos=matched\\.slice\\(0,2\\)/);
  assert.match(ui,/domesticRelated\\.slice\\(0,6\\)/);
  assert.match(ui,/data-mi-play-cn/);
- assert.doesNotMatch(ui,/relatedCards\\.length\\+'\\/5'/);
+ assert.ok(!ui.includes("relatedCards.length+'/5'"));
 });
