@@ -119,8 +119,20 @@
     return `<section class="mi-detail-block"><h3>${text("票房情报","Box office")}</h3><p class="mi-caption">${text("单片、国家、币种和统计周期独立展示。","Keep film totals, regions, currencies and periods separate.")}</p></section>`;
   }
   function discoverPanel(w){
+    // Keep a stable DOM order: asynchronous international and mainland news may
+    // resolve in either order, but never change the section sequence.
     const p=w.profile||{};
-    return `${p.videos?.length?`<section class="mi-detail-block"><h3>${text('官方预告','Official trailers')}</h3><div class="mi-detail-links">${p.videos.map(v=>link(v.url,'▶ '+esc(v.name))).join('')}</div><p class="mi-caption">${text('在 YouTube 打开，播放情况取决于地区和网络。','Opens on YouTube. Availability depends on your region and connection.')}</p></section>`:''}${p.related?.length?`<section class="mi-detail-block"><h3>${text('还可以看看','More to explore')}</h3><div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return /^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(target)?`<button type="button" data-mi-related="${esc(target)}">${esc(cat.works[target]?title(cat.works[target]):r.title)} <span aria-hidden="true">→</span></button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p></section>`:''}`;
+    const official=p.videos?.length
+      ?`<section class="mi-detail-block mi-official-trailer-fallback"><h3>${text('预告片','Trailers')}</h3><div class="mi-detail-links">${p.videos.map(v=>link(v.url,'▶ '+esc(v.name))).join('')}</div><p class="mi-caption">${text('原始预告片链接由 TMDB 提供，可在 YouTube 查看。','Original trailer links from TMDB can be opened on YouTube.')}</p></section>`
+      :`<section class="mi-insight-block mi-official-trailer-fallback"><h3>${text('预告片','Trailers')}</h3><p class="mi-caption">${text('正在核对可播放的预告片…','Checking available trailers…')}</p></section>`;
+    const related=p.related?.length
+      ?`<div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return /^tmdb-(?:movie|tv)-[1-9]\\d{0,9}$/.test(target)?`<button type="button" data-mi-related="${esc(target)}">${esc(cat.works[target]?title(cat.works[target]):r.title)} <span aria-hidden="true">→</span></button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p>`
+      :`<p class="mi-caption">${text('暂无可核验的相关作品推荐。','No verified related titles available.')}</p>`;
+    return `<div class="mi-discover-slot" data-mi-discover-slot="trailers">${official}</div>
+      <div class="mi-discover-slot" data-mi-discover-slot="international"><section class="mi-insight-block"><h3>${text('国际新闻','International news')}</h3><p class="mi-caption">${text('正在核对相关报道…','Checking related coverage…')}</p></section></div>
+      <div class="mi-discover-slot" data-mi-discover-slot="domestic"><section class="mi-insight-block"><h3>${text('国内新闻','Chinese news')}</h3><p class="mi-caption">${text('正在核对相关报道…','Checking related coverage…')}</p></section></div>
+      <div class="mi-discover-slot" data-mi-discover-slot="related"><section class="mi-detail-block"><h3>${text('还可以看看','More to explore')}</h3>${related}</section></div>
+      <div class="mi-discover-slot" data-mi-discover-slot="similar"><section class="mi-insight-block"><h3>${text('相似主题探索','Similar themes')}</h3><p class="mi-caption">${text('正在核对相似题材推荐…','Checking similar themes…')}</p></section></div>`;
   }
   function episodes(w){
     const p=w.profile||{},events=(data?.sources?.tvmaze?.items||[]).filter(e=>cat.aliases[e.id]===w.id&&e.air_at).sort((a,b)=>a.air_at.localeCompare(b.air_at));
