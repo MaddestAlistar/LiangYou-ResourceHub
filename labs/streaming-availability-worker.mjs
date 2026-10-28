@@ -211,6 +211,31 @@ export default {
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"access-control-allow-origin":cors,"access-control-allow-methods":"GET, OPTIONS"}});
   if(request.method!=="GET")return reply({ok:false,error:"GET only"},405);
   if(u.pathname==="/api/health")return reply({ok:true,status:"worker-online",note:"Check content routes for provider availability.",source:"JustWatch via TMDB",regions:[...regionCodes]});
+  // MyAnimeList v2: join anime only by a verified MAL numeric ID, never by title search.
+  const animeMatch=u.pathname.match(/^\/api\/anime\/mal\/([1-9]\d{0,9})$/);
+  if(animeMatch){
+   const key=(env.MAL_CLIENT_ID||env.MYANIMELIST_CLIENT_ID||"").trim();
+   if(!key)return reply({ok:true,status:"not_configured",source:"MyAnimeList v2",malId:Number(animeMatch[1])});
+   const hit=await caches.default.match(request);if(hit)return hit;
+   try{
+    const endpoint=new URL("https://api.myanimelist.net/v2/anime/"+animeMatch[1]);
+    endpoint.searchParams.set("fields","mean,rank,popularity,num_scoring_users,num_list_users,media_type,num_episodes,start_date,genres,studios");
+    const x=await jsonRemote(endpoint.toString(),{headers:{"X-MAL-CLIENT-ID":key,"Accept":"application/json"}},9000);
+    if(Number(x?.id)!==Number(animeMatch[1])||!String(x.title||"").trim())throw Error("MAL identity mismatch");
+    const validMean=Number.isFinite(x.mean)&&x.mean>=0&&x.mean<=10?x.mean:null;
+    const body={ok:true,status:"ok",source:"MyAnimeList v2",malId:Number(x.id),
+      title:String(x.title).slice(0,170),url:"https://myanimelist.net/anime/"+x.id,
+      score:validMean,scale:10,rank:Number.isInteger(x.rank)&&x.rank>0?x.rank:null,
+      popularity:Number.isInteger(x.popularity)&&x.popularity>0?x.popularity:null,
+      ratingCount:Number.isInteger(x.num_scoring_users)&&x.num_scoring_users>=0?x.num_scoring_users:null,
+      listUsers:Number.isInteger(x.num_list_users)&&x.num_list_users>=0?x.num_list_users:null,
+      episodes:Number.isInteger(x.num_episodes)?x.num_episodes:null,mediaType:String(x.media_type||"").slice(0,40),
+      studios:Array.isArray(x.studios)?x.studios.filter(t=>t.name).slice(0,5).map(t=>String(t.name).slice(0,80)):[],
+      genres:Array.isArray(x.genres)?x.genres.filter(t=>t.name).slice(0,8).map(t=>String(t.name).slice(0,80)):[],
+      checkedAt:new Date().toISOString()};
+    const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
+   }catch{return reply({ok:false,error:"MAL source or ID unavailable"},502);}
+  }
   // Optional enrichment is served by verified TMDB identity; all keys remain in Worker secrets.
   const extra=u.pathname.match(/^\/api\/insights\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(extra){
