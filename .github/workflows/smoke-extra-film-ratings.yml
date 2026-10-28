@@ -2,7 +2,7 @@ name: Verify five-provider independent rating Worker
 on:
   push:
     branches: [main]
-    paths: [.github/workflows/smoke-extra-film-ratings.yml]
+    paths: [.github/workflows/smoke-extra-film-ratings.yml, labs/extra-film-ratings-worker.mjs]
   workflow_dispatch:
 permissions:
   contents: read
