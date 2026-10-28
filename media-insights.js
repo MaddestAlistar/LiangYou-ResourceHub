@@ -194,8 +194,8 @@
     const ytIds=new Set(youtube.map(x=>x.id));
     const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
       .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&
-        v.ageRestricted!==true&&Number.isSafeInteger(v.likes)&&v.likes>0&&!ytIds.has(v.id))
-      .sort((a,b)=>b.likes-a.likes).slice(0,16):[];
+        v.ageRestricted!==true&&!ytIds.has(v.id))
+      .sort((a,b)=>(Number.isFinite(b.likes)?b.likes:-1)-(Number.isFinite(a.likes)?a.likes:-1)).slice(0,16):[];
     function youtubeCard(v,related=false){
       const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
       const duration=formatDuration(v.duration);
