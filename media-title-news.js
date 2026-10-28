@@ -41,14 +41,14 @@
     const key=kind+':'+id;
     if(!remoteCache.has(key))remoteCache.set(key,(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=2',{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=3',{
           signal:AbortSignal.timeout(10500)});
         if(!r.ok)return null;
         const d=await r.json();
         if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||!Array.isArray(d.articles))return null;
         const articles=d.articles.filter(x=>x&&typeof x.title==='string'&&
           x.title.length>=8&&x.title.length<=180&&
-          safeUrl(x.url)?.startsWith('https://news.google.com/')&&
+          (safeUrl(x.url)?.startsWith('https://news.google.com/')||safeUrl(x.url)?.startsWith('https://www.theguardian.com/'))&&
           Number.isFinite(Date.parse(x.date||''))&&
           ['zh','ko','en'].includes(x.language))
           .slice(0,18).map(x=>({...x,url:safeUrl(x.url)}));
