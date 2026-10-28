@@ -246,6 +246,33 @@
       // Optional source failure must not hide existing scores and title data.
     }
   }
+  // Stale scheduled TMDB snapshots can omit keywords and parental classifications.
+  // Fetch at most two visible films concurrently and cap remote calls per session.
+  const visibleAttempts=new Set();
+  let visibleQueue=[],visibleInFlight=0;
+  function drainVisibleClassifications(){
+    while(visibleInFlight<2&&visibleQueue.length&&visibleAttempts.size<24){
+      const info=visibleQueue.shift();
+      if(!info||visibleAttempts.has(info.id))continue;
+      visibleAttempts.add(info.id);
+      visibleInFlight++;
+      hydrateClassification(info).finally(()=>{
+        visibleInFlight--;
+        drainVisibleClassifications();
+      });
+    }
+  }
+  root.addEventListener('liangyou:media-visible',ev=>{
+    const rows=Array.isArray(ev.detail)?ev.detail:[];
+    // New page/filter supersedes queued, no-longer-visible work; in-flight work
+    // is allowed to finish and is matched by its exact TMDB ID.
+    visibleQueue=rows.filter(info=>
+      ['movie','tv'].includes(info?.kind)&&Number.isSafeInteger(Number(info.tmdbId))&&
+      Number(info.tmdbId)>0&&(!info.hasKeywords||!info.hasParentalRating)&&
+      !visibleAttempts.has(info.id)
+    ).slice(0,8);
+    drainVisibleClassifications();
+  });
   async function display(info){
     if(!info||!['ratings','profile','people','boxoffice','discover'].includes(info.section))return;
     const target=root.querySelector('#media-dialog .mi-detail-content');
