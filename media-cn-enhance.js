@@ -125,6 +125,8 @@ function domesticNews(info){
   '<div class="mi-cn-news-results" aria-live="polite"><p class="mi-caption">'+t('正在匹配相关新闻…','Matching relevant articles…')+'</p></div>';
  if(holder)holder.replaceChildren(box);else target.appendChild(box);
  (async()=>{
+  // Start optional source discovery in parallel with local snapshots to limit mobile waiting.
+  const liveSearch=window.LiangYouTitleNews?.remoteForInfo?.(info);
   // A verified TMDB-ID article is eligible regardless of whether it is official or community authored.
   const [d,verified]=await Promise.all([news(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]);
   const pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
@@ -152,7 +154,6 @@ function domesticNews(info){
      '</strong></div></article>').join('')+'</div>';
   }
   renderAdditional();
-  const liveSearch=window.LiangYouTitleNews?.remoteForInfo?.(info);
   if(liveSearch&&typeof liveSearch.then==='function')liveSearch.then(remote=>{
     if(pane.isConnected&&Array.isArray(remote?.articles)&&remote.articles.length)
       renderAdditional(remote.articles.filter(x=>x.language==='zh'));
