@@ -128,8 +128,55 @@ def tmdb_item(x, kind):
 def detail(tid,kind):
     ident=f'{kind}-{tid}'
     if ident not in TMDB_MEM:
-        TMDB_MEM[ident]=cached('tmdb-profile-v2',ident,72,lambda:tmdb_profile(tmdb(f'{kind}/{tid}',append_to_response='external_ids,credits,videos,recommendations'),kind))
+        TMDB_MEM[ident]=cached('tmdb-profile-v3',ident,72,lambda:tmdb_profile(tmdb(f'{kind}/{tid}',append_to_response='external_ids,credits,videos,recommendations,keywords,'+('release_dates' if kind=='movie' else 'content_ratings')),kind))
     return dict(TMDB_MEM[ident])
+
+def tmdb_subject_tags(x):
+    """Use only TMDB-provided keywords (no inferred themes or generated labels)."""
+    payload=x.get('keywords') or {}
+    candidates=payload.get('keywords') or payload.get('results') or []
+    result=[];seen=set()
+    for entry in candidates:
+        word=clean(entry.get('name')) if isinstance(entry,dict) else ''
+        if not isinstance(word,str):continue
+        word=word.strip()
+        if not 2<=len(word)<=28 or any(c in word for c in '<>{}\\n\\r'):continue
+        key=word.casefold()
+        if key in seen:continue
+        seen.add(key);result.append(word)
+        if len(result)>=6:break
+    return result
+
+
+def tmdb_parental_rating(x,kind):
+    """Return a country-specific rating only when TMDB supplied an unambiguous one.
+
+    This is a classification, *not* an invented age recommendation or a list
+    of content warnings. Countries have different classification systems.
+    """
+    countries=['CN','HK','TW','US','GB','AU','SG','JP','KR']
+    invalid={'','NR','N/R','N/A','NA','NOT RATED','UNRATED','NONE','TBC','TBD','0'}
+    def valid(value):
+        v=str(value or '').strip().upper()
+        return v if v not in invalid and re.fullmatch(r'[A-Z0-9+\\-/ ]{1,14}',v) else ''
+    if kind=='movie':
+        rows=(x.get('release_dates') or {}).get('results') or []
+        for country in countries:
+            group=next((a.get('release_dates') or [] for a in rows if a.get('iso_3166_1')==country),[])
+            theatrical={valid(a.get('certification')) for a in group if isinstance(a,dict) and a.get('type') in (2,3)}
+            theatrical.discard('')
+            alternatives={valid(a.get('certification')) for a in group if isinstance(a,dict)}
+            alternatives.discard('')
+            values=theatrical or alternatives
+            if len(values)==1:return {'country':country,'rating':next(iter(values)),'source':'TMDB'}
+        return None
+    rows=(x.get('content_ratings') or {}).get('results') or []
+    for country in countries:
+        options={valid(row.get('rating')) for row in rows if isinstance(row,dict) and row.get('iso_3166_1')==country}
+        options.discard('')
+        if len(options)==1:return {'country':country,'rating':next(iter(options)),'source':'TMDB'}
+    return None
+
 
 def tmdb_profile(x,kind):
     item=tmdb_item(x,kind);credits=x.get('credits') or {}
@@ -137,7 +184,9 @@ def tmdb_profile(x,kind):
     creators += [{'name':p.get('name',''),'role':'Creator','url':f'https://www.themoviedb.org/person/{p["id"]}'} for p in x.get('created_by',[])]
     item['profile']={
       'checked_at':iso(),'via':'TMDB','tagline':clean(x.get('tagline')),
-      'genres':[g['name'] for g in x.get('genres',[])],'runtime':x.get('runtime') or next(iter(x.get('episode_run_time') or []),None),
+      'genres':[g['name'] for g in x.get('genres',[]) if isinstance(g,dict) and isinstance(g.get('name'),str) and g['name'].strip()][:8],
+      'keywords':tmdb_subject_tags(x),'parental_rating':tmdb_parental_rating(x,kind),
+      'runtime':x.get('runtime') or next(iter(x.get('episode_run_time') or []),None),
       'status':x.get('status',''),'languages':[v.get('name') or v.get('english_name') for v in x.get('spoken_languages',[])],
       'countries':[v.get('name') for v in x.get('production_countries',[])],
       'creators':creators[:6],
