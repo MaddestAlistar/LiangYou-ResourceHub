@@ -214,11 +214,14 @@
         '<a class="mi-trailer-trigger mi-video-external" href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+cover+'</a>';
       const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
-        '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+'</small>'+
+        '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
+          (Number.isSafeInteger(x.likes)&&x.likes>=0?' · '+esc(new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact'}).format(x.likes))+t(' 赞',' likes'):'')+'</small>'+
         '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>';
-      if(x.type==='Related'){if(domesticRelated.length<6)domesticRelated.push(card);}
+      if(x.type==='Related'){domesticRelated.push({card,likes:Number.isSafeInteger(x.likes)?x.likes:-1});}
       else videos.push(card);
     }
+    domesticRelated.sort((a,b)=>b.likes-a.likes);
+    const limitedDomesticRelated=domesticRelated.slice(0,6).map(x=>x.card);
     // Search entries are optional discovery links, not purported verified videos.
     const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
     const q=encodeURIComponent(title+' 预告片');
@@ -237,7 +240,7 @@
       a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
         cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
-    if(!videos.length&&!relatedCards.length&&!domesticRelated.length){
+    if(!videos.length&&!relatedCards.length&&!limitedDomesticRelated.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
       else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
       else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
@@ -247,8 +250,8 @@
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
       (videos.length?'<div class="mi-trailer-grid">'+videos.join('')+'</div>':'')+
-      (domesticRelated.length||relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('相关视频','Related videos')+
-        '</h4><div class="mi-trailer-grid">'+[...domesticRelated,...relatedCards].join('')+'</div>':'')+
+      (limitedDomesticRelated.length||relatedCards.length?'<h4 class="mi-related-videos-heading">'+t('相关视频','Related videos')+
+        '</h4><div class="mi-trailer-grid">'+[...limitedDomesticRelated,...relatedCards].join('')+'</div>':'')+
       (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
   }
 
@@ -498,8 +501,22 @@
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
       paintTrailers();
-      Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([rows,index])=>{
-        domesticRows=[...rows,...(index?.videos||[])];
+      Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
+        const all=[...rows,...(index?.videos||[])];
+        domesticRows=all;paintTrailers();
+        const relevant=all.filter(x=>x.type==='Related'&&x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)).slice(0,12);
+        if(!relevant.length)return;
+        const withLikes=await Promise.all(relevant.map(async x=>{
+          try{
+            const r=await fetch(base+'/api/video/bilibili/'+x.videoId,{signal:AbortSignal.timeout(7500)});
+            if(!r.ok)return x;
+            const d=await r.json();
+            return d.ok===true&&d.bvid===x.videoId&&Number.isSafeInteger(d.likes)&&d.likes>=0?{...x,likes:d.likes}:x;
+          }catch{return x;}
+        }));
+        if(!pane.isConnected)return;
+        const known=new Map(withLikes.map(v=>[v.videoId,v]));
+        domesticRows=all.map(x=>known.get(x.videoId)||x);
         paintTrailers();
       }).catch(()=>{});
     }
