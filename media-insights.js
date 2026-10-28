@@ -313,6 +313,8 @@
       // Curated articles are already keyed to the exact TMDB kind, ID and release
       // year. They may discuss a film without spelling its public title verbatim.
       if(article.verifiedByTitleId===true)return 200;
+      // Exact film-ID Worker matches are pre-screened by release year and title.
+      if(article.titleMatchVerified===true)return 145;
       const headline=String(article.title||'').normalize('NFKC'),line=' '+normalize(headline)+' ';
       let confidence=0;
       for(const label of rawTitles){
