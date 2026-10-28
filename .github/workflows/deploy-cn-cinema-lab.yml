@@ -1,0 +1,31 @@
+name: Deploy independent China cinema API
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'labs/cn-cinema-worker.mjs'
+      - '.github/workflows/deploy-cn-cinema-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: liangyou-cn-cinema-lab
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Worker
+        run: node --check labs/cn-cinema-worker.mjs
+      - name: Deploy to new isolated Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx --yes wrangler@4 deploy labs/cn-cinema-worker.mjs --name liangyou-cn-cinema-lab --compatibility-date 2025-11-05
