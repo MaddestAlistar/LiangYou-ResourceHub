@@ -24,6 +24,19 @@
     if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=4'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
+  async function filmNewsFeed(){
+    // GitHub Actions provides a verified snapshot if Worker-to-Guardian access is denied.
+    try{
+      const response=await fetch('./data/media-guardian.json',{cache:'no-cache',signal:AbortSignal.timeout(5500)});
+      if(response.ok){
+        const value=await response.json(),age=Date.now()-Date.parse(value.checkedAt);
+        if(value.ok===true&&value.status==='ok'&&value.source==='The Guardian'&&
+          Array.isArray(value.articles)&&value.articles.length>=3&&age>=0&&age<48*3600000&&
+          value.articles.every(x=>x.title&&safe(x.url)&&x.date))return value;
+      }
+    }catch{}
+    return json('/api/news/film');
+  }
   function item(label,value){
     return value?'<div class="mi-insight-fact"><small>'+esc(label)+'</small><strong>'+esc(value)+'</strong></div>':'';
   }
@@ -197,7 +210,7 @@
     pane.dataset.loading='1';
     pane.textContent=t('正在读取 Guardian 电影资讯…','Loading Guardian film coverage…');
     try{
-      const d=await json('/api/news/film');
+      const d=await filmNewsFeed();
       if(!pane.isConnected)return;
       if(d.status==='not_configured'){
         pane.textContent=t('Guardian API 暂未配置。','Guardian API is not configured.');
