@@ -77,6 +77,7 @@
     var old=dialog.querySelector(".mi-toolkit");if(old)old.remove();
     var anchor=dialog.querySelector(".mi-detail-content");if(!anchor)return;
     var panel=document.createElement("section");panel.className="mi-toolkit mi-detail-block";
+    panel.dataset.mtkId=current.id;
     var letterQuery=encodeURIComponent((current.originalTitle||current.title).trim());
     var lb="https://letterboxd.com/search/films/"+letterQuery+"/";
     panel.innerHTML=
