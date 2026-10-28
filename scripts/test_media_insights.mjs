@@ -85,7 +85,7 @@ test('age-restricted and non-embeddable trailers are labeled and ranked behind a
  stub({movie:{videos:{results:[
    {site:'YouTube',official:true,type:'Trailer',key:'AgeGate1234',name:'Restricted Trailer'},
    {site:'YouTube',official:true,type:'Trailer',key:'FreePlay123',name:'Public Trailer'}
- ]},youtubeVideos:[
+ ]}},youtubeVideos:[
    {id:'AgeGate1234',snippet:{title:'Restricted trailer'},contentDetails:{contentRating:{ytRating:'ytAgeRestricted'}},status:{privacyStatus:'public',embeddable:true}},
    {id:'FreePlay123',snippet:{title:'Public trailer'},contentDetails:{},status:{privacyStatus:'public',embeddable:true}}
  ]});
