@@ -245,6 +245,20 @@
         pane.innerHTML='<p class="mi-caption">'+t('补充接口返回的作品标识不匹配，已跳过这批资料。','Additional data did not match the verified title ID and was skipped.')+'</p>';
         return;
       }
+      // Guard against a catalog cross-ID mismatch: never show another work's trailer.
+      const latinName=value=>{
+        const name=String(value||'').normalize('NFKC').trim();
+        return name&&/^[A-Za-z0-9 \-:.,!?&'()]+$/.test(name)?name.toLowerCase().replace(/[^a-z0-9]+/g,''):'';
+      };
+      const expected=latinName(info.originalTitle)||latinName(info.title);
+      const received=latinName(data.title);
+      const localYear=Number(String(info.year||'').slice(0,4));
+      const remoteYear=Number(String(data.releaseDate||'').slice(0,4));
+      if(expected&&received&&expected!==received||Number.isInteger(localYear)&&localYear>1850&&
+          Number.isInteger(remoteYear)&&remoteYear>1850&&Math.abs(localYear-remoteYear)>1){
+        pane.innerHTML='<p class="mi-caption">'+t('作品来源身份未通过核对，已阻止其他影片的预告和资讯串入。','Title identity did not match, so unrelated trailers and articles were not displayed.')+'</p>';
+        return;
+      }
       let enriched=data;
       if(info.section==='discover'&&!(Array.isArray(data.suggestions)&&data.suggestions.length)){
         const snapshot=await sourceSnapshot();
