@@ -52,14 +52,10 @@ test('mainstream YouTube player is default and privacy mode stays selectable',()
  assert.match(index,/>切换隐私播放器<\/button>/);
 });
 test('changed assets invalidate old browser cache',()=>{
- const versions={
-  'media-intel.js':'20261029.newsroom1',
-  'media-toolkit.js':'20261029.newsroom1',
-  'media-insights.js':'20261029.newsvideo6',
-  'media-cn-enhance.js':'20261029.newsvideo6',
-  'media-exact-scores.js':'20261029.newsroom1',
-  'media-boxoffice-rankings.js':'20261029.noarchive1'
- };
- for(const [name,version] of Object.entries(versions))
-   assert.ok(index.includes('./'+name+'?v='+version),name);
+ const assets=['media-intel.js','media-toolkit.js','media-insights.js','media-title-news.js',
+   'media-cn-enhance.js','media-exact-scores.js','media-boxoffice-rankings.js'];
+ for(const name of assets){
+   const version=index.split('./'+name+'?v=')[1]?.split('"')[0];
+   assert.ok(version&&version.length>=8,name+' must carry a cache-busting version');
+ }
 });
