@@ -50,13 +50,6 @@ def report(name, status, good, detail="", configured=None, error=None):
 def missing(name, key):
     return report(name, None, False, "Expected GitHub secret: " + key, configured=False)
 
-def jikan():
-    status, obj, err = fetch("https://api.jikan.moe/v4/anime/1")
-    if status is None or status in (429, 502, 503):
-        status, obj, err = fetch("https://api.jikan.moe/v4/anime/1/full", timeout=23)
-    d = obj.get("data", {}) if isinstance(obj, dict) else {}
-    ok = status == 200 and isinstance(d, dict) and bool(d.get("mal_id")) and bool(d.get("title"))
-    return report("Jikan v4", status, ok, "anime_id=" + str(d.get("mal_id")) + ", score_available=" + str(d.get("score") is not None), error=err)
 
 def mal():
     key = secret("MAL_CLIENT_ID", "MYANIMELIST_CLIENT_ID")
@@ -157,13 +150,6 @@ def youtube():
     ok = status == 200 and isinstance(rows, list) and len(rows) > 0
     return report("YouTube Data API v3", status, ok, "videos=" + str(len(rows)), True, err)
 
-def gdelt():
-    status, obj, err = fetch("https://api.gdeltproject.org/api/v2/doc/doc",
-              {"query": '"film festival"', "mode": "ArtList", "maxrecords": "3", "format": "json", "timespan": "1week"},
-              timeout=23)
-    rows = obj.get("articles", []) if isinstance(obj, dict) else []
-    ok = status == 200 and isinstance(rows, list) and len(rows) > 0
-    return report("GDELT DOC 2.0", status, ok, "articles=" + str(len(rows)), error=err)
 
 def kitsu():
     status, obj, err = fetch("https://kitsu.io/api/edge/anime/1",
@@ -178,16 +164,6 @@ def boxoffice():
     ok = status == 200 and bool(d) and ("built" in str(d).lower() or "film" in str(d).lower() or "movie" in str(d).lower())
     return report("Box Office History", status, ok, "metadata_keys=" + ",".join(list(d.keys())[:7]), error=err)
 
-def introdb():
-    status, obj, err = fetch("https://api.theintrodb.org/v4/media",
-              {"tvdb_id": "71663", "season": "1", "episode": "1"}, timeout=20)
-    if status in (400,403,404) or status is None:
-        status, obj, err = fetch("https://api.theintrodb.org/v4/media",
-              {"tvdb_id": "71663", "duration_ms": "7200000"}, timeout=20)
-    d = obj if isinstance(obj, dict) else {}
-    ok = status == 200 and bool(d) and ("kind" in d or "tvdb_id" in d or "intro" in d or "credits" in d or "episodes" in d)
-    return report("TheIntroDB v4", status, ok,
-                  "kind=" + str(d.get("kind", ""))[:30] + ", keys=" + ",".join(list(d.keys())[:6]), error=err)
 
 def guardian():
     key = secret("GUARDIAN_API_KEY", "THE_GUARDIAN_API_KEY")
