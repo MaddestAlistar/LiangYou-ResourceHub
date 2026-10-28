@@ -437,7 +437,7 @@ async function titleNews(kind,id,env){
  if(hangul)add(hangul,'"'+hangul+'" 드라마 OR 영화','ko');
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
- const stats={rssOk:0,rssHttpError:0,rssInvalidXml:0,rssNetworkError:0,rssItems:0,rssMatched:0,guardianItems:0};
+ const stats={rssOk:0,rssHttpError:0,rssInvalidXml:0,rssNetworkError:0,rssItems:0,rssMatched:0,guardianItems:0,bingOk:0,bingHttpError:0,bingInvalidXml:0,bingNetworkError:0,bingItems:0,bingMatched:0};
  const requests=queries.slice(0,6).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
   // Permit historical coverage of older catalog films; the old two-year window excluded it.
@@ -507,8 +507,52 @@ async function titleNews(kind,id,env){
    }).filter(Boolean);
   }catch{return [];}
  })():Promise.resolve([]);
- const [batches,guardianRows]=await Promise.all([Promise.all(requests),guardian]),seen=new Set(),seenTitle=new Set();
- const articles=[...batches.flat(),...guardianRows].filter(x=>{
+ // A second independent public RSS lookup improves coverage when Google News
+ // has no matching titles. Bing's feed is not a versioned API, so failures are
+ // optional and returned links must resolve to HTTPS publisher pages.
+ const bingNames=[
+   asian?{alias:asian,q:'"'+asian+'" 电影 '+year,market:"zh-CN"}:null,
+   originalLatin?{alias:originalLatin,q:'"'+originalLatin+'" '+year+' film review',market:"en-US"}:null
+ ].filter(Boolean).slice(0,2);
+ const bingRequests=bingNames.map(async ({alias,q,market})=>{
+   const url=new URL("https://www.bing.com/search");
+   url.searchParams.set("q",q);url.searchParams.set("format","rss");
+   url.searchParams.set("mkt",market);url.searchParams.set("setlang",market);
+   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),6500);
+   try{
+    const res=await fetch(url.toString(),{signal:ac.signal,headers:{"Accept":"application/rss+xml, application/xml"}});
+    if(!res.ok){stats.bingHttpError++;return [];}
+    const xml=(await res.text()).slice(0,220000);
+    if(!/<rss[\s>]/i.test(xml)){stats.bingInvalidXml++;return [];}
+    stats.bingOk++;
+    const rows=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,20);
+    stats.bingItems+=rows.length;
+    const matched=rows.map(m=>{
+      const row=m[1],title=rssField(row,"title"),link=rssField(row,"link");
+      let rawUrl=link;
+      try{
+       const u=new URL(link);
+       if(u.hostname==="www.bing.com"&&u.pathname==="/news/apiclick.aspx")
+        rawUrl=u.searchParams.get("url")||"";
+      }catch{return null;}
+      const target=safeHttps(rawUrl);
+      if(!target||/^(?:localhost|127\.0\.0\.1)$/i.test(new URL(target).hostname))return null;
+      if(/(?:wikipedia\.org|wikidata\.org|imdb\.com|themoviedb\.org|rottentomatoes\.com)/i.test(new URL(target).hostname))return null;
+      const date=rssField(row,"pubDate"),stamp=Date.parse(date);
+      const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
+      if(Number.isFinite(stamp)&&(stamp>Date.now()+86400000||stamp<oldest))return null;
+      if(!rssArticleMatches(title,alias,{year,people}))return null;
+      return {title:title.slice(0,180),url:target,
+        date:Number.isFinite(stamp)?new Date(stamp).toISOString():null,
+        source:rssField(row,"source").slice(0,60)||new URL(target).hostname.replace(/^www\./,""),
+        language:/[\u3400-\u9fff]/.test(title)?"zh":/[\uac00-\ud7af]/.test(title)?"ko":"en",
+        matchType:"title_search",titleMatchVerified:true};
+    }).filter(Boolean);
+    stats.bingMatched+=matched.length;return matched;
+   }catch{stats.bingNetworkError++;return [];}finally{clearTimeout(timer);}
+ });
+ const [batches,guardianRows,bingBatches]=await Promise.all([Promise.all(requests),guardian,Promise.all(bingRequests)]),seen=new Set(),seenTitle=new Set();
+ const articles=[...batches.flat(),...guardianRows,...bingBatches.flat()].filter(x=>{
   const key=normalizedHeadline(x.title),signature=key.replace(/\\s+/g,"");
   if(seen.has(x.url)||seenTitle.has(signature))return false;
   seen.add(x.url);seenTitle.add(signature);return true;
