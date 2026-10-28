@@ -43,7 +43,7 @@ test('public trailer opens without any user token, API key or sign-in prompt',()
  ui.open('AbCdEf12345');
  assert.equal(ui.dialog.open,true);
  assert.equal(ui.stage.children.length,1);
- assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube-nocookie\.com\/embed\/AbCdEf12345\?/);
+ assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube\.com\/embed\/AbCdEf12345\?/);
  assert.equal(ui.stage.children[0].referrerPolicy,'strict-origin-when-cross-origin');
  assert.equal(ui.stage.children[0].allowFullscreen,true);
  assert.equal(ui.title.textContent,'公开电影预告片');
@@ -53,10 +53,10 @@ test('visitor can manually switch between two official YouTube player hosts',()=
  const ui=setup();
  ui.open('AbCdEf12345');
  ui.switchButton.listeners.click();
- assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube\.com\/embed\/AbCdEf12345\?/);
+ assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube-nocookie\.com\/embed\/AbCdEf12345\?/);
  assert.equal(ui.stage.children[0].referrerPolicy,'strict-origin-when-cross-origin');
  ui.switchButton.listeners.click();
- assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube-nocookie\.com\/embed\/AbCdEf12345\?/);
+ assert.match(ui.stage.children[0].src,/^https:\/\/www\.youtube\.com\/embed\/AbCdEf12345\?/);
 });
 test('closing by button, Escape or film detail close stops video by removing its iframe',()=>{
  const ui=setup();
