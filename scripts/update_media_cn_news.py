@@ -18,6 +18,7 @@ SOURCES=[
  ("1905电影网","https://www.1905.com/news/",r"/news/\d{8}/\d+\.shtml", "1905.com"),
  ("新浪电影","https://ent.sina.com.cn/film/",r"/(?:m|tv)/[a-z]/20\d{2}-\d{2}-\d{2}/doc-[a-z0-9-]+\.shtml", "ent.sina.com.cn"),
  ("腾讯娱乐","https://new.qq.com/ch/ent/",r"/rain/a/20\d{6}[a-z0-9]+", "new.qq.com"),
+ ("豆瓣影评","https://movie.douban.com/review/latest/",r"/review/\d+/?", "movie.douban.com"),
 ]
 A=re.compile(r"<a\b([^>]*)>(.*?)</a>",re.I|re.S)
 HREF=re.compile(r"""href\s*=\s*["']([^"']+)["']""",re.I)
