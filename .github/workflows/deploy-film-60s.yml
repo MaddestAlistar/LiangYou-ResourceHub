@@ -66,4 +66,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm install --no-audit --no-fund --ignore-scripts
-          npx wrangler@4 deploy --name liangyou-film-60s --main liangyou-film-worker.ts --config wrangler.toml
+          npx wrangler@4 deploy liangyou-film-worker.ts --name liangyou-film-60s --config wrangler.toml
