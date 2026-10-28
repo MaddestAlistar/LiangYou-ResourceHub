@@ -159,7 +159,7 @@ test('Moana remake and Obsession movie headlines are separated from unrelated sh
  for(const work of [
   {original:'Moana',local:'海洋奇缘：启航',genre:'Adventure',director:'Thomas Kail',
    good:['Live-action Moana 2026 movie premieres','《海洋奇缘》真人版 2026 电影票房'],
-   bad:['Moana 2016 animated soundtrack','Moana fan obsession with jewelry']},
+   bad:['Moana 2016 animated soundtrack','Moana fan obsession with jewelry','《海洋奇缘》动画原版口碑讨论']},
   {original:'Obsession',local:'痴迷',genre:'Horror',director:'Curry Barker',
    good:['Obsession 2026 horror film makes box office history','Curry Barker Obsession movie wins fans'],
    bad:['The internet obsession with movies','Obsession with gaming grows']}
