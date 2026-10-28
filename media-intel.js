@@ -96,7 +96,7 @@
   function overview(w){
     const p=w.profile||{},statuses={'Released':['已上映','Released'],'Returning Series':['连载中','Returning series'],'Ended':['已完结','Ended'],'Canceled':['已取消','Canceled'],'In Production':['制作中','In production'],'Post Production':['后期制作','Post-production'],'Planned':['筹备中','Planned']};
     const facts=[[text('上映 / 首播','Release / premiere'),w.date],[text('类型','Genres'),p.genres?.join(' · ')],[text('时长','Runtime'),p.runtime?p.runtime+text(' 分钟',' min'):''],[text('状态','Status'),statuses[p.status]?text(...statuses[p.status]):p.status],[text('地区','Countries'),p.countries?.join(' · ')],[text('语言','Languages'),p.languages?.join(' · ')]];
-    return `<section class="mi-detail-block"><h3>${text('作品资料','About this title')}</h3><dl class="mi-facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.tagline?`<p class="mi-tagline">${esc(p.tagline)}</p>`:''}<p class="mi-overview">${esc(w.overview||text('简介暂缺，请查看资料原站。','No synopsis available. Please visit the source.'))}</p>${p.checked_at?`<p class="mi-caption">TMDB · ${format(p.checked_at)}</p>`:''}</section>`+(w.kind==='movie'?'':episodes(w));
+    return `<section class="mi-detail-block"><h3>${text('作品资料','About this title')}</h3><dl class="mi-facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.tagline?`<p class="mi-tagline">${esc(p.tagline)}</p>`:''}<p class="mi-overview">${esc(w.overview||text('简介暂缺，请查看资料原站。','No synopsis available. Please visit the source.'))}</p>${p.checked_at?`<p class="mi-caption">TMDB · ${format(p.checked_at)}</p>`:''}</section>`+(w.kind==='movie'?'':`<details class="mi-seasons-drawer"><summary>${text('季集与近期播出','Seasons and airings')}</summary>${episodes(w)}</details>`);
   }
   function peoplePanel(w){
     const p=w.profile||{};
@@ -194,7 +194,7 @@
     if(b.dataset.miSave){if(saved(b.dataset.miSave))openDetails(b.dataset.miSave);else setStatus(b.dataset.miSave,'want');}
     if(b.dataset.miStatus)setStatus(activeId,b.dataset.miStatus);
     if(b.hasAttribute('data-mi-remove'))setStatus(activeId,null);
-    if(b.dataset.miDetail){detailTab=b.dataset.miDetail;renderDetail();}
+    if(b.dataset.miDetail){detailTab=b.dataset.miDetail;renderDetail();const d=$('#media-dialog');if(d.open)d.scrollTop=0;}
     if(b.id==='media-share')share();
     if(b.id==='media-export')exportList();if(b.id==='media-import')$('#media-import-file').click();
     if(b.id==='media-prev'||b.id==='media-next'){page+=b.id==='media-next'?1:-1;render();$('#media-grid').scrollIntoView({block:'nearest'});}
