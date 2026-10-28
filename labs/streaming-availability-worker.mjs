@@ -62,6 +62,45 @@ function classificationFor(title,kind){
  }
  return {genres,keywords,parental_rating};
 }
+// Wikimedia records are optional background facts. A TMDB Wikidata ID alone is
+// not sufficient: cross-check the entity's TMDB or IMDb statement before displaying.
+async function verifiedWikimedia(qid,kind,id,imdb){
+ if(!/^Q[1-9]\\d{0,11}$/.test(String(qid||"")))return null;
+ const endpoint="https://www.wikidata.org/wiki/Special:EntityData/"+qid+".json";
+ const payload=await jsonRemote(endpoint,{headers:{"User-Agent":"LiangYouResourceHub/1.0 (film metadata verification; public records)"}},6500);
+ const entry=payload.entities?.[qid];
+ if(!entry||entry.id!==qid||entry.missing!==undefined)return null;
+ const claims=entry.claims||{};
+ const statements=key=>(claims[key]||[]).filter(x=>x?.rank!=="deprecated"&&x?.mainsnak?.snaktype==="value");
+ const values=key=>statements(key).map(x=>String(x?.mainsnak?.datavalue?.value||""));
+ const tmdbProperty=kind==="movie"?"P4947":"P4983";
+ const ids=values(tmdbProperty);
+ const imdbIds=values("P345");
+ if(ids.length&&!ids.includes(String(id)))return null;
+ if(imdb&&imdbIds.length&&!imdbIds.includes(imdb))return null;
+ if(!ids.length&&(!imdb||!imdbIds.includes(imdb)))return null;
+ const page=entry.sitelinks?.zhwiki||entry.sitelinks?.enwiki;
+ const lang=entry.sitelinks?.zhwiki?"zh":"en";
+ const wikipedia=page?.title&&page.title.length<180?{
+   title:page.title,language:lang,
+   url:"https://"+lang+".wikipedia.org/wiki/"+encodeURIComponent(page.title.replace(/ /g,"_"))
+ }:null;
+ let boxOffice=null;
+ if(kind==="movie"){
+   const gross=statements("P2142").map(x=>{
+     const v=x.mainsnak?.datavalue?.value;
+     if(!v||typeof v.amount!=="string"||!Number.isFinite(Number(v.amount))||Number(v.amount)<=0)return null;
+     // Q4917 = USD. Never convert or combine other currency units.
+     if(v.unit!=="http://www.wikidata.org/entity/Q4917")return null;
+     return {amount:Number(v.amount),currency:"USD",source:"Wikidata",
+       sourceUrl:"https://www.wikidata.org/wiki/"+qid,scope:"unspecified"};
+   }).filter(Boolean);
+   if(gross.length===1)boxOffice=gross[0];
+ }
+ return {id:qid,url:"https://www.wikidata.org/wiki/"+qid,
+   label:String(entry.labels?.zh?.value||entry.labels?.en?.value||"").slice(0,90),
+   verified:true,wikipedia,boxOffice};
+}
 async function mediaInsights(kind,id,env,withMedia=false){
  const title=await tmdbInfo(kind,id,env,withMedia), ext=title.external_ids||{};
  const imdb=/^tt\d{5,12}$/.test(title.imdb_id||ext.imdb_id||"")?(title.imdb_id||ext.imdb_id):null;
@@ -130,10 +169,16 @@ async function mediaInsights(kind,id,env,withMedia=false){
   });
  }else result.sources.youtube=!withMedia?"not_requested":result.trailers.length?"tmdb_video_links":"not_configured";
  if(wikidata){
-  // Exact cross-ID supplied by TMDB. Do not depend on a blocked Wikidata fetch,
-  // and do not claim that a Wikidata biography/entity body has been downloaded.
-  result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,label:""};
+  result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,label:"",verified:false};
   result.sources.wikidata="linked_via_tmdb";
+  task("wikimedia",async()=>{
+    const item=await verifiedWikimedia(wikidata,kind,id,imdb);
+    if(!item)return false;
+    result.wikidata=item;
+    result.wikipedia=item.wikipedia||null;
+    result.wikidataBoxOffice=item.boxOffice||null;
+    return true;
+  });
  }else result.sources.wikidata="identity_missing";
  if(env.FANARTTV_API_KEY||env.FANART_TV_API_KEY){
   task("fanart",async()=>{
