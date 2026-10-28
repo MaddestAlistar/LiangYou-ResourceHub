@@ -45,17 +45,17 @@ def filmarks(id):
   s=request(url)
   page_title=re.search(r"<title[^>]*>(.*?)</title>",s,re.I|re.S)
   if not page_title or "Filmarks" not in page_title.group(1):raise ValueError("filmarks_invalid_page")
+  clean_title=html.unescape(page_title.group(1)).split(" - ")[0].strip()
   results=[]
   for raw in re.findall(r'<script[^>]+type=["\x27]application/ld\+json["\x27][^>]*>(.*?)</script>',s,re.I|re.S):
     try:obj=json.loads(raw)
     except (ValueError,TypeError):continue
     objs=obj if isinstance(obj,list) else [obj]
     for x in objs:
-      if isinstance(x,dict) and isinstance(x.get("aggregateRating"),dict):
+      if isinstance(x,dict) and x.get("@type")=="Movie" and isinstance(x.get("aggregateRating"),dict):
         a=x["aggregateRating"];value=score(a.get("ratingValue"),5)
-        title=x.get("name")
-        if value and isinstance(title,str) and title.strip() and title.strip() in html.unescape(page_title.group(1)):
-          results.append((title.strip(),value))
+        if value and clean_title and len(clean_title)<160:
+          results.append((clean_title,value))
   if len(results)!=1:raise ValueError("filmarks_ambiguous_rating")
   title,value=results[0]
   return {"id":id,"title":title,"rating":value,"scale":5,
