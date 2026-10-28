@@ -544,8 +544,10 @@
     useStandardHost=false;
   }
   function closeTrailer(){
+    // Clear the frame synchronously, including on mobile, before dialog.close()
+    // dispatches its 'close' event (which some browsers defer).
+    stopTrailer();
     if(trailerDialog?.open)trailerDialog.close();
-    else stopTrailer();
   }
   function showTrailerFrame(id,standard){
     if(!trailerStage||!/^[A-Za-z0-9_-]{11}$/.test(id))return;
