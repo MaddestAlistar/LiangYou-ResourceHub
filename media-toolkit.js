@@ -124,11 +124,7 @@
       '<p class="mi-caption">'+t('各站 ID 不通用；三站汇总是第三方页面数据，未获各平台官方独立验证，年度检索仅覆盖前300名。','IDs are not interchangeable. The three-platform aggregation is third-party data, not independently verified with official platforms. Yearly search covers only the top 300.')+'</p>'+
       '<div id="mtk-rating-result" aria-live="polite"></div>';
     if(info.section==='ratings')section.appendChild(research);
-    const ranking=document.createElement('details');ranking.className='mtk-details mtk-rankings';
-    ranking.innerHTML='<summary>'+t('中国内地累计票房榜','China all-time box office ranking')+'</summary>'+
-      '<p class="mi-caption">'+t('独立榜单，与本片评分无关。','Separate chart, not this title’s rating.')+'</p>'+
-      '<button type="button" id="mtk-box">'+t('查看前十名','View top 10')+'</button><div id="mtk-box-result" aria-live="polite"></div>';
-    if(info.section==='boxoffice'&&info.kind==='movie')section.appendChild(ranking);
+
   }
   dialog.addEventListener('change',function(ev){
     if(ev.target.id!=='mtk-rating-source')return;
