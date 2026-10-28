@@ -172,13 +172,13 @@ test('uncurated catalog films discover historical Chinese and English articles b
    if(host==='news.google.com'){
     origins.push({q:u.searchParams.get('q'),ceid:u.searchParams.get('ceid')});
     const chinese=u.searchParams.get('ceid')==='CN:zh-Hans';
-    const title=chinese?'《'+item.zh+'》电影深度影评':item.en+' 电影 movie retrospective';
+    const title=chinese?'《'+item.zh+'》电影深度影评':item.en+' '+item.year+' movie retrospective';
     return new Response('<rss><channel><item><title>'+title+'</title>'+
       '<link>https://news.google.com/rss/articles/'+item.id+(chinese?'-zh':'-en')+'</link>'+
       '<pubDate>'+date+'</pubDate><source>Film Magazine</source></item></channel></rss>');
    }
    if(host==='content.guardianapis.com')return json({response:{status:'ok',results:[
-    {webTitle:item.en+' movie review 2010',webUrl:'https://www.theguardian.com/film/2010/jul/18/review',
+    {webTitle:item.en+' movie review '+item.year,webUrl:'https://www.theguardian.com/film/2010/jul/18/review',
      webPublicationDate:new Date(Date.UTC(Math.max(2010,item.year),6,18)).toISOString()}]}});
    throw Error('unexpected '+host);
   };
