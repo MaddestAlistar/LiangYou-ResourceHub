@@ -44,7 +44,7 @@ try{
  console.log('EXACT_KITSU_MAL_MAPPING_OK');
  await push({section:'ratings',kind:'movie',id:'tmdb-movie-666',title:'Unknown',year:'2025',aliases:[]});
  await page.waitForTimeout(250);
- assert.ok(![...document.querySelectorAll('.mi-exact-scores')].some(x=>x.textContent.includes('Unknown')));
+ assert.equal(await page.locator('.mi-exact-scores').filter({hasText:'Unknown'}).count(),0);
  console.log('NO_GUESSED_CROSS_PLATFORM_SCORES_OK');
  await page.locator('#media-dialog [data-mi-detail="boxoffice"]').click();
  const footer=page.locator('#media-boxoffice-rankings');
