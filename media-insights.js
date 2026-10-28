@@ -154,7 +154,7 @@
       const matchingYear=Number(String(info.year||'').slice(0,4));
       if(!/^[a-z0-9_-]{1,90}$/i.test(archiveId)||!Number.isSafeInteger(year)||year<1880||year>2100||
           (matchingYear>1880&&Math.abs(matchingYear-year)>1)||
-          !Number.isFinite(Number(d.domestic))||Number(d.domestic)<0){
+          typeof d.domestic!=='number'||!Number.isFinite(d.domestic)||d.domestic<0){
         host.remove();return;
       }
       const dollars=new Intl.NumberFormat(english()?'en-US':'zh-CN',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(d.domestic));
@@ -282,7 +282,7 @@
         const picture=safe(x.thumbnail);
         return '<article class="mi-editorial-card">'+(picture?'<img src="'+esc(picture)+'" loading="lazy" decoding="async" alt="" referrerpolicy="no-referrer">':'')+
           '<div class="mi-editorial-body"><span>'+esc(x.section||'Film')+' · '+esc(format(x.date))+'</span>'+
-          '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+'</div></article>';
+          '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+(x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':'<p class="mi-caption">'+t('暂时没有可用的电影资讯。','No film headlines are available.')+'</p>';
       pane.dataset.loaded='1';
     }catch{if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('电影资讯暂不可用，可稍后重新展开。','Film news is temporarily unavailable. Try expanding again later.')+'</p>';}
