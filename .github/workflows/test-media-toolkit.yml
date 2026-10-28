@@ -8,6 +8,7 @@ on:
       - media-toolkit.js
       - media-toolkit.css
       - labs/streaming-availability-worker.mjs
+      - scripts/test_media_insights.mjs
       - .github/workflows/test-media-toolkit.yml
   workflow_dispatch:
 permissions:
@@ -21,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Verify offline film-insights contracts
+        run: node --test scripts/test_media_insights.mjs
       - name: Validate JavaScript syntax and no public credentials
         run: |
           node --check media-intel.js
