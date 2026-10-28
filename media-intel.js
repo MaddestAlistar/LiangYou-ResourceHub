@@ -91,12 +91,12 @@
   }
   function enrichment(name,w){return (data?.sources?.[name]?.items||[]).find(e=>cat.aliases[e.target_id]===w.id||(w.imdb_id&&w.imdb_id===e.imdb_id));}
   function scorePanel(w){
-    return `<section class="mi-detail-block"><h3>${text('多站口碑','Across the ratings')}</h3><p class="mi-caption">${text('各站评分尺度与样本不同，独立展示，不计算混合平均分。','Each platform uses its own scale and audience. Scores are shown separately.')}</p><div class="mi-score-grid">${(w.ratings||[]).map(r=>`<div class="mi-score-tile"><span>${esc(r.source)}</span><strong>${esc(scoreValue(r))}</strong><small>${r.votes!=null?esc(new Intl.NumberFormat(language==='en'?'en':'zh-CN').format(r.votes))+text(' 票 · ',' votes · '):''}${esc(r.via||r.source)}${r.checked_at?' · '+format(r.checked_at):''}</small></div>`).join('')||`<p class="mi-caption">${text('此作品暂未收录评分。','No ratings collected for this title yet.')}</p>`}</div></section>`;
+    return `<section class="mi-detail-block mi-ratings-section"><h3>${text('多站口碑','Across the ratings')}</h3><p class="mi-caption">${text('各站评分尺度与样本不同，独立展示，不计算混合平均分。','Each platform uses its own scale and audience. Scores are shown separately.')}</p><div class="mi-score-grid">${(w.ratings||[]).map(r=>`<div class="mi-score-tile"><span>${esc(r.source)}</span><strong>${esc(scoreValue(r))}</strong><small>${r.votes!=null?esc(new Intl.NumberFormat(language==='en'?'en':'zh-CN').format(r.votes))+text(' 票 · ',' votes · '):''}${esc(r.via||r.source)}${r.checked_at?' · '+format(r.checked_at):''}</small></div>`).join('')||`<p class="mi-caption">${w._needsFetch?text('正在读取可信作品资料…','Loading verified title data…'):text('此作品暂未收录评分。','No ratings collected for this title yet.')}</p>`}</div></section>`;
   }
   function overview(w){
     const p=w.profile||{},statuses={'Released':['已上映','Released'],'Returning Series':['连载中','Returning series'],'Ended':['已完结','Ended'],'Canceled':['已取消','Canceled'],'In Production':['制作中','In production'],'Post Production':['后期制作','Post-production'],'Planned':['筹备中','Planned']};
     const facts=[[text('上映 / 首播','Release / premiere'),w.date],[text('类型','Genres'),p.genres?.join(' · ')],[text('时长','Runtime'),p.runtime?p.runtime+text(' 分钟',' min'):''],[text('状态','Status'),statuses[p.status]?text(...statuses[p.status]):p.status],[text('地区','Countries'),p.countries?.join(' · ')],[text('语言','Languages'),p.languages?.join(' · ')]];
-    return `${scorePanel(w)}<section class="mi-detail-block"><h3>${text('作品资料','About this title')}</h3><dl class="mi-facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.tagline?`<p class="mi-tagline">${esc(p.tagline)}</p>`:''}<p class="mi-overview">${esc(w.overview||text('简介暂缺，请查看资料原站。','No synopsis available. Please visit the source.'))}</p>${p.checked_at?`<p class="mi-caption">TMDB · ${format(p.checked_at)}</p>`:''}</section>${p.creators?.length||p.cast?.length?`<section class="mi-detail-block"><h3>${text('演职员','Cast & creators')}</h3><div class="mi-people">${(p.creators||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${a.role==='Director'?text('导演','Director'):text('主创','Creator')}</small></div>`).join('')}${(p.cast||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${esc(a.character)}</small></div>`).join('')}</div></section>`:''}${p.videos?.length?`<section class="mi-detail-block"><h3>${text('官方预告','Official trailers')}</h3><div class="mi-detail-links">${p.videos.map(v=>link(v.url,'▶ '+esc(v.name))).join('')}</div><p class="mi-caption">${text('在 YouTube 打开，播放情况取决于地区和网络。','Opens on YouTube. Availability depends on your region and connection.')}</p></section>`:''}${p.related?.length?`<section class="mi-detail-block"><h3>${text('还可以看看','More to explore')}</h3><div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return cat.works[target]?`<button type="button" data-mi-related="${esc(target)}">${esc(title(cat.works[target]))} →</button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p></section>`:''}`;
+    return `${scorePanel(w)}<section class="mi-detail-block"><h3>${text('作品资料','About this title')}</h3><dl class="mi-facts">${facts.filter(([,v])=>v).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${p.tagline?`<p class="mi-tagline">${esc(p.tagline)}</p>`:''}<p class="mi-overview">${esc(w.overview||text('简介暂缺，请查看资料原站。','No synopsis available. Please visit the source.'))}</p>${p.checked_at?`<p class="mi-caption">TMDB · ${format(p.checked_at)}</p>`:''}</section>${p.creators?.length||p.cast?.length?`<section class="mi-detail-block"><h3>${text('演职员','Cast & creators')}</h3><div class="mi-people">${(p.creators||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${a.role==='Director'?text('导演','Director'):text('主创','Creator')}</small></div>`).join('')}${(p.cast||[]).map(a=>`<div>${link(a.url,esc(a.name))}<small>${esc(a.character)}</small></div>`).join('')}</div></section>`:''}${p.videos?.length?`<section class="mi-detail-block"><h3>${text('官方预告','Official trailers')}</h3><div class="mi-detail-links">${p.videos.map(v=>link(v.url,'▶ '+esc(v.name))).join('')}</div><p class="mi-caption">${text('在 YouTube 打开，播放情况取决于地区和网络。','Opens on YouTube. Availability depends on your region and connection.')}</p></section>`:''}${p.related?.length?`<section class="mi-detail-block"><h3>${text('还可以看看','More to explore')}</h3><div class="mi-related">${p.related.map(r=>{const target=cat.aliases[r.id]||r.id;return /^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(target)?`<button type="button" data-mi-related="${esc(target)}">${esc(cat.works[target]?title(cat.works[target]):r.title)} <span aria-hidden="true">→</span></button>`:link(r.url,esc(r.title));}).join('')}</div><p class="mi-caption">${text('相关推荐来自 TMDB','Recommendations from TMDB')}</p></section>`:''}`;
   }
   function episodes(w){
     const p=w.profile||{},events=(data?.sources?.tvmaze?.items||[]).filter(e=>cat.aliases[e.id]===w.id&&e.air_at).sort((a,b)=>a.air_at.localeCompare(b.air_at));
@@ -113,11 +113,35 @@
     root.dispatchEvent(new CustomEvent('liangyou:media-detail',{detail:{id:w.id,title:title(w),originalTitle:w.original_title,year:w.date,kind:w.kind,tmdbId:w.tmdb_id||(/^tmdb-(?:movie|tv)-(\d+)$/.exec(w.id)||[])[1],imdbId:w.imdb_id,section:detailTab}}));
     images();
   }
+  async function hydrateRelated(id){
+    const m=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(id),w=cat.works[id];
+    if(!m||!w||!w._needsFetch||w._loading)return;
+    w._loading=true;
+    try{
+      const response=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/title/'+m[1]+'/'+m[2],{signal:AbortSignal.timeout(15000)});
+      if(!response.ok)throw Error('unavailable');
+      const v=await response.json();
+      if(v.ok!==true||v.id!==id||v.kind!==m[1]||v.tmdb_id!==Number(m[2])||typeof v.title!=='string'||!v.title)throw Error('id_mismatch');
+      cat.works[id]={...w,...v,id,kind:m[1],categories:[],profile:v.profile||{},ratings:Array.isArray(v.ratings)?v.ratings:[],links:[{name:'TMDB',url:'https://www.themoviedb.org/'+m[1]+'/'+m[2]}],_needsFetch:false};
+    }catch{w._loadError=true;}
+    finally{if(cat.works[id])cat.works[id]._loading=false;if(activeId===id&&$('#media-dialog').open)renderDetail();}
+  }
   function openDetails(id,episodeId){
-    const target=cat.aliases[id]||id;if(!cat.works[target]&&!saved(target))return;
+    const target=cat.aliases[id]||id;
+    if(!cat.works[target]&&!saved(target)){
+      const match=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(target);
+      if(!match)return;
+      const recommendation=activeWork()?.profile?.related?.find(r=>r.id===target);
+      cat.works[target]={id:target,kind:match[1],tmdb_id:Number(match[2]),categories:[],
+        title:recommendation?.title||text('正在加载作品资料…','Loading title…'),original_title:'',
+        overview:'',poster:'',date:'',ratings:[],profile:{},
+        links:[{name:'TMDB',url:'https://www.themoviedb.org/'+match[1]+'/'+match[2]}],_needsFetch:true};
+      cat.aliases[target]=target;
+    }
     activeId=target;activeEpisode=episodeId?(data?.sources?.tvmaze?.items||[]).find(i=>i.id===episodeId):null;detailTab='overview';
     renderDetail();const d=$('#media-dialog');if(!d.open)d.showModal();d.scrollTop=0;
     const u=new URL(location.href);u.searchParams.set('film',activeId);u.hash='media';history.replaceState(null,'',u);
+    if(cat.works[target]?._needsFetch)hydrateRelated(target);
   }
   function closeDetails(){const u=new URL(location.href);u.searchParams.delete('film');history.replaceState(null,'',u);activeEpisode=null;}
   async function share(){
@@ -160,7 +184,7 @@
   new MutationObserver(()=>{const next=document.documentElement.lang.startsWith('en')?'en':'zh';if(next!==language){language=next;render();if($('#media-dialog').open)renderDetail();}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   async function load(){
     loadFailed=false;
-    try{const r=await fetch('./data/media-intel.json',{cache:'no-cache'});if(!r.ok)throw Error();const d=await r.json();if(d.schema!==1||!d.sources)throw Error();data=d;cat=core.catalog(d);loadList();render();const id=new URL(location.href).searchParams.get('film');if(id){if(core.validId(id)&&(cat.works[id]||cat.aliases[id]||saved(id)))openDetails(id);else notify(text('此分享作品已不在当前快照中，可在片单中查看已保存的资料。','This shared title is no longer in the current snapshot. Saved details remain in your list.'));}}
+    try{const r=await fetch('./data/media-intel.json',{cache:'no-cache'});if(!r.ok)throw Error();const d=await r.json();if(d.schema!==1||!d.sources)throw Error();data=d;cat=core.catalog(d);loadList();render();const id=new URL(location.href).searchParams.get('film');if(id){if(core.validId(id)&&(cat.works[id]||cat.aliases[id]||saved(id)||/^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(id)))openDetails(id);else notify(text('此分享作品已不在当前快照中，可在片单中查看已保存的资料。','This shared title is no longer in the current snapshot. Saved details remain in your list.'));}}
     catch{loadFailed=true;render();$('#media-updated').textContent=text('影视情报加载失败，可重试；本地片单仍可查看。','Could not load intelligence. Retry or open your local list.');}
   }
   matchMedia('(max-width:760px)').addEventListener('change',()=>{page=0;render();});
