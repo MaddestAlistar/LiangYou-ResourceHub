@@ -67,12 +67,13 @@ def main():
         snapshot = read_json(path) if name == 'kalshi' else {}
         kalshi_link_upgrade = name == 'kalshi' and snapshot.get('link_schema_version') != 2
         coverage_upgrade = name in ('kalshi','sports') and read_json(path).get('coverage_schema_version') != 2
+        media_upgrade = name == 'media' and read_json(path).get('media_source_version') != 2
         fixtures_upgrade = name == 'fixtures' and read_json(path).get('fixture_schema_version') != 11
         extras_upgrade = name == 'extras' and read_json(path).get('extra_sports_version') != 3
         board_upgrade = name == 'board' and read_json(path).get('board_source_revision') != 5
         new_source_upgrade = (name, read_json(path).get({'nba':'nba_source_version','odds':'odds_schema_version','chess_profiles':'chess_profile_version'}.get(name))) if name in ('nba','odds','chess_profiles') else None
         needs_source_upgrade = bool(new_source_upgrade and new_source_upgrade[1] != (2 if name == 'chess_profiles' else 1))
-        if args.force or kalshi_link_upgrade or coverage_upgrade or fixtures_upgrade or extras_upgrade or board_upgrade or needs_source_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
+        if args.force or media_upgrade or kalshi_link_upgrade or coverage_upgrade or fixtures_upgrade or extras_upgrade or board_upgrade or needs_source_upgrade or entry.get('status') == 'failed' or is_due(previous, instant, hours):
             entry['last_attempt_at'] = iso()
             try:
                 result = subprocess.run([sys.executable, '-u', str(ROOT / 'scripts' / script)], cwd=ROOT, timeout=900)

@@ -37,6 +37,18 @@ class MediaTests(unittest.TestCase):
         with patch.object(m,'key',return_value='test'),patch.object(m,'get',side_effect=fake):
             data=m.enrich('watchmode',[{'id':'tmdb-movie-1','imdb_id':'tt1'}])
         self.assertEqual(requests[0][1]['search_field'],'imdb_id');self.assertEqual(len(data[0]['providers']),1)
+    def test_assrt_null_and_string_language(self):
+        self.assertEqual(m.assrt_results({'status':0,'sub':{'subs':None}}),[])
+        data={'sub':{'subs':[{'id':123,'native_name':'Example','lang':'简体'}]}}
+        self.assertEqual(m.assrt_results(data)[0]['language'],'简体')
+    def test_omdb_fields_are_complete_and_deduplicated(self):
+        data={'imdbRating':'8.8','Metascore':'67','Ratings':[{'Source':'Internet Movie Database','Value':'8.8/10'},{'Source':'Rotten Tomatoes','Value':'81%'}]}
+        ratings=m.omdb_ratings(data)
+        self.assertEqual(len(ratings),3)
+        self.assertEqual(ratings[-1],{'source':'Metacritic','display':'67/100'})
+    def test_omdb_key_url_never_becomes_request_key(self):
+        with patch.dict(m.os.environ,{'OMDB_API_KEY':'https://www.omdbapi.com/?i=tt0137523&apikey=unit-test'}):
+            self.assertEqual(m.key('omdb'),'unit-test')
     def test_short_titles_do_not_call_assrt(self):
         with patch.object(m,'key',return_value='test'),patch.object(m,'get') as get:
             with self.assertRaises(m.FeedError):m.enrich('assrt',[{'id':'a','title':'Up'}])

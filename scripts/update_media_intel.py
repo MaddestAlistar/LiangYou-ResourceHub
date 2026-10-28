@@ -7,7 +7,7 @@ import hashlib, html, io, json, os, re, sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlencode, urlparse
+from urllib.parse import urlencode, urlparse, parse_qs
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from zoneinfo import ZoneInfo
@@ -38,6 +38,7 @@ KEY_NAMES = {
  'opensubtitles': ('OPENSUBTITLES_API_KEY','OPEN_SUBTITLES_API_KEY'),
  'assrt': ('ASSRT_TOKEN','ASSRT_API_TOKEN','ASSRT_API_KEY','SHOOTER_API_KEY'),
 }
+SOURCE_REVISIONS = {"omdb": 2, "assrt": 2}
 CACHE = {}
 TMDB_MEM = {}
 
@@ -45,6 +46,12 @@ class FeedError(Exception): pass
 
 def key(source, required=True):
     value = next((os.environ[n].strip() for n in KEY_NAMES.get(source,()) if os.environ.get(n,'').strip()), '')
+    if source == 'omdb':
+        value = value.strip("\"'")
+        if value.startswith(('https://','http://')) and urlparse(value).hostname in ('www.omdbapi.com','omdbapi.com'):
+            value = parse_qs(urlparse(value).query).get('apikey',[''])[0]
+        elif value.startswith('apikey='):
+            value = parse_qs(value).get('apikey',[''])[0]
     if required and not value: raise FeedError('missing_key')
     return value
 
@@ -61,7 +68,16 @@ def get(url, params=None, headers=None, body=None):
         data = json.loads(raw)
         if isinstance(data,dict) and (data.get('errors') or data.get('success') is False): raise FeedError('api_error')
         return data
-    except HTTPError as e: raise FeedError('http_'+str(e.code)) from None
+    except HTTPError as e:
+        if urlparse(url).hostname == 'www.omdbapi.com':
+            # Classify a bounded error body; never print or persist it.
+            try:
+                message = str(json.loads(e.read(8192)).get('Error','')).lower()
+                for needle,code in [('invalid api key','invalid_api_key'),('activate','inactive_api_key'),('limit','quota_exceeded')]:
+                    if needle in message: raise FeedError(code) from None
+            except FeedError: raise
+            except Exception: pass
+        raise FeedError('http_'+str(e.code)) from None
     except FeedError: raise
     except Exception: raise FeedError('network_or_response_error') from None
 
@@ -248,7 +264,7 @@ def enrich(source,candidates):
             if x.get('Response')=='False':
                 if 'limit' in x.get('Error','').lower() or 'key' in x.get('Error','').lower(): raise FeedError('api_error')
                 continue
-            entry['ratings']=[{'source':r['Source'],'display':r['Value']} for r in x.get('Ratings',[])]
+            entry['ratings']=omdb_ratings(x)
         elif source=='watchmode':
             # Exact external ID lookup. No fuzzy title matching, US availability only.
             x=get('https://api.watchmode.com/v1/search/',{'apiKey':token,'search_field':'imdb_id','search_value':imdb})
@@ -270,17 +286,43 @@ def enrich(source,candidates):
             if len(q)<3: continue
             x=get('https://api.assrt.net/v1/sub/search',{'q':q,'cnt':5},{'Authorization':'Bearer '+token})
             if x.get('status')!=0: raise FeedError('api_error')
-            entry['results']=[{'title':clean(r.get('native_name') or r.get('videoname')),'language':(r.get('lang') or {}).get('desc',''),'url':'https://assrt.net/xml/sub/'+str(r['id'])+'.xml'} for r in x.get('sub',{}).get('subs',[])[:5]]
+            entry['results']=assrt_results(x)
         out.append(entry)
     if not out: raise FeedError('no_matching_titles')
     return out
+
+def omdb_ratings(data):
+    result=[]; seen=set()
+    for r in data.get('Ratings') or []:
+        if not isinstance(r,dict): continue
+        if r.get('Source') and r.get('Value') not in (None,'','N/A') and r['Source'] not in seen:
+            seen.add(r['Source']); result.append({'source':r['Source'],'display':r['Value']})
+    for name,field,scale in [('Internet Movie Database','imdbRating','10'),('Metacritic','Metascore','100')]:
+        if name not in seen and data.get(field) not in (None,'','N/A'):
+            result.append({'source':name,'display':str(data[field])+'/'+scale})
+    return result
+
+def assrt_results(data):
+    payload=data.get('sub') or {}
+    if not isinstance(payload,dict): raise FeedError('invalid_subtitle_schema')
+    rows=payload.get('subs') or []
+    if not isinstance(rows,list): raise FeedError('invalid_subtitle_schema')
+    result=[]
+    for row in rows[:5]:
+        if not isinstance(row,dict) or not str(row.get('id','')).isdigit(): continue
+        lang=row.get('lang') or {}
+        language=lang.get('desc','') if isinstance(lang,dict) else str(lang)
+        result.append({'title':clean(row.get('native_name') or row.get('videoname')),'language':language,
+                       'url':'https://assrt.net/xml/sub/'+str(row['id'])+'.xml'})
+    return result
 
 def refresh_source(source,previous,loader):
     result=dict(previous or {}); stamp=date(result.get('checked_at'))
     # Failed sources retry after 6h; quota endpoints never retry faster than 24h.
     hours=SOURCES[source][2]
-    if stamp and now()-stamp<timedelta(hours=hours): return result
-    result.update(name=SOURCES[source][0],url=SOURCES[source][1],checked_at=iso(),interval_hours=hours)
+    revision=SOURCE_REVISIONS.get(source,1)
+    if result.get('collector_revision',1)==revision and stamp and now()-stamp<timedelta(hours=hours): return result
+    result.update(name=SOURCES[source][0],url=SOURCES[source][1],checked_at=iso(),interval_hours=hours,collector_revision=revision)
     try:
         items=loader()
         if not isinstance(items,list): raise FeedError('invalid_schema')
@@ -288,8 +330,8 @@ def refresh_source(source,previous,loader):
     except FeedError as e:
         result.update(status='stale' if result.get('items') else 'unavailable',error=str(e))
         result.setdefault('items',[])
-    except Exception:
-        result.update(status='stale' if result.get('items') else 'unavailable',error='invalid_response')
+    except Exception as exc:
+        result.update(status='stale' if result.get('items') else 'unavailable',error='invalid_response_'+type(exc).__name__)
         result.setdefault('items',[])
     print(f'{source}: {result["status"]}, {len(result["items"])} records; {result.get("error") or "verified"}',flush=True)
     return result
@@ -335,7 +377,7 @@ def main():
     for name in ('omdb','watchmode','opensubtitles','assrt'):
         sources[name]=refresh_source(name,sources.get(name),lambda n=name:enrich(n,candidates))
     localize_images(sources)
-    output={'schema':1,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources}
+    output={'schema':1,'media_source_version':2,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
     serialized=json.dumps([output,CACHE],ensure_ascii=False)
