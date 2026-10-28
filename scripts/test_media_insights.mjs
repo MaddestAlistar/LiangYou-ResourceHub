@@ -23,7 +23,7 @@ function stub(data){
    if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/videos')
      return json({items:data.youtubeVideos||[{id:'AbCdEf12345',snippet:{title:'Fight Club Official Trailer',channelTitle:'Official Movie Channel',publishedAt:'2025-05-11T10:00:00Z'},contentDetails:{duration:'PT2M14S'},statistics:{viewCount:'1234567'},status:{privacyStatus:'public',embeddable:true}}]});
    if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/search')
-     return json({items:[{id:{videoId:'AbCdEf12345'},snippet:{title:'Fight Club Trailer Search',channelTitle:'Trailer Archive'}}]});
+     return json({items:data.youtubeSearch||[{id:{videoId:'AbCdEf12345'},snippet:{title:'Fight Club Trailer Search',channelTitle:'Trailer Archive'}}]});
    if(uri.hostname==='tastedive.com')
      return json({Similar:{Results:[{Name:'Another Movie',Type:'movie'}]}});
    if(uri.hostname==='api.myanimelist.net'&&uri.pathname==='/v2/anime/1')return json({id:1,title:'Cowboy Bebop',mean:8.73,rank:43,popularity:21,num_scoring_users:865433,num_episodes:26,studios:[{name:'Sunrise'}],genres:[{name:'Action'}]});
@@ -131,6 +131,34 @@ test('TMDB official YouTube IDs get metadata without guessing the video title',a
  assert.equal(body.trailers[0].official,true);assert.equal(body.trailers[0].duration,'PT2M14S');
  assert.equal(body.trailers[0].channel,'Official Movie Channel');
  assert.equal(body.trailers[0].views,1234567);
+});
+test('verified TMDB regional aliases and real YouTube likes improve related coverage safely',async()=>{
+ stub({movie:{
+   alternative_titles:{titles:[
+     {iso_3166_1:'CN',title:'搏击俱乐部'},
+     {iso_3166_1:'US',title:'Fight Club'},
+     {iso_3166_1:'FR',title:'Unrelated translation'}
+   ]},
+   videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official trailer'}]}
+  },youtubeVideos:[
+   {id:'AbCdEf12345',snippet:{title:'Fight Club official trailer',channelTitle:'Official films'},
+    contentDetails:{duration:'PT2M'},status:{privacyStatus:'public',embeddable:true},statistics:{viewCount:'500',likeCount:'40'}},
+   {id:'Related9999',snippet:{title:'Fight Club cast interview',channelTitle:'Movie Press'},
+    contentDetails:{duration:'PT4M'},status:{privacyStatus:'public',embeddable:true},statistics:{viewCount:'2000',likeCount:'420'}},
+   {id:'Related8888',snippet:{title:'Fight Club movie scene discussion',channelTitle:'Film Channel'},
+    contentDetails:{duration:'PT3M'},status:{privacyStatus:'public',embeddable:true},statistics:{viewCount:'3000',likeCount:'100'}},
+   {id:'Unrelat9999',snippet:{title:'Unrelated game highlights',channelTitle:'Other'},
+    contentDetails:{duration:'PT3M'},status:{privacyStatus:'public',embeddable:true},statistics:{viewCount:'90000',likeCount:'9999'}},
+  ],youtubeSearch:[
+   {id:{videoId:'Related8888'}},{id:{videoId:'Unrelat9999'}},{id:{videoId:'Related9999'}}
+  ]});
+ const {status,body}=await invoke('/api/insights/movie/550?schema=9&media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.ok(body.aliases.includes('搏击俱乐部'));
+ assert.ok(!body.aliases.includes('Unrelated translation'));
+ assert.deepEqual(body.relatedVideos.map(v=>v.id),['Related9999','Related8888']);
+ assert.deepEqual(body.relatedVideos.map(v=>v.likes),[420,100]);
+ assert.ok(body.relatedVideos.every(v=>v.embeddable===true&&!v.ageRestricted));
 });
 test('age-restricted and non-embeddable trailers are labeled and ranked behind anonymous-playable clips',async()=>{
  stub({movie:{videos:{results:[
