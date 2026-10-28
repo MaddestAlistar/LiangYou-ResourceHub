@@ -1,0 +1,26 @@
+name: Probe public Kitsu MAL mapping response shape
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/probe-kitsu-mal-mapping.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public Kitsu mapping for MAL anime 1
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.parse,json
+          q=urllib.parse.urlencode({"filter[externalSite]":"myanimelist/anime","filter[externalId]":"1"})
+          for base in ("https://kitsu.io/api/edge/mappings","https://kitsu.app/api/edge/mappings"):
+            try:
+              with urllib.request.urlopen(urllib.request.Request(base+"?"+q,headers={"Accept":"application/vnd.api+json","User-Agent":"LiangYouResearch/1.0"}),timeout=15) as resp:data=json.load(resp)
+              rows=data.get("data",[])
+              print("KITSU_MAPPING_SHAPE",base,len(rows),json.dumps(rows[:3],ensure_ascii=False)[:2400])
+            except Exception as e:print("KITSU_MAPPING_UNAVAILABLE",base,type(e).__name__,str(e)[:130])
+          PY
