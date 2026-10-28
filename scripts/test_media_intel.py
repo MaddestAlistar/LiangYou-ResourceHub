@@ -46,6 +46,42 @@ class MediaTests(unittest.TestCase):
                                  {'site':'YouTube','official':False,'type':'Trailer','key':'abcdefghijk'}]}}
         p=m.tmdb_profile(x,'movie')['profile']
         self.assertEqual(len(p['videos']),1);self.assertEqual(p['cast'][0]['name'],'Actor')
+    def test_verified_movie_classification_without_guessed_age(self):
+        x={'id':101,'title':'Test','genres':[{'id':28,'name':'动作'},{'id':12,'name':'冒险'}],
+           'keywords':{'keywords':[{'name':'time travel'},{'name':'future world'},{'name':'time travel'}]},
+           'release_dates':{'results':[
+               {'iso_3166_1':'US','release_dates':[{'type':3,'certification':'PG-13'},{'type':4,'certification':'PG-13'}]},
+               {'iso_3166_1':'GB','release_dates':[{'type':3,'certification':'12A'}]}
+           ]}}
+        p=m.tmdb_profile(x,'movie')['profile']
+        self.assertEqual(p['genres'],['动作','冒险'])
+        self.assertEqual(p['keywords'],['time travel','future world'])
+        self.assertEqual(p['parental_rating'],{'country':'US','rating':'PG-13','source':'TMDB'})
+        self.assertIsNone(m.tmdb_parental_rating({'release_dates':{'results':[
+            {'iso_3166_1':'US','release_dates':[{'type':3,'certification':'PG-13'},{'type':3,'certification':'R'}]}
+        ]}},'movie'))
+        self.assertIsNone(m.tmdb_parental_rating({'release_dates':{'results':[
+            {'iso_3166_1':'US','release_dates':[{'type':3,'certification':'NR'}]}
+        ]}},'movie'))
+    def test_tv_parental_classification_uses_country_not_derived_recommendation(self):
+        tv={'id':202,'name':'A','keywords':{'results':[{'name':'family relationships'}]},
+            'content_ratings':{'results':[{'iso_3166_1':'US','rating':'TV-14'}]}}
+        p=m.tmdb_profile(tv,'tv')['profile']
+        self.assertEqual(p['parental_rating'],{'country':'US','rating':'TV-14','source':'TMDB'})
+        self.assertEqual(p['keywords'],['family relationships'])
+        self.assertIsNone(m.tmdb_profile({'id':203,'title':'B'},'movie')['profile']['parental_rating'])
+    def test_tmdb_detail_uses_one_appended_request_for_parent_and_theme_data(self):
+        m.TMDB_MEM.clear()
+        sample={'id':8012,'title':'Example','credits':{},'genres':[]}
+        with patch.object(m,'cached',side_effect=lambda *args:args[3]()) as c,patch.object(m,'tmdb',return_value=sample) as api:
+            item=m.detail(8012,'movie')
+            self.assertIn('parental_rating',item['profile'])
+            self.assertIn('release_dates',api.call_args.kwargs['append_to_response'])
+        m.TMDB_MEM.clear()
+        with patch.object(m,'cached',side_effect=lambda *args:args[3]()),patch.object(m,'tmdb',return_value={'id':8013,'name':'Series'} ) as api:
+            m.detail(8013,'tv')
+            self.assertIn('content_ratings',api.call_args.kwargs['append_to_response'])
+        m.TMDB_MEM.clear()
     def test_one_mdblist_timeout_does_not_discard_other_ratings(self):
         rows=[{'id':f'tmdb-movie-{n}','kind':'movie','tmdb_id':n} for n in (1,2)]
         with patch.object(m,'key',return_value='test'),patch.object(m,'get',side_effect=[m.FeedError('network_or_response_error_TimeoutError'),{'ratings':[{'source':'imdb','value':8}]}]):
