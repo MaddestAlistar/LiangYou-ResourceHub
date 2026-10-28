@@ -21,7 +21,7 @@
   }
   function get(kind,id){
     const key=kind+':'+id;
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=2').catch(e=>{cache.delete(key);throw e;}));
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=3').catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   function item(label,value){
