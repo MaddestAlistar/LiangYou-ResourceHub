@@ -100,10 +100,19 @@
       '</section>';
   }
   function boxoffice(d){
-    return '<section class="mi-insight-block"><h3>'+t('单片票房补充','Film box office')+'</h3>'+
-      (d.boxOffice?'<div class="mi-insight-highlight"><small>'+t('美国本土票房 · OMDb 汇总','US domestic box office · OMDb')+'</small><strong>'+esc(d.boxOffice.amount)+'</strong>'+a(d.boxOffice.sourceUrl,'IMDb')+'</div>':
-        '<p class="mi-caption">'+t('暂无经过 IMDb ID 核验的单片票房；此处不会把全球票房与美国票房混用。','No verified film total. Global and US figures are never mixed.')+'</p>')+
-      '<details class="mi-rankings-drawer"><summary>'+t('韩国每日票房 · KOFIC','Korea daily box office · KOFIC')+'</summary><div class="mi-kr-boxoffice" aria-live="polite">'+t('展开后读取官方榜单','Open to load the official chart')+'</div></details></section>';
+    if(d.kind!=='movie')return '<section class="mi-insight-block"><p class="mi-caption">'+t('此作品不是院线电影，不适用单片票房统计。','This is not a theatrical film; individual box office totals do not apply.')+'</p></section>';
+    const usd=n=>new Intl.NumberFormat(english()?'en-US':'zh-CN',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+    const financials=d.financials||{};
+    const cards=[
+      ['TMDB · '+t('已记录收入（区域未注明）','Reported revenue (region unspecified)'),financials.revenueUSD],
+      ['TMDB · '+t('制作预算','Production budget'),financials.budgetUSD]
+    ].filter(([,v])=>typeof v==='number'&&Number.isFinite(v)&&v>0);
+    return '<section class="mi-insight-block"><h3>'+t('单片票房与财务信息','Film box office and financials')+'</h3>'+
+      (d.boxOffice?'<div class="mi-insight-highlight"><small>'+t('美国本土票房 · OMDb 汇总','US domestic gross · OMDb')+'</small><strong>'+esc(d.boxOffice.amount)+'</strong>'+a(d.boxOffice.sourceUrl,'IMDb')+'</div>':'')+
+      (cards.length?'<div class="mi-cn-box-grid">'+cards.map(([label,v])=>'<div><small>'+esc(label)+'</small><strong>'+esc(usd(v))+'</strong></div>').join('')+'</div>':'')+
+      (!d.boxOffice&&!cards.length?'<p class="mi-caption">'+t('暂无经过核对的单片收入数据。','No matching individual film financial figures yet.')+'</p>':'')+
+      '<p class="mi-caption">'+t('美元金额来自不同来源、不同统计口径。TMDB revenue 不等同于已验证的全球院线票房；预算不属于票房。','USD figures can have different scopes. TMDB revenue is not a verified worldwide theatrical gross, and budget is not box office.')+'</p>'+
+      '<details class="mi-rankings-drawer"><summary>'+t('韩国每日票房 · KOFIC（独立榜单）','Korean daily box office · KOFIC (separate chart)')+'</summary><div class="mi-kr-boxoffice" aria-live="polite">'+t('展开后读取官方榜单','Open to load the official chart')+'</div></details></section>';
   }
   function formatDuration(raw){
     const m=/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(String(raw||''));
