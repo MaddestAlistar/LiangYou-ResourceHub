@@ -12,7 +12,7 @@ function respond(data,status=200,cacheTime=0){
 }
 async function fetchHTML(url){
   const ac=new AbortController();
-  const timer=setTimeout(()=>ac.abort(),12000);
+  const timer=setTimeout(()=>ac.abort(),25000);
   try {
     const r=await fetch(url,{signal:ac.signal,
       headers:{"Accept":"text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
