@@ -58,6 +58,18 @@
     if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=6'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
+  const classificationCache=new Map();
+  function getClassification(kind,id){
+    const key=kind+':'+id;
+    if(!classificationCache.has(key))classificationCache.set(key,(async()=>{
+      const response=await fetch(base+'/api/classification/'+kind+'/'+id+'?schema=1',{signal:AbortSignal.timeout(15000)});
+      // Backwards-compatible while the lightweight Worker route is rolling out.
+      if(response.status===404)return get(kind,id,false);
+      if(!response.ok)throw Error('classification_unavailable');
+      return response.json();
+    })().catch(error=>{classificationCache.delete(key);throw error;}));
+    return classificationCache.get(key);
+  }
   async function filmNewsFeed(){
     // GitHub Actions provides a verified snapshot if Worker-to-Guardian access is denied.
     try{
@@ -231,7 +243,7 @@
     const id=Number(info?.tmdbId);
     if(!kind||!Number.isSafeInteger(id)||id<1)return;
     try{
-      const data=await get(kind,id,false);
+      const data=await getClassification(kind,id);
       if(data.ok!==true||data.kind!==kind||data.tmdbId!==id||!data.classification)return;
       const expectedYear=Number(String(info.year||'').slice(0,4));
       const actualYear=Number(String(data.releaseDate||'').slice(0,4));
