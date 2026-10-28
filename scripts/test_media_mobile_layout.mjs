@@ -36,6 +36,24 @@ for(const width of [390,360]){
    close(a.save[0],b.save[0],'watchlist footer top');
    assert.ok(metrics.overflow<=2,'grid horizontal overflow '+metrics.overflow);
    console.log('MOBILE_FILM_LAYOUT_OK',width,JSON.stringify(metrics));
+   // Six-category title navigation must remain usable and free of internal API registry.
+   await page.locator('#media-grid .mi-card-open').first().click();
+   await page.waitForFunction(()=>document.querySelector('#media-dialog')?.open,{timeout:10000});
+   const titleUI=await page.evaluate(()=>{
+     const dialog=document.querySelector('#media-dialog');
+     const nav=[...dialog.querySelectorAll('[data-mi-detail]')];
+     return {labels:nav.map(x=>x.dataset.miDetail),sourceRegistry:document.querySelectorAll('#media .mi-source-registry').length,
+       navOverflow:dialog.querySelector('.mi-detail-nav').scrollWidth-dialog.querySelector('.mi-detail-nav').clientWidth};
+   });
+   assert.deepEqual(titleUI.labels,['ratings','profile','people','boxoffice','watch','discover']);
+   assert.equal(titleUI.sourceRegistry,0,'internal source registry must not appear to visitors');
+   assert.ok(titleUI.navOverflow<=2,'six section tabs overflowing mobile width: '+titleUI.navOverflow);
+   console.log('MOBILE_FILM_DETAILS_OK',width,JSON.stringify(titleUI));
+   await page.locator('#media-dialog [data-mi-detail="boxoffice"]').click();
+   await page.waitForTimeout(250);
+   assert.equal(await page.locator('#media-dialog [data-mi-detail="boxoffice"]').getAttribute('aria-pressed'),'true');
+   await page.locator('#media-dialog-close').click();
+
  }catch(err){
    const file='/tmp/mobile-film-'+width+'.png';
    await page.screenshot({path:file,fullPage:false}).catch(()=>{});
