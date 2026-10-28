@@ -28,6 +28,7 @@ jobs:
       THE_GUARDIAN_API_KEY: ${{ secrets.THE_GUARDIAN_API_KEY || secrets.GUARDIAN_API_KEY }}
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY || secrets.YOUTUBE_DATA_API_KEY || secrets.YOUTUBE_DATA_API_V3_KEY }}
       TASTEDIVE_API_KEY: ${{ secrets.TASTEDIVE_API_KEY }}
+      MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID || secrets.MYANIMELIST_CLIENT_ID }}
 
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +49,7 @@ jobs:
         run: printf '%s' "$TMDB_API_KEY" | npx --yes wrangler@4 secret put TMDB_API_KEY --name liangyou-streaming-availability
       - name: Configure optional media insight secrets
         run: |
-          for name in OMDB_API_KEY KOFIC_API_KEY FANARTTV_API_KEY THETVDB_API_KEY THETVDB_PIN THE_GUARDIAN_API_KEY YOUTUBE_API_KEY TASTEDIVE_API_KEY; do
+          for name in OMDB_API_KEY KOFIC_API_KEY FANARTTV_API_KEY THETVDB_API_KEY THETVDB_PIN THE_GUARDIAN_API_KEY YOUTUBE_API_KEY TASTEDIVE_API_KEY MAL_CLIENT_ID; do
             value="${!name}"
             if [ -n "$value" ]; then
               printf '%s' "$value" | npx --yes wrangler@4 secret put "$name" --name liangyou-streaming-availability
