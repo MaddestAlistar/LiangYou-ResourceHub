@@ -43,12 +43,10 @@ async function mediaInsights(kind,id,env){
  const jobs=[];
  const task=(name,fn)=>jobs.push((async()=>{try{const x=await fn();result.sources[name]=x?"ok":"no_data";}catch{result.sources[name]="unavailable";}})());
  if(wikidata){
-  task("wikidata",async()=>{
-   const d=await jsonRemote("https://www.wikidata.org/wiki/Special:EntityData/"+wikidata+".json");
-   const entity=d.entities?.[wikidata];if(!entity||entity.id!==wikidata)return null;
-   result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,
-     label:entity.labels?.zh?.value||entity.labels?.en?.value||""};return true;
-  });
+  // Exact cross-ID supplied by TMDB. Do not depend on a blocked Wikidata fetch,
+  // and do not claim that a Wikidata biography/entity body has been downloaded.
+  result.wikidata={id:wikidata,url:"https://www.wikidata.org/wiki/"+wikidata,label:""};
+  result.sources.wikidata="linked_via_tmdb";
  }else result.sources.wikidata="identity_missing";
  if(env.FANARTTV_API_KEY||env.FANART_TV_API_KEY){
   task("fanart",async()=>{
@@ -110,10 +108,17 @@ async function koreanBoxOffice(env){
  if(!env.KOFIC_API_KEY)return {ok:true,status:"not_configured",source:"KOFIC",data:[]};
  const date=new Date(Date.now()-3*86400000);
  const ymd=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(date).replace(/-/g,"");
- const uri=new URL("https://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json");
- uri.searchParams.set("key",env.KOFIC_API_KEY);uri.searchParams.set("targetDt",ymd);
- const d=await jsonRemote(uri.toString());
- const list=d.boxOfficeResult?.dailyBoxOfficeList;if(!Array.isArray(list))throw Error("KOFIC schema unavailable");
+ let d=null;
+ for(const host of ["kobis.or.kr","www.kobis.or.kr"]){
+  const uri=new URL("https://"+host+"/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json");
+  uri.searchParams.set("key",env.KOFIC_API_KEY);uri.searchParams.set("targetDt",ymd);
+  try{
+   const next=await jsonRemote(uri.toString(),{headers:{"Accept":"application/json"}},7000);
+   if(Array.isArray(next.boxOfficeResult?.dailyBoxOfficeList)){d=next;break;}
+  }catch{}
+ }
+ const list=d?.boxOfficeResult?.dailyBoxOfficeList;
+ if(!Array.isArray(list))return {ok:true,status:"unavailable",source:"KOFIC",date:ymd,data:[],note:"Official origin did not return a verified daily chart."};
  return {ok:true,status:"ok",source:"KOFIC official daily Korea box office",date:ymd,checkedAt:new Date().toISOString(),
   data:list.slice(0,10).filter(r=>r.movieNm&&r.rank).map(r=>({rank:Number(r.rank),title:r.movieNm,releaseDate:r.openDt||"",salesKRW:Number(r.salesAmt)||null,audience:Number(r.audiCnt)||null}))};
 }
