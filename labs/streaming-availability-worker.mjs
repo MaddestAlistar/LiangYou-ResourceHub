@@ -377,6 +377,9 @@ function rssArticleMatches(headline,alias,context={}){
  if(asian&&tight.length<4)return (quoted&&filmContext)||hasYear&&filmContext||person&&filmContext;
  if(!asian&&!name.includes(" "))return hasYear&&filmContext||isRemake&&filmContext||
    person&&filmContext||quoted&&filmContext;
+ // Distinctive two-word film titles such as "Fight Club" can be verified
+ // by a film-specific context even when the headline omits the release year.
+ if(!asian&&name.includes(" ")&&name.length>=8&&filmContext)return true;
  return quoted||hasYear&&filmContext||person&&filmContext;
 }
 async function titleNews(kind,id,env){
