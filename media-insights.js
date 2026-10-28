@@ -124,13 +124,13 @@
     const videos=Array.isArray(d.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,5):[];
     if(!videos.length)return '<section class="mi-insight-block"><h3>'+t('视频情报','Trailer intelligence')+'</h3><p class="mi-caption">'+t('暂无核验过的预告片。可在下方打开 TMDB 提供的原视频链接。','No verified trailers. Source links may appear above.')+'</p></section>';
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片 · 视频情报','Trailers · video intelligence')+'</h3><span class="mi-tech-tag">YouTube Data v3</span></div>'+
-      '<p class="mi-caption">'+t('优先展示 TMDB 标注的视频，非官方搜索结果单独标识；点击视频封面即可在网页内观看，无法嵌入时保留原视频链接。','Prioritizes TMDB-curated videos; unverified results are labeled. Tap a thumbnail to play here; external links remain available when embedding is restricted.')+'</p>'+
+      '<p class="mi-caption">'+t('优先展示 TMDB 标注的视频，非官方搜索结果单独标识；公开视频点击封面即可免登录尝试播放；年龄限制与禁止嵌入的视频只显示原站入口。','Prioritizes TMDB-curated videos; unverified results are labeled. Tap to play public trailers without signing in; restricted videos use their original links.')+'</p>'+
       '<div class="mi-trailer-grid">'+videos.map(v=>{
         const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
         const duration=formatDuration(v.duration);
         const views=Number.isFinite(v.views)?new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact',maximumFractionDigits:1}).format(v.views)+t(' 播放',' views'):'';
-        const label=v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Search candidate');
-        const embedAllowed=v.embeddable!==false;
+        const label=v.ageRestricted===true?t('年龄限制 · 原站观看','Age restricted · YouTube only'):v.official?t('TMDB 标注官方','TMDB official'):t('搜索候选 · 待核对','Search candidate');
+        const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
         const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
           '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
           (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
@@ -273,15 +273,36 @@
       if(pane.isConnected)pane.innerHTML='<p class="mi-caption">'+t('补充接口暂不可用，已有作品资料仍可正常查看。','Optional insights are unavailable. Core title data remains available.')+'</p>';
     }
   }
-  // Load YouTube only after a user interaction; closing the dialog removes the iframe.
+  // Public embeds need no viewer login. An account or age verification requirement
+  // from YouTube itself is not bypassed. Preserve Referer to avoid player error 153.
   const trailerDialog=document.getElementById('media-trailer-dialog');
   const trailerStage=document.getElementById('media-trailer-stage');
+  const playerSwitch=document.getElementById('media-trailer-switch');
+  let activeVideoId='';
+  let useStandardHost=false;
   function stopTrailer(){
     if(trailerStage)trailerStage.replaceChildren();
+    activeVideoId='';
+    useStandardHost=false;
   }
   function closeTrailer(){
     if(trailerDialog?.open)trailerDialog.close();
     else stopTrailer();
+  }
+  function showTrailerFrame(id,standard){
+    if(!trailerStage||!/^[A-Za-z0-9_-]{11}$/.test(id))return;
+    const frame=document.createElement('iframe');
+    frame.title=t('YouTube 预告片播放器','YouTube trailer player');
+    const hostname=standard?'www.youtube.com':'www.youtube-nocookie.com';
+    frame.src='https://'+hostname+'/embed/'+id+'?autoplay=1&playsinline=1&rel=0';
+    frame.loading='eager';
+    frame.allow='autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture; web-share';
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.allowFullscreen=true;
+    trailerStage.replaceChildren(frame);
+    activeVideoId=id;
+    useStandardHost=standard;
+    if(playerSwitch)playerSwitch.textContent=standard?t('切换隐私播放器','Try privacy-enhanced player'):t('切换普通播放器','Try standard player');
   }
   root.addEventListener('click',ev=>{
     const button=ev.target.closest('button[data-mi-play-video]');
@@ -290,23 +311,19 @@
     if(!/^[A-Za-z0-9_-]{11}$/.test(id)||!trailerDialog||!trailerStage)return;
     const card=button.closest('.mi-trailer-card');
     const name=card?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('官方预告片','Trailer');
-    const frame=document.createElement('iframe');
-    frame.title=t('YouTube 预告片：','YouTube trailer: ')+name;
-    frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&playsinline=1&rel=0';
-    frame.loading='eager';
-    frame.allow='autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture; web-share';
-    frame.referrerPolicy='strict-origin-when-cross-origin';
-    frame.allowFullscreen=true;
     document.getElementById('media-trailer-title').textContent=name;
-    document.getElementById('media-trailer-kicker').textContent=t('视频情报 · 网页内播放','TRAILER · IN-PAGE PLAYER');
+    document.getElementById('media-trailer-kicker').textContent=t('公开视频 · 无需 YouTube 账号','PUBLIC TRAILER · NO ACCOUNT REQUIRED');
     document.getElementById('media-trailer-close').setAttribute('aria-label',t('关闭视频播放器','Close trailer player'));
-    document.getElementById('media-trailer-help').textContent=t('如果视频因网络、地区或版权设置无法播放，可打开原视频。','If playback is restricted by network, region, or rights settings, open the original video.');
+    document.getElementById('media-trailer-help').textContent=t('公开视频通常无需登录；如果出现播放错误，可切换官方播放器。年龄或账号验证限制无法绕过。','Public videos usually play without a login. For playback errors, try the other official player; account and age restrictions still apply.');
     const external=document.getElementById('media-trailer-external');
     external.href='https://www.youtube.com/watch?v='+id;
-    external.textContent=t('前往 YouTube 观看 ↗','Watch on YouTube ↗');
-    stopTrailer();
-    trailerStage.appendChild(frame);
+    external.textContent=t('原站观看 ↗','Open on YouTube ↗');
+    // Wait until the visitor taps a trailer before making requests to YouTube.
+    showTrailerFrame(id,false);
     if(!trailerDialog.open)trailerDialog.showModal();
+  });
+  playerSwitch?.addEventListener('click',()=>{
+    if(activeVideoId)showTrailerFrame(activeVideoId,!useStandardHost);
   });
   trailerDialog?.addEventListener('close',stopTrailer);
   document.getElementById('media-trailer-close')?.addEventListener('click',closeTrailer);
