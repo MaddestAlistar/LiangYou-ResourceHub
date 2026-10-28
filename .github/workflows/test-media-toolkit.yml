@@ -7,6 +7,10 @@ on:
       - media-intel.js
       - media-intel.css
       - media-insights.js
+      - media-cn-enhance.js
+      - media-cn-enhance.css
+      - data/media-cn-news.json
+      - scripts/update_media_cn_news.py
       - media-toolkit.js
       - media-toolkit.css
       - labs/streaming-availability-worker.mjs
@@ -30,6 +34,8 @@ jobs:
         run: |
           node --check media-intel.js
           node --check media-insights.js
+          node --check media-cn-enhance.js
+          python -m py_compile scripts/update_media_cn_news.py
           node --check media-toolkit.js
           node --check labs/streaming-availability-worker.mjs
           python - <<'PY'
@@ -42,6 +48,9 @@ jobs:
           assert html.count('href="./media-toolkit.css?')==1
           assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
           assert "media-insights.js" in html
+          assert 'media-cn-enhance.js' in html and 'media-cn-enhance.css' in html
+          assert 'mi-cn-auto' in Path('media-cn-enhance.js').read_text()
+          assert 'mi-source-registry' not in Path('media-insights.js').read_text()
           assert "mi-trailer-trigger" in Path("media-insights.js").read_text()
           assert "mi-grid .mi-card-copy" in Path("media-intel.css").read_text()
           assert "data-mi-status" in base and "LiangYouWatchlist" in toolkit
