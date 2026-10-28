@@ -286,7 +286,7 @@
         const quoted=['“'+label+'”',"'"+label+"'",'《'+label+'》','「'+label+'」'].some(q=>headline.toLowerCase().includes(q.toLowerCase()));
         if(quoted){confidence=Math.max(confidence,100+Math.min(compact.length,20));continue;}
         if(/[\u3400-\u9fff]/.test(name)){
-          if(compact.length>=4&&line.includes(' '+name+' '))confidence=Math.max(confidence,75+Math.min(compact.length,20));
+          if(compact.length>=4&&line.replace(/ /g,'').includes(compact))confidence=Math.max(confidence,75+Math.min(compact.length,20));
         }else if(compact.length>=4&&line.includes(' '+name+' ')){
           confidence=Math.max(confidence,70+Math.min(compact.length,20));
         }
