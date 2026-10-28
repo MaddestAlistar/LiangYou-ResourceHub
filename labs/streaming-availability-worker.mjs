@@ -374,6 +374,9 @@ function rssArticleMatches(headline,alias,context={}){
  // Moana (2016) vs the identically named live-action Moana (2026), or any
  // generic-word movie title: never match on the word alone.
  if(oldYear.length===4&&headline.includes(oldYear)&&!hasYear&&!isRemake&&!person)return false;
+ // Truncated names for reboots/remakes must not import stories about the
+ // older work. Quoting "海洋奇缘" alone does not establish 2026's remake.
+ if(context.requireEdition===true)return filmContext&&(hasYear||isRemake||person);
  if(asian&&tight.length<4)return (quoted&&filmContext)||hasYear&&filmContext||person&&filmContext;
  if(!asian&&!name.includes(" "))return hasYear&&filmContext||isRemake&&filmContext||
    person&&filmContext||quoted&&filmContext;
@@ -407,13 +410,13 @@ async function titleNews(kind,id,env){
  const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
  const genre=String(item.genres?.[0]?.name||"").trim();
  const queries=[];
- const add=(alias,query,locale)=>{if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale});};
+ const add=(alias,query,locale,requireEdition=false)=>{if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale,requireEdition});};
  if(asian){
   add(asian,'"'+asian+'" '+year,'zh');
   // "海洋奇缘：启航" is widely covered as "真人版《海洋奇缘》".
   const root=asian.split(/[：:]/)[0].trim();
   if(root!==asian&&root.length>=4)
-   add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)','zh');
+   add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)','zh',true);
   else add(asian,'"'+asian+'" 电影 '+year,'zh');
  }
  if(originalLatin){
@@ -427,7 +430,7 @@ async function titleNews(kind,id,env){
  }
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
- const requests=queries.slice(0,4).map(async ({alias,query,locale})=>{
+ const requests=queries.slice(0,4).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
   endpoint.searchParams.set("q",query+" when:2y");
   if(locale==="zh"){
@@ -445,7 +448,7 @@ async function titleNews(kind,id,env){
    if(!res.ok)return [];
    const xml=(await res.text()).slice(0,400000);
    if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml))return [];
-   const now=Date.now(),ctx={year,people};
+   const now=Date.now(),ctx={year,people,requireEdition};
    return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50).map(m=>{
     const raw=m[1],title=rssField(raw,"title"),url=safeHttps(rssField(raw,"link"),"news.google.com");
     const stamp=Date.parse(rssField(raw,"pubDate"));
