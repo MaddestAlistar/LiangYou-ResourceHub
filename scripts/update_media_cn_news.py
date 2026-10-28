@@ -48,7 +48,7 @@ def collect(name,url,pattern,host):
   urlValue=trusted(h.group(1),url,host)
   if not urlValue or not re.search(pattern,urlparse(urlValue).path,re.I):continue
   tm=TITLE.search(attrs)
-  heading=text(tm.group(1) if tm else match.group(2))
+  heading=text(tm.group(1) if tm else match.group(2)).lstrip("•·　 ").strip()
   if len(heading)<8 or len(heading)>180:continue
   surrounding=text(body[match.end():match.end()+220])
   date_match=DATE.search(surrounding)
