@@ -74,7 +74,7 @@ try{
  console.log('MAINLAND_NO_TV_BOX_OFFICE_OK');
  await send('discover');
  const relatedNews=page.locator('.mi-cn-title-news').last();
- await relatedNews.locator('.mi-cn-news-list article').first().waitFor({timeout:12000});
+ await relatedNews.locator('.mi-insight-news .mi-editorial-card').first().waitFor({timeout:12000});
  assert.match(await relatedNews.innerText(),/哪吒之魔童闹海/);
  assert.match(await relatedNews.innerText(),/国家电影局/);
  console.log('MAINLAND_FILM_NEWS_OK');
