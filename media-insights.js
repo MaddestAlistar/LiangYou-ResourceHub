@@ -156,6 +156,8 @@
       let verified=false;
       if(p==='bilibili')verified=/^BV[A-Za-z0-9]{10}$/.test(id)&&u==='https://www.bilibili.com/video/'+id+'/';
       if(p==='tencent')verified=/^[A-Za-z0-9]{11}$/.test(id)&&u==='https://v.qq.com/x/page/'+id+'.html';
+      if(p==='youku')verified=/^[A-Za-z0-9=_-]{8,80}$/.test(id)&&u==='https://v.youku.com/v_show/id_'+id+'.html';
+      if(p==='iqiyi')verified=/^[A-Za-z0-9]{6,40}$/.test(id)&&u==='https://www.iqiyi.com/v_'+id+'.html';
       // A 1905 movie profile is not a verified trailer playback URL. Show as
       // source link only, never construct an unapproved streaming iframe.
       if(!verified||ids.has(p+':'+id))continue;
