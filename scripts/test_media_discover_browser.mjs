@@ -103,7 +103,7 @@ try{
      const d=document.querySelector('#media-dialog');
      return d?.querySelector('[data-mi-discover-slot="domestic"] .mi-cn-news-list a')&&
        d?.querySelector('[data-mi-discover-slot="international"] .mi-international-news')&&
-       d?.querySelector('[data-mi-discover-slot="trailers"] .mi-insight-host .mi-caption');
+       d?.querySelector('[data-mi-discover-slot="trailers"] .mi-official-trailer-fallback .mi-caption')?.textContent.includes('预告片接口暂不可用');
    },{timeout:20000});
    const offline=await offlinePage.evaluate(()=>{
      const d=document.querySelector('#media-dialog');
@@ -111,6 +111,8 @@ try{
      return {trailer:text('trailers'),international:text('international'),domestic:text('domestic')};
    });
    assert.doesNotMatch(offline.trailer,/正在核对可播放的预告片/,'No endless spinner when YouTube enrichment fails');
+   assert.equal((offline.trailer.match(/预告片接口暂不可用/g)||[]).length,1,
+     'Only one clear trailer error should be visible');
    if(worldName.length>=5)assert.match(offline.international,/Variety/,'Offline Worker must not block world RSS');
    assert.match(offline.domestic,/新浪电影/,'Offline Worker must not block Chinese RSS');
    assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
