@@ -84,6 +84,7 @@ async function mediaInsights(kind,id,env,withMedia=false){
       const meta=found.get(v.id);
       if(!meta||meta.status?.privacyStatus!=="public")return false;
       v.embeddable=meta.status?.embeddable===true;
+      v.ageRestricted=meta.contentDetails?.contentRating?.ytRating==="ytAgeRestricted";
       v.channel=String(meta.snippet?.channelTitle||v.channel||"").slice(0,90);
       v.title=String(meta.snippet?.title||v.title||"").slice(0,150);
       v.publishedAt=meta.snippet?.publishedAt||v.publishedAt;
@@ -91,6 +92,9 @@ async function mediaInsights(kind,id,env,withMedia=false){
       v.views=/^\d+$/.test(String(meta.statistics?.viewCount||""))?Number(meta.statistics.viewCount):null;
       return true;
    });
+   // Prefer verified public videos that YouTube says can play without age verification.
+   // Age-gated and embed-disabled videos remain as clearly labeled source links.
+   result.trailers.sort((a,b)=>Number(a.embeddable!==true||a.ageRestricted===true)-Number(b.embeddable!==true||b.ageRestricted===true));
    return result.trailers.length>0;
   });
  }else result.sources.youtube=!withMedia?"not_requested":result.trailers.length?"tmdb_video_links":"not_configured";
