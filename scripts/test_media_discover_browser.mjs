@@ -56,7 +56,7 @@ try{
  await page.waitForFunction(()=>{
    const d=document.querySelector('#media-dialog');
    return d?.querySelector('.mi-trailer-card')&&d.querySelector('.mi-international-news')&&
-      d.querySelector('.mi-cn-news-list a');
+      d.querySelector('.mi-editorial-card a');
  },{timeout:20000});
  const result=await page.evaluate(()=>{
    const d=document.querySelector('#media-dialog'),slot=s=>d.querySelector('[data-mi-discover-slot="'+s+'"]');
@@ -94,7 +94,7 @@ try{
  for(const selector of [
    '#media-dialog [data-mi-discover-slot="trailers"] .mi-trailer-card',
    '#media-dialog [data-mi-discover-slot="international"] .mi-international-news',
-   '#media-dialog [data-mi-discover-slot="domestic"] .mi-cn-news-list a'
+   '#media-dialog [data-mi-discover-slot="domestic"] .mi-editorial-card a'
  ]){
    assert.equal(await page.locator(selector).first().isVisible(),true,
       'Discover component must be visually visible: '+selector);
@@ -134,7 +134,7 @@ try{
    await offlinePage.locator('#media-dialog [data-mi-detail="discover"]').click();
    await offlinePage.waitForFunction(()=>{
      const d=document.querySelector('#media-dialog');
-     return d?.querySelector('[data-mi-discover-slot="domestic"] .mi-cn-news-list a')&&
+     return d?.querySelector('[data-mi-discover-slot="domestic"] .mi-editorial-card a')&&
        d?.querySelector('[data-mi-discover-slot="international"] .mi-international-news')&&
        d?.querySelector('[data-mi-discover-slot="trailers"] .mi-videos-block .mi-trailer-card [data-mi-play-cn="bilibili"]');
    },{timeout:20000});
