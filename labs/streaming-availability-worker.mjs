@@ -135,7 +135,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
  const seenIds=new Set();
  result.trailers=tmdbTrailerRows.filter(v=>{if(seenIds.has(v.key))return false;seenIds.add(v.key);return true;})
-   .slice(0,5).map(v=>({id:v.key,title:String(v.name||"Trailer").slice(0,140),
+   .slice(0,12).map(v=>({id:v.key,title:String(v.name||"Trailer").slice(0,140),
      type:v.type,language:v.iso_639_1||"",channel:"",publishedAt:v.published_at||null,
      verifiedBy:"TMDB",official:true,embeddable:null,
      thumbnail:"https://i.ytimg.com/vi/"+v.key+"/hqdefault.jpg",
@@ -207,18 +207,26 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    lookup.searchParams.set("key",keyYouTube);lookup.searchParams.set("part","snippet,contentDetails,status,statistics");
    lookup.searchParams.set("id",ids.join(","));
    const details=await jsonRemote(lookup.toString(),{},7500);
-   const norm=x=>" "+String(x||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g," ").trim()+" ";
-   const expected=norm(titleName),compact=expected.trim().replace(/ /g,"");
+   const norm=x=>" "+String(x||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g," ").trim()+" ";
+   // Accept only verified TMDB regional aliases of the SAME title ID, never
+   // loosely related actors, franchises or short ambiguous search terms.
+   const matchingNames=[titleName,...result.aliases].map(v=>norm(v).trim()).filter(v=>{
+     const compact=v.replace(/ /g,"");
+     return compact.length>=4&&compact.length<=90;
+   });
+   const uniqueNames=[...new Set(matchingNames)];
    const banned=/full\s*(?:movie|film|episode)|entire\s*(?:movie|film)|watch\s*(?:movie|film)\s*online|完整版|全集|免费观影/i;
    const already=new Set(result.trailers.map(v=>v.id));
    const matched=(details.items||[]).filter(v=>{
     const id=String(v.id||""),heading=String(v.snippet?.title||""),label=norm(heading);
     if(already.has(id)||v.status?.privacyStatus!=="public"||v.status?.embeddable!==true||
        v.contentDetails?.contentRating?.ytRating==="ytAgeRestricted"||banned.test(heading))return false;
-    if(!label.includes(expected))return false;
-    // Single short-word titles are often unrelated video content.
-    if(compact.length<=5&&!/\b(movie|film|review|interview|scene|series|trailer|behind|analysis)\b/i.test(heading)&&
-       !heading.includes(releaseYear))return false;
+    const matchedName=uniqueNames.find(name=>label.includes(" "+name+" "));
+    if(!matchedName)return false;
+    // A short alias is only safe with context corroboration (year or film topic).
+    const compact=matchedName.replace(/ /g,"");
+    if(compact.length<=6&&!/\b(movie|film|review|interview|scene|series|trailer|behind|analysis|episode|cast|teaser)\b/i.test(heading)&&
+       !heading.includes(releaseYear)&&!/电影|电视剧|影评|预告|演员|幕后|剧情|花絮|剧集|影视|片段|캐스트|드라마/.test(heading))return false;
     return Number.isSafeInteger(Number(v.statistics?.likeCount))&&Number(v.statistics.likeCount)>0;
    }).map(v=>({
     id:v.id,title:String(v.snippet.title).slice(0,150),channel:String(v.snippet.channelTitle||"").slice(0,90),
@@ -230,7 +238,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
     url:"https://www.youtube.com/watch?v="+v.id
    }));
    matched.sort((a,b)=>b.likes-a.likes||(b.views||0)-(a.views||0));
-   result.relatedVideos=matched.slice(0,2);
+   result.relatedVideos=matched.slice(0,16);
    return result.relatedVideos.length>0;
   });
  }else result.sources.youtubeRelated=!withMedia?"not_requested":"not_configured";
