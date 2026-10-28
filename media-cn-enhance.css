@@ -36,3 +36,7 @@
 #media .mi-exact-scores h4{font-size:13px;color:#e7d2aa;margin:0 0 9px}
 #media .mi-cn-title-news{margin-top:13px}
 @media(max-width:380px){#media .mi-ranking-list li{grid-template-columns:17px minmax(0,1fr);gap:5px}#media .mi-ranking-list strong{grid-column:2;justify-self:start}}
+
+/* Mainland reports reuse the same editorial card presentation as international reports. */
+#media .mi-cn-news-results .mi-editorial-grid{margin-top:10px}
+#media .mi-cn-title-news .mi-editorial-body>span{display:block}
