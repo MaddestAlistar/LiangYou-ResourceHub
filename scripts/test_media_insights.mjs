@@ -72,6 +72,34 @@ test('invalid TMDB identity cannot be enriched',async()=>{
  assert.equal(status,502);assert.equal(body.ok,false);
 });
 
+test('lightweight classification endpoint fetches only exact TMDB title metadata',async()=>{
+ stub({movie:{genres:[{name:'Drama'}],keywords:{keywords:[{name:'family bonds'}]},
+   release_dates:{results:[{iso_3166_1:'US',release_dates:[{type:3,certification:'PG-13'}]}]}}});
+ const outbound=[];
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{outbound.push(new URL(String(input)).hostname);return original(input);};
+ const {status,body}=await invoke('/api/classification/movie/550?schema=1',
+   {TMDB_API_KEY:'test',OMDB_API_KEY:'test',FANARTTV_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.equal(body.source,'TMDB');
+ assert.equal(body.tmdbId,550);
+ assert.deepEqual(body.classification.keywords,['family bonds']);
+ assert.deepEqual(body.classification.parental_rating,{country:'US',rating:'PG-13',source:'TMDB'});
+ assert.deepEqual(outbound,['api.themoviedb.org']);
+});
+test('lightweight classification omits unsourced TV ratings and rejects mismatched IDs',async()=>{
+ stub({tv:{genres:[{name:'Drama'}],keywords:{results:[]},content_ratings:{results:[]}}});
+ let x=await invoke('/api/classification/tv/1399?schema=1',{TMDB_API_KEY:'test'});
+ assert.equal(x.status,200);assert.equal(x.body.classification.parental_rating,null);
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{
+   const uri=new URL(String(input));
+   if(uri.hostname==='api.themoviedb.org')return json({id:9999,name:'Wrong title'});
+   return original(input);
+ };
+ x=await invoke('/api/classification/tv/1399?schema=1',{TMDB_API_KEY:'test'});
+ assert.equal(x.status,502);assert.equal(x.body.ok,false);
+});
 test('real TMDB movie classification is territory-specific and does not infer age suitability',async()=>{
  stub({movie:{
    genres:[{id:28,name:'Action'},{id:12,name:'Adventure'}],
