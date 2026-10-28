@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-28T14:01:08Z",
+  "generated_at": "2026-10-28T20:29:29Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-28T14:01:08Z"
+      "verified_at": "2026-10-28T20:29:29Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 136,
       "standings": 5,
-      "verified_at": "2026-10-28T14:01:08Z"
+      "verified_at": "2026-10-28T20:29:29Z"
     }
   ],
   "status": "ok",
@@ -82,12 +82,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-28T17:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "AC Milan",
       "away": "Bologna FC 1909",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 4,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -100,12 +100,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-28T17:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Venezia FC",
       "away": "FC Internazionale Milano",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -118,12 +118,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-28T17:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Parma Calcio 1913",
       "away": "Udinese Calcio",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -136,12 +136,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-28T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Genoa CFC",
       "away": "Juventus FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -154,12 +154,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-10-28T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "AC Monza",
       "away": "SSC Napoli",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -2751,7 +2751,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     },
     {
@@ -2963,7 +2963,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     },
     {
@@ -3175,7 +3175,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     },
     {
@@ -3367,7 +3367,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     },
     {
@@ -3379,7 +3379,7 @@
       "groups": [
         {
           "rank": 1,
-          "team": "SS Lazio",
+          "team": "FC Internazionale Milano",
           "wins": 8,
           "losses": 0,
           "draws": 1,
@@ -3389,12 +3389,12 @@
         },
         {
           "rank": 2,
-          "team": "FC Internazionale Milano",
-          "wins": 7,
+          "team": "SS Lazio",
+          "wins": 8,
           "losses": 0,
           "draws": 1,
-          "points": 22,
-          "played": 8,
+          "points": 25,
+          "played": 9,
           "group": ""
         },
         {
@@ -3421,10 +3421,10 @@
           "rank": 5,
           "team": "AC Milan",
           "wins": 5,
-          "losses": 0,
+          "losses": 1,
           "draws": 3,
           "points": 18,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
@@ -3439,16 +3439,26 @@
         },
         {
           "rank": 7,
-          "team": "Juventus FC",
+          "team": "SSC Napoli",
           "wins": 4,
-          "losses": 2,
+          "losses": 3,
           "draws": 2,
           "points": 14,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 8,
+          "team": "Juventus FC",
+          "wins": 4,
+          "losses": 3,
+          "draws": 2,
+          "points": 14,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 9,
           "team": "Torino FC",
           "wins": 4,
           "losses": 4,
@@ -3458,7 +3468,7 @@
           "group": ""
         },
         {
-          "rank": 9,
+          "rank": 10,
           "team": "Cagliari Calcio",
           "wins": 4,
           "losses": 4,
@@ -3468,17 +3478,17 @@
           "group": ""
         },
         {
-          "rank": 10,
-          "team": "SSC Napoli",
+          "rank": 11,
+          "team": "Bologna FC 1909",
           "wins": 3,
-          "losses": 3,
+          "losses": 4,
           "draws": 2,
           "points": 11,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
-          "rank": 11,
+          "rank": 12,
           "team": "Atalanta BC",
           "wins": 3,
           "losses": 4,
@@ -3488,7 +3498,17 @@
           "group": ""
         },
         {
-          "rank": 12,
+          "rank": 13,
+          "team": "Genoa CFC",
+          "wins": 3,
+          "losses": 5,
+          "draws": 1,
+          "points": 10,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 14,
           "team": "US Lecce",
           "wins": 3,
           "losses": 5,
@@ -3498,17 +3518,7 @@
           "group": ""
         },
         {
-          "rank": 13,
-          "team": "Bologna FC 1909",
-          "wins": 2,
-          "losses": 4,
-          "draws": 2,
-          "points": 8,
-          "played": 8,
-          "group": ""
-        },
-        {
-          "rank": 14,
+          "rank": 15,
           "team": "US Sassuolo Calcio",
           "wins": 2,
           "losses": 5,
@@ -3518,23 +3528,13 @@
           "group": ""
         },
         {
-          "rank": 15,
+          "rank": 16,
           "team": "AC Monza",
           "wins": 2,
-          "losses": 5,
+          "losses": 6,
           "draws": 1,
           "points": 7,
-          "played": 8,
-          "group": ""
-        },
-        {
-          "rank": 16,
-          "team": "Genoa CFC",
-          "wins": 2,
-          "losses": 5,
-          "draws": 1,
-          "points": 7,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
@@ -3542,24 +3542,24 @@
           "team": "Udinese Calcio",
           "wins": 1,
           "losses": 6,
-          "draws": 1,
-          "points": 4,
-          "played": 8,
+          "draws": 2,
+          "points": 5,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 18,
-          "team": "ACF Fiorentina",
+          "team": "Parma Calcio 1913",
           "wins": 1,
           "losses": 6,
-          "draws": 1,
-          "points": 4,
-          "played": 8,
+          "draws": 2,
+          "points": 5,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 19,
-          "team": "Parma Calcio 1913",
+          "team": "ACF Fiorentina",
           "wins": 1,
           "losses": 6,
           "draws": 1,
@@ -3571,15 +3571,15 @@
           "rank": 20,
           "team": "Venezia FC",
           "wins": 1,
-          "losses": 7,
+          "losses": 8,
           "draws": 0,
           "points": 3,
-          "played": 8,
+          "played": 9,
           "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     },
     {
@@ -3771,7 +3771,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-28T14:01:08Z",
+      "verified_at": "2026-10-28T20:29:29Z",
       "status": "ok"
     }
   ],
