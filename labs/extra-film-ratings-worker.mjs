@@ -73,11 +73,11 @@ async function filmarksDirect(id){
     for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
       let obj;try{obj=JSON.parse(m[1]);}catch{continue;}
       for(const x of Array.isArray(obj)?obj:[obj]){
-        if(!x||typeof x!=="object"||!x.aggregateRating)continue;
+        if(!x||typeof x!=="object"||x["@type"]!=="Movie"||!x.aggregateRating)continue;
         const rating=num(x.aggregateRating.ratingValue,5);
-        const title=x.name;
-        if(rating!==null&&typeof title==="string"&&title.trim()&&t.includes(title.trim()))
-          found.push({rating,title:title.trim()});
+        const title=t.split(" - ")[0].trim();
+        if(rating!==null&&title&&title.length<160)
+          found.push({rating,title});
       }
     }
     if(found.length!==1)throw Error("filmarks_rating_ambiguous");
