@@ -284,7 +284,7 @@
     return worldNewsPromise;
   }
   function discoverySections(d,worldArticles=[]){
-    const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
+    const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g,' ').trim();
     const rawTitles=[d.localTitle,d.originalTitle,d.title,...(Array.isArray(d.aliases)?d.aliases:[])].filter(v=>typeof v==='string').slice(0,36);
     function matchScore(article){
       const headline=String(article.title||'').normalize('NFKC'),line=' '+normalize(headline)+' ';
@@ -294,7 +294,7 @@
         if(compact.length<2)continue;
         const quoted=['“'+label+'”',"'"+label+"'",'《'+label+'》','「'+label+'」'].some(q=>headline.toLowerCase().includes(q.toLowerCase()));
         if(quoted){confidence=Math.max(confidence,100+Math.min(compact.length,20));continue;}
-        if(/[\u3400-\u9fff]/.test(name)){
+        if(/[\u3400-\u9fff\uac00-\ud7af]/.test(name)){
           if(compact.length>=4&&line.replace(/ /g,'').includes(compact))confidence=Math.max(confidence,75+Math.min(compact.length,20));
         }else if(compact.length>=4&&line.includes(' '+name+' ')){
           confidence=Math.max(confidence,70+Math.min(compact.length,20));
