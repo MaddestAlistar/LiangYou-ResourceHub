@@ -432,18 +432,22 @@
     }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
-    const discoverUnavailable=(zh,en)=>{
-      if(!discoverSlots?.trailers)return false;
+    let domesticRows=[],trailerResult=null,trailerStatus='loading';
+    function paintTrailers(){
+      if(!discoverSlots?.trailers||!pane.isConnected)return;
+      pane.innerHTML=trailerGallery(trailerResult||{},info,domesticRows,trailerStatus);
+      // The original TMDB links have been integrated into the single trailer
+      // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
-      if(fallback&&!fallback.querySelector('a'))
-        fallback.innerHTML='<h3>'+t('预告片','Trailers')+'</h3><p class="mi-caption">'+t(zh,en)+'</p>';
-      // The trailer fallback owns its empty state; do not repeat an error above it.
-      pane.replaceChildren();
+      if(fallback)fallback.hidden=true;
+    }
+    const discoverUnavailable=()=>{
+      if(!discoverSlots?.trailers)return false;
+      trailerStatus='error';
+      paintTrailers();
       return true;
     };
     if(info.section==='discover'&&discoverSlots?.international){
-      // World headlines are independent from the YouTube/Guardian Worker.
-      // A slow or failed trailer lookup must not erase matched publisher RSS.
       worldNewsSnapshot().then(articles=>{
         if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
         discoverSlots.international.innerHTML=discoverySections({
@@ -453,12 +457,10 @@
     }
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
-      const cnHost=document.createElement('div');
-      cnHost.className='mi-domestic-trailer-host';
-      cnHost.innerHTML=domesticTrailerPanel(info);
-      discoverSlots.trailers.appendChild(cnHost);
+      paintTrailers();
       domesticVideoSnapshot().then(rows=>{
-        if(cnHost.isConnected)cnHost.innerHTML=domesticTrailerPanel(info,rows);
+        domesticRows=rows;
+        paintTrailers();
       }).catch(()=>{});
     }
     else if(info.section==='boxoffice'){
@@ -470,7 +472,7 @@
         pane.innerHTML='<p class="mi-caption">'+t('未建立准确的 TMDB ID，暂不自动关联外部数据。','No verified TMDB identity; external data will not be merged.')+'</p>';
       return;
     }
-    pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
+    if(!discoverSlots?.trailers)pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
     try{
       const data=await get(kind,id,info.section==='discover',['profile','people','boxoffice'].includes(info.section));
       if(!pane.isConnected)return;
@@ -509,10 +511,9 @@
       if(!pane.isConnected)return;
       if(info.section==='discover'&&discoverSlots?.trailers){
         const sections=discoverySections(enriched);
-        pane.innerHTML=sections.trailers;
-        const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
-        // Keep TMDB's original trailer links as a fallback if YouTube returns nothing.
-        if(fallback)fallback.hidden=Array.isArray(enriched.trailers)&&enriched.trailers.some(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||''));
+        trailerResult=enriched;
+        trailerStatus='ready';
+        paintTrailers();
         if(discoverSlots.international?.isConnected)discoverSlots.international.innerHTML=sections.international;
         // Source RSS is loaded independently; the fixed slot keeps its position.
         worldNewsSnapshot().then(world=>{
@@ -574,7 +575,7 @@
        url==='https://v.qq.com/x/page/'+id+'.html')
       frameUrl='https://v.qq.com/txp/iframe/player.html?vid='+id;
     if(!frameUrl)return;
-    const name=button.closest('.mi-cn-video-card')?.querySelector('p')?.textContent?.trim()||t('国内预告片','Domestic trailer');
+    const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
     const frame=document.createElement('iframe');
     frame.title=(platform==='bilibili'?'Bilibili':'Tencent Video')+' · '+name;
     frame.src=frameUrl;
