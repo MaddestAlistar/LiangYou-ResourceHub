@@ -299,6 +299,22 @@ export default {
     const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,error:"MAL source or ID unavailable"},502);}
   }
+  // Lightweight title classification for list cards. It uses one TMDB request,
+  // never fanart/OMDb/TheTVDB/YouTube/Guardian, and never sends credentials to browsers.
+  const classificationMatch=u.pathname.match(/^\/api\/classification\/(movie|tv)\/([1-9]\d{0,9})$/);
+  if(classificationMatch){
+   const hit=await caches.default.match(request);if(hit)return hit;
+   try{
+    const [_,kind,id]=classificationMatch,title=await tmdbInfo(kind,id,env,false);
+    const body={ok:true,kind,tmdbId:Number(id),source:"TMDB",
+      title:String(title.title||title.name||""),originalTitle:String(title.original_title||title.original_name||""),
+      releaseDate:title.release_date||title.first_air_date||"",
+      classification:classificationFor(title,kind),checkedAt:new Date().toISOString()};
+    const response=reply(body,200,86400);
+    ctx.waitUntil(caches.default.put(request,response.clone()));
+    return response;
+   }catch{return reply({ok:false,error:"Classification currently unavailable"},502);}
+  }
   // Optional enrichment is served by verified TMDB identity; all keys remain in Worker secrets.
   const extra=u.pathname.match(/^\/api\/insights\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(extra){
