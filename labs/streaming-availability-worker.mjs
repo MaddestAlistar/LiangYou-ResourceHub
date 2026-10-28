@@ -137,7 +137,7 @@ export default {
      const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,error:"Insights currently unavailable"},502);}
   }
-  if(u.pathname==="/api/boxoffice/kr"){
+  if(u.pathname==="/api/kobis/daily"||u.pathname==="/api/boxoffice/kr"){
    const hit=await caches.default.match(request);if(hit)return hit;
    try{const body=await koreanBoxOffice(env);const response=reply(body,200,14400);
      if(body.status==="ok")ctx.waitUntil(caches.default.put(request,response.clone()));return response;
