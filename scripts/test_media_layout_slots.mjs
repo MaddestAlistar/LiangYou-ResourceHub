@@ -55,8 +55,8 @@ test('changed assets invalidate old browser cache',()=>{
  const versions={
   'media-intel.js':'20261029.newsroom1',
   'media-toolkit.js':'20261029.newsroom1',
-  'media-insights.js':'20261029.newsvideo5',
-  'media-cn-enhance.js':'20261029.newsvideo5',
+  'media-insights.js':'20261029.newsvideo6',
+  'media-cn-enhance.js':'20261029.newsvideo6',
   'media-exact-scores.js':'20261029.newsroom1',
   'media-boxoffice-rankings.js':'20261029.noarchive1'
  };
