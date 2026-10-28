@@ -25,7 +25,7 @@
     const articles=(Array.isArray(item.articles)?item.articles:[]).filter(x=>x&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=200&&
       typeof x.source==='string'&&safeUrl(x.url)&&Number.isFinite(Date.parse(x.date||'')))
-      .map(x=>({...x,url:safeUrl(x.url)}));
+      .map(x=>({...x,url:safeUrl(x.url),verifiedByTitleId:true}));
     const videos=(Array.isArray(item.videos)?item.videos:[]).filter(x=>x&&x.kind===kind&&
       Number(x.year)===year&&x.title===item.title&&safeUrl(x.verifiedSource))
       .map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
