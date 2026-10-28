@@ -176,10 +176,11 @@
     return worldNewsPromise;
   }
   function discoverySections(d,worldArticles=[]){
-    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\\u3400-\\u9fff]+/g,' ').trim();
+    const clean=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g,' ').trim();
     // Require a meaningful complete title, not a common word or loose topic tag.
     const titles=[d.originalTitle,d.title].map(clean).filter(v=>v.length>=5);
     const match=x=>titles.some(name=>(' '+clean(x.title||'')+' ').includes(' '+name+' '));
+    const suggestions=Array.isArray(d.suggestions)?d.suggestions:[];
     const sources=Array.isArray(worldArticles)?worldArticles:[];
     const all=[...(Array.isArray(d.news)?d.news:[]),...sources].filter(x=>x&&safe(x.url)&&match(x));
     const seen=new Set();
