@@ -45,9 +45,10 @@ def collect():
         fields = row.get("fields") or {}
         summary = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(fields.get("trailText") or ""))).strip()[:210]
         articles.append({
-            "title": title[:180], "url": url,
+            "title": title, "url": url,
             "date": date, "section": str(row.get("sectionName") or "Film")[:45],
-            "summary": summary, "thumbnail": trusted_link(fields.get("thumbnail"), "guim.co.uk") or None,
+            "summary": summary, "byline": str(fields.get("byline") or "").strip(),
+            "thumbnail": trusted_link(fields.get("thumbnail"), "guim.co.uk") or None,
             "source": "The Guardian"
         })
     if len(articles) < 3:
