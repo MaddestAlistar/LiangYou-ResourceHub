@@ -39,8 +39,22 @@ jobs:
               assert isinstance(data.get('sources'),dict),data
               assert isinstance(data.get('artwork'),list),data
               assert isinstance(data.get('news'),list),data
+              assert isinstance(data.get("trailers"),list),data
+              for v in data["trailers"]:
+                  assert len(v.get("id",""))==11 and isinstance(v.get("official"),bool),v
+              for n in data["news"]:
+                  assert n.get("url","").startswith("https://www.theguardian.com/"),n
               assert all(p.get('url','').startswith('https://') for p in data['artwork']),data
               print('VERIFIED_ID',kind,id,'SOURCES',data['sources'])
+          try:
+              with urllib.request.urlopen(base+'/api/anime/mal/1',timeout=25) as r: mal=json.load(r)
+              assert mal.get("ok") is True and mal.get("status") in ("ok","not_configured"),mal
+              if mal["status"]=="ok":
+                  assert mal.get("malId")==1 and isinstance(mal.get("title"),str),mal
+              print("MYANIMELIST_V2",mal["status"])
+          except urllib.error.HTTPError as err:
+              if err.code not in (403,429,502,503): raise
+              print("MYANIMELIST_V2_UPSTREAM_UNAVAILABLE",err.code)
           try:
               with urllib.request.urlopen(base+'/api/kobis/daily',timeout=65) as r: kr=json.load(r)
           except urllib.error.HTTPError as err:
