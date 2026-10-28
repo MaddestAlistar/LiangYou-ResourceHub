@@ -109,12 +109,14 @@ def main():
  for args in SOURCES:items+=collect(*args)
  items+=collect_rss()
  items+=collect_rss('搜狐娱乐','https://news.sohu.com/rss/yule.xml','news.sohu.com')
+ # Movie-specific public RSS instead of generic literature, art exhibition or regional culture feeds.
+ items+=collect_rss('电影界·影视资讯','https://app.dianyingjie.com.cn/rss.php?catid=1','dianyingjie.com.cn')
  # Official Sina Entertainment RSS directory lists a dedicated film feed.
  items+=collect_rss('新浪电影','https://rss.sina.com.cn/ent/film/focus7.xml','sina.com.cn')
  # Older verified items are useful: most films aren't mentioned on today's front page.
  # Retain 365 days of headlines without mirroring article bodies or loosening source URLs.
  hosts={entry[0]:entry[3] for entry in SOURCES}
- hosts.update({"中新网·文娱":"chinanews.com.cn","搜狐娱乐":"news.sohu.com","新浪电影":"sina.com.cn"})
+ hosts.update({"中新网·文娱":"chinanews.com.cn","搜狐娱乐":"news.sohu.com","新浪电影":"sina.com.cn","电影界·影视资讯":"dianyingjie.com.cn"})
  unique={x["url"]:x for x in items}
  try:
   old=json.loads(DEST.read_text(encoding="utf-8")) if DEST.exists() else {}
