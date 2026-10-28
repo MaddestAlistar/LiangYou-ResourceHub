@@ -72,3 +72,24 @@
 - WMDB 主页可达但未发现公开 OpenAPI；every.film 本轮示例详情 400；悦享榜单域名连通失败。
 - 第三方返回豆瓣/猫眼数据，不代表拥有公开展示、再分发、商业授权。正式接入前确认条款。
 - 本轮只建立测试与部署，不更改影视情报中心前端。
+
+
+## 自建 60s 影视专用 Worker 二次验证
+
+通过 [GitHub Actions smoke test](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/40668118357) 在 2026-10-28 UTC 检测：
+
+| 路由 | HTTP | 数据量 | 结果 |
+|---|---:|---:|---|
+| /v2/douban/weekly/movie | 200 | 10 | 可用 |
+| /v2/douban/weekly/tv_chinese | 200 | 10 | 可用 |
+| /v2/douban/weekly/tv_global | 200 | 10 | 可用 |
+| /v2/douban/weekly/show_chinese | 200 | 8 | 可用 |
+| /v2/douban/weekly/show_global | 200 | 10 | 可用 |
+| /v2/baidu/teleplay | 200 | 10 | 可用 |
+| /v2/maoyan/realtime/movie | 超时 | 0 | 不可用 |
+| /v2/maoyan/all/movie | 500 | 0 | 不可用 |
+| /v2/maoyan/realtime/web | 超时 | 0 | 不可用 |
+| /v2/maoyan/realtime/tv | 500 | 0 | 不可用 |
+| /v2/60s (未开放) | 404 | 0 | 白名单正确阻断 |
+
+**结论：** 自建 60s 解决了公共实例对于豆瓣周榜及百度剧集榜的限流；并没有解决四个猫眼数据源的故障。后续国内实时票房优先使用本轮匿名测试成功的 ApiZero 票房接口。
