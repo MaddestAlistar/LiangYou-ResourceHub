@@ -22,18 +22,18 @@ async function jsonRemote(uri,opts={},timeout=8500){
 function safeHttps(v,host){
  try{const u=new URL(v);return u.protocol==="https:"&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
 }
-async function tmdbInfo(kind,id,env){
+async function tmdbInfo(kind,id,env,withMedia=false){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response","external_ids,videos");u.searchParams.set("language","en-US");
+ u.searchParams.set("append_to_response",withMedia?"external_ids,videos":"external_ids");u.searchParams.set("language","en-US");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
  if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
  return x;
 }
-async function mediaInsights(kind,id,env){
- const title=await tmdbInfo(kind,id,env), ext=title.external_ids||{};
+async function mediaInsights(kind,id,env,withMedia=false){
+ const title=await tmdbInfo(kind,id,env,withMedia), ext=title.external_ids||{};
  const imdb=/^tt\d{5,12}$/.test(title.imdb_id||ext.imdb_id||"")?(title.imdb_id||ext.imdb_id):null;
  const tvdb=kind==="tv"&&numericId(ext.tvdb_id)?Number(ext.tvdb_id):null;
  const wikidata=/^Q[1-9]\d{0,11}$/.test(ext.wikidata_id||"")?ext.wikidata_id:null;
@@ -54,7 +54,7 @@ async function mediaInsights(kind,id,env){
  const task=(name,fn)=>jobs.push((async()=>{try{const x=await fn();result.sources[name]=x?"ok":"no_data";}catch{result.sources[name]="unavailable";}})());
  // Existing official TMDB video IDs are authoritative. YouTube supplies playback metadata.
  // A low-frequency search is used only if TMDB has no official video; it stays explicitly unverified.
- if(keyYouTube){
+ if(keyYouTube&&withMedia){
   task("youtube",async()=>{
    if(!result.trailers.length){
     const search=new URL("https://www.googleapis.com/youtube/v3/search");
@@ -93,7 +93,7 @@ async function mediaInsights(kind,id,env){
    });
    return result.trailers.length>0;
   });
- }else result.sources.youtube=result.trailers.length?"tmdb_video_links":"not_configured";
+ }else result.sources.youtube=!withMedia?"not_requested":result.trailers.length?"tmdb_video_links":"not_configured";
  if(wikidata){
   // Exact cross-ID supplied by TMDB. Do not depend on a blocked Wikidata fetch,
   // and do not claim that a Wikidata biography/entity body has been downloaded.
@@ -139,7 +139,7 @@ async function mediaInsights(kind,id,env){
   });
  }else result.sources.omdb=kind==="movie"?"not_configured":"not_applicable";
  const q=title.original_title||title.original_name||title.title||title.name||"";
- if(env.THE_GUARDIAN_API_KEY&&q.length>=5&&q.length<=90){
+ if(withMedia&&env.THE_GUARDIAN_API_KEY&&q.length>=5&&q.length<=90){
   task("guardian",async()=>{
    const endpoint=new URL("https://content.guardianapis.com/search");
    endpoint.searchParams.set("api-key",env.THE_GUARDIAN_API_KEY);
@@ -165,9 +165,9 @@ async function mediaInsights(kind,id,env){
      })).filter(x=>x.url);
    return result.news.length>0;
   });
- }else result.sources.guardian=env.THE_GUARDIAN_API_KEY?"not_applicable":"not_configured";
+ }else result.sources.guardian=!withMedia?"not_requested":env.THE_GUARDIAN_API_KEY?"not_applicable":"not_configured";
  // Optional TasteDive results are name-only discovery leads, never merged with a TMDB identity.
- if(env.TASTEDIVE_API_KEY&&q.length>=5&&q.length<=100){
+ if(withMedia&&env.TASTEDIVE_API_KEY&&q.length>=5&&q.length<=100){
   task("tastedive",async()=>{
    const endpoint=new URL("https://tastedive.com/api/similar");
    endpoint.searchParams.set("k",env.TASTEDIVE_API_KEY);
@@ -181,7 +181,7 @@ async function mediaInsights(kind,id,env){
      .slice(0,5).map(x=>({title:String(x.Name||x.name).slice(0,90),type:String(x.Type||x.type||"").slice(0,25),source:"TasteDive",verified:false}));
    return result.suggestions.length>0;
   });
- }else result.sources.tastedive="not_configured";
+ }else result.sources.tastedive=!withMedia?"not_requested":"not_configured";
 
  await Promise.all(jobs);
  return result;
@@ -240,7 +240,7 @@ export default {
   const extra=u.pathname.match(/^\/api\/insights\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(extra){
    const hit=await caches.default.match(request);if(hit)return hit;
-   try{const body=await mediaInsights(extra[1],extra[2],env);
+   try{const body=await mediaInsights(extra[1],extra[2],env,u.searchParams.get("media")==="1");
      const response=reply(body,200,86400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
    }catch{return reply({ok:false,error:"Insights currently unavailable"},502);}
   }
