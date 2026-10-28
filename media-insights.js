@@ -413,17 +413,6 @@
   document.getElementById('media-trailer-close')?.addEventListener('click',closeTrailer);
   trailerDialog?.addEventListener('click',ev=>{if(ev.target===trailerDialog)closeTrailer();});
   document.getElementById('media-dialog')?.addEventListener('close',closeTrailer);
-  const tileClassificationChecked=new Set();
-  root.addEventListener('liangyou:media-tiles',ev=>{
-    const visible=Array.isArray(ev.detail?.items)?ev.detail.items.slice(0,8):[];
-    for(const info of visible){
-      if(!['movie','tv'].includes(info.kind)||!Number.isSafeInteger(info.tmdbId)||info.tmdbId<1)continue;
-      const key=info.kind+':'+info.tmdbId;
-      if(tileClassificationChecked.has(key))continue;
-      tileClassificationChecked.add(key);
-      hydrateClassification(info);
-    }
-  });
   root.addEventListener('liangyou:media-detail',ev=>display(ev.detail));
 
 })();
