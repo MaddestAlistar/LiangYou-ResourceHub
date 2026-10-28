@@ -1,0 +1,31 @@
+name: Probe historical worldwide chart schema
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/probe-worldwide-history.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check public worldwide archive structure
+        run: |
+          python - <<'PY'
+          import urllib.request,json
+          u="https://boxofficehistory.com/api/v1/alltime/worldwide.json"
+          try:
+              req=urllib.request.Request(u,headers={"User-Agent":"LiangYou-ResourceHub/1.0","Accept":"application/json"})
+              with urllib.request.urlopen(req,timeout=16) as r:data=json.load(r)
+              print("WORLDWIDE_SCHEMA",type(data).__name__)
+              if isinstance(data,dict):
+                  print("ROOT_KEYS",list(data)[:28])
+                  for k,v in data.items():
+                      if isinstance(v,list):
+                          print("LIST",k,"LEN",len(v),"FIRST",json.dumps(v[:2],ensure_ascii=False)[:1250])
+              elif isinstance(data,list):print("LIST","root","LEN",len(data),"FIRST",json.dumps(data[:2],ensure_ascii=False)[:1250])
+          except Exception as e:print("WORLDWIDE_SOURCE_UNAVAILABLE",type(e).__name__,str(e)[:120])
+          PY
