@@ -53,9 +53,9 @@ test('mainstream YouTube player is default and privacy mode stays selectable',()
 });
 test('changed assets invalidate old browser cache',()=>{
  const versions={
-  'media-intel.js':'20261029.guides1',
+  'media-intel.js':'20261029.liveguides2',
   'media-toolkit.js':'20261029.autoscore1',
-  'media-insights.js':'20261029.standard1',
+  'media-insights.js':'20261029.liveguides2',
   'media-cn-enhance.js':'20261029.stablelayout1',
   'media-exact-scores.js':'20261029.stablelayout1',
   'media-boxoffice-rankings.js':'20261029.noarchive1'
