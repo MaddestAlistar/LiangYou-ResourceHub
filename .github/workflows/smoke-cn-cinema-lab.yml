@@ -1,0 +1,41 @@
+name: Smoke test independent cinema API
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-cn-cinema-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Validate live box-office listings and exact-name lookups
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error,urllib.parse
+          base="https://liangyou-cn-cinema-lab.maddestalistar.workers.dev"
+          def get(path):
+              req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-Lab-Smoke/1.0","Accept":"application/json"})
+              try:
+                with urllib.request.urlopen(req,timeout=20) as r:return r.status,json.load(r)
+              except urllib.error.HTTPError as e:
+                try:return e.code,json.load(e)
+                except Exception:return e.code,{}
+              except Exception as e:return None,{"error":type(e).__name__}
+          for path in ["/api/health","/api/boxoffice","/api/global-boxoffice"]:
+            code,data=get(path)
+            count=data.get("count")
+            samples=data.get("data",[])[:2]
+            first=[{"title":x.get("title"),"cumulative":x.get("cumulativeBoxOffice"),"current":x.get("currentBoxOffice")} for x in samples]
+            verdict="DATA_OK" if code==200 and count and samples[0].get("title") else "SERVICE_OK" if path=="/api/health" and code==200 else "FAIL"
+            print("CHINA_CINEMA_SMOKE "+json.dumps({"route":path,"http":code,"verdict":verdict,"count":count,"source":data.get("source"),"sample":first,"error":data.get("error")},ensure_ascii=False),flush=True)
+            if verdict=="DATA_OK":
+              title=samples[0].get("title")
+              url=path+"?name="+urllib.parse.quote(title,safe="")
+              xcode,xd=get(url)
+              print("CHINA_CINEMA_LOOKUP "+json.dumps({"query":title,"http":xcode,"count":xd.get("count"),"match":xd.get("match"),"source":xd.get("source")},ensure_ascii=False),flush=True)
+          code,d=get("/api/boxoffice?name="+urllib.parse.quote("这是一部不存在于票房榜的电影测试名称ABCXYZ"))
+          print("CHINA_CINEMA_MISSING "+json.dumps({"http":code,"count":d.get("count"),"match":d.get("match")},ensure_ascii=False),flush=True)
+          PY
