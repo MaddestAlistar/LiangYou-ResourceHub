@@ -1,0 +1,64 @@
+name: Verify live Taopiaopiao third-party score API
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/smoke-taopiaopiao-aggregate-lab.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Validate true aggregated scores, absence and film gross JSON
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error
+          base="https://liangyou-taopiaopiao-lab.maddestalistar.workers.dev"
+          paths=[
+            "/api/health",
+            "/api/movie/00102032025",
+            "/api/movie/00102782025",
+            "/api/movie/00100412025",
+            "/api/year?year=2025",
+            "/api/day?date=2026-10-27",
+            "/api/movie/invalid"
+          ]
+          checks={}
+          for path in paths:
+            req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-TPP-Lab-Smoke/1.0","Accept":"application/json"})
+            try:
+              with urllib.request.urlopen(req,timeout=30) as r:status=r.status;d=json.load(r)
+            except urllib.error.HTTPError as e:
+              status=e.code
+              try:d=json.loads(e.read(8000))
+              except Exception:d={}
+            except Exception as e:status=None;d={"error":type(e).__name__}
+            ratings=d.get("ratings") or {}
+            item=(d.get("data") or [{}])[0] if d.get("data") else {}
+            result={"route":path,"http":status,"title":d.get("title"),"ratings":ratings,
+              "boxOffice":d.get("boxOffice"),"count":d.get("count"),
+              "first":{x:item.get(x) for x in ("title","movieCode","cumulativeBoxOffice") if x in item},
+              "error":d.get("error"),"reason":d.get("reason")}
+            if path=="/api/movie/00102032025":
+              ok=status==200 and d.get("title")=="捕风追影" and ratings.get("maoyan")==9.5 and ratings.get("douban")==8.2 and ratings.get("taopiaopiao")==9.7
+              checks["tpp_movie_one"]=ok;result["valid"]=ok
+            if path=="/api/movie/00102782025":
+              ok=status==200 and d.get("title")=="浪浪山小妖怪" and ratings.get("taopiaopiao")==9.5
+              checks["tpp_movie_two"]=ok;result["valid"]=ok
+            if path=="/api/movie/00100412025":
+              ok=status==200 and d.get("title")=="拼桌" and ratings.get("taopiaopiao") is None
+              checks["missing_score"]=ok;result["valid"]=ok
+            if path=="/api/year?year=2025":
+              ok=status==200 and d.get("count",0)>=100 and item.get("title")=="哪吒之魔童闹海"
+              checks["year_board"]=ok;result["valid"]=ok
+            if path=="/api/day?date=2026-10-27":
+              ok=status==200 and d.get("count",0)>=20 and item.get("title")
+              checks["day_board"]=bool(ok);result["valid"]=bool(ok)
+            if path=="/api/movie/invalid":
+              checks["invalid_route"]=status==404
+            print("TPP_LAB_SMOKE "+json.dumps(result,ensure_ascii=False),flush=True)
+          print("TPP_LAB_FINAL "+json.dumps(checks),flush=True)
+          assert len(checks)==6 and all(checks.values()),"Real-data assertions failed"
+          PY
