@@ -215,3 +215,52 @@ test('global film news absent credentials is explicitly unavailable',async()=>{
  const {body}=await invoke('/api/news/film');
  assert.equal(body.ok,true);assert.equal(body.status,'not_configured');assert.deepEqual(body.articles,[]);
 });
+
+test('Wikimedia facts require corroborating TMDB identity and retain uncertain box-office scope',async()=>{
+ stub({});
+ const fallback=globalThis.fetch;
+ const calls=[];
+ globalThis.fetch=async input=>{
+   const u=new URL(String(input));calls.push(u.hostname);
+   if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Fight Club',original_title:'Fight Club',
+     imdb_id:'tt0137523',external_ids:{imdb_id:'tt0137523',wikidata_id:'Q123'},adult:false});
+   if(u.hostname==='www.wikidata.org')return json({entities:{Q123:{
+     id:'Q123',labels:{en:{value:'Fight Club'}},
+     claims:{
+       P4947:[{rank:'normal',mainsnak:{snaktype:'value',datavalue:{value:'550'}}}],
+       P345:[{rank:'normal',mainsnak:{snaktype:'value',datavalue:{value:'tt0137523'}}}],
+       P2142:[{rank:'normal',mainsnak:{snaktype:'value',datavalue:{value:{amount:'+10000000',unit:'http://www.wikidata.org/entity/Q4917'}}}}]
+     },sitelinks:{enwiki:{title:'Fight Club (film)'}}
+   }}});
+   return fallback(input);
+ };
+ const plain=await invoke('/api/insights/movie/550?schema=8',{TMDB_API_KEY:'test'});
+ assert.equal(plain.status,200);
+ assert.equal(plain.body.wikidata.verified,false);
+ assert.ok(!calls.includes('www.wikidata.org'),'Unrequested Wikimedia must not delay ordinary pages');
+ const joined=await invoke('/api/insights/movie/550?schema=8&wiki=1',{TMDB_API_KEY:'test'});
+ assert.equal(joined.status,200);
+ assert.equal(joined.body.wikidata.verified,true);
+ assert.equal(joined.body.wikipedia.language,'en');
+ assert.equal(joined.body.wikidataBoxOffice.amount,10000000);
+ assert.equal(joined.body.wikidataBoxOffice.scope,'unspecified');
+ assert.equal(joined.body.sources.wikimedia,'ok');
+});
+test('a conflicting Wikidata external ID is never presented as verified',async()=>{
+ stub({});
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Fight Club',adult:false,
+    imdb_id:'tt0137523',external_ids:{imdb_id:'tt0137523',wikidata_id:'Q123'}});
+  if(u.hostname==='www.wikidata.org')return json({entities:{Q123:{id:'Q123',claims:{
+    P4947:[{rank:'normal',mainsnak:{snaktype:'value',datavalue:{value:'999'}}}]
+  }}}});
+  return original(input);
+ };
+ const x=await invoke('/api/insights/movie/550?schema=8&wiki=1',{TMDB_API_KEY:'test'});
+ assert.equal(x.status,200);
+ assert.equal(x.body.wikidata.verified,false);
+ assert.equal(x.body.wikidataBoxOffice,undefined);
+ assert.equal(x.body.sources.wikimedia,'no_data');
+});
