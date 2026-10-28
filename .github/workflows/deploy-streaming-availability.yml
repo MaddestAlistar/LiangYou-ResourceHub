@@ -20,6 +20,13 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN || secrets.TMDB_ACCESS_TOKEN || secrets.TMDB_API_TOKEN || secrets.TMDB_TOKEN }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || vars.TMDB_API_KEY }}
+      OMDB_API_KEY: ${{ secrets.OMDB_API_KEY }}
+      KOFIC_API_KEY: ${{ secrets.KOFIC_API_KEY }}
+      FANARTTV_API_KEY: ${{ secrets.FANARTTV_API_KEY || secrets.FANART_TV_API_KEY }}
+      THETVDB_API_KEY: ${{ secrets.THETVDB_API_KEY || secrets.TVDB_API_KEY }}
+      THETVDB_PIN: ${{ secrets.THETVDB_PIN || secrets.TVDB_PIN }}
+      THE_GUARDIAN_API_KEY: ${{ secrets.THE_GUARDIAN_API_KEY || secrets.GUARDIAN_API_KEY }}
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,5 +44,13 @@ jobs:
       - name: Configure private TMDB API key on Worker
         if: env.TMDB_READ_ACCESS_TOKEN == '' && env.TMDB_API_KEY != ''
         run: printf '%s' "$TMDB_API_KEY" | npx --yes wrangler@4 secret put TMDB_API_KEY --name liangyou-streaming-availability
+      - name: Configure optional media insight secrets
+        run: |
+          for name in OMDB_API_KEY KOFIC_API_KEY FANARTTV_API_KEY THETVDB_API_KEY THETVDB_PIN THE_GUARDIAN_API_KEY; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx --yes wrangler@4 secret put "$name" --name liangyou-streaming-availability
+            fi
+          done
       - name: Verify at least one credential configured
         run: test -n "$TMDB_READ_ACCESS_TOKEN" || test -n "$TMDB_API_KEY"
