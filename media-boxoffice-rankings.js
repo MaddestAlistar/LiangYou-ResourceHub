@@ -29,9 +29,6 @@
    panel('world-current',t('全球累计票房参考榜 · 定期更新','Worldwide all-time · regularly refreshed'),
     t('基于维基百科公开榜单的社区整理快照，非官方实时票房数据；具体金额以来源为准。','A periodically captured community-maintained Wikipedia table, not an audited live feed.'),
     'https://en.wikipedia.org/wiki/List_of_highest-grossing_films')+
-   panel('world',t('全球累计票房历史榜 · 2019年10月存档','Worldwide all-time historical chart · Oct 2019'),
-    t('历史存档（美元），仅供回顾，不能作为2026年最新全球排名。','Archived worldwide grosses in USD; NOT the current 2026 ranking.'),
-    'https://boxofficehistory.com/api/v1/alltime/worldwide.json')+
    panel('china',t('中国内地累计票房榜','Mainland China all-time cumulative gross'),
     t('第三方页面数据，人民币亿元；排名与更新时间以数据源为准。','Third-party page data, CNY. Confirm freshness with original source.'),
     'https://m.maoyan.com/board/4')+
@@ -55,7 +52,7 @@
   try{
    let body;
    if(!cache.has(key)){
-    const path=key==='world-current'?'./data/media-worldwide-current.json':key==='world'?'./data/media-worldwide-archive.json':key==='korea'?'./data/kofic-boxoffice.json':cn;
+    const path=key==='world-current'?'./data/media-worldwide-current.json':key==='korea'?'./data/kofic-boxoffice.json':cn;
     cache.set(key,fetchJSON(path).catch(err=>{cache.delete(key);throw err;}));
    }
    body=await cache.get(key);
@@ -74,12 +71,6 @@
       ' · '+t('非官方实时票房','Not an official live feed')+'</p>'+
       entries(rows,x=>moneyUSD(x.usd))+
       '<p class="mi-caption">'+t('维基百科社区维护数据，可能修订，排名及金额不保证与商业票房平台完全一致。','Community-edited numbers may change and differ from commercial databases.')+'</p>';
-   }else if(key==='world'){
-    if(body.schema!==1||body.archival!==true||!/^2019(?:-|$)/.test(String(body.asOf))||!Array.isArray(body.rows)||body.rows.length<10)throw Error('invalid archive');
-    const rows=body.rows.slice(0,20).filter(x=>Number.isSafeInteger(x.rank)&&x.rank>0&&typeof x.title==='string'&&Number.isFinite(x.usd)&&x.usd>0);
-    if(rows.length<10)throw Error('invalid ranks');
-    pane.innerHTML='<p class="mi-caption">'+t('历史统计截止：','Historical as of: ')+esc(body.asOf)+' · '+t('非实时榜','Not live')+'</p>'+
-      entries(rows,x=>moneyUSD(x.usd));
    }else if(key==='china'){
     if(body.code!==0||!Array.isArray(body.data)||body.data.length<3)throw Error('invalid mainland chart');
     const rows=body.data.slice(0,20).map((x,i)=>({
