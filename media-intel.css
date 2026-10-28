@@ -108,3 +108,9 @@
 #media .mi-source-registry-grid b{display:block;font-size:11px;color:#eed3a0;margin-bottom:5px}
 #media .mi-source-registry-grid span{display:block;font-size:10px;line-height:1.6;color:#aab9d1;overflow-wrap:anywhere}
 @media(max-width:600px){#media .mi-source-registry-grid{grid-template-columns:1fr}}
+
+/* Collapsible episode information preserves vertical space on small screens. */
+#media .mi-seasons-drawer{margin:13px 0;border:1px solid #a5bdd934;border-radius:11px;background:#0f1a2b;padding:10px 12px}
+#media .mi-seasons-drawer>summary{cursor:pointer;font-size:12px;color:#e7d2a8;font-weight:600;padding:3px 0}
+#media .mi-seasons-drawer[open]>summary{margin-bottom:8px}
+#media .mi-seasons-drawer .mi-detail-block{margin-top:8px;padding-top:9px}
