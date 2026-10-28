@@ -1,0 +1,90 @@
+name: Deploy isolated Maoyan API laboratory
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy-maoyan-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: liangyou-maoyan-lab-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Confirm existing Cloudflare connection
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT" ]; then
+            echo "::error::Missing Cloudflare secrets"
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch pinned upstream project
+        shell: bash
+        run: |
+          git clone --quiet https://github.com/Ahua9527/maoyan_movie_api_cf.git maoyan-lab-source
+          git -C maoyan-lab-source checkout --quiet c91dfe2f5850c2b766d7701d66915586cd0d07c2
+          node --check maoyan-lab-source/src/index.js
+          echo 'Upstream source pinned to c91dfe2f5850c2b766d7701d66915586cd0d07c2'
+      - name: Create isolated API-only Worker without third-party KV binding
+        shell: bash
+        working-directory: maoyan-lab-source
+        run: |
+          cat > lab-maoyan-worker.mjs <<'EOF'
+          import upstream from './src/index.js';
+          export default {
+            async fetch(request, env, ctx) {
+              const pathname = new URL(request.url).pathname;
+              if (request.method !== 'GET') {
+                return Response.json({error:'Method Not Allowed'}, {status:405});
+              }
+              if (pathname === '/api/status') {
+                return upstream.fetch(request, env, ctx);
+              }
+              const m = pathname.match(/^\/api\/movie\/([0-9]{5,9})$/);
+              if (!m) return Response.json({error:'Not Found'}, {status:404});
+              // The publisher's KV namespace is not reused. Only good results cached.
+              const cache = caches.default;
+              const key = new Request(request.url, { method:'GET' });
+              const existing = await cache.match(key);
+              if (existing) return existing;
+              const response = await upstream.fetch(request, env, ctx);
+              if (response.ok) {
+                try {
+                  const body = await response.clone().json();
+                  if (body?._meta?.success === true &&
+                      body?.basic?.movieName &&
+                      body.basic.movieName !== '未知电影') {
+                    const cached = new Response(response.clone().body, {
+                      status:response.status,
+                      headers:{...Object.fromEntries(response.headers),
+                        'Cache-Control':'public, max-age=21600'}
+                    });
+                    ctx.waitUntil(cache.put(key, cached));
+                  }
+                } catch {}
+              }
+              return response;
+            }
+          };
+          EOF
+          cat > wrangler.liangyou.toml <<'EOF'
+          name = "liangyou-maoyan-lab"
+          main = "lab-maoyan-worker.mjs"
+          compatibility_date = "2025-11-05"
+          compatibility_flags = ["nodejs_compat"]
+          EOF
+      - name: Publish to a new isolated Cloudflare Worker
+        working-directory: maoyan-lab-source
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --config wrangler.liangyou.toml
