@@ -211,6 +211,33 @@ export default {
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"access-control-allow-origin":cors,"access-control-allow-methods":"GET, OPTIONS"}});
   if(request.method!=="GET")return reply({ok:false,error:"GET only"},405);
   if(u.pathname==="/api/health")return reply({ok:true,status:"worker-online",note:"Check content routes for provider availability.",source:"JustWatch via TMDB",regions:[...regionCodes]});
+  // Guardian's general film headlines are distinct from title-matched coverage.
+  // The optional call is cached for 90 minutes, and only occurs when a user expands news.
+  if(u.pathname==="/api/news/film"){
+   const key=(env.THE_GUARDIAN_API_KEY||env.GUARDIAN_API_KEY||"").trim();
+   if(!key)return reply({ok:true,status:"not_configured",source:"The Guardian",articles:[]});
+   const cacheHit=await caches.default.match(request);if(cacheHit)return cacheHit;
+   try{
+    const endpoint=new URL("https://content.guardianapis.com/search");
+    endpoint.searchParams.set("api-key",key);
+    endpoint.searchParams.set("section","film");
+    endpoint.searchParams.set("page-size","6");
+    endpoint.searchParams.set("order-by","newest");
+    endpoint.searchParams.set("show-fields","thumbnail,trailText,byline");
+    const d=await jsonRemote(endpoint.toString(),{},9000);
+    if(d.response?.status!=="ok"||!Array.isArray(d.response.results))throw Error("invalid_guardian_response");
+    const articles=d.response.results.filter(v=>v.webTitle&&v.webUrl)
+     .map(v=>({
+       title:String(v.webTitle).slice(0,180),
+       url:safeHttps(v.webUrl,"theguardian.com"),
+       date:v.webPublicationDate||null,section:String(v.sectionName||"Film").slice(0,45),
+       summary:String(v.fields?.trailText||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,200),
+       thumbnail:safeHttps(v.fields?.thumbnail,"guim.co.uk")||null,source:"The Guardian"
+     })).filter(v=>v.url).slice(0,6);
+    const body={ok:true,status:articles.length?"ok":"no_data",source:"The Guardian",checkedAt:new Date().toISOString(),articles};
+    const response=reply(body,200,5400);ctx.waitUntil(caches.default.put(request,response.clone()));return response;
+   }catch{return reply({ok:false,status:"unavailable",error:"Guardian film news unavailable"},502);}
+  }
   // MyAnimeList v2: join anime only by a verified MAL numeric ID, never by title search.
   const animeMatch=u.pathname.match(/^\/api\/anime\/mal\/([1-9]\d{0,9})$/);
   if(animeMatch){
