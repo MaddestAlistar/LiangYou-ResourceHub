@@ -1,0 +1,43 @@
+name: Refresh historical worldwide box office archive
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_media_worldwide_archive.py'
+      - '.github/workflows/refresh-media-worldwide-archive.yml'
+  schedule:
+    - cron: '40 21 1 * *'
+permissions:
+  contents: write
+concurrency:
+  group: refresh-worldwide-historic-boxoffice
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify historical chart and source date
+        run: |
+          python -m py_compile scripts/update_media_worldwide_archive.py
+          python scripts/update_media_worldwide_archive.py
+      - name: Commit verified chart only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/media-worldwide-archive.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Refresh Oct 2019 global historical box office snapshot [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+          done
