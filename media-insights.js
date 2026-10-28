@@ -644,7 +644,8 @@
     if(!frameUrl)return;
     const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
     const frame=document.createElement('iframe');
-    frame.title=(platform==='bilibili'?'Bilibili':'Tencent Video')+' · '+name;
+    const provider=platform==='bilibili'?'Bilibili':platform==='tencent'?'Tencent Video':'Youku';
+    frame.title=provider+' · '+name;
     frame.src=frameUrl;
     frame.loading='eager';
     frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
@@ -653,7 +654,7 @@
     stopTrailer();
     trailerStage.appendChild(frame);
     document.getElementById('media-trailer-title').textContent=name;
-    document.getElementById('media-trailer-kicker').textContent=platform==='bilibili'?'Bilibili · 国内预告片':'腾讯视频 · 国内预告片';
+    document.getElementById('media-trailer-kicker').textContent=(platform==='bilibili'?'Bilibili':platform==='tencent'?'腾讯视频':'优酷')+' · '+t('相关视频','Related video');
     document.getElementById('media-trailer-help').textContent=t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
     const external=document.getElementById('media-trailer-external');
     external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
