@@ -198,7 +198,12 @@
       if(!response.ok)throw Error('unavailable');
       const v=await response.json();
       if(v.ok!==true||v.id!==id||v.kind!==m[1]||v.tmdb_id!==Number(m[2])||typeof v.title!=='string'||!v.title)throw Error('id_mismatch');
-      cat.works[id]={...w,...v,id,kind:m[1],categories:[],profile:v.profile||{},ratings:Array.isArray(v.ratings)?v.ratings:[],links:[{name:'TMDB',url:'https://www.themoviedb.org/'+m[1]+'/'+m[2]}],_needsFetch:false};
+      const previousProfile=w.profile||{},incomingProfile=v.profile||{};
+      cat.works[id]={...w,...v,id,kind:m[1],categories:[],
+        profile:{...previousProfile,...incomingProfile,
+          keywords:previousProfile.keywords?.length?previousProfile.keywords:(incomingProfile.keywords||[]),
+          parental_rating:previousProfile.parental_rating||incomingProfile.parental_rating||null},
+        ratings:Array.isArray(v.ratings)?v.ratings:[],links:[{name:'TMDB',url:'https://www.themoviedb.org/'+m[1]+'/'+m[2]}],_needsFetch:false};
     }catch{w._loadError=true;}
     finally{if(cat.works[id])cat.works[id]._loading=false;if(activeId===id&&$('#media-dialog').open)renderDetail();}
   }
