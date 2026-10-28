@@ -18,6 +18,8 @@ jobs:
       SIMKL_CLIENT_ID: ${{ secrets.SIMKL_CLIENT_ID }}
       SIMKL_CLIENT_KEY: ${{ secrets.SIMKL_CLIENT_KEY }}
       SIMKL_API_KEY: ${{ secrets.SIMKL_API_KEY }}
+      SIMKL_PUBLIC_VAR: ${{ vars.SIMKL_CLIENT_ID }}
+      SIMKL_V2_PUBLIC_VAR: ${{ vars.SIMKL_CLIENT_ID_V2 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
