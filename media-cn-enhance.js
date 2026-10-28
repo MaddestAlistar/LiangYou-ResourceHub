@@ -109,13 +109,14 @@ function domesticNews(info){
    pane.innerHTML='<p class="mi-caption">'+t('国内新闻快照暂不可用，未展示未经确认的报道。','Chinese news snapshot unavailable; no unverified articles displayed.')+'</p>';
    return;
   }
-  const names=[info.title,info.originalTitle].map(s=>String(s||'').normalize('NFKC').trim())
-    .filter(s=>s.length>=3).map(s=>sameTitle(s));
+  const names=[info.title,info.originalTitle].map(x=>String(x||'').normalize('NFKC').trim())
+    .filter(Boolean).map(x=>sameTitle(x));
   const matching=d.items.filter(x=>{
    if(!x.title||!safe(x.url))return false;
-   const line=sameTitle(x.title);
-   return names.some(n=>n.length>=3&&line.includes(n));
-  }).slice(0,5);
+   const headline=String(x.title).normalize('NFKC'),line=sameTitle(headline);
+   return names.some(n=>n.length>=3?line.includes(n):
+     n.length===2&&['《'+n+'》','〈'+n+'〉','「'+n+'」','『'+n+'』'].some(mark=>headline.includes(mark)));
+  }).sort((a,b)=>Date.parse(b.date||0)-Date.parse(a.date||0)).slice(0,6);
   if(!matching.length){pane.innerHTML='<p class="mi-caption">'+t('目前暂无与这部作品明确对应的国内报道。','No Chinese headlines reliably matching this title.')+'</p>';return;}
   pane.innerHTML='<div class="mi-cn-news-list">'+matching.map(x=>'<article><small>'+esc(x.source||'')+' · '+esc(fmtDate(x.date))+'</small>'+
     '<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.title)+' ↗</a></article>').join('')+'</div>';
