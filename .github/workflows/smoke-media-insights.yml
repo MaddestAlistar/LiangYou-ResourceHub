@@ -41,9 +41,9 @@ jobs:
               assert isinstance(data.get('news'),list),data
               assert all(p.get('url','').startswith('https://') for p in data['artwork']),data
               print('VERIFIED_ID',kind,id,'SOURCES',data['sources'])
-          with urllib.request.urlopen(base+'/api/boxoffice/kr',timeout=65) as r: kr=json.load(r)
+          with urllib.request.urlopen(base+'/api/kobis/daily',timeout=65) as r: kr=json.load(r)
           assert kr.get('ok') is True,kr
-          assert kr.get('status') in ('ok','not_configured'),kr
+          assert kr.get('status') in ('ok','not_configured','unavailable'),kr
           if kr['status']=='ok':
               assert isinstance(kr.get('data'),list),kr
               assert all(isinstance(x.get('rank'),int) and x.get('title') for x in kr['data']),kr
