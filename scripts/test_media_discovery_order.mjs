@@ -83,6 +83,6 @@ test('Discover renders trailer, international news and similar titles together w
   assert.equal((rendered.international.match(/variety\.com\/story/g)||[]).length,1);
   assert.match(rendered.similar,/A related title/);
   const empty=render({title:'Example Film',originalTitle:'Example Film',news:[],suggestions:[],trailers:[]},[]);
-  assert.match(empty.international,/暂无.*国际报道/);
+  assert.match(empty.international,/暂未找到.*国际报道/);
   assert.match(empty.similar,/暂无.*相似主题推荐/);
 });
