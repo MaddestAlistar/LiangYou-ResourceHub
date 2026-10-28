@@ -16,6 +16,7 @@ jobs:
           python - <<'PY'
           import json,urllib.request,urllib.error
           base="https://liangyou-maoyan-verified.maddestalistar.workers.dev"
+          ok = {"movie": False, "rankings": False}
           for path in ["/api/health","/api/movie/1294273","/api/rankings/alltime","/api/movie/1292052","/api/movie/invalid"]:
             req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-Verified-Maoyan-Smoke/1.0","Accept":"application/json"})
             try:
@@ -30,8 +31,12 @@ jobs:
                 "cumulativeBoxOffice":d.get("cumulativeBoxOffice"),
                 "count":d.get("count"),"error":d.get("error"),"reason":d.get("reason")}
             if path=="/api/movie/1294273":
-              v["verified"]=bool(http==200 and d.get("movieId")==1294273 and d.get("title")=="哪吒之魔童闹海" and d.get("rating")==9.8 and d.get("ratingCount") and d.get("cumulativeBoxOffice",{}).get("value")==1544614)
+              v["verified"]=bool(http==200 and d.get("movieId")==1294273 and d.get("title")=="哪吒之魔童闹海" and d.get("rating")==9.8 and d.get("ratingCount",0)>=3000000 and d.get("cumulativeBoxOffice",{}).get("value")==1544614)
+              ok["movie"]=v["verified"]
             if path=="/api/rankings/alltime":
               v["verified"]=bool(http==200 and d.get("count",0)>=10 and d.get("data",[{}])[0].get("movieId")==1294273 and d.get("data",[{}])[0].get("cumulativeBoxOffice",{}).get("value")==1544614)
+              ok["rankings"]=v["verified"]
             print("VERIFIED_MAOYAN_SMOKE "+json.dumps(v,ensure_ascii=False),flush=True)
+          print("VERIFIED_MAOYAN_FINAL "+json.dumps(ok),flush=True)
+          assert all(ok.values()), "Movie and annual ranking source validation failed"
           PY
