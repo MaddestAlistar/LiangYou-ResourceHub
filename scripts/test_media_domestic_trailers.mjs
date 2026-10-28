@@ -1,60 +1,74 @@
-/* Verified domestic trailer integration: no guessing based on vague titles. */
+/* One unified YouTube/Bilibili/Tencent video gallery; exact source matching only. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+
 const source=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../data/media-domestic-trailers.json',import.meta.url),'utf8'));
-const start=source.indexOf('  function domesticTrailerPanel(info,records=[]){');
+const start=source.indexOf('  function trailerGallery(d={},info={},domesticRows=[],status=');
 const end=source.indexOf('  let worldNewsPromise=null;',start);
-assert.ok(start>=0&&end>start,'Domestic renderer is available');
-const sourcePart=source.slice(start,end);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\u0027':'&#39;'}[c]));
-const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'?u.href:null;}catch{return null;}};
-const a=(url,label)=>safe(url)?'<a href="'+esc(safe(url))+'">'+esc(label)+'</a>':'';
-const panel=new Function('t','esc','safe','a',sourcePart+';return domesticTrailerPanel;')((zh)=>zh,esc,safe,a);
-const example={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
-test('all three mainland video sources have accessible real search or channel links',()=>{
- const h=panel({title:'任意影片',kind:'movie',year:'2026'},[]);
- assert.match(h,/search\.bilibili\.com\/all\?keyword=/);
- assert.match(h,/v\.qq\.com\/x\/search\/\?q=/);
- assert.match(h,/1905\.com\/news\/yg\//);
- assert.match(h,/暂无已核实的国内预告片/);
- assert.doesNotMatch(h,/data-mi-play-cn=/);
-});
-test('verified title/year displays embedded Bilibili video, 1905 original catalogue, no invented Tencent VID',()=>{
- const h=panel(example,catalog.items);
+assert.ok(start>=0&&end>start,'Merged trailer gallery and domestic matching must exist');
+const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
+const link=(url,label)=>safe(url)?'<a href="'+escape(safe(url))+'">'+escape(label)+'</a>':'';
+const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','english',
+ source.slice(start,end)+';return {gallery:trailerGallery,verified:verifiedDomesticTrailers};')(
+  (zh)=>zh,escape,safe,link,()=>'',()=>false
+);
+const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
+const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
+test('one section and one shared card grid contain YouTube and verified Bilibili entries',()=>{
+ const h=gallery(yt,selected,catalog.items,'ready');
+ assert.equal((h.match(/<h3>预告片<\/h3>/g)||[]).length,1);
+ assert.equal((h.match(/class="mi-trailer-grid"/g)||[]).length,1);
+ assert.equal((h.match(/class="mi-trailer-card"/g)||[]).length,3);
+ assert.match(h,/data-mi-play-video="AbCdEf12345"/);
  assert.match(h,/data-mi-play-cn="bilibili"/);
  assert.match(h,/data-mi-cn-id="BV1zprUY2EGj"/);
  assert.match(h,/data-mi-cn-id="BV1ULFPeEEBh"/);
- assert.match(h,/https:\/\/www\.1905\.com\/mdb\/film\/2255731\//);
- assert.doesNotMatch(h,/data-mi-play-cn="tencent"/);
+ assert.doesNotMatch(h,/国内预告片|mi-domestic-trailers|mi-cn-video-card/);
+});
+test('missing YouTube data still shows verified mainland videos in exactly the same grid',()=>{
+ const h=gallery({},selected,catalog.items,'error');
+ assert.equal((h.match(/class="mi-trailer-grid"/g)||[]).length,1);
+ assert.equal((h.match(/mi-trailer-card/g)||[]).length,2);
+ assert.match(h,/data-mi-play-cn="bilibili"/);
+ assert.doesNotMatch(h,/暂不可用/);
+});
+test('1905 is a collapsible search/source link and not a fake playable video',()=>{
+ const h=gallery({},selected,catalog.items,'ready');
+ assert.match(h,/1905\.com\/news\/yg\//);
+ assert.match(h,/search\.bilibili\.com\/all\?keyword=/);
+ assert.match(h,/v\.qq\.com\/x\/search\/\?q=/);
  assert.doesNotMatch(h,/data-mi-play-cn="1905"/);
+ assert.doesNotMatch(h,/mi-domestic-video-grid|国内预告片/);
 });
-test('year mismatch, name mismatch and unrecognized sources are not attached to the wrong work',()=>{
+test('unmatched title/year never attaches another movie trailer',()=>{
  for(const incorrect of [
-  {...example,year:'2026-01-29'},
-  {...example,title:'哪吒之魔童降世',originalTitle:'Ne Zha',aliases:[]}
+  {...selected,year:'2026-01-29'},
+  {...selected,title:'哪吒之魔童降世',originalTitle:'Ne Zha',aliases:[]}
  ]){
-  const h=panel(incorrect,catalog.items);
-  assert.doesNotMatch(h,/data-mi-play-cn=/);
-  assert.doesNotMatch(h,/mdb\/film\/2255731/);
+  assert.equal(verified(incorrect,catalog.items).length,0);
+  assert.doesNotMatch(gallery({},incorrect,catalog.items),/data-mi-play-cn=/);
  }
 });
-test('Tencent verified VID can be embedded later, but arbitrary URLs or unsupported IDs cannot',()=>{
- const correct={title:'哪吒之魔童闹海',kind:'movie',year:2025,platform:'tencent',
-  videoId:'c3278hj65i6',verifiedSource:'https://v.qq.com/x/page/c3278hj65i6.html',name:'Approved video'};
- const trusted=panel(example,[correct]);
- assert.match(trusted,/data-mi-play-cn="tencent"/);
- assert.match(trusted,/data-mi-cn-id="c3278hj65i6"/);
- for(const untrusted of [{...correct,verifiedSource:'https://attacker.example/video'},
-                         {...correct,videoId:'javascript:evil'},{...correct,year:2024}]){
-   assert.doesNotMatch(panel(example,[untrusted]),/data-mi-play-cn="tencent"/);
+test('Tencent needs exact verified VID and original URL before it becomes a playable card',()=>{
+ const right={title:'哪吒之魔童闹海',kind:'movie',year:2025,platform:'tencent',
+   videoId:'c3278hj65i6',verifiedSource:'https://v.qq.com/x/page/c3278hj65i6.html',name:'Verified trailer'};
+ const ok=gallery({},selected,[right]);
+ assert.match(ok,/data-mi-play-cn="tencent"/);
+ assert.match(ok,/class="mi-trailer-card"/);
+ for(const wrong of [{...right,verifiedSource:'https://attacker.example/video'},
+  {...right,videoId:'javascript:evil'}, {...right,year:2024}]){
+  assert.doesNotMatch(gallery({},selected,[wrong]),/data-mi-play-cn="tencent"/);
  }
 });
-test('official Bilibili and Tencent iframe hosts only, with exact identifiers',()=>{
+test('mainland and YouTube playback share the same in-page modal; switching remains YouTube-only',()=>{
  assert.match(source,/https:\/\/player\.bilibili\.com\/player\.html\?bvid=/);
  assert.match(source,/https:\/\/v\.qq\.com\/txp\/iframe\/player\.html\?vid=/);
+ assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
  assert.match(source,/playerSwitch\)playerSwitch\.hidden=true/);
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
+ assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
