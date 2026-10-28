@@ -151,7 +151,7 @@ test('TMDB-ID news search accepts only matching film titles, not general arts ne
 });
 test('uncurated catalog films discover historical Chinese and English articles by exact TMDB ID',async()=>{
  const original=globalThis.fetch;
- const date='2011-04-18T00:00:00Z';
+ const sampleDate=year=>new Date(Date.UTC(Math.max(2010,year)+1,3,18)).toUTCString();
  const origins=[];
  const entries=[
   {kind:'movie',id:27205,en:'Inception',zh:'盗梦空间',year:2010},
@@ -160,6 +160,7 @@ test('uncurated catalog films discover historical Chinese and English articles b
   {kind:'movie',id:157336,en:'Interstellar',zh:'星际穿越',year:2014}
  ];
  for(const item of entries){
+  const date=sampleDate(item.year);
   globalThis.fetch=async input=>{
    const u=new URL(String(input)),host=u.hostname;
    if(host==='api.themoviedb.org'){
@@ -178,7 +179,7 @@ test('uncurated catalog films discover historical Chinese and English articles b
    }
    if(host==='content.guardianapis.com')return json({response:{status:'ok',results:[
     {webTitle:item.en+' movie review 2010',webUrl:'https://www.theguardian.com/film/2010/jul/18/review',
-     webPublicationDate:'2010-07-18T00:00:00Z'}]}});
+     webPublicationDate:new Date(Date.UTC(Math.max(2010,item.year),6,18)).toISOString()}]}});
    throw Error('unexpected '+host);
   };
   try{
