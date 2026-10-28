@@ -113,8 +113,8 @@
     if(!section)return;
     const research=document.createElement('details');research.className='mtk-details mtk-rating-research';
     research.innerHTML=
-      '<summary>'+t('核对更多评分平台','Check more rating sources')+'</summary>'+
-      '<p class="mi-caption">'+t('当前作品：','Current title: ')+'<b>'+escape(info.title)+'</b> · '+t('仅按各平台原站 ID 查询，结果核验后单独展示，不会误写进上方评分。','Look up exact source IDs. Research results remain separate until identity is verified.')+'</p>'+
+      '<summary>'+t('手动核对其他来源（可选）','Manual lookup for unmatched sources (optional)')+'</summary>'+
+      '<p class="mi-caption">'+t('当前作品：','Current title: ')+'<b>'+escape(info.title)+'</b> · '+t('已能匹配的评分会自动显示；未匹配时才需要手动输入原站 ID。','Verified matches appear automatically; only unmatched sources need a manual source ID.')+'</p>'+
       '<form id="mtk-lookup"><label>'+t('评分平台','Rating source')+
       '<select id="mtk-rating-source" aria-label="'+t('评分平台','Rating source')+'">'+
       '<option value="simkl">Simkl</option><option value="kitsu">Kitsu</option><option value="bilibili">Bilibili 番剧</option><option value="filmarks">Filmarks</option><option value="maoyan">猫眼 Maoyan</option><option value="mydramalist">MyDramaList</option><option value="cn-aggregate">豆瓣 / 猫眼 / 淘票票（第三方汇总）</option></select></label>'+
