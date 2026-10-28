@@ -22,6 +22,8 @@ jobs:
             "/api/movie/00102782025",
             "/api/movie/00100412025",
             "/api/year?year=2025",
+            "/api/year?year=2026",
+            "/api/search?year=2025&name=哪吒之魔童闹海",
             "/api/day?date=2026-10-27",
             "/api/movie/invalid"
           ]
@@ -53,6 +55,12 @@ jobs:
             if path=="/api/year?year=2025":
               ok=status==200 and d.get("count",0)>=100 and item.get("title")=="哪吒之魔童闹海"
               checks["year_board"]=ok;result["valid"]=ok
+            if path=="/api/year?year=2026":
+              ok=status==200 and d.get("count",0)>=100 and bool(item.get("movieCode"))
+              checks["year_2026"]=ok;result["valid"]=ok
+            if path=="/api/search?year=2025&name=哪吒之魔童闹海":
+              ok=status==200 and d.get("count")==1 and item.get("movieCode")=="00100072025" and d.get("match")=="exact_title"
+              checks["search"]=ok;result["valid"]=ok
             if path=="/api/day?date=2026-10-27":
               ok=status==200 and d.get("count",0)>=20 and item.get("title")
               checks["day_board"]=bool(ok);result["valid"]=bool(ok)
@@ -60,5 +68,5 @@ jobs:
               checks["invalid_route"]=status==404
             print("TPP_LAB_SMOKE "+json.dumps(result,ensure_ascii=False),flush=True)
           print("TPP_LAB_FINAL "+json.dumps(checks),flush=True)
-          assert len(checks)==6 and all(checks.values()),"Real-data assertions failed"
+          assert len(checks)==8 and all(checks.values()),"Real-data assertions failed"
           PY
