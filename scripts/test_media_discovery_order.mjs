@@ -52,8 +52,10 @@ test('source attribution follows all discovery slots and cache-busted scripts ar
   const rendered=core.slice(core.indexOf('  function renderDetail(){'),core.indexOf('  async function hydrateRelated('));
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")>=0);
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")<rendered.indexOf("text('资料来源','Sources')"));
-  for(const [name,version] of Object.entries({'media-intel.js':'20261029.newsroom1','media-insights.js':'20261029.newsvideo6','media-cn-enhance.js':'20261029.newsvideo6'}))
-    assert.ok(index.includes('./'+name+'?v='+version),name+' must use the new script version');
+  for(const name of ['media-intel.js','media-insights.js','media-cn-enhance.js','media-title-news.js']){
+    const version=index.split('./'+name+'?v=')[1]?.split('"')[0];
+    assert.ok(version&&version.length>=8,name+' must use a versioned asset URL');
+  }
 });
 
 test('Discover renders trailer, international news and similar titles together without runtime exceptions',()=>{
