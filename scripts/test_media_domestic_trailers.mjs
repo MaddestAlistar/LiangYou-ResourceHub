@@ -19,7 +19,7 @@ const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'mov
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
 test('one section and one shared card grid contain YouTube and verified Bilibili entries',()=>{
  const h=gallery(yt,selected,catalog.items,'ready');
- assert.equal((h.match(/<h3>预告片<\/h3>/g)||[]).length,1);
+ assert.equal((h.match(/<h3>预告片\/相关视频<\/h3>/g)||[]).length,1);
  assert.equal((h.match(/class="mi-trailer-grid"/g)||[]).length,1);
  assert.equal((h.match(/class="mi-trailer-card"/g)||[]).length,3);
  assert.match(h,/data-mi-play-video="AbCdEf12345"/);
@@ -27,6 +27,21 @@ test('one section and one shared card grid contain YouTube and verified Bilibili
  assert.match(h,/data-mi-cn-id="BV1zprUY2EGj"/);
  assert.match(h,/data-mi-cn-id="BV1ULFPeEEBh"/);
  assert.doesNotMatch(h,/国内预告片|mi-domestic-trailers|mi-cn-video-card/);
+});
+test('highly liked related clips are separate, capped at five, and open the same player',()=>{
+ const clips=Array.from({length:8},(_,i)=>({
+  id:'Video'+String(i).padStart(6,'0'),title:'Ne Zha 2 behind the scenes',likes:(i+1)*100,embeddable:true,
+  url:'https://www.youtube.com/watch?v=Video'+String(i).padStart(6,'0')
+ }));
+ const h=gallery({...yt,relatedVideos:clips},selected,catalog.items);
+ assert.match(h,/预告片\/相关视频/);
+ assert.equal((h.match(/高赞相关视频<\/h4>/g)||[]).length,0);
+ assert.equal((h.match(/class="mi-trailer-grid"/g)||[]).length,2);
+ assert.equal((h.match(/高赞相关视频/g)||[]).length,6);
+ assert.equal((h.match(/data-mi-play-video="Video/g)||[]).length,5);
+ assert.doesNotMatch(h,/data-mi-play-video="Video000000"/);
+ const rejected=gallery({relatedVideos:[{id:'BadVideo123',likes:999,embeddable:false}]},selected,[]);
+ assert.doesNotMatch(rejected,/data-mi-play-video="BadVideo123"/);
 });
 test('missing YouTube data still shows verified mainland videos in exactly the same grid',()=>{
  const h=gallery({},selected,catalog.items,'error');
