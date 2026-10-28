@@ -1,0 +1,41 @@
+name: Deploy isolated Douban movie API Worker
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/deploy-douban-movie-api.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: liangyou-douban-worker-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Ensure Cloudflare credentials are present
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID in GitHub Actions secrets."
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch pinned third-party Worker source
+        shell: bash
+        run: |
+          git clone --quiet https://github.com/yufeng-liang/douban-movie-api.git third-party-douban-worker
+          git -C third-party-douban-worker checkout --quiet 0babbc35d9eb11b54a1aebe8251b1e8c91d9aacb
+          node --check third-party-douban-worker/worker.js
+          echo "Source: yufeng-liang/douban-movie-api @ 0babbc35d9eb11b54a1aebe8251b1e8c91d9aacb"
+      - name: Deploy to a new isolated Cloudflare Worker
+        working-directory: third-party-douban-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --name liangyou-douban-movie-api --config wrangler.toml
