@@ -222,6 +222,31 @@ test('Guardian film-section reviews can match a distinctive film even without it
   assert.ok(!body.articles.some(v=>v.title.includes('future of technology')));
  }finally{globalThis.fetch=old;}
 });
+test('a movie with no news can show clearly labeled, ID-linked user review links without inventing popularity',async()=>{
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Fight Club',original_title:'Fight Club',
+   release_date:'1999-10-15',adult:false,alternative_titles:{titles:[]},
+   reviews:{results:[
+    {author:'MovieFan',content:'A carefully written film discussion with many specific observations.',
+     url:'https://www.themoviedb.org/review/verified123',created_at:'2025-02-01T08:00:00Z'},
+    {author:'Spam',content:'Spam content from an unrelated hostile website should never be linked.',
+     url:'https://attacker.example/reviews/123',created_at:'2025-02-01T08:00:00Z'}
+   ]}});
+  if(u.hostname==='news.google.com')return new Response('<rss><channel></channel></rss>');
+  throw Error('simulated public news source unavailable');
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.articles.some(v=>v.type==='community'&&v.source==='TMDB · Community reviews'));
+  assert.ok(body.articles.some(v=>v.url==='https://www.themoviedb.org/review/verified123'));
+  assert.ok(!body.articles.some(v=>v.url.includes('attacker.example')));
+  assert.ok(body.articles.every(v=>v.titleMatchVerified===true));
+  assert.ok(!body.articles.some(v=>Number.isFinite(v.likes)));
+ }finally{globalThis.fetch=original;}
+});
 test('uncurated movie Bing fallback accepts verified publisher links and blocks unrelated results',async()=>{
  const original=globalThis.fetch,year='2010';
  let bingHits=0;
