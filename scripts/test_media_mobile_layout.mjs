@@ -49,6 +49,31 @@ for(const width of [390,360]){
    assert.equal(titleUI.sourceRegistry,0,'internal source registry must not appear to visitors');
    assert.ok(titleUI.navOverflow<=2,'six section tabs overflowing mobile width: '+titleUI.navOverflow);
    console.log('MOBILE_FILM_DETAILS_OK',width,JSON.stringify(titleUI));
+
+   // Simulate the exact TMDB Worker classification event without external API access.
+   // Both surfaces must update in place, without rebuilding the list of cards.
+   const firstId=await page.locator('#media-grid .mi-card-open').first().getAttribute('data-mi-open');
+   const idMatch=/^tmdb-(movie|tv)-([1-9]\\d{0,9})$/.exec(firstId||'');
+   assert.ok(idMatch,'First film must have a verified TMDB identity');
+   const metadata=await page.evaluate(({id,kind,tmdbId})=>{
+     const root=document.querySelector('#media');
+     const card=[...root.querySelectorAll('.mi-card-open')].find(node=>node.dataset.miOpen===id);
+     card.dataset.markStable='untouched';
+     root.dispatchEvent(new CustomEvent('liangyou:media-classification',{detail:{
+       id,kind,tmdbId,classification:{genres:['剧情'],keywords:['verified film theme'],
+         parental_rating:{country:'US',rating:'PG-13',source:'TMDB'}}
+     }}));
+     const updated=[...root.querySelectorAll('.mi-card-open')].find(node=>node.dataset.miOpen===id);
+     return {stable:updated===card&&updated.dataset.markStable==='untouched',
+       cardText:updated.querySelector('.mi-card-classification')?.textContent||'',
+       detailText:document.querySelector('#media-dialog .mi-classification-detail')?.textContent||''};
+   },{id:firstId,kind:idMatch[1],tmdbId:Number(idMatch[2])});
+   assert.ok(metadata.stable,'Async metadata must not re-render an entire film card');
+   assert.match(metadata.cardText,/家长指南 · US PG-13/,'Card must show source-verified classification');
+   assert.match(metadata.detailText,/家长指南 · 地区分级/,'Detail must show regional guidance');
+   assert.match(metadata.detailText,/verified film theme/,'Detail must show verified theme keywords');
+   console.log('MOBILE_CARD_AND_DOSSIER_GUIDES_OK',width);
+
    await page.locator('#media-dialog [data-mi-detail="boxoffice"]').click();
    await page.waitForTimeout(250);
    assert.equal(await page.locator('#media-dialog [data-mi-detail="boxoffice"]').getAttribute('aria-pressed'),'true');
