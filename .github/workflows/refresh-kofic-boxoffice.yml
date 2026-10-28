@@ -1,0 +1,45 @@
+name: Refresh verified Korean box office snapshot
+on:
+  schedule:
+    - cron: '15 14 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_kofic_boxoffice.py'
+      - '.github/workflows/refresh-kofic-boxoffice.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Collect official KOFIC daily ranking, or preserve existing verified snapshot
+        env:
+          KOFIC_API_KEY: ${{ secrets.KOFIC_API_KEY }}
+        run: python scripts/update_kofic_boxoffice.py
+      - name: Publish only if source verification succeeded
+        run: |
+          if [ -f data/kofic-boxoffice.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/kofic-boxoffice.json
+            if ! git diff --cached --quiet; then
+              git commit -m "Refresh verified KOFIC daily box office [skip ci]"
+              for attempt in 1 2 3; do
+                git pull --rebase origin main
+                if git push origin HEAD:main; then break; fi
+                if [ "$attempt" = 3 ]; then exit 1; fi
+              done
+            fi
+          else
+            echo "No verified KOFIC snapshot; nothing to publish"
+          fi
