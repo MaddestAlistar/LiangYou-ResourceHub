@@ -86,7 +86,7 @@ function domesticNews(info){
  const target=root.querySelector('#media-dialog .mi-detail-content');if(!target)return;
  const box=document.createElement('details');box.className='mi-cn-news-drawer';
  box.innerHTML='<summary>'+t('中国电影资讯 · 国内快讯','Chinese cinema news · China film wire')+'</summary>'+
- '<p class="mi-caption">'+t('国产电影新闻、行业动态与政策资讯，来自独立公开来源；不是猫眼、淘票票官方新闻 API，也不保证与当前作品相关。','Public Chinese film headlines, separate from this title. Not an official Maoyan or Taopiaopiao news API.')+'</p><div class="mi-cn-news-results" aria-live="polite"></div>';
+ '<p class="mi-caption">'+t('国产电影、行业与政策动态；不等同于猫眼或淘票票官方资讯。','Mainland cinema and film-industry headlines, not an official ticketing-app news feed.')+'</p>'+ '<div class="mi-cn-news-links"><a href="https://www.1905.com/news/" target="_blank" rel="noopener noreferrer">1905 电影网 ↗</a><a href="https://www.chinafilm.gov.cn/xwzx/gzdt/" target="_blank" rel="noopener noreferrer">国家电影局 ↗</a></div>'+ '<div class="mi-cn-news-results" aria-live="polite"></div>';
  target.appendChild(box);
  box.addEventListener('toggle',async()=>{
   if(!box.open||box.dataset.loaded)return;
