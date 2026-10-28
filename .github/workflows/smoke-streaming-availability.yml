@@ -1,0 +1,48 @@
+name: Verify JustWatch via TMDB provider countries
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/smoke-streaming-availability.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Verify movie/tv regional offers and reject invalid requests
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.error,json
+          base="https://liangyou-streaming-availability.maddestalistar.workers.dev"
+          checks=[
+            ("/api/health",200),
+            ("/api/movie/550?region=US",200),
+            ("/api/tv/1399?region=US",200),
+            ("/api/movie/550?region=JP",200),
+            ("/api/movie/550?region=ZZ",400),
+            ("/api/movie/not_an_id?region=US",404)
+          ]
+          passed=0
+          for path,expected in checks:
+            try:
+              req=urllib.request.Request(base+path,headers={"User-Agent":"LiangYou-Availability-Smoke/1.0"})
+              with urllib.request.urlopen(req,timeout=25) as r:
+                code=r.status;d=json.load(r)
+            except urllib.error.HTTPError as e:
+              code=e.code;d=json.load(e)
+            except Exception as e:code=None;d={"error":type(e).__name__}
+            valid=code==expected
+            if expected==200 and path!="/api/health":
+              ident=550 if "movie" in path else 1399
+              valid=valid and d.get("tmdbId")==ident and d.get("source")=="JustWatch via TMDB" and d.get("region") in ("US","JP") and isinstance(d.get("providers"),dict) and all(isinstance(x,list) for x in d["providers"].values())
+            print("WATCH_PROVIDER_SMOKE "+json.dumps({"path":path,"http":code,"expected":expected,"valid":bool(valid),
+              "source":d.get("source"),"region":d.get("region"),"found":d.get("found"),
+              "count":sum(map(len,d.get("providers",{}).values())) if isinstance(d.get("providers"),dict) else None,
+              "error":d.get("error"),"reason":d.get("reason")},ensure_ascii=False),flush=True)
+            passed+=bool(valid)
+          print("WATCH_PROVIDER_TOTAL "+str(passed)+"/"+str(len(checks)),flush=True)
+          assert passed==len(checks),"Source integration is not verified"
+          PY
