@@ -198,6 +198,30 @@ test('uncurated catalog films discover historical Chinese and English articles b
  assert.ok(origins.some(x=>x.ceid==='US:en'));
  assert.ok(origins.every(x=>!x.q.includes('when:2y')));
 });
+test('Guardian film-section reviews can match a distinctive film even without its year in the headline',async()=>{
+ const old=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Inception',original_title:'Inception',
+   release_date:'2010-07-16',adult:false,alternative_titles:{titles:[]},
+   credits:{cast:[],crew:[{name:'Christopher Nolan',job:'Director'}]}});
+  if(u.hostname==='news.google.com')return new Response('<rss><channel></channel></rss>');
+  if(u.hostname==='content.guardianapis.com')return json({response:{status:'ok',results:[
+   {webTitle:'Inception review – a mind-bending film',webUrl:'https://www.theguardian.com/film/2010/jul/15/inception-review',
+    webPublicationDate:'2010-07-15T08:00:00Z'},
+   {webTitle:'The future of technology',webUrl:'https://www.theguardian.com/film/2010/jul/15/other',
+    webPublicationDate:'2010-07-15T08:00:00Z'}
+  ]}});
+  throw Error('unexpected URL '+u.hostname);
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',
+    {TMDB_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.articles.some(v=>v.source==='The Guardian'&&v.title.startsWith('Inception review')));
+  assert.ok(!body.articles.some(v=>v.title.includes('future of technology')));
+ }finally{globalThis.fetch=old;}
+});
 test('uncurated movie Bing fallback accepts verified publisher links and blocks unrelated results',async()=>{
  const original=globalThis.fetch,year='2010';
  let bingHits=0;
@@ -212,9 +236,11 @@ test('uncurated movie Bing fallback accepts verified publisher links and blocks 
    bingHits++;
    const real='https://example.org/films/inception-analysis';
    const bad='https://example.org/other';
+   const portal='https://www.youtube.com/watch?v=AbCdEf12345';
    return new Response('<rss><channel><item><title>Inception 2010 film review</title>'+
      '<link>'+real+'</link><source>Film Review Journal</source></item>'+
      '<item><title>Building obsession with productivity</title><link>'+bad+'</link></item>'+
+     '<item><title>Inception 2010 film review</title><link>'+portal+'</link></item>'+
      '</channel></rss>',{status:200});
   }
   throw Error('unexpected '+u.hostname);
@@ -225,6 +251,7 @@ test('uncurated movie Bing fallback accepts verified publisher links and blocks 
   assert.ok(bingHits>0);
   assert.ok(body.articles.some(v=>v.url==='https://example.org/films/inception-analysis'));
   assert.ok(body.articles.every(v=>!v.title.includes('productivity')));
+  assert.ok(body.articles.every(v=>!v.url.includes('youtube.com')));
   assert.ok(body.sourceDiagnostics.bingMatched>=1);
   assert.ok(body.articles.every(v=>v.titleMatchVerified===true));
  }finally{globalThis.fetch=original;}
