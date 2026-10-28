@@ -205,12 +205,20 @@
     // Search entries are optional discovery links, not purported verified videos.
     const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
     const q=encodeURIComponent(title+' 预告片');
+    const year=Number(String(info?.year||'').slice(0,4));
+    const aliases=[info?.title,info?.originalTitle,...(Array.isArray(info?.aliases)?info.aliases:[])]
+      .filter(x=>typeof x==='string').map(x=>x.normalize('NFKC').trim().toLowerCase()).filter(Boolean);
+    const cinemaSource=(Array.isArray(domesticRows)?domesticRows:[]).find(x=>
+      x&&x.platform==='1905'&&x.kind===info?.kind&&Number(x.year)===year&&
+      aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())&&
+      /^https:\/\/www\.1905\.com\/mdb\/film\/[1-9]\d{3,10}\/$/.test(safe(x.verifiedSource)||''));
     const finder=title?
       '<details class="mi-trailer-search"><summary>'+t('其他平台查找预告片','Find trailers on other platforms')+'</summary>'+
       '<div class="mi-insight-links">'+
       a('https://search.bilibili.com/all?keyword='+q,'Bilibili')+
       a('https://v.qq.com/x/search/?q='+q,t('腾讯视频','Tencent Video'))+
-      a('https://www.1905.com/news/yg/','1905电影网')+'</div></details>':'';
+      a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
+        cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
     if(!videos.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
