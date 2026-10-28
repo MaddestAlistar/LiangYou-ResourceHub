@@ -46,3 +46,13 @@
  #media #mtk-lookup button{grid-column:1/-1}
  #media .mtk-rating-research,#media .mtk-rankings{padding:9px}
 }
+
+
+#media .mtk-find-aggregate,#media .mtk-aggregate-choice{margin:6px 6px 5px 0;padding:7px 10px;border:1px solid #b7c6df44;border-radius:9px;background:#152540;color:#d9e6fa;font-size:11px;line-height:1.5;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+#media .mtk-find-aggregate{background:#ceb78518;border-color:#d8bc8e55;color:#ebd6b1}
+#media .mtk-find-results{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+#media .mtk-cn-ratings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+#media .mtk-cn-ratings>div{padding:9px 7px;border:1px solid #abc3e233;border-radius:9px;background:#0c1728;min-width:0}
+#media .mtk-cn-ratings span{display:block;font-size:10px;color:#adc0dc}
+#media .mtk-cn-ratings strong{display:block;font-size:17px;color:#e8d3a6;margin-top:5px}
+@media(max-width:390px){#media .mtk-cn-ratings strong{font-size:14px}}
