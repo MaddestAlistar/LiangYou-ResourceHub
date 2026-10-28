@@ -16,6 +16,7 @@ on:
       - 'media-cn-enhance.js'
       - 'index.html'
       - 'scripts/test_media_mobile_layout.mjs'
+      - 'scripts/test_media_discover_browser.mjs'
       - '.github/workflows/test-media-mobile-layout.yml'
   workflow_dispatch:
 permissions:
@@ -39,6 +40,8 @@ jobs:
           sleep 2
       - name: Check 360px and 390px card alignment
         run: node scripts/test_media_mobile_layout.mjs
+      - name: Verify trailer and title-matched international and domestic news render together
+        run: node scripts/test_media_discover_browser.mjs
       - name: Check domestic independent rating cards and news interactions
         run: node scripts/test_media_cn_panels.mjs
       - name: Check cross-platform verified ratings and worldwide charts
@@ -47,5 +50,7 @@ jobs:
         if: failure()
         with:
           name: film-mobile-layout-debug
-          path: /tmp/mobile-film-*.png
+          path: |
+            /tmp/mobile-film-*.png
+            /tmp/media-discover-browser.png
           if-no-files-found: ignore
