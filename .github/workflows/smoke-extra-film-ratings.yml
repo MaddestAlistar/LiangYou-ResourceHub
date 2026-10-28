@@ -21,6 +21,8 @@ jobs:
             ("/api/bilibili/season/26801","Bilibili 番剧",10),
             ("/api/bilibili/season/42290","Bilibili 番剧",10),
             ("/api/kitsu/anime/1","Kitsu",100),
+            ("/api/kitsu/by-mal/1","Kitsu",100),
+            ("/api/simkl/by-tmdb/movie/550","Simkl",10),
             ("/api/mydramalist/drama/58651-run-on","MyDramaList (third-party)",10),
             ("/api/simkl/10280","Simkl",10),
             ("/api/filmarks/movie/14348","Filmarks",5),
@@ -47,6 +49,8 @@ jobs:
             if path=="/api/kitsu/anime/not_a_number":valid=status==404
             if path=="/api/bilibili/season/26801":valid=valid and x.get("title")=="鬼灭之刃" and x.get("ratingCount",0)>100000
             if path=="/api/kitsu/anime/1":valid=valid and x.get("title")=="Cowboy Bebop" and x.get("libraryUserCount",0)>100000
+            if path=="/api/kitsu/by-mal/1":valid=valid and str(x.get("malId"))=="1" and x.get("mappingMethod")=="official_kitsu_mal_mapping"
+            if path=="/api/simkl/by-tmdb/movie/550":valid=valid and str(x.get("matchedExternalId"))=="550" and x.get("mappingMethod")=="official_simkl_tmdb_lookup"
             if path=="/api/mydramalist/drama/58651-run-on":valid=valid and x.get("title","").startswith("Run On")
             if path=="/api/simkl/10280":valid=valid and x.get("ratingCount",0)>3000
             if path=="/api/filmarks/movie/14348":valid=valid and x.get("rating")==4.1 and "賢者の石" in x.get("title","")
