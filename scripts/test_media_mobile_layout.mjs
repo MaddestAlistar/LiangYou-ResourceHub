@@ -53,7 +53,7 @@ for(const width of [390,360]){
    // Simulate the exact TMDB Worker classification event without external API access.
    // Both surfaces must update in place, without rebuilding the list of cards.
    const firstId=await page.locator('#media-grid .mi-card-open').first().getAttribute('data-mi-open');
-   const idMatch=/^tmdb-(movie|tv)-([1-9]\\d{0,9})$/.exec(firstId||'');
+   const idMatch=/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(firstId||'');
    assert.ok(idMatch,'First film must have a verified TMDB identity');
    const metadata=await page.evaluate(({id,kind,tmdbId})=>{
      const root=document.querySelector('#media');
