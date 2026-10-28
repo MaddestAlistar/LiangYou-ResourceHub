@@ -21,7 +21,7 @@ function stub(data){
    if(uri.hostname==='www.omdbapi.com')return json({Response:'True',imdbID:'tt0137523',BoxOffice:'$37,030,102'});
    if(uri.hostname==='content.guardianapis.com')return json(data.guardian||{response:{status:'ok',results:[]}});
    if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/videos')
-     return json({items:[{id:'AbCdEf12345',snippet:{title:'Fight Club Official Trailer',channelTitle:'Official Movie Channel',publishedAt:'2025-05-11T10:00:00Z'},contentDetails:{duration:'PT2M14S'},statistics:{viewCount:'1234567'},status:{privacyStatus:'public',embeddable:true}}]});
+     return json({items:data.youtubeVideos||[{id:'AbCdEf12345',snippet:{title:'Fight Club Official Trailer',channelTitle:'Official Movie Channel',publishedAt:'2025-05-11T10:00:00Z'},contentDetails:{duration:'PT2M14S'},statistics:{viewCount:'1234567'},status:{privacyStatus:'public',embeddable:true}}]});
    if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/search')
      return json({items:[{id:{videoId:'AbCdEf12345'},snippet:{title:'Fight Club Trailer Search',channelTitle:'Trailer Archive'}}]});
    if(uri.hostname==='tastedive.com')
@@ -80,6 +80,22 @@ test('TMDB official YouTube IDs get metadata without guessing the video title',a
  assert.equal(body.trailers[0].official,true);assert.equal(body.trailers[0].duration,'PT2M14S');
  assert.equal(body.trailers[0].channel,'Official Movie Channel');
  assert.equal(body.trailers[0].views,1234567);
+});
+test('age-restricted and non-embeddable trailers are labeled and ranked behind anonymous-playable clips',async()=>{
+ stub({movie:{videos:{results:[
+   {site:'YouTube',official:true,type:'Trailer',key:'AgeGate1234',name:'Restricted Trailer'},
+   {site:'YouTube',official:true,type:'Trailer',key:'FreePlay123',name:'Public Trailer'}
+ ]},youtubeVideos:[
+   {id:'AgeGate1234',snippet:{title:'Restricted trailer'},contentDetails:{contentRating:{ytRating:'ytAgeRestricted'}},status:{privacyStatus:'public',embeddable:true}},
+   {id:'FreePlay123',snippet:{title:'Public trailer'},contentDetails:{},status:{privacyStatus:'public',embeddable:true}}
+ ]});
+ const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+ assert.equal(status,200);
+ assert.deepEqual(body.trailers.map(v=>v.id),['FreePlay123','AgeGate1234']);
+ assert.equal(body.trailers[0].ageRestricted,false);
+ assert.equal(body.trailers[0].embeddable,true);
+ assert.equal(body.trailers[1].ageRestricted,true);
+ assert.equal(body.trailers[1].embeddable,true);
 });
 test('YouTube search-only results remain explicitly unverified',async()=>{
  stub({});
