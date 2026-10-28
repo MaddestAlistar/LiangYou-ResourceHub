@@ -310,6 +310,9 @@
     const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g,' ').trim();
     const rawTitles=[d.localTitle,d.originalTitle,d.title,...(Array.isArray(d.aliases)?d.aliases:[])].filter(v=>typeof v==='string').slice(0,36);
     function matchScore(article){
+      // Curated articles are already keyed to the exact TMDB kind, ID and release
+      // year. They may discuss a film without spelling its public title verbatim.
+      if(article.verifiedByTitleId===true)return 200;
       const headline=String(article.title||'').normalize('NFKC'),line=' '+normalize(headline)+' ';
       let confidence=0;
       for(const label of rawTitles){
@@ -320,7 +323,14 @@
         if(/[\u3400-\u9fff\uac00-\ud7af]/.test(name)){
           if(compact.length>=4&&line.replace(/ /g,'').includes(compact))confidence=Math.max(confidence,75+Math.min(compact.length,20));
         }else if(compact.length>=4&&line.includes(' '+name+' ')){
-          confidence=Math.max(confidence,70+Math.min(compact.length,20));
+          // "Moana" and "Obsession" are also ordinary words or older films.
+          // Require a film-specific context, and for single-word aliases use
+          // a release-year/live-action/director-style disambiguation signal.
+          const single=compact.length<=12&&!name.includes(' ');
+          const context=/\b(movie|film|cinema|trailer|box office|horror|director|screening|remake|live.action|review|festival|actor|actress|release)\b/i.test(headline);
+          const anchored=/\b(20\d{2}|19\d{2})\b|\blive.action\b|\bCurry Barker\b|\bDwayne Johnson\b|\bDisney\b/i.test(headline);
+          if(!single||context&&anchored||quoted)
+            confidence=Math.max(confidence,70+Math.min(compact.length,20));
         }
       }
       return confidence;
@@ -540,7 +550,7 @@
       Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
         const all=[...rows,...(index?.videos||[])];
         domesticRows=all;paintTrailers();
-        const relevant=all.filter(x=>x.type==='Related'&&x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)).slice(0,12);
+        const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)).slice(0,20);
         if(!relevant.length)return;
         const withLikes=await Promise.all(relevant.map(async x=>{
           try{
