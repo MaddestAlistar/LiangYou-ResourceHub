@@ -63,7 +63,9 @@ def collect(name,url,pattern,host):
    uri_path=urlparse(urlValue).path
    uri_date=re.search(r"(20\d{6})",uri_path)
    explicit=re.search(r"(20\d{2})-(\d{2})-(\d{2})",uri_path)
-   if explicit:day="-".join(explicit.groups())
+   dated_path=re.search(r"/((?:19|20)\d{2})/(\d{2})(\d{2})/",uri_path)
+   if dated_path:day="-".join(dated_path.groups())
+   elif explicit:day="-".join(explicit.groups())
    elif uri_date:
     ymd=uri_date.group(1);day=f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:8]}"
    else:continue
@@ -110,7 +112,7 @@ def main():
  items+=collect_rss()
  items+=collect_rss('搜狐娱乐','https://news.sohu.com/rss/yule.xml','news.sohu.com')
  # Movie-specific public RSS instead of generic literature, art exhibition or regional culture feeds.
- items+=collect_rss('电影界·影视资讯','https://app.dianyingjie.com.cn/rss.php?catid=1','dianyingjie.com.cn')
+ items+=collect('电影界·影视资讯','https://app.dianyingjie.com.cn/rss.php?catid=1',r'/20\d{2}/\d{4}/\d+\.shtml','dianyingjie.com.cn')
  # Official Sina Entertainment RSS directory lists a dedicated film feed.
  items+=collect_rss('新浪电影','https://rss.sina.com.cn/ent/film/focus7.xml','sina.com.cn')
  # Older verified items are useful: most films aren't mentioned on today's front page.
