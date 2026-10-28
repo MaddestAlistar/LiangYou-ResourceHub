@@ -198,6 +198,37 @@ test('uncurated catalog films discover historical Chinese and English articles b
  assert.ok(origins.some(x=>x.ceid==='US:en'));
  assert.ok(origins.every(x=>!x.q.includes('when:2y')));
 });
+test('uncurated movie Bing fallback accepts verified publisher links and blocks unrelated results',async()=>{
+ const original=globalThis.fetch,year='2010';
+ let bingHits=0;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Inception',original_title:'Inception',
+    release_date:year+'-07-16',adult:false,
+    alternative_titles:{titles:[{iso_3166_1:'CN',title:'盗梦空间'}]},
+    credits:{cast:[],crew:[{job:'Director',name:'Christopher Nolan'}]}});
+  if(u.hostname==='news.google.com')return new Response('<rss><channel></channel></rss>');
+  if(u.hostname==='www.bing.com'){
+   bingHits++;
+   const real='https://example.org/films/inception-analysis';
+   const bad='https://example.org/other';
+   return new Response('<rss><channel><item><title>Inception 2010 film review</title>'+
+     '<link>'+real+'</link><source>Film Review Journal</source></item>'+
+     '<item><title>Building obsession with productivity</title><link>'+bad+'</link></item>'+
+     '</channel></rss>',{status:200});
+  }
+  throw Error('unexpected '+u.hostname);
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(bingHits>0);
+  assert.ok(body.articles.some(v=>v.url==='https://example.org/films/inception-analysis'));
+  assert.ok(body.articles.every(v=>!v.title.includes('productivity')));
+  assert.ok(body.sourceDiagnostics.bingMatched>=1);
+  assert.ok(body.articles.every(v=>v.titleMatchVerified===true));
+ }finally{globalThis.fetch=original;}
+});
 test('Moana remake and Obsession movie headlines are separated from unrelated short-word coverage',async()=>{
  const old=globalThis.fetch;
  const today=new Date(Date.now()-86400000).toUTCString();
