@@ -26,7 +26,7 @@ async function tmdbInfo(kind,id,env){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response","external_ids");u.searchParams.set("language","en-US");
+ u.searchParams.set("append_to_response","external_ids,videos");u.searchParams.set("language","en-US");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
  if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
@@ -39,9 +39,61 @@ async function mediaInsights(kind,id,env){
  const wikidata=/^Q[1-9]\d{0,11}$/.test(ext.wikidata_id||"")?ext.wikidata_id:null;
  const result={ok:true,kind,tmdbId:Number(id),imdbId:imdb,tvdbId:tvdb,wikidataId:wikidata,
    originalTitle:title.original_title||title.original_name||"",title:title.title||title.name,
-   checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[]};
+   checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[],trailers:[],suggestions:[]};
+ const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
+ const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&v.official===true&&
+   ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
+ const seenIds=new Set();
+ result.trailers=tmdbTrailerRows.filter(v=>{if(seenIds.has(v.key))return false;seenIds.add(v.key);return true;})
+   .slice(0,5).map(v=>({id:v.key,title:String(v.name||"Trailer").slice(0,140),
+     type:v.type,language:v.iso_639_1||"",channel:"",publishedAt:v.published_at||null,
+     verifiedBy:"TMDB",official:true,embeddable:null,
+     thumbnail:"https://i.ytimg.com/vi/"+v.key+"/hqdefault.jpg",
+     url:"https://www.youtube.com/watch?v="+v.key}));
  const jobs=[];
  const task=(name,fn)=>jobs.push((async()=>{try{const x=await fn();result.sources[name]=x?"ok":"no_data";}catch{result.sources[name]="unavailable";}})());
+ // Existing official TMDB video IDs are authoritative. YouTube supplies playback metadata.
+ // A low-frequency search is used only if TMDB has no official video; it stays explicitly unverified.
+ if(keyYouTube){
+  task("youtube",async()=>{
+   if(!result.trailers.length){
+    const search=new URL("https://www.googleapis.com/youtube/v3/search");
+    const year=String(title.release_date||title.first_air_date||"").slice(0,4);
+    search.searchParams.set("key",keyYouTube);
+    search.searchParams.set("part","snippet");
+    search.searchParams.set("q",String(title.original_title||title.original_name||title.title||title.name||"").slice(0,75)+" "+year+" official trailer");
+    search.searchParams.set("type","video");search.searchParams.set("maxResults","3");search.searchParams.set("videoEmbeddable","true");
+    try{
+     const found=await jsonRemote(search.toString(),{},7000);
+     const seen=new Set();
+     result.trailers=(found.items||[]).filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id?.videoId||"")&&!seen.has(v.id.videoId)&&seen.add(v.id.videoId))
+       .slice(0,2).map(v=>({id:v.id.videoId,title:String(v.snippet?.title||"Trailer candidate").slice(0,140),
+        type:"Search",language:"",channel:String(v.snippet?.channelTitle||"").slice(0,70),
+        publishedAt:v.snippet?.publishedAt||null,verifiedBy:"YouTube search",official:false,embeddable:null,
+        thumbnail:"https://i.ytimg.com/vi/"+v.id.videoId+"/hqdefault.jpg",
+        url:"https://www.youtube.com/watch?v="+v.id.videoId}));
+    }catch{}
+   }
+   if(!result.trailers.length)return null;
+   const u=new URL("https://www.googleapis.com/youtube/v3/videos");
+   u.searchParams.set("key",keyYouTube);u.searchParams.set("part","snippet,contentDetails,status,statistics");
+   u.searchParams.set("id",result.trailers.map(v=>v.id).join(","));
+   const data=await jsonRemote(u.toString(),{},7500);
+   const found=new Map((data.items||[]).map(v=>[v.id,v]));
+   result.trailers=result.trailers.filter(v=>{
+      const meta=found.get(v.id);
+      if(!meta||meta.status?.privacyStatus!=="public")return false;
+      v.embeddable=meta.status?.embeddable===true;
+      v.channel=String(meta.snippet?.channelTitle||v.channel||"").slice(0,90);
+      v.title=String(meta.snippet?.title||v.title||"").slice(0,150);
+      v.publishedAt=meta.snippet?.publishedAt||v.publishedAt;
+      v.duration=String(meta.contentDetails?.duration||"").slice(0,35);
+      v.views=/^\d+$/.test(String(meta.statistics?.viewCount||""))?Number(meta.statistics.viewCount):null;
+      return true;
+   });
+   return result.trailers.length>0;
+  });
+ }else result.sources.youtube=result.trailers.length?"tmdb_video_links":"not_configured";
  if(wikidata){
   // Exact cross-ID supplied by TMDB. Do not depend on a blocked Wikidata fetch,
   // and do not claim that a Wikidata biography/entity body has been downloaded.
@@ -92,15 +144,45 @@ async function mediaInsights(kind,id,env){
    const endpoint=new URL("https://content.guardianapis.com/search");
    endpoint.searchParams.set("api-key",env.THE_GUARDIAN_API_KEY);
    endpoint.searchParams.set("q",'"'+q.replace(/"/g,"")+'"');
-   endpoint.searchParams.set("page-size","5");
+   endpoint.searchParams.set("page-size","8");
    endpoint.searchParams.set("order-by","newest");
+   endpoint.searchParams.set("show-fields","thumbnail,trailText,byline");
    const d=await jsonRemote(endpoint.toString());
    if(d.response?.status!=="ok")return null;
+   const normalized=s=>String(s||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g," ").trim();
+   const query=normalized(q),tokens=query.split(" ").filter(Boolean);
    result.news=(d.response.results||[]).filter(x=>x.webUrl&&x.webTitle)
-     .slice(0,4).map(x=>({title:x.webTitle,url:safeHttps(x.webUrl,"theguardian.com"),date:x.webPublicationDate,source:"The Guardian"}))
-     .filter(x=>x.url);return result.news.length>0;
+     .filter(x=>x.sectionId==="film"||x.sectionId==="tv-and-radio"||x.sectionId==="culture"||x.sectionId==="media")
+     .filter(x=>{
+       const heading=normalized(x.webTitle+" "+(x.fields?.trailText||"").replace(/<[^>]+>/g," "));
+       return query.length>=6&&heading.includes(query)||tokens.length>=2&&tokens.every(t=>t.length<3||heading.includes(t));
+     }).slice(0,4).map(x=>({
+       title:String(x.webTitle).slice(0,180),url:safeHttps(x.webUrl,"theguardian.com"),date:x.webPublicationDate,
+       source:"The Guardian",section:String(x.sectionName||"").slice(0,45),byline:String(x.fields?.byline||"").slice(0,90),
+       summary:String(x.fields?.trailText||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,210),
+       thumbnail:safeHttps(x.fields?.thumbnail,"guim.co.uk")||null,
+       matchType:"title_search"
+     })).filter(x=>x.url);
+   return result.news.length>0;
   });
  }else result.sources.guardian=env.THE_GUARDIAN_API_KEY?"not_applicable":"not_configured";
+ // Optional TasteDive results are name-only discovery leads, never merged with a TMDB identity.
+ if(env.TASTEDIVE_API_KEY&&q.length>=5&&q.length<=100){
+  task("tastedive",async()=>{
+   const endpoint=new URL("https://tastedive.com/api/similar");
+   endpoint.searchParams.set("k",env.TASTEDIVE_API_KEY);
+   endpoint.searchParams.set("q",q);
+   endpoint.searchParams.set("type",kind==="movie"?"movie":"show");
+   endpoint.searchParams.set("limit","5");
+   const d=await jsonRemote(endpoint.toString(),{},7000);
+   const rows=d.Similar?.Results||d.similar?.results||[];
+   if(!Array.isArray(rows))return null;
+   result.suggestions=rows.filter(x=>typeof x.Name==="string"||typeof x.name==="string")
+     .slice(0,5).map(x=>({title:String(x.Name||x.name).slice(0,90),type:String(x.Type||x.type||"").slice(0,25),source:"TasteDive",verified:false}));
+   return result.suggestions.length>0;
+  });
+ }else result.sources.tastedive="not_configured";
+
  await Promise.all(jobs);
  return result;
 }
