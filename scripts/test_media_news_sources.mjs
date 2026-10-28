@@ -24,11 +24,11 @@ test('international and domestic panels cap matching articles at six and retain 
  const section=ins.slice(ins.indexOf('  function discoverySections('),ins.indexOf('  async function displayBoxOfficeArchive('));
  assert.match(section,/\.slice\(0,6\)/);
  assert.match(section,/x\.source/);
- assert.match(section,/match\(x\)/);
+ assert.match(section,/matchScore\(x\)/);
  assert.match(ins,/data-mi-discover-slot="international"/);
  const dom=cn.slice(cn.indexOf('function domesticNews(info){'));
  assert.match(dom,/\.slice\(0,6\)/);
- assert.match(dom,/sameTitle\(headline\)/);
+ assert.match(dom,/headlineMatch\(x\.title,info\)/);
  assert.match(dom,/data-mi-discover-slot="domestic"/);
  for(const origin of ['搜狐娱乐','新浪电影','腾讯娱乐','豆瓣影评'])
   assert.ok(mainland.includes(origin),origin);
