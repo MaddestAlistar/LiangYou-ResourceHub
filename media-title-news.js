@@ -29,7 +29,8 @@
     const videos=(Array.isArray(item.videos)?item.videos:[]).filter(x=>x&&x.kind===kind&&
       Number(x.year)===year&&x.title===item.title&&safeUrl(x.verifiedSource))
       .map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
-    return {articles,videos};
+    const aliases=(Array.isArray(item.aliases)?item.aliases:[]).filter(x=>typeof x==='string'&&x.length>=3&&x.length<=80).slice(0,18);
+    return {articles,videos,aliases};
   }
   // Separate from the checked-in editorial index: a blocked optional search must
   // never delay or erase already verified records.
@@ -40,7 +41,7 @@
     const key=kind+':'+id;
     if(!remoteCache.has(key))remoteCache.set(key,(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id,{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=2',{
           signal:AbortSignal.timeout(10500)});
         if(!r.ok)return null;
         const d=await r.json();
