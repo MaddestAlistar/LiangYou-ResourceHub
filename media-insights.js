@@ -38,7 +38,7 @@
     let content='<section class="mi-insight-block"><h3>'+t('跨站资料补充','Extended metadata')+'</h3>';
     if(tv)content+='<div class="mi-insight-facts">'+item('TheTVDB ID',tv.id)+item(t('剧集首播','First aired'),tv.firstAired)+item(t('剧集状态','Series status'),tv.status)+item(t('季数','Season count'),tv.seasons)+'</div><div class="mi-insight-links">'+a(tv.url,'TheTVDB')+'</div><p class="mi-caption">'+t('TheTVDB 的 score 代表热度，不作观众评分。','TheTVDB score measures popularity, not audience rating.')+'</p>';
     if(art.length)content+='<details class="mi-artwork-drawer"><summary>'+t('作品画作 · Fanart.tv','Artwork · Fanart.tv')+' ('+art.length+')</summary><div class="mi-artwork-grid">'+art.map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(x.url)+'" alt="'+esc(x.type)+'" loading="lazy" decoding="async"></a>').join('')+'</div><p class="mi-caption">'+t('Fanart.tv 原始图片，版权归相应权利人。','Images sourced from Fanart.tv; rights belong to their owners.')+'</p></details>';
-    if(d.wikidata)content+='<p class="mi-caption">'+t('跨库实体已核对：','Verified linked entity: ')+a(d.wikidata.url,(d.wikidata.label||'Wikidata')+' · '+d.wikidata.id)+'</p>';
+    if(d.wikidata)content+='<p class="mi-caption">'+t('TMDB 提供的 Wikidata 标识（未独立核实实体内容）：','Wikidata ID from TMDB (entity content not independently verified): ')+a(d.wikidata.url,(d.wikidata.label||'Wikidata')+' · '+d.wikidata.id)+'</p>';
     if(!tv&&!art.length&&!d.wikidata)content+='<p class="mi-caption">'+t('这部作品暂没有可验证的补充资料，已有 TMDB 档案保持不变。','No independently verified supplements for this title.')+'</p>';
     return content+serviceNames(d)+'</section>';
   }
@@ -112,7 +112,7 @@
     const pane=e.target.querySelector('.mi-kr-boxoffice');if(!pane||pane.dataset.loaded)return;
     pane.dataset.loaded='1';pane.textContent=t('读取 KOFIC…','Loading KOFIC…');
     try{
-      const d=await json('/api/boxoffice/kr');
+      const d=await json('/api/kobis/daily');
       if(!pane.isConnected)return;
       if(d.status==='not_configured'){pane.textContent=t('KOFIC 凭证尚未配置；不展示猜测票房。','KOFIC key is not configured; no guessed chart.');return;}
       if(d.ok!==true||!Array.isArray(d.data)||d.status!=='ok')throw Error('invalid');
