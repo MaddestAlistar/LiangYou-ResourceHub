@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "updatedAt": "2026-10-28T11:10:27.774961Z",
+  "sources": {
+    "bilibili": {
+      "26801": {
+        "id": 26801,
+        "title": "鬼灭之刃",
+        "rating": 9.7,
+        "scale": 10,
+        "ratingCount": 409192,
+        "pageUrl": "https://www.bilibili.com/bangumi/play/ss26801",
+        "sourceUrl": "https://api.bilibili.com/pgc/view/web/season?season_id=26801"
+      },
+      "42290": {
+        "id": 42290,
+        "title": "幕末替身传说",
+        "rating": 8.1,
+        "scale": 10,
+        "ratingCount": 1381,
+        "pageUrl": "https://www.bilibili.com/bangumi/play/ss42290",
+        "sourceUrl": "https://api.bilibili.com/pgc/view/web/season?season_id=42290"
+      }
+    },
+    "filmarks": {
+      "14348": {
+        "id": 14348,
+        "title": "ハリー・ポッターと賢者の石",
+        "rating": 4.1,
+        "scale": 5,
+        "ratingCount": null,
+        "pageUrl": "https://filmarks.com/movies/14348",
+        "sourceUrl": "https://filmarks.com/movies/14348"
+      },
+      "16650": {
+        "id": 16650,
+        "title": "ハリー・ポッターと秘密の部屋",
+        "rating": 3.9,
+        "scale": 5,
+        "ratingCount": null,
+        "pageUrl": "https://filmarks.com/movies/16650",
+        "sourceUrl": "https://filmarks.com/movies/16650"
+      }
+    }
+  },
+  "sourceNotes": {
+    "bilibili": "Bilibili public season API; ratingCount = users who rated.",
+    "filmarks": "Filmarks official public page JSON-LD ratingValue; ratingCount is unknown."
+  }
+}
