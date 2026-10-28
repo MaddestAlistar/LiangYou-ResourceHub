@@ -491,13 +491,25 @@
       paintTrailers();
       return true;
     };
+    // Keep editorial, global RSS and optional title-scoped results independent:
+    // a slow external index cannot wipe a fast human-verified title match.
+    let worldArticles=[],indexedNews=[],remoteNews=[];
+    let intlContext={title:info.title,localTitle:info.title,
+      originalTitle:info.originalTitle,aliases:info.aliases,news:[],suggestions:[]};
+    function paintInternational(){
+      if(!pane.isConnected||!discoverSlots?.international?.isConnected)return;
+      const news=[...(Array.isArray(intlContext.news)?intlContext.news:[]),...indexedNews,...remoteNews];
+      discoverSlots.international.innerHTML=discoverySections({...intlContext,news},worldArticles).international;
+    }
     if(info.section==='discover'&&discoverSlots?.international){
-      Promise.all([worldNewsSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([articles,index])=>{
-        if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
-        discoverSlots.international.innerHTML=discoverySections({
-          title:info.title,localTitle:info.title,originalTitle:info.originalTitle,aliases:info.aliases,
-          news:(index?.articles||[]).filter(x=>x.language!=='zh'),suggestions:[]
-        },articles).international;
+      worldNewsSnapshot().then(rows=>{worldArticles=rows;paintInternational();}).catch(()=>{});
+      (window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)).then(index=>{
+        indexedNews=(index?.articles||[]).filter(x=>x.language!=='zh');
+        paintInternational();
+      }).catch(()=>{});
+      window.LiangYouTitleNews?.remoteForInfo?.(info)?.then(index=>{
+        remoteNews=(index?.articles||[]).filter(x=>x.language!=='zh');
+        paintInternational();
       }).catch(()=>{});
     }
     if(discoverSlots?.trailers){
@@ -574,14 +586,8 @@
         trailerResult=enriched;
         trailerStatus='ready';
         paintTrailers();
-        if(discoverSlots.international?.isConnected)discoverSlots.international.innerHTML=sections.international;
-        // Source RSS is loaded independently; the fixed slot keeps its position.
-        Promise.all([worldNewsSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(([world,index])=>{
-          if(!pane.isConnected||!discoverSlots.international?.isConnected)return;
-          const articles=[...(Array.isArray(newsContext.news)?newsContext.news:[]),
-            ...(index?.articles||[]).filter(x=>x.language!=='zh')];
-          discoverSlots.international.innerHTML=discoverySections({...newsContext,news:articles},world).international;
-        });
+        intlContext=newsContext;
+        paintInternational();
         if(discoverSlots.similar?.isConnected)discoverSlots.similar.innerHTML=sections.similar;
       }else{
         pane.innerHTML=info.section==='profile'?profile(enriched):info.section==='people'?people(enriched):info.section==='boxoffice'?boxoffice(enriched):'';
