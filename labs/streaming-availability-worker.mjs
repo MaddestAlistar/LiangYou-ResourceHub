@@ -466,14 +466,43 @@ async function titleNews(kind,id,env){
     if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<oldest)return null;
     const publisher=rssField(raw,"source");
     return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
-      source:publisher.slice(0,60)||"Google News",language:/[\u3400-\u9fff]/.test(title)?"zh":
+      source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:/[\u3400-\u9fff]/.test(title)?"zh":
       /[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
    }).filter(Boolean);
   }catch{return [];}finally{clearTimeout(timer);}
  });
- const batches=await Promise.all(requests),seen=new Set();
- const articles=batches.flat().filter(x=>{if(seen.has(x.url))return false;seen.add(x.url);return true;})
-   .sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
+ // Independent licensed publisher API fallback: the Guardian can return real
+ // historical articles even when an unofficial RSS search is empty or blocked.
+ const guardianKey=(env.THE_GUARDIAN_API_KEY||env.GUARDIAN_API_KEY||"").trim();
+ const guardian=guardianKey&&originalLatin? (async()=>{
+  try{
+   const api=new URL("https://content.guardianapis.com/search");
+   api.searchParams.set("api-key",guardianKey);
+   api.searchParams.set("q",'"'+originalLatin.replace(/"/g,"")+'"');
+   api.searchParams.set("section","film");
+   api.searchParams.set("page-size","30");
+   api.searchParams.set("order-by","relevance");
+   api.searchParams.set("show-fields","thumbnail,trailText");
+   const response=await jsonRemote(api.toString(),{},7500);
+   if(response.response?.status!=="ok"||!Array.isArray(response.response.results))return [];
+   return response.response.results.map(article=>{
+    const title=String(article.webTitle||"").slice(0,180);
+    const url=safeHttps(article.webUrl,"theguardian.com");
+    const date=String(article.webPublicationDate||"");
+    const stamp=Date.parse(date);
+    if(!url||!Number.isFinite(stamp)||!rssArticleMatches(title,originalLatin,{year,people}))return null;
+    return {title,url,date:new Date(stamp).toISOString(),source:"The Guardian",
+      language:"en",matchType:"title_search",titleMatchVerified:true,
+      thumbnail:safeHttps(article.fields?.thumbnail,"guim.co.uk")};
+   }).filter(Boolean);
+  }catch{return [];}
+ })():Promise.resolve([]);
+ const [batches,guardianRows]=await Promise.all([Promise.all(requests),guardian]),seen=new Set(),seenTitle=new Set();
+ const articles=[...batches.flat(),...guardianRows].filter(x=>{
+  const key=normalizedHeadline(x.title),signature=key.replace(/\\s+/g,"");
+  if(seen.has(x.url)||seenTitle.has(signature))return false;
+  seen.add(x.url);seenTitle.add(signature);return true;
+ }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
  return {ok:true,kind,tmdbId:Number(id),year:Number(year)||null,
    status:articles.length?"ok":"no_data",articles,source:"Google News RSS title search"};
 }
