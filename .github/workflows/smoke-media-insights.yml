@@ -17,6 +17,8 @@ on:
       - 'scripts/test_media_layout_slots.mjs'
       - 'scripts/test_media_classification.mjs'
       - 'scripts/test_media_news_sources.mjs'
+      - 'scripts/test_media_domestic_trailers.mjs'
+      - 'data/media-domestic-trailers.json'
       - 'media-intel.css'
   workflow_dispatch:
 permissions:
@@ -37,7 +39,7 @@ jobs:
           node --check media-insights.js
           node --check media-toolkit.js
       - name: Test anonymous YouTube playback and media enrichment
-        run: node --test scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_discovery_order.mjs scripts/test_media_layout_slots.mjs scripts/test_media_classification.mjs scripts/test_media_news_sources.mjs
+        run: node --test scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_discovery_order.mjs scripts/test_media_layout_slots.mjs scripts/test_media_classification.mjs scripts/test_media_news_sources.mjs scripts/test_media_domestic_trailers.mjs
       - name: Verify exact title IDs and optional service behavior
         run: |
           python - <<'PY'
