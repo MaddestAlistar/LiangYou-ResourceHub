@@ -109,11 +109,30 @@ def main():
  for args in SOURCES:items+=collect(*args)
  items+=collect_rss()
  items+=collect_rss('搜狐娱乐','https://news.sohu.com/rss/yule.xml','news.sohu.com')
- items=sorted(items,key=lambda x:x["date"],reverse=True)
+ # Official Sina Entertainment RSS directory lists a dedicated film feed.
+ items+=collect_rss('新浪电影','https://rss.sina.com.cn/ent/film/focus7.xml','sina.com.cn')
+ # Older verified items are useful: most films aren't mentioned on today's front page.
+ # Retain 365 days of headlines without mirroring article bodies or loosening source URLs.
+ hosts={entry[0]:entry[3] for entry in SOURCES}
+ hosts.update({"中新网·文娱":"chinanews.com.cn","搜狐娱乐":"news.sohu.com","新浪电影":"sina.com.cn"})
+ unique={x["url"]:x for x in items}
+ try:
+  old=json.loads(DEST.read_text(encoding="utf-8")) if DEST.exists() else {}
+  for row in old.get("items",[]):
+   if not isinstance(row,dict) or row.get("source") not in hosts:continue
+   link=trusted(row.get("url",""),"https://"+hosts[row["source"]],hosts[row["source"]])
+   if not link or len(str(row.get("title","")))<7:continue
+   try:date=datetime.fromisoformat(str(row.get("date",""))).date()
+   except ValueError:continue
+   age=(datetime.now(timezone.utc).date()-date).days
+   if age<0 or age>365:continue
+   unique.setdefault(link,{**row,"url":link})
+ except (OSError,ValueError,TypeError):pass
+ items=sorted(unique.values(),key=lambda x:x["date"],reverse=True)
  if len(items)<3:
   print("CN_NEWS_NOT_ENOUGH_VERIFIED",len(items))
   return 0
- obj={"schema":1,"updatedAt":datetime.now(timezone.utc).isoformat(),"items":items[:120],
+ obj={"schema":1,"updatedAt":datetime.now(timezone.utc).isoformat(),"items":items[:1400],
       "note":"Source-attributed headline metadata and original links only; no news article bodies."}
  DEST.parent.mkdir(parents=True,exist_ok=True)
  DEST.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+"\n",encoding="utf8")
