@@ -27,14 +27,14 @@
   <link rel="stylesheet" href="./sports-personal.css?v=20261028.3">
   <link rel="stylesheet" href="./sports-share.css?v=20261028.1">
   <link rel="stylesheet" href="./sports-history.css?v=20261028.1">
-  <link rel="stylesheet" href="./media-intel.css?v=20261028.10">
+  <link rel="stylesheet" href="./media-intel.css?v=20261029.player1">
   <link rel="stylesheet" href="./media-toolkit.css?v=20261028.7">
   <link rel="stylesheet" href="./media-cn-enhance.css?v=20261028.3">
   <link rel="stylesheet" href="./media-boxoffice-rankings.css?v=20261029.1">
   <script src="./media-core.js?v=20261028.3" defer></script>
   <script src="./media-intel.js?v=20261028.11" defer></script>
   <script src="./media-toolkit.js?v=20261028.12" defer></script>
-  <script src="./media-insights.js?v=20261028.12" defer></script>
+  <script src="./media-insights.js?v=20261029.player1" defer></script>
   <script src="./media-cn-enhance.js?v=20261028.3" defer></script>
   <script src="./media-exact-scores.js?v=20261029.2" defer></script>
   <script src="./media-boxoffice-rankings.js?v=20261029.3" defer></script>
@@ -312,6 +312,19 @@
         <noscript>请开启 JavaScript 查看影视榜单。<a href="./data/media-intel.json">查看公开数据快照</a></noscript>
       </div>
       <dialog id="media-dialog" class="mi-dialog" aria-labelledby="media-dialog-title"><div class="mi-dialog-top"><button id="media-dialog-close" type="button">关闭</button></div><div id="media-dialog-body"></div></dialog>
+      <dialog id="media-trailer-dialog" class="mi-player-dialog" aria-labelledby="media-trailer-title">
+        <div class="mi-player-shell">
+          <div class="mi-player-header">
+            <div class="mi-player-heading"><span id="media-trailer-kicker" class="mi-player-kicker">视频情报 · 网页内播放</span><h2 id="media-trailer-title">预告片</h2></div>
+            <button type="button" id="media-trailer-close" class="mi-player-close" aria-label="关闭视频播放器">×</button>
+          </div>
+          <div class="mi-player-stage" id="media-trailer-stage"></div>
+          <div class="mi-player-footer">
+            <p id="media-trailer-help">如遇网络、地区或版权限制，可打开原视频。</p>
+            <a id="media-trailer-external" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">前往 YouTube 观看 ↗</a>
+          </div>
+        </div>
+      </dialog>
     </section>
     <section class="section dailyfree-section container" id="daily-free" aria-labelledby="daily-free-title">
       <div class="dailyfree-shell">
