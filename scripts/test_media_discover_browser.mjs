@@ -36,6 +36,12 @@ try{
  await page.route(/liangyou-streaming-availability\.maddestalistar\.workers\.dev\/api\/insights\//,route=>
    route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},
       body:JSON.stringify(fake)}));
+ await page.route('**/data/media-domestic-trailers.json',route=>
+   route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+     schema:1,items:[{kind,title,year:Number(year),platform:'bilibili',
+       videoId:'BV1zprUY2EGj',name:'Matched verified domestic trailer',
+       publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/'}]
+   })}));
  await page.route('**/data/media-world-news.json',route=>
    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
      schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' trailer news',
@@ -63,8 +69,25 @@ try{
  assert.deepEqual(result.ordered,['trailers','international','domestic','related','similar']);
  assert.ok(result.trailerCount>=1,'Trailer gallery must display sourced videos');
  assert.equal(result.hasPlayButton,true,'Official YouTube trailer should play in-page');
+ assert.equal(await page.locator('#media-dialog .mi-videos-block').count(),1,
+   'There must be exactly one multi-platform trailer section');
+ assert.equal(await page.locator('#media-dialog .mi-trailer-grid').count(),1,
+   'YouTube and Chinese platforms share one video grid');
+ await page.locator('#media-dialog [data-mi-play-cn="bilibili"]').first().click();
+ assert.equal(await page.locator('#media-trailer-dialog').evaluate(d=>d.open),true);
+ assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
+   /player\.bilibili\.com\/player\.html\?bvid=BV1zprUY2EGj/);
+ assert.equal(await page.locator('#media-trailer-switch').isHidden(),true);
+ await page.locator('#media-trailer-close').click();
+ assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
+   'Closing a domestic video stops playback');
+ await page.locator('#media-dialog [data-mi-play-video]').first().click();
+ assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
+   /youtube\.com\/embed\//);
+ assert.equal(await page.locator('#media-trailer-switch').isVisible(),true);
+ await page.locator('#media-trailer-close').click();
  for(const fragment of ['search.bilibili.com/all?keyword=','v.qq.com/x/search/?q=','1905.com/news/yg/']){
-   assert.equal(await page.locator('#media-dialog .mi-domestic-search a[href*="'+fragment+'"]').count(),1,
+   assert.equal(await page.locator('#media-dialog .mi-trailer-search a[href*="'+fragment+'"]').count(),1,
        'Mainland source link must be available without a provider API: '+fragment);
  }
  // Text in the DOM is not enough: CSS must leave all three cards actually visible.
@@ -90,6 +113,12 @@ try{
  try{
    await offlinePage.goto('http://127.0.0.1:8765/index.html#media',{waitUntil:'domcontentloaded',timeout:25000});
    await offlinePage.waitForFunction(()=>document.querySelectorAll('#media-grid .mi-card').length>=2,{timeout:30000});
+   await offlinePage.route('**/data/media-domestic-trailers.json',route=>
+     route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+       schema:1,items:[{kind,title,year:Number(year),platform:'bilibili',
+         videoId:'BV1zprUY2EGj',name:'Domestic fallback trailer',
+         verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/'}]
+     })}));
    await offlinePage.route('**/data/media-world-news.json',route=>
      route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
        schema:1,updatedAt:now,items:[{source:'Variety',title:worldName+' confirmed title match',
@@ -107,7 +136,7 @@ try{
      const d=document.querySelector('#media-dialog');
      return d?.querySelector('[data-mi-discover-slot="domestic"] .mi-cn-news-list a')&&
        d?.querySelector('[data-mi-discover-slot="international"] .mi-international-news')&&
-       d?.querySelector('[data-mi-discover-slot="trailers"] .mi-official-trailer-fallback .mi-caption')?.textContent.includes('预告片接口暂不可用');
+       d?.querySelector('[data-mi-discover-slot="trailers"] .mi-videos-block .mi-trailer-card [data-mi-play-cn="bilibili"]');
    },{timeout:20000});
    const offline=await offlinePage.evaluate(()=>{
      const d=document.querySelector('#media-dialog');
@@ -115,11 +144,12 @@ try{
      return {trailer:text('trailers'),international:text('international'),domestic:text('domestic')};
    });
    assert.doesNotMatch(offline.trailer,/正在核对可播放的预告片/,'No endless spinner when YouTube enrichment fails');
-   assert.equal((offline.trailer.match(/预告片接口暂不可用/g)||[]).length,1,
-     'Only one clear trailer error should be visible');
+   assert.match(offline.trailer,/Domestic fallback trailer/,'Domestic video stays visible without the Worker');
+   assert.equal(await offlinePage.locator('#media-dialog .mi-videos-block').count(),1);
+   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-grid').count(),1);
    if(worldName.length>=5)assert.match(offline.international,/Variety/,'Offline Worker must not block world RSS');
    assert.match(offline.domestic,/新浪电影/,'Offline Worker must not block Chinese RSS');
-   assert.equal(await offlinePage.locator('#media-dialog .mi-domestic-search a').count(),3,
+   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-search a').count(),3,
      'Mainland trailer source searches must survive Worker outages');
    assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
      'Offline news fallback has no unhandled renderer error');
