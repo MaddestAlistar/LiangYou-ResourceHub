@@ -39,7 +39,7 @@ await page.route('https://liangyou-taopiaopiao-lab.maddestalistar.workers.dev/**
 await page.route('**/data/media-cn-news.json',route=>route.fulfill({status:200,
  headers:{'content-type':'application/json'},
  body:JSON.stringify({schema:1,updatedAt:new Date().toISOString(),items:[
-  {source:'国家电影局',title:'最新电影行业信息',url:'https://www.chinafilm.gov.cn/xwzx/gzdt/',date:'2026-10-28'}
+  {source:'国家电影局',title:'《哪吒之魔童闹海》最新电影行业信息',url:'https://www.chinafilm.gov.cn/xwzx/gzdt/',date:'2026-10-28'}
  ]})}));
 try{
  await page.goto('http://127.0.0.1:8765/index.html#media',{waitUntil:'domcontentloaded',timeout:25000});
@@ -73,10 +73,10 @@ try{
  assert.ok((await page.locator('.mi-cn-boxoffice').first().innerText()).includes('院线单片票房不适用'));
  console.log('MAINLAND_NO_TV_BOX_OFFICE_OK');
  await send('discover');
- const drawer=page.locator('.mi-cn-news-drawer').last();
- await drawer.locator('summary').click();
- await drawer.locator('.mi-cn-news-list article').first().waitFor({timeout:12000});
- assert.match(await drawer.innerText(),/国家电影局/);
+ const relatedNews=page.locator('.mi-cn-title-news').last();
+ await relatedNews.locator('.mi-cn-news-list article').first().waitFor({timeout:12000});
+ assert.match(await relatedNews.innerText(),/哪吒之魔童闹海/);
+ assert.match(await relatedNews.innerText(),/国家电影局/);
  console.log('MAINLAND_FILM_NEWS_OK');
  assert.ok(hits.search>=2&&hits.movie>=1,'expected mocked provider queries');
 }finally{
