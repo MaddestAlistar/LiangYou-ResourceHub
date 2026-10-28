@@ -439,7 +439,7 @@
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
-      if(fallback)fallback.hidden=true;
+      if(fallback)fallback.remove();
     }
     const discoverUnavailable=()=>{
       if(!discoverSlots?.trailers)return false;
