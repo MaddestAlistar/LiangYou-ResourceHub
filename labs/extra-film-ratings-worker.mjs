@@ -169,6 +169,33 @@ export default {
           delivery,verifiedSnapshotAt:record.snapshotUpdatedAt||null},
           "Filmarks public webpage rating, not an authorized API. Verify source terms before redistribution.");
       });
+      // Simkl's ratings endpoint supports lookup by an exact TMDB/MAL external ID.
+      // It is not a fuzzy title search, and keys remain server-side.
+      const exactSimkl=u.pathname.match(/^\/api\/simkl\/by-(tmdb|mal)\/(?:(movie|tv|anime)\/)?([1-9]\d{0,9})$/);
+      if(exactSimkl){
+        const [_,source,kind,id]=exactSimkl;
+        if(source==="tmdb"&&!["movie","tv"].includes(kind))return json({code:400,error:"TMDB lookup requires movie or tv type"},400);
+        if(source==="mal"&&kind!=="anime")return json({code:400,error:"MAL lookup requires anime type"},400);
+        if(!env.SIMKL_CLIENT_ID)return json({code:503,error:"Simkl Client ID not configured"},503);
+        return await cached(req,ctx,async()=>{
+          const url=new URL("https://api.simkl.com/ratings");
+          url.searchParams.set(source,id);
+          if(source==="tmdb")url.searchParams.set("type",kind==="movie"?"movie":"show");
+          if(source==="mal")url.searchParams.set("type","anime");
+          url.searchParams.set("fields","simkl,year");
+          url.searchParams.set("client_id",env.SIMKL_CLIENT_ID);
+          const x=await retrieve(url.toString(),{"simkl-api-key":env.SIMKL_CLIENT_ID});
+          const sid=String(x.id||"");
+          const expected=kind==="movie"?"movies":kind==="tv"?"tv":"anime";
+          if(!/^[1-9]\d{1,9}$/.test(sid)||!String(x.link||"").startsWith("https://simkl.com/"+expected+"/"))
+            throw Error("simkl_identity_mismatch");
+          if(num(x.simkl?.rating,10)===null)return json({code:204,status:"no_rating",provider:"Simkl"},200);
+          return wrap("Simkl","https://api.simkl.com/ratings",{id:sid,matchedExternalId:id,matchedExternalSite:source,
+            title:null,rating:num(x.simkl.rating,10),scale:10,ratingCount:int(x.simkl?.votes),
+            releaseYear:x.release_year||null,pageUrl:x.link,
+            mappingMethod:source==="tmdb"?"official_simkl_tmdb_lookup":"official_simkl_mal_lookup"});
+        });
+      }
       const s=u.pathname.match(/^\/api\/simkl\/([1-9]\d{1,9})$/);
       if(s){
         if(!env.SIMKL_CLIENT_ID)return json({code:503,error:"Simkl Client ID not configured on Worker"},503);
