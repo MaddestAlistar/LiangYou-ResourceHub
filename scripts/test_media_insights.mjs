@@ -160,10 +160,13 @@ test('all catalog TV titles can use validated Chinese regional aliases to find i
  stub({tv:{
    first_air_date:'2011-04-17',
    alternative_titles:{results:[{iso_3166_1:'CN',title:'权力的游戏'}]},
-   videos:{results:[]}
+   videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official series trailer'}]}
   },
   youtubeSearch:[{id:{videoId:'CNAlias1234'}},{id:{videoId:'BadMatch001'}}],
   youtubeVideos:[
+   {id:'AbCdEf12345',snippet:{title:'Game of Thrones official trailer',channelTitle:'Official TV'},
+    status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT1M'},
+    statistics:{viewCount:'20000'}},
    {id:'CNAlias1234',snippet:{title:'《权力的游戏》幕后采访',channelTitle:'Film discussion'},
     status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT5M'},
     statistics:{likeCount:'930',viewCount:'90000'}},
