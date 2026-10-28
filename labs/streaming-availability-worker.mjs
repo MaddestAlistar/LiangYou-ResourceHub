@@ -389,14 +389,13 @@ function rssArticleMatches(headline,alias,context={}){
  return quoted||hasYear&&filmContext||person&&filmContext;
 }
 async function titleNews(kind,id,env){
- const item=await tmdbInfo(kind,id,env,true);
- // Use the localized title from the same numeric TMDB identity. The English
- // original alone cannot discover Chinese coverage of remakes or local releases.
- let local=null;
- try{
-  const v=await tmdbInfo(kind,id,env,true,"zh-CN");
-  if(Number(v.id)===Number(id))local=v;
- }catch{/* English title / regional alt names remain available. */}
+ // Fetch both language records concurrently: waiting for them sequentially
+ // regularly consumed the entire browser deadline on slower overseas networks.
+ const [item,possibleLocal]=await Promise.all([
+  tmdbInfo(kind,id,env,true),
+  tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)
+ ]);
+ const local=Number(possibleLocal?.id)===Number(id)?possibleLocal:null;
  const release=String(item.release_date||item.first_air_date||local?.release_date||local?.first_air_date||"");
  const year=release.slice(0,4);
  const original=String(item.original_title||item.original_name||"").trim();
