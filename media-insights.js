@@ -19,9 +19,9 @@
     if(!r.ok)throw Error('unavailable');
     return await r.json();
   }
-  function get(kind,id){
-    const key=kind+':'+id;
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=3').catch(e=>{cache.delete(key);throw e;}));
+  function get(kind,id,withMedia=false){
+    const key=kind+':'+id+':'+(withMedia?'discover':'base');
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=4'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   function item(label,value){
@@ -140,7 +140,7 @@
     }
     pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
     try{
-      const data=await get(kind,id);
+      const data=await get(kind,id,info.section==='discover');
       if(!pane.isConnected||data.ok!==true||data.kind!==kind||data.tmdbId!==id)return;
       pane.innerHTML=info.section==='profile'?profile(data):info.section==='people'?people(data):info.section==='boxoffice'?boxoffice(data):discover(data);
     }catch{
