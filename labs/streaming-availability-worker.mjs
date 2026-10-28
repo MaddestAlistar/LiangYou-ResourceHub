@@ -26,11 +26,41 @@ async function tmdbInfo(kind,id,env,withMedia=false){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
  if(!token&&!api)throw Error("TMDB credential missing");
  const u=new URL("https://api.themoviedb.org/3/"+kind+"/"+id);
- u.searchParams.set("append_to_response",withMedia?"external_ids,videos":"external_ids");u.searchParams.set("language","en-US");
+ u.searchParams.set("append_to_response","external_ids,keywords,"+(kind==="movie"?"release_dates":"content_ratings")+(withMedia?",videos":""));u.searchParams.set("language","en-US");
  if(!token)u.searchParams.set("api_key",api);
  const x=await jsonRemote(u.toString(),{headers:token?{Authorization:"Bearer "+token}:{}});
  if(Number(x.id)!==Number(id)||x.adult||!String(x.title||x.name||"").trim())throw Error("TMDB identity mismatch");
  return x;
+}
+// Source-only editorial metadata: neither infer age suitability nor invent warnings.
+function classificationFor(title,kind){
+ const uniq=list=>[...new Set((Array.isArray(list)?list:[]).filter(x=>typeof x==="string"&&x.trim().length>=2&&x.trim().length<=28).map(x=>x.trim()))];
+ const genres=uniq((title.genres||[]).map(g=>g?.name)).slice(0,6);
+ const raw=title.keywords?.keywords||title.keywords?.results||[];
+ const keywords=uniq(raw.map(k=>k?.name)).filter(x=>!/[<>{}\u0000-\u001f]/.test(x)).slice(0,6);
+ const allowed=["CN","HK","TW","US","GB","AU","SG","JP","KR"];
+ const invalid=new Set(["","NR","N/R","N/A","NA","NOT RATED","UNRATED","NONE","TBC","TBD","0"]);
+ const valid=x=>{
+  const v=String(x||"").trim().toUpperCase();
+  return !invalid.has(v)&&/^[A-Z0-9+ /-]{1,14}$/.test(v)?v:"";
+ };
+ let parental_rating=null;
+ if(kind==="movie"){
+  const entries=title.release_dates?.results||[];
+  for(const country of allowed){
+   const dates=entries.find(g=>g.iso_3166_1===country)?.release_dates||[];
+   const theatrical=[...new Set(dates.filter(x=>x?.type===2||x?.type===3).map(x=>valid(x.certification)).filter(Boolean))];
+   const all=[...new Set(dates.map(x=>valid(x?.certification)).filter(Boolean))];
+   const ratings=theatrical.length?theatrical:all;
+   if(ratings.length===1){parental_rating={country,rating:ratings[0],source:"TMDB"};break;}
+  }
+ }else{
+  for(const country of allowed){
+   const ratings=[...new Set((title.content_ratings?.results||[]).filter(x=>x?.iso_3166_1===country).map(x=>valid(x.rating)).filter(Boolean))];
+   if(ratings.length===1){parental_rating={country,rating:ratings[0],source:"TMDB"};break;}
+  }
+ }
+ return {genres,keywords,parental_rating};
 }
 async function mediaInsights(kind,id,env,withMedia=false){
  const title=await tmdbInfo(kind,id,env,withMedia), ext=title.external_ids||{};
@@ -39,6 +69,7 @@ async function mediaInsights(kind,id,env,withMedia=false){
  const wikidata=/^Q[1-9]\d{0,11}$/.test(ext.wikidata_id||"")?ext.wikidata_id:null;
  const result={ok:true,kind,tmdbId:Number(id),imdbId:imdb,tvdbId:tvdb,wikidataId:wikidata,
    originalTitle:title.original_title||title.original_name||"",title:title.title||title.name,releaseDate:title.release_date||title.first_air_date||"",
+   classification:classificationFor(title,kind),
    checkedAt:new Date().toISOString(),sources:{},artwork:[],tvdb:null,wikidata:null,boxOffice:null,news:[],trailers:[],suggestions:[],financials:kind==="movie"?{revenueUSD:Number.isFinite(title.revenue)&&title.revenue>0?title.revenue:null,budgetUSD:Number.isFinite(title.budget)&&title.budget>0?title.budget:null,source:"TMDB",region:"not_specified"}:null};
  const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
  const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&v.official===true&&
