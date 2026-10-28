@@ -1,0 +1,81 @@
+name: Probe China film API providers
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/probe-cn-film-apis.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Read-only connectivity and data validation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.request, urllib.parse, urllib.error
+          UA = "LiangYou-ResourceHub/1.0 (GitHub Actions API probe; read only)"
+          def get(url, params=None):
+              if params: url += '?' + urllib.parse.urlencode(params)
+              req=urllib.request.Request(url, headers={"User-Agent":UA,"Accept":"application/json, text/html;q=0.8"})
+              try:
+                  with urllib.request.urlopen(req,timeout=18) as f:
+                      raw=f.read(256000); code=f.status; ct=f.headers.get("Content-Type","")
+              except urllib.error.HTTPError as e:
+                  raw=e.read(4096); code=e.code; ct=e.headers.get("Content-Type","")
+              except Exception as e:
+                  return {"http":None,"result":"network_error","error":type(e).__name__}
+              try: body=json.loads(raw)
+              except (ValueError,UnicodeError): body=None
+              return {"http":code,"body":body,"content_type":ct,"text":raw[:16000].decode("utf-8","replace")}
+          def emit(name, result, **fields):
+              print("CN_FILM_PROBE "+json.dumps({"provider":name,"result":result,**fields},ensure_ascii=False),flush=True)
+          for name,path in [
+              ("60s douban weekly","/v2/douban/weekly/movie"),
+              ("60s maoyan realtime movie","/v2/maoyan/realtime/movie"),
+              ("60s maoyan web series","/v2/maoyan/realtime/web")
+          ]:
+              r=get("https://60s.viki.moe"+path); b=r.get("body") or {}
+              data=b.get("data") if isinstance(b,dict) else None
+              count=len(data) if isinstance(data,list) else len(data.get("list",[])) if isinstance(data,dict) else 0
+              valid=r.get("http")==200 and isinstance(b,dict) and b.get("code")==200 and count>0
+              emit(name,"data_ok" if valid else "not_confirmed",http=r.get("http"),source_code=b.get("code") if isinstance(b,dict) else None,items=count,error=r.get("error"))
+          r=get("https://www.wikidata.org/w/api.php",{
+              "action":"wbgetentities","ids":"Q172241","props":"claims","format":"json"})
+          x=((r.get("body") or {}).get("entities") or {}).get("Q172241",{})
+          claims=x.get("claims") or {}
+          def vals(prop):
+              result=[]
+              for v in claims.get(prop,[]):
+                  try: result.append(v["mainsnak"]["datavalue"]["value"])
+                  except (KeyError,TypeError): pass
+              return result
+          douban=vals("P4529"); imdb=vals("P345"); tmdb=vals("P4947")
+          ok=("1292052" in douban and "tt0111161" in imdb)
+          emit("Wikidata IMDb Douban link","data_ok" if ok else "not_confirmed",
+              http=r.get("http"),qid="Q172241",imdb=imdb[:3],douban=douban[:3],tmdb=tmdb[:3],error=r.get("error"))
+          r=get("https://api.movie-pilot.org/openapi.json")
+          b=r.get("body") or {}
+          paths=b.get("paths",{}) if isinstance(b,dict) else {}
+          emit("MoviePilot OpenAPI document","data_ok" if r.get("http")==200 and paths else "not_confirmed",
+              http=r.get("http"),path_count=len(paths),
+              has_douban_detail="/api/v1/douban/{doubanid}" in paths,error=r.get("error"))
+          r=get("https://api.movie-pilot.org/api/v1/douban/1292052")
+          b=r.get("body")
+          valid=r.get("http")==200 and isinstance(b,dict) and bool(b)
+          emit("MoviePilot public unauthenticated detail","data_ok" if valid else "authentication_or_unavailable",
+              http=r.get("http"),is_json=isinstance(b,(dict,list)),error=r.get("error"))
+          r=get("https://v.apiopt.com/api/v1/live/douban/movie/rank")
+          b=r.get("body")
+          emit("Yuexiang Douban list without key","data_ok" if r.get("http")==200 and isinstance(b,dict) and bool(b.get("result")) else "requires_key_or_unavailable",
+              http=r.get("http"),is_json=isinstance(b,(dict,list)),error=r.get("error"))
+          r=get("https://wmdb.tv/en")
+          emit("WMDB website","reachable" if r.get("http")==200 and "Douban" in r.get("text","") else "not_confirmed",
+              http=r.get("http"),has_douban="Douban" in r.get("text",""),error=r.get("error"))
+          r=get("https://wmdb.tv/openapi.json")
+          b=r.get("body")
+          emit("WMDB public OpenAPI","data_ok" if r.get("http")==200 and isinstance(b,dict) and bool(b.get("paths")) else "not_confirmed",
+              http=r.get("http"),has_schema=bool(isinstance(b,dict) and b.get("paths")),error=r.get("error"))
+          PY
