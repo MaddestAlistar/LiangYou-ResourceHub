@@ -100,15 +100,20 @@
     let content='<section class="mi-insight-block"><h3>'+t('跨站资料补充','Extended metadata')+'</h3>';
     if(tv)content+='<div class="mi-insight-facts">'+item('TheTVDB ID',tv.id)+item(t('剧集首播','First aired'),tv.firstAired)+item(t('剧集状态','Series status'),tv.status)+item(t('季数','Season count'),tv.seasons)+'</div><div class="mi-insight-links">'+a(tv.url,'TheTVDB')+'</div><p class="mi-caption">'+t('TheTVDB 的 score 代表热度，不作观众评分。','TheTVDB score measures popularity, not audience rating.')+'</p>';
     if(art.length)content+='<details class="mi-artwork-drawer"><summary>'+t('作品画作 · Fanart.tv','Artwork · Fanart.tv')+' ('+art.length+')</summary><div class="mi-artwork-grid">'+art.map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(x.url)+'" alt="'+esc(x.type)+'" loading="lazy" decoding="async"></a>').join('')+'</div><p class="mi-caption">'+t('Fanart.tv 原始图片，版权归相应权利人。','Images sourced from Fanart.tv; rights belong to their owners.')+'</p></details>';
-    if(d.wikidata)content+='<p class="mi-caption">'+t('TMDB 提供的 Wikidata 标识（未独立核实实体内容）：','Wikidata ID from TMDB (entity content not independently verified): ')+a(d.wikidata.url,(d.wikidata.label||'Wikidata')+' · '+d.wikidata.id)+'</p>';
-    if(!tv&&!art.length&&!d.wikidata)content+='<p class="mi-caption">'+t('这部作品暂没有可验证的补充资料，已有 TMDB 档案保持不变。','No independently verified supplements for this title.')+'</p>';
+    if(d.wikidata?.verified){
+      content+='<div class="mi-insight-links">'+a(d.wikidata.url,'Wikidata · '+d.wikidata.id)+
+        (d.wikipedia?a(d.wikipedia.url,'Wikipedia · '+d.wikipedia.language.toUpperCase()):'')+'</div>';
+      content+='<p class="mi-caption">'+t('百科实体已与 TMDB / IMDb 原始标识交叉核验；百科不提供实时播放渠道。','Wikimedia entity cross-checked against TMDB / IMDb. Wikipedia does not verify live streaming availability.')+'</p>';
+    }
+    if(!tv&&!art.length&&!d.wikidata?.verified)content+='<p class="mi-caption">'+t('这部作品暂没有可验证的补充资料，已有 TMDB 档案保持不变。','No independently verified supplements for this title.')+'</p>';
     return content+serviceNames(d)+'</section>';
   }
   function people(d){
     return '<section class="mi-insight-block"><h3>'+t('跨库关系与标识','Entity relationships')+'</h3>'+
       '<p class="mi-caption">'+t('演职信息按 TMDB 原始人物链接展示。只有跨站 ID 可核验时才加入对应实体，避免同名人员串档。','TMDB credit links remain canonical; external entities require exact IDs.')+'</p>'+
       '<div class="mi-insight-facts">'+item('TMDB',d.tmdbId)+item('IMDb',d.imdbId)+item('TheTVDB',d.tvdbId)+item('Wikidata',d.wikidataId)+'</div>'+
-      (d.wikidata?'<div class="mi-insight-links">'+a(d.wikidata.url,t('查看 Wikidata 作品实体','Open Wikidata entity'))+'</div>':'')+
+      (d.wikidata?.verified?'<div class="mi-insight-links">'+a(d.wikidata.url,t('查看已核验 Wikidata 实体','View verified Wikidata entity'))+
+        (d.wikipedia?a(d.wikipedia.url,'Wikipedia · '+d.wikipedia.language.toUpperCase()):'')+'</div>':'')+
       '</section>';
   }
   function boxoffice(d){
@@ -122,7 +127,8 @@
     return '<section class="mi-insight-block"><h3>'+t('单片票房与财务信息','Film box office and financials')+'</h3>'+
       (d.boxOffice?'<div class="mi-insight-highlight"><small>'+t('美国本土票房 · OMDb 汇总','US domestic gross · OMDb')+'</small><strong>'+esc(d.boxOffice.amount)+'</strong>'+a(d.boxOffice.sourceUrl,'IMDb')+'</div>':'')+
       (cards.length?'<div class="mi-cn-box-grid">'+cards.map(([label,v])=>'<div><small>'+esc(label)+'</small><strong>'+esc(usd(v))+'</strong></div>').join('')+'</div>':'')+
-      (!d.boxOffice&&!cards.length?'<p class="mi-caption">'+t('暂无经过核对的单片收入数据。','No matching individual film financial figures yet.')+'</p>':'')+
+      (d.wikidataBoxOffice&&d.wikidata?.verified?'<div class="mi-insight-highlight"><small>'+t('Wikidata 收录票房 · 美元（地区与统计时间未注明）','Wikidata box office · USD (region and reporting date unspecified)')+'</small><strong>'+esc(usd(d.wikidataBoxOffice.amount))+'</strong>'+a(d.wikidataBoxOffice.sourceUrl,'Wikidata')+'</div>':'')+
+      (!d.boxOffice&&!cards.length&&!d.wikidataBoxOffice?'<p class="mi-caption">'+t('暂无经过核对的单片收入数据。','No matching individual film financial figures yet.')+'</p>':'')+
       '<p class="mi-caption">'+t('美元金额来自不同来源、不同统计口径。TMDB revenue 不等同于已验证的全球院线票房；预算不属于票房。','USD figures can have different scopes. TMDB revenue is not a verified worldwide theatrical gross, and budget is not box office.')+'</p>'+
       '</section>';
   }
