@@ -48,13 +48,19 @@ function movie(x,i){
     rank:pick(x,"top","rank")||i+1,
     title:name.trim(),
     movieId:pick(x,"movieId","movie_id","id"),
-    cumulativeBoxOffice:pick(x,"sumBoxDesc","totalBoxOffice","totalBox","sumBox"),
+    // Global feed "rawValue" is a currency total and "box" is in 100M units.
+    // Convert only when both fields agree (within rounding tolerance).
+    cumulativeBoxOffice:pick(x,"sumBoxDesc","totalBoxOffice","totalBox","sumBox") ||
+      (Number.isFinite(Number(x.box)) && Number.isFinite(Number(x.rawValue)) &&
+       Number(x.box)>0 && Math.abs(Number(x.box)*100000000-Number(x.rawValue))/Number(x.rawValue)<0.01
+        ? String(x.box)+"亿" : null),
+    rawBoxOfficeValue:pick(x,"rawValue"),
     currentBoxOffice:pick(x,"boxDesc","boxOffice","todayBox","realtimeBoxOffice"),
     boxOfficeShare:pick(x,"boxRate","boxRateDesc","boxOfficeRate"),
     schedulingShare:pick(x,"showCountRate","showCountRateDesc","scheduleRate"),
     showCount:pick(x,"showCount"),
     attendance:pick(x,"avgSeatView","attendance"),
-    releaseInfo:pick(x,"releaseInfo")
+    releaseInfo:pick(x,"releaseInfo","releaseTime")
   };
 }
 function key(s){return String(s||"").normalize("NFKC").toLowerCase().trim().replace(/\s+/g,"");}
