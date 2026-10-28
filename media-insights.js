@@ -291,8 +291,29 @@
     ).slice(0,8);
     drainVisibleClassifications();
   });
+  async function showWikimediaInToolkit(info){
+    const kind=['movie','tv'].includes(info?.kind)?info.kind:null;
+    const id=Number(info?.tmdbId);
+    if(!kind||!Number.isSafeInteger(id)||id<1)return;
+    try{
+      const d=await get(kind,id,false);
+      if(d?.ok!==true||d.tmdbId!==id||d.kind!==kind||!d.wikidata?.verified)return;
+      const host=root.querySelector('#media-dialog .mi-toolkit');
+      if(!host||host.dataset.mtkId!==String(info.id))return;
+      if(!host.querySelector('.mtk-wikimedia')){
+        const section=document.createElement('div');
+        section.className='mtk-wikimedia';
+        section.innerHTML='<p class="mi-caption">'+t('百科作品资料核对（不代表此平台可播放）','Verified encyclopedia references (not streaming availability)')+'</p>'+
+          '<div class="mi-insight-links">'+a(d.wikidata.url,'Wikidata')+
+          (d.wikipedia?a(d.wikipedia.url,'Wikipedia · '+d.wikipedia.language.toUpperCase()):'')+'</div>';
+        host.appendChild(section);
+      }
+    }catch{/* No sourced wiki data: do not show a placeholder. */}
+  }
   async function display(info){
-    if(!info||!['ratings','profile','people','boxoffice','discover'].includes(info.section))return;
+    if(!info)return;
+    if(info.section==='watch'){showWikimediaInToolkit(info);return;}
+    if(!['ratings','profile','people','boxoffice','discover'].includes(info.section))return;
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target)return;
     if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
