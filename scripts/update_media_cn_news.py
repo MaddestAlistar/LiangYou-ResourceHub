@@ -66,9 +66,41 @@ def collect(name,url,pattern,host):
   if any(x["url"]==urlValue for x in found):continue
   found.append({"source":name,"title":heading,"url":urlValue,"date":day})
  return found[:12]
+def collect_rss():
+ """Official China News Service entertainment RSS; film-related titles only."""
+ from email.utils import parsedate_to_datetime
+ from xml.etree import ElementTree as ET
+ rss="https://www.chinanews.com.cn/rss/culture.xml"
+ try:
+  req=Request(rss,headers={"User-Agent":"Mozilla/5.0 (compatible; LiangYouHeadlines/1.0)","Accept":"application/rss+xml,application/xml"})
+  with urlopen(req,timeout=18) as response:
+   raw=response.read(450000)
+  doc=ET.fromstring(raw)
+ except Exception as error:
+  print("CN_NEWS_UNAVAILABLE", "中新网文娱RSS",type(error).__name__)
+  return []
+ out=[]
+ for item in doc.findall(".//item")[:35]:
+  title=text(item.findtext("title") or "")
+  if not title or not any(k in title for k in ("电影","影片","票房","影展","影节","院线","银幕","影迷","导演","新片","影视","剧集")):continue
+  link=str(item.findtext("link") or "").strip()
+  if link.startswith("http://") and "chinanews.com" in link:link="https://"+link[7:]
+  url=trusted(link,rss,"chinanews.com.cn") or trusted(link,rss,"chinanews.com")
+  if not url:continue
+  try:
+   ts=parsedate_to_datetime(str(item.findtext("pubDate") or ""))
+   if ts.tzinfo is None:ts=ts.replace(tzinfo=timezone.utc)
+   date=ts.astimezone(timezone.utc).date().isoformat()
+   if (datetime.now(timezone.utc)-ts.astimezone(timezone.utc)).days>30:continue
+  except Exception:continue
+  if any(x["url"]==url for x in out):continue
+  out.append({"source":"中新网·文娱","title":title[:180],"url":url,"date":date})
+ return out[:7]
+
 def main():
  items=[]
  for args in SOURCES:items+=collect(*args)
+ items+=collect_rss()
  items=sorted(items,key=lambda x:x["date"],reverse=True)
  if len(items)<3:
   print("CN_NEWS_NOT_ENOUGH_VERIFIED",len(items))
