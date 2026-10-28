@@ -234,3 +234,22 @@
 #media .mi-player-footer .mi-player-switch:hover{background:rgba(90,127,192,.3)}
 @media(max-width:760px){#media .mi-player-footer .mi-player-actions{width:100%;justify-content:space-between;gap:7px}#media .mi-player-footer .mi-player-actions a{margin-left:0}}
 @media(max-width:355px){#media .mi-player-stage{min-height:200px}}
+
+/* Sourced film tags and regional parental classifications; absent data creates no UI. */
+#media .mi-card-classification{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0 0 10px;min-width:0}
+#media .mi-tag-pill,#media .mi-age-pill{display:inline-flex;align-items:center;max-width:100%;min-width:0;border:1px solid rgba(146,175,217,.32);border-radius:6px;background:rgba(100,134,184,.12);color:#bfcfeb;padding:4px 7px;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+#media .mi-keyword-pill{border-color:rgba(155,140,213,.34);background:rgba(117,94,179,.11);color:#d2c4ed}
+#media .mi-age-pill{color:#e9d19c;border-color:rgba(220,181,114,.42);background:rgba(210,174,110,.11);font-weight:600}
+#media .mi-classification-detail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 16px}
+#media .mi-classification-group{min-width:0;padding:12px;border:1px solid rgba(156,180,216,.22);border-radius:11px;background:rgba(12,23,39,.72)}
+#media .mi-classification-group>small{display:block;font-size:11px;color:#a8b9d2;margin-bottom:9px;font-weight:600}
+#media .mi-classification-pills{display:flex;flex-wrap:wrap;gap:6px}
+#media .mi-parental-guide{border-color:rgba(222,185,123,.32);background:rgba(50,43,34,.26)}
+#media .mi-parental-guide .mi-caption{font-size:10px;line-height:1.7;margin:8px 0 0;color:#9faec8}
+@media(max-width:760px){
+ #media .mi-card-classification{margin-bottom:8px;gap:4px}
+ #media .mi-card-classification .mi-tag-pill,#media .mi-card-classification .mi-age-pill{font-size:9px;padding:3px 5px;border-radius:5px}
+ #media .mi-classification-detail{grid-template-columns:1fr;gap:8px;margin:7px 0 13px}
+ #media .mi-classification-group{padding:10px}
+ #media .mi-classification-pills .mi-tag-pill,#media .mi-classification-pills .mi-age-pill{font-size:10px}
+}
