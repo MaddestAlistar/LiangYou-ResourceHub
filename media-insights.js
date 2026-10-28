@@ -171,7 +171,8 @@
     const host=document.createElement('section');
     host.className='mi-insight-block mi-archive-panel';
     host.innerHTML='<p class="mi-caption">'+t('正在核查北美历史票房档案…','Checking historical North American grosses…')+'</p>';
-    target.appendChild(host);
+    const slot=target.querySelector('[data-mi-boxoffice-slot="archive"]');
+    if(slot)slot.appendChild(host);else target.appendChild(host);
     try{
       const response=await fetch('https://boxofficehistory.com/api/v1/lookup/tmdb/'+id+'.json',{
         signal:AbortSignal.timeout(10000),mode:'cors'});
@@ -200,7 +201,8 @@
     const host=document.createElement('section');
     host.className='mi-insight-block mi-mal-panel';
     host.innerHTML='<p class="mi-caption">'+t('核对 MyAnimeList 作品标识…','Checking MyAnimeList identity…')+'</p>';
-    target.appendChild(host);
+    const ratingsSlot=info.section==='ratings'?target.querySelector('[data-mi-ratings-slot="mal"]'):null;
+    if(ratingsSlot)ratingsSlot.appendChild(host);else target.appendChild(host);
     try{
       const primary=await officialMalCache(id);
       const snapshot=primary?null:await sourceSnapshot();
@@ -239,7 +241,10 @@
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     if(discoverSlots?.trailers)discoverSlots.trailers.prepend(pane);
-    else target.appendChild(pane);
+    else if(info.section==='boxoffice'){
+      const slot=target.querySelector('[data-mi-boxoffice-slot="international"]');
+      if(slot)slot.appendChild(pane);else target.appendChild(pane);
+    }else target.appendChild(pane);
     if(!kind||!Number.isSafeInteger(id)||id<1){
       pane.innerHTML='<p class="mi-caption">'+t('未建立准确的 TMDB ID，暂不自动关联外部数据。','No verified TMDB identity; external data will not be merged.')+'</p>';
       return;
