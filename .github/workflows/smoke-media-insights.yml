@@ -31,7 +31,7 @@ jobs:
           import json,urllib.request,urllib.error,time
           base='https://liangyou-streaming-availability.maddestalistar.workers.dev'
           for kind,id in [('movie',550),('tv',1399)]:
-              u=f'{base}/api/insights/{kind}/{id}'
+              u=f'{base}/api/insights/{kind}/{id}?schema=4&media=1'
               req=urllib.request.Request(u,headers={'Accept':'application/json','User-Agent':'LiangYou-Insights-Smoke/1.0'})
               with urllib.request.urlopen(req,timeout=65) as r: data=json.load(r)
               assert data.get('ok') is True,(kind,data)
@@ -46,6 +46,14 @@ jobs:
                   assert n.get("url","").startswith("https://www.theguardian.com/"),n
               assert all(p.get('url','').startswith('https://') for p in data['artwork']),data
               print('VERIFIED_ID',kind,id,'SOURCES',data['sources'])
+          try:
+              with urllib.request.urlopen(base+'/api/news/film',timeout=25) as r: film_news=json.load(r)
+              assert film_news.get('status') in ('ok','no_data','not_configured'),film_news
+              assert isinstance(film_news.get('articles'),list),film_news
+              print('GUARDIAN_LATEST_FILM',film_news['status'],len(film_news['articles']))
+          except urllib.error.HTTPError as err:
+              if err.code not in (403,429,502,503): raise
+              print('GUARDIAN_LATEST_FILM_UPSTREAM_UNAVAILABLE',err.code)
           try:
               with urllib.request.urlopen(base+'/api/anime/mal/1',timeout=25) as r: mal=json.load(r)
               assert mal.get("ok") is True and mal.get("status") in ("ok","not_configured"),mal
