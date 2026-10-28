@@ -200,7 +200,7 @@ def guardian():
     return report("The Guardian Open Platform", status, ok,
                   "film_articles=" + str(len(rows)) + ", total_search_matches=" + str(d.get("total")), True, err)
 
-CHECKS = [jikan, mal, omdb, mdblist, kofic, tastedive, fanart, tvdb, youtube, gdelt, kitsu, boxoffice, introdb, guardian]
+CHECKS = [mal, omdb, mdblist, kofic, tastedive, fanart, tvdb, youtube, kitsu, boxoffice, guardian]
 
 def main():
     results = {}
