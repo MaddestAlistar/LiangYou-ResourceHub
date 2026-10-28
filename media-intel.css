@@ -61,3 +61,40 @@
   #media .mi-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:355px){#media .mi-related{grid-template-columns:1fr}}
+
+
+/* Six-domain movie dossier: dense but readable on iPhone. */
+#media .mi-detail-nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;border-bottom:1px solid var(--mi-line);padding:9px 0}
+#media .mi-detail-nav button{min-width:0;white-space:nowrap;font-size:11px;padding:9px 4px;line-height:1.25}
+#media .mi-detail-nav button[aria-pressed=true]{background:linear-gradient(135deg,#e2c18c26,#a2bcdd15);border-color:#e8c99177}
+#media .mi-insight-host{margin-top:10px}
+#media .mi-insight-block{border-top:1px solid var(--mi-line);padding-top:14px;margin-top:14px}
+#media .mi-insight-block h3{font-size:14px;color:#e2eaf8;margin:0 0 8px}
+#media .mi-insight-links{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+#media .mi-insight-block a{color:#dcc89b;font-size:11px;overflow-wrap:anywhere}
+#media .mi-insight-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+#media .mi-insight-fact{min-width:0;display:grid;gap:4px;padding:9px;border-radius:9px;background:#111d2f;border:1px solid #a4bbdd2a}
+#media .mi-insight-fact small{font-size:10px;color:#9daec9}
+#media .mi-insight-fact strong{font-size:12px;line-height:1.45;color:#ebdec0;font-weight:600;overflow-wrap:anywhere}
+#media .mi-insight-highlight{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #d4bb8e35;background:#cfb67b12;border-radius:10px;padding:11px;margin:11px 0}
+#media .mi-insight-highlight small{color:#b4bfd5;font-size:11px}
+#media .mi-insight-highlight strong{font-size:22px;color:#e9d29e}
+#media .mi-insight-news{display:grid;gap:7px;margin-top:10px}
+#media .mi-insight-news>div{padding:10px 11px;background:#0d1829;border-radius:9px;border:1px solid #9aabc527}
+#media .mi-insight-news a{display:block;line-height:1.5}
+#media .mi-insight-news small{display:block;color:#8c9fb9;margin-top:4px;font-size:10px}
+#media .mi-artwork-drawer,#media .mi-rankings-drawer{background:#0d1829;border:1px solid #aabdd52f;border-radius:10px;padding:10px;margin:10px 0}
+#media .mi-artwork-drawer summary,#media .mi-rankings-drawer summary{font-size:11px;color:#d7c39d;cursor:pointer}
+#media .mi-artwork-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+#media .mi-artwork-grid a{min-width:0}
+#media .mi-artwork-grid img{display:block;width:100%;height:100px;object-fit:cover;border-radius:7px}
+#media .mi-kr-boxoffice ol{padding-left:20px;margin:8px 0}
+#media .mi-kr-boxoffice li{font-size:12px;margin:7px 0;line-height:1.5}
+#media .mi-kr-boxoffice li small{color:#91a5c5;margin-left:9px}
+@media(max-width:760px){
+ #media .mi-detail-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #media .mi-detail-nav button{font-size:11px;padding:9px 3px;border:1px solid #9eaecf2d;border-radius:9px;background:#101c2c}
+ #media .mi-insight-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #media .mi-insight-highlight strong{font-size:18px}
+ #media .mi-people{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
