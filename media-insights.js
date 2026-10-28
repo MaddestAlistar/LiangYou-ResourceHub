@@ -53,9 +53,9 @@
     const age=Date.now()-Date.parse(section?.checked_at||'');
     return Number.isFinite(age)&&age>=0&&age<72*3600000&&section?.status==='ok';
   }
-  function get(kind,id,withMedia=false){
-    const key=kind+':'+id+':'+(withMedia?'discover':'base');
-    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=6'+(withMedia?'&media=1':'')).catch(e=>{cache.delete(key);throw e;}));
+  function get(kind,id,withMedia=false,withWiki=false){
+    const key=kind+':'+id+':'+(withMedia?'discover':'base')+':'+(withWiki?'wikimedia':'plain');
+    if(!cache.has(key))cache.set(key,json('/api/insights/'+kind+'/'+id+'?schema=8'+(withMedia?'&media=1':'')+(withWiki?'&wiki=1':'')).catch(e=>{cache.delete(key);throw e;}));
     return cache.get(key);
   }
   const classificationCache=new Map();
@@ -318,7 +318,7 @@
     const id=Number(info?.tmdbId);
     if(!kind||!Number.isSafeInteger(id)||id<1)return;
     try{
-      const d=await get(kind,id,false);
+      const d=await get(kind,id,false,true);
       if(d?.ok!==true||d.tmdbId!==id||d.kind!==kind||!d.wikidata?.verified)return;
       const host=root.querySelector('#media-dialog .mi-toolkit');
       if(!host||host.dataset.mtkId!==String(info.id))return;
@@ -362,7 +362,7 @@
     }
     pane.innerHTML='<p class="mi-caption">'+t('正在核对补充数据…','Checking verified external data…')+'</p>';
     try{
-      const data=await get(kind,id,info.section==='discover');
+      const data=await get(kind,id,info.section==='discover',['profile','people','boxoffice'].includes(info.section));
       if(!pane.isConnected)return;
       if(data.ok!==true||data.kind!==kind||data.tmdbId!==id){
         pane.innerHTML='<p class="mi-caption">'+t('补充接口返回的作品标识不匹配，已跳过这批资料。','Additional data did not match the verified title ID and was skipped.')+'</p>';
