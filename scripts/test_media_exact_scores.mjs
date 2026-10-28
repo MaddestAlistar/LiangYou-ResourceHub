@@ -68,7 +68,7 @@ try{
  await page.locator('#media-dialog [data-mi-detail="boxoffice"]').click();
  const footer=page.locator('#media-boxoffice-rankings');
  await footer.locator('.mi-ranking-drawer').first().waitFor({timeout:8000});
- assert.equal(await footer.locator('.mi-ranking-drawer').count(),3);
+ assert.equal(await footer.locator('.mi-ranking-drawer').count(),4);
  assert.equal(await page.locator('#media-dialog .mi-rankings-drawer').count(),0);
  assert.equal(await page.locator('#media-dialog .mtk-rankings').count(),0);
  const desc=await footer.locator('[data-mi-ranking="world"] summary').innerText();
@@ -78,4 +78,8 @@ try{
  await footer.locator('[data-mi-ranking="world"] .mi-ranking-list li').first().waitFor({timeout:9000});
  assert.match(await footer.locator('[data-mi-ranking="world"]').innerText(),/2019/);
  console.log('HISTORICAL_WORLDWIDE_CHART_OK');
+ await footer.locator('[data-mi-ranking="world-current"] summary').click();
+ await footer.locator('[data-mi-ranking="world-current"] .mi-ranking-list li').first().waitFor({timeout:10000});
+ assert.match(await footer.locator('[data-mi-ranking="world-current"]').innerText(),/社区/);
+ console.log('CURRENT_WIKIPEDIA_WORLDWIDE_SNAPSHOT_OK');
 }finally{await context.close();await browser.close();}
