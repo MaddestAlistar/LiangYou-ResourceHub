@@ -68,7 +68,7 @@ def send(provider,label,result):
                     out["resultCount"]=len(data["results"])
     print("FIVE_RATING_PROBE "+json.dumps(out,ensure_ascii=False,default=str),flush=True)
 
-client=next((os.environ.get(k,"").strip() for k in ["SIMKL_CLIENT_ID_V2","SIMKL_V2_CLIENT_ID","SIMKL_CLIENT_ID","SIMKL_CLIENT_KEY","SIMKL_API_KEY"] if os.environ.get(k,"").strip()),"")
+client=next((os.environ.get(k,"").strip() for k in ["SIMKL_CLIENT_ID_V2","SIMKL_V2_CLIENT_ID","SIMKL_CLIENT_ID","SIMKL_CLIENT_KEY","SIMKL_API_KEY","SIMKL_PUBLIC_VAR","SIMKL_V2_PUBLIC_VAR"] if os.environ.get(k,"").strip()),"")
 if client:
     params=urllib.parse.urlencode({"simkl":"10280","fields":"simkl,ext,year","client_id":client})
     send("simkl","10280",fetch("https://api.simkl.com/ratings?"+params,headers={"simkl-api-key":client}))
