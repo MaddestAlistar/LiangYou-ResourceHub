@@ -16,8 +16,8 @@ jobs:
     steps:
       - name: Check existing Cloudflare deployment credentials
         env:
-          CF_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           test -n "$CF_TOKEN" && test -n "$CF_ACCOUNT" || { echo "::error::Missing Cloudflare secrets"; exit 1; }
       - uses: actions/setup-node@v4
@@ -62,8 +62,8 @@ jobs:
       - name: Install dependencies and deploy as separate Worker
         working-directory: film-60s
         env:
-          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm install --no-audit --no-fund --ignore-scripts
           npx wrangler@4 deploy liangyou-film-worker.ts --name liangyou-film-60s --config wrangler.toml
