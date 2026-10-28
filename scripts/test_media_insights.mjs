@@ -149,6 +149,38 @@ test('TMDB-ID news search accepts only matching film titles, not general arts ne
   assert.ok(body.articles.every(x=>!x.title.includes('文学馆')));
  }finally{globalThis.fetch=old;}
 });
+test('Moana remake and Obsession movie headlines are separated from unrelated short-word coverage',async()=>{
+ const old=globalThis.fetch;
+ const today=new Date(Date.now()-86400000).toUTCString();
+ const feed=titles=>new Response('<rss><channel>'+titles.map((t,i)=>
+  '<item><title>'+t+'</title><link>https://news.google.com/rss/articles/news-'+i+
+  '</link><pubDate>'+today+'</pubDate><source>Film Publisher</source></item>').join('')+
+  '</channel></rss>',{status:200,headers:{'content-type':'application/rss+xml'}});
+ for(const work of [
+  {original:'Moana',local:'海洋奇缘：启航',genre:'Adventure',director:'Thomas Kail',
+   good:['Live-action Moana 2026 movie premieres','《海洋奇缘》真人版 2026 电影票房'],
+   bad:['Moana 2016 animated soundtrack','Moana fan obsession with jewelry']},
+  {original:'Obsession',local:'痴迷',genre:'Horror',director:'Curry Barker',
+   good:['Obsession 2026 horror film makes box office history','Curry Barker Obsession movie wins fans'],
+   bad:['The internet obsession with movies','Obsession with gaming grows']}
+ ]){
+  globalThis.fetch=async input=>{
+   const u=new URL(String(input));
+   if(u.hostname==='api.themoviedb.org')return json({id:550,
+     title:u.searchParams.get('language')==='zh-CN'?work.local:work.original,
+     original_title:work.original,release_date:'2026-07-10',adult:false,
+     genres:[{name:work.genre}],alternative_titles:{titles:[{iso_3166_1:'CN',title:work.local}]},
+     credits:{crew:[{job:'Director',name:work.director}],cast:[]}});
+   if(u.hostname==='news.google.com')return feed([...work.good,...work.bad]);
+   throw Error('unexpected URL '+u.hostname);
+  };
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.articles.some(v=>v.title===work.good[0]),work.original+' legitimate film news');
+  assert.ok(body.articles.every(v=>!work.bad.includes(v.title)),work.original+' unrelated coverage filtered');
+ }
+ globalThis.fetch=old;
+});
 test('news search gracefully returns empty output when no trusted TMDB lookup is available',async()=>{
  stub({});
  const {status,body}=await invoke('/api/news/title/movie/550',{});
