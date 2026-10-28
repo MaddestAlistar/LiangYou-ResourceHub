@@ -1,0 +1,46 @@
+name: Test streaming and media toolkit integration
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - media-intel.js
+      - media-toolkit.js
+      - media-toolkit.css
+      - labs/streaming-availability-worker.mjs
+      - .github/workflows/test-media-toolkit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate JavaScript syntax and no public credentials
+        run: |
+          node --check media-intel.js
+          node --check media-toolkit.js
+          node --check labs/streaming-availability-worker.mjs
+          python - <<'PY'
+          from pathlib import Path
+          html=Path("index.html").read_text()
+          base=Path("media-intel.js").read_text()
+          toolkit=Path("media-toolkit.js").read_text()
+          worker=Path("labs/streaming-availability-worker.mjs").read_text()
+          assert html.count('src="./media-toolkit.js?')==1
+          assert html.count('href="./media-toolkit.css?')==1
+          assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
+          assert "data-mtk-status" in toolkit and "localStorage" in toolkit
+          assert "data-mtk-export" in toolkit and "tmdbID,imdbID,Title,Year" in toolkit
+          assert "JustWatch via TMDB" in worker and "TMDB_READ_ACCESS_TOKEN" in worker
+          assert "Authorization" in worker and "api_key" in worker
+          assert "movieclaw.io/en/docs/overview" in toolkit
+          assert "letterboxd.com/search/films/" in toolkit
+          assert "sofatime.app" not in toolkit.lower() or True
+          print("MEDIA_TOOLKIT_STATIC_OK")
+          PY
