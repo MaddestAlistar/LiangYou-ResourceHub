@@ -40,6 +40,8 @@ def test(row):
    updated=updated or data.get("updated") or data.get("updated_at") or data.get("update_time")
    data=next((v for k,v in data.items() if k in ("list","items","movies","rows","result","data") and isinstance(v,list)),data)
   if data is None and isinstance(d.get("result"),list):data=d["result"]
+  if data is None and isinstance(d.get("movieList"),list):data=d["movieList"]
+  if data is None and isinstance(d.get("movies"),list):data=d["movies"]
  else:data=None
  if isinstance(data,list):
   count=len(data)
@@ -53,7 +55,9 @@ def test(row):
   verdict="STATUS_ONLY" if good else "FAIL"
  elif kind=="ahua_detail":
   good=code==200 and isinstance(d,dict) and d.get("_meta",{}).get("success") is True and d.get("basic",{}).get("movieName") not in (None,"","未知电影")
-  verdict="DATA_OK" if good else "FAIL_OR_EMPTY"
+  has_rating=bool(isinstance(d,dict) and any((d.get("rating") or {}).values()))
+  has_box=bool(movie.get("boxOffice") and movie.get("boxOffice")!="未找到票房数据")
+  verdict=("DATA_OK" if has_rating and has_box else "PARTIAL_DATA") if good else "FAIL_OR_EMPTY"
   samples=[d.get("basic",{}).get("movieName")] if isinstance(d,dict) else []
  elif kind=="qhsou":
   # Source varies formats; require actual movie-shaped content, not just HTTP 200
@@ -72,8 +76,10 @@ def test(row):
  elif kind=="apizero":
   good=code==200 and isinstance(d,dict) and d.get("code")==0 and count>0
   verdict="DATA_OK" if good else "QUOTA_OR_ERROR"
- elif kind in ("apihz","xiaotuo","ali_gate"):
-  good=False
+ elif kind=="apihz":
+  good=code==200 and isinstance(d,dict) and d.get("code")==200 and count>0
+  verdict="DATA_OK_PUBLIC_TEST_CREDENTIAL" if good else "AUTH_OR_ERROR"
+ elif kind in ("xiaotuo","ali_gate"):
   verdict="AUTH_OR_KEY_NEEDED" if code in (200,400,401,403) else "NOT_REACHABLE"
  else:verdict="UNKNOWN"
  return {"provider":name,"kind":kind,"http":code,"verdict":verdict,"count":count,"sample":samples,"updated":updated,"service_code":error_code,"content_type":ctype[:55],"error":err,"seconds":round(time.monotonic()-started,2)}
