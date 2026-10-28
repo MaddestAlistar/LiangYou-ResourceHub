@@ -31,6 +31,24 @@
     })();
     return sourceSnapshotPromise;
   }
+  let broaderMalSnapshot=null;
+  async function officialMalCache(id){
+    if(!broaderMalSnapshot){
+      broaderMalSnapshot=(async()=>{
+        try{
+          const r=await fetch('./data/media-mal-v2.json',{cache:'no-cache',signal:AbortSignal.timeout(6000)});
+          if(!r.ok)return null;
+          const d=await r.json(),age=Date.now()-Date.parse(d.checkedAt);
+          if(d.ok!==true||d.status!=='ok'||d.source!=='MyAnimeList v2'||
+             !Number.isFinite(age)||age<0||age>7*86400000||!d.items)return null;
+          return d.items;
+        }catch{return null;}
+      })();
+    }
+    const items=await broaderMalSnapshot;
+    const item=items?.[String(id)];
+    return item?.ok===true&&item.malId===id&&item.status==='ok'?item:null;
+  }
   function snapshotFresh(section){
     const age=Date.now()-Date.parse(section?.checked_at||'');
     return Number.isFinite(age)&&age>=0&&age<72*3600000&&section?.status==='ok';
@@ -174,8 +192,9 @@
     host.innerHTML='<p class="mi-caption">'+t('核对 MyAnimeList 作品标识…','Checking MyAnimeList identity…')+'</p>';
     target.appendChild(host);
     try{
-      const snapshot=await sourceSnapshot();
-      const cached=snapshotFresh(snapshot?.mal)?snapshot.mal.items?.[String(id)]:null;
+      const primary=await officialMalCache(id);
+      const snapshot=primary?null:await sourceSnapshot();
+      const cached=primary||(snapshotFresh(snapshot?.mal)?snapshot.mal.items?.[String(id)]:null);
       const d=cached?{...cached,ok:true}:await json('/api/anime/mal/'+id);
       if(!host.isConnected)return;
       if(d.ok!==true||d.status!=='ok'||d.malId!==id){host.remove();return;}
