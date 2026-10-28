@@ -86,7 +86,7 @@ try{
    /youtube\.com\/embed\//);
  assert.equal(await page.locator('#media-trailer-switch').isVisible(),true);
  await page.locator('#media-trailer-close').click();
- for(const fragment of ['search.bilibili.com/all?keyword=','v.qq.com/x/search/?q=','1905.com/news/yg/']){
+ for(const fragment of ['search.bilibili.com/all?keyword=','v.qq.com/x/search/?q=','so.youku.com/search/q_','so.iq.com/so/?q=','1905.com/news/yg/']){
    assert.equal(await page.locator('#media-dialog .mi-trailer-search a[href*="'+fragment+'"]').count(),1,
        'Mainland source link must be available without a provider API: '+fragment);
  }
@@ -149,7 +149,7 @@ try{
    assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-grid').count(),1);
    if(worldName.length>=5)assert.match(offline.international,/Variety/,'Offline Worker must not block world RSS');
    assert.match(offline.domestic,/新浪电影/,'Offline Worker must not block Chinese RSS');
-   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-search a').count(),3,
+   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-search a').count(),5,
      'Mainland trailer source searches must survive Worker outages');
    assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
      'Offline news fallback has no unhandled renderer error');
