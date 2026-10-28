@@ -31,5 +31,30 @@
       .map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
     return {articles,videos};
   }
-  window.LiangYouTitleNews=Object.freeze({forInfo});
+  // Separate from the checked-in editorial index: a blocked optional search must
+  // never delay or erase already verified records.
+  const remoteCache=new Map();
+  function remoteForInfo(info){
+    const kind=info?.kind,id=Number(info?.tmdbId);
+    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return Promise.resolve(null);
+    const key=kind+':'+id;
+    if(!remoteCache.has(key))remoteCache.set(key,(async()=>{
+      try{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id,{
+          signal:AbortSignal.timeout(10500)});
+        if(!r.ok)return null;
+        const d=await r.json();
+        if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||!Array.isArray(d.articles))return null;
+        const articles=d.articles.filter(x=>x&&typeof x.title==='string'&&
+          x.title.length>=8&&x.title.length<=180&&
+          safeUrl(x.url)?.startsWith('https://news.google.com/')&&
+          Number.isFinite(Date.parse(x.date||''))&&
+          ['zh','ko','en'].includes(x.language))
+          .slice(0,18).map(x=>({...x,url:safeUrl(x.url)}));
+        return {articles};
+      }catch{return null;}
+    })());
+    return remoteCache.get(key);
+  }
+  window.LiangYouTitleNews=Object.freeze({forInfo,remoteForInfo});
 })();
