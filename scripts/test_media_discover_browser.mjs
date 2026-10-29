@@ -53,11 +53,13 @@ try{
        url:'https://ent.sina.com.cn/film/m/test.shtml',date}]
    })}));
  await page.locator('#media-dialog [data-mi-detail="discover"]').click();
- await page.waitForFunction(()=>{
+ await page.waitForFunction(expectWorld=>{
    const d=document.querySelector('#media-dialog');
-   return d?.querySelector('.mi-trailer-card')&&d.querySelector('.mi-international-news')&&
-      d.querySelector('[data-mi-discover-slot="domestic"] .mi-editorial-card a');
- },{timeout:20000});
+   return d?.querySelector('.mi-trailer-card')&&
+     d.querySelector('[data-mi-discover-slot="domestic"] .mi-editorial-card a')&&
+     d.querySelector('.mi-international-news')&&
+     (!expectWorld||d.querySelector('[data-mi-discover-slot="international"]')?.textContent.includes('Variety'));
+ },worldName.length>=5,{timeout:25000});
  const result=await page.evaluate(()=>{
    const d=document.querySelector('#media-dialog'),slot=s=>d.querySelector('[data-mi-discover-slot="'+s+'"]');
    return {ordered:[...d.querySelectorAll('[data-mi-discover-slot]')].map(x=>x.dataset.miDiscoverSlot),
