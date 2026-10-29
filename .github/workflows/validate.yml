@@ -29,6 +29,7 @@ jobs:
           python3 scripts/test_media_intel.py
           node --check china-perf.js
           node --check china-cache-sw.js
+          node --test scripts/test_tech_news.mjs
           node scripts/test_china_performance.mjs
           node --check app.js
           node --check design.js
