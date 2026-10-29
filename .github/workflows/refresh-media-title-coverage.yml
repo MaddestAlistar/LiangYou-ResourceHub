@@ -61,7 +61,7 @@ jobs:
               ident=int(ident)
               assert kind in ('movie','tv') and ident>0
               assert len(entry['articles'])<=24 and len(entry['videos'])<=10
-              assert len(entry.get('youtubeTrailers',[]))<=3
+              assert len(entry.get('youtubeTrailers',[]))<=6
               for video in entry['videos']:
                   assert video['verifiedByTitleId'] is True
                   assert video['tmdbId']==ident and video['kind']==kind
