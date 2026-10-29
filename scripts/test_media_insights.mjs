@@ -123,6 +123,43 @@ test('missing and conflicting parental classifications are omitted, not guessed'
  assert.equal(result.body.classification.parental_rating.rating,'TV-14');
  assert.deepEqual(result.body.classification.keywords,['family relationships']);
 });
+test('Wikidata Chinese title fallback requires exact TMDB cross-ID verification',async()=>{
+ const old=globalThis.fetch;
+ const pubDate=new Date(Date.now()-86400000).toUTCString();
+ let wikiReads=0;
+ const mock=verified=>async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Astral Voyage',
+    original_title:'Astral Voyage',adult:false,release_date:'2026-07-01',
+    external_ids:{wikidata_id:'Q123456',imdb_id:'tt0137523'},
+    translations:{translations:[]},alternative_titles:{titles:[]},genres:[{name:'Adventure'}],
+    credits:{crew:[],cast:[]}});
+  if(u.hostname==='www.wikidata.org'){
+   wikiReads++;
+   return json({entities:{Q123456:{id:'Q123456',
+    labels:{zh:{value:'星际远征'}},claims:{P4947:[{rank:'normal',mainsnak:{
+     snaktype:'value',datavalue:{value:verified?'550':'999'}}}]}}}});
+  }
+  if(u.hostname==='news.google.com'||u.hostname==='www.bing.com'){
+   const xml='<rss><channel><item><title>《星际远征》2026年电影上映</title>'+
+     '<link>https://news.google.com/rss/articles/verified-zh</link>'+
+     '<pubDate>'+pubDate+'</pubDate><source>Publisher</source></item></channel></rss>';
+   return new Response(xml,{status:200,headers:{'content-type':'application/rss+xml'}});
+  }
+  throw Error('unexpected domain '+u.hostname);
+ };
+ try{
+  globalThis.fetch=mock(true);
+  let result=await invoke('/api/news/title/movie/550?v=wikidata1',{TMDB_API_KEY:'test'});
+  assert.equal(result.status,200);
+  assert.ok(result.body.articles.some(x=>x.language==='zh'&&x.title.includes('星际远征')));
+  assert.ok(wikiReads>0);
+  globalThis.fetch=mock(false);
+  result=await invoke('/api/news/title/movie/550?v=wikidata2',{TMDB_API_KEY:'test'});
+  assert.equal(result.status,200);
+  assert.ok(!result.body.articles.some(x=>x.language==='zh'));
+ }finally{globalThis.fetch=old;}
+});
 test('TMDB-ID news search accepts only matching film titles, not general arts news',async()=>{
  stub({movie:{alternative_titles:{titles:[{iso_3166_1:'CN',title:'搏击俱乐部'}]}}});
  const old=globalThis.fetch;
