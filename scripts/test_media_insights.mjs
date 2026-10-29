@@ -611,6 +611,34 @@ test('all-title Bilibili discovery finds verified unyeared film reviews without 
   assert.ok(searches.some(x=>!x.includes("2024")),"yearless second search enabled");
  }finally{globalThis.fetch=original;}
 });
+test('every film keeps verified Chinese headlines even when international news is much more plentiful',async()=>{
+ const previous=globalThis.fetch;
+ const date=new Date(Date.now()-86400000).toUTCString();
+ const row=(title,i)=>'<item><title>'+title+'</title><link>https://news.google.com/rss/articles/balanced-'+i+
+   '</link><pubDate>'+date+'</pubDate><source>Movie publisher</source></item>';
+ try{
+  globalThis.fetch=async input=>{
+   const u=new URL(String(input));
+   if(u.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+     title:u.searchParams.get('language')==='zh-CN'?'大浪潮':'Great Wave',
+     original_title:'Great Wave',release_date:'2023-06-05',
+     translations:{translations:[{iso_639_1:'zh',iso_3166_1:'CN',data:{title:'大浪潮'}}]}});
+   if(u.hostname==='news.google.com'){
+    const chinese=u.searchParams.get('hl')==='zh-CN';
+    const articles=chinese?Array.from({length:3},(_,i)=>row('《大浪潮》2023电影影评 '+i,'zh-'+i)):
+       Array.from({length:30},(_,i)=>row('Great Wave 2023 film review '+i,'en-'+i));
+    return new Response('<rss><channel>'+articles.join('')+'</channel></rss>',{status:200});
+   }
+   if(u.hostname==='www.bing.com')return new Response('<rss><channel></channel></rss>',{status:200});
+   throw Error('unexpected '+u.href);
+  };
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.articles.length<=24);
+  assert.equal(body.articles.filter(x=>x.language==='zh').length,3);
+  assert.ok(body.articles.some(x=>x.language==='en'));
+ }finally{globalThis.fetch=previous;}
+});
 test('regional TMDB translations discover genuine news for non-indexed catalog movies',async()=>{
  const old=globalThis.fetch;
  globalThis.fetch=async input=>{
