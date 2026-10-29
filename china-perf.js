@@ -110,17 +110,13 @@
     if (module.enhancementStarted) return;
     module.enhancementStarted = true;
     const root = document.getElementById('media');
-    let latestDetail = null;
-    root?.addEventListener('liangyou:media-detail', event => {
-      if (!module.enhanced) latestDetail = event.detail;
-    }, true);
     module.extraUrls.forEach(preload);
     (async () => {
       await loadStyles(module.extraStyles);
       for (const url of module.extraUrls) await loadOne(url);
       module.enhanced = true;
-      if (latestDetail && document.getElementById('media-dialog')?.open) {
-        root.dispatchEvent(new CustomEvent('liangyou:media-detail', {detail:latestDetail}));
+      if (module.latestDetail && document.getElementById('media-dialog')?.open) {
+        root.dispatchEvent(new CustomEvent('liangyou:media-detail', {detail:module.latestDetail}));
       }
     })().catch(() => {
       // Main film browsing stays available even if enrichment cannot load.
@@ -145,7 +141,14 @@
   const start = module => {
     if (module.started) return;
     module.started = true;
-    if (module.id === 'media') prefetchMediaSnapshot();
+    if (module.id === 'media') {
+      // Register capture before loading the catalogue, so a fast cached
+      // response cannot dispatch detail events before extensions exist.
+      document.getElementById('media')?.addEventListener('liangyou:media-detail', event => {
+        if (!module.enhanced) module.latestDetail=event.detail;
+      },true);
+      prefetchMediaSnapshot();
+    }
     // Preload all URLs in parallel to avoid a 9-request sequential network waterfall.
     module.urls.forEach(preload);
     (async () => {
