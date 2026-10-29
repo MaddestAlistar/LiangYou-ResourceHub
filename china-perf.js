@@ -7,14 +7,16 @@
     {
       id: 'media',
       urls: [
+        // Install detail listeners first so the initial catalogue response
+        // cannot dispatch an event before enrichment modules are ready.
         './media-core.js?v=20261028.3',
-        './media-intel.js?v=20261029.newsroom1',
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-identityyear8',
         './media-insights.js?v=20261029-yearsafe10',
         './media-cn-enhance.js?v=20261029.catalog-unified5',
         './media-exact-scores.js?v=20261029.newsroom1',
-        './media-boxoffice-rankings.js?v=20261029.noarchive1'
+        './media-boxoffice-rankings.js?v=20261029.noarchive1',
+        './media-intel.js?v=20261029.newsroom1'
       ]
     },
     {
@@ -80,6 +82,11 @@
     (async () => {
       for (const url of module.urls) await loadOne(url);
       module.loaded = true;
+      // Market snapshots can complete before fixtures.js registers listeners.
+      // Replaying the completed state makes first-view odds deterministic.
+      if (module.id === 'sports') {
+        window.dispatchEvent(new CustomEvent('liangyou:markets-updated'));
+      }
     })().catch(() => fail(module));
   };
   const checkDeepLink = () => {
