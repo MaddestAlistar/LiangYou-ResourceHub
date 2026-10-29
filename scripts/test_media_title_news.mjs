@@ -78,6 +78,33 @@ test('automatic rotating coverage makes previously unindexed titles available wi
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
  assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
 });
+test('the full scheduled catalog is consumable by the same ID-bound frontend, not only curated films',async()=>{
+ const snapshot=JSON.parse(readFileSync(new URL('../data/media-title-coverage.json',import.meta.url),'utf8'));
+ const entries=Object.entries(snapshot.items||{});
+ assert.ok(entries.length>=80,'scheduled catalog must cover more than the three manually indexed titles');
+ let reads=0;
+ const mocked=async url=>{
+  if(String(url).includes('media-title-coverage.json')){reads++;return new Response(JSON.stringify(snapshot),{status:200});}
+  return new Response(JSON.stringify({schema:1,titles:{}}),{status:200});
+ };
+ const frontend=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+  {},mocked,AbortSignal);
+ let expected=0,visible=0;
+ for(const [key,v] of entries){
+  const [kind,rawId]=key.split(':'),tmdbId=Number(rawId);
+  const data=await frontend.forInfo({kind,tmdbId,year:v.year?String(v.year):''});
+  if((v.articles||[]).length||(v.videos||[]).length){
+   expected++;
+   assert.ok(data,key+' should return the scheduled ID-linked coverage');
+   assert.ok(data.articles.length||data.videos.length,key+' should have visible material');
+   visible++;
+   assert.ok(data.articles.every(x=>x.titleMatchVerified===true));
+  }
+ }
+ assert.equal(visible,expected);
+ assert.ok(visible>=50,'the all-film pipeline must preserve its previously verified coverage');
+ assert.equal(reads,1,'the static coverage should be fetched only once per tab');
+});
 test('non-curated movies start scheduled coverage immediately rather than waiting for editorial index',async()=>{
  let releaseIndex,coverageRequested=false,manualRequested=false;
  const coverage={schema:1,items:{'movie:777':{year:2018,articles:[{
