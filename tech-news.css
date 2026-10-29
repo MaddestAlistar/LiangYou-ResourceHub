@@ -80,11 +80,15 @@
   }
   html[lang="en"] .ly-news-video-content{gap:5px}
   html[lang="en"] .ly-news-video-content h3{font-size:12px;line-height:1.35}
-  html[lang="en"] .ly-news-video-actions{gap:5px}
+  html[lang="en"] .ly-news-video-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   html[lang="en"] .ly-news-video-actions .ly-video-action,
   html[lang="en"] .ly-news-video-actions .ly-video-original{
-    padding:6px 8px;
+    padding:6px 4px;
     font-size:10px;
     line-height:1.25;
+    min-width:0;
+    width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
 }
