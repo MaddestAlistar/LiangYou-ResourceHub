@@ -71,3 +71,20 @@
 .ly-news-video-card--tg .ly-news-video-fallback{color:rgba(150,222,255,.36);background:radial-gradient(circle at 45% 30%,#246c99,#142c4e 78%)}
 .ly-news-video-cover img{font-size:0}
 .ly-video-stage .ly-video-direct{display:block;width:100%;height:100%;object-fit:contain;background:#05070d}
+
+/* English mode: leave more room for copy and keep actions compact on phones. */
+@media(max-width:480px){
+  html[lang="en"] .ly-news-video-card{
+    grid-template-columns:88px minmax(0,1fr);
+    gap:9px;
+  }
+  html[lang="en"] .ly-news-video-content{gap:5px}
+  html[lang="en"] .ly-news-video-content h3{font-size:12px;line-height:1.35}
+  html[lang="en"] .ly-news-video-actions{gap:5px}
+  html[lang="en"] .ly-news-video-actions .ly-video-action,
+  html[lang="en"] .ly-news-video-actions .ly-video-original{
+    padding:6px 8px;
+    font-size:10px;
+    line-height:1.25;
+  }
+}
