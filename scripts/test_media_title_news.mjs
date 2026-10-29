@@ -68,6 +68,12 @@ test('automatic rotating coverage makes previously unindexed titles available wi
  assert.equal(data.videos[0].tmdbId,550);
  assert.equal((await helper.forInfo({kind:'movie',tmdbId:550,year:'1999-10-15'})).articles.length,1);
  assert.equal(reads,1);
+ // Some catalog cards have a valid TMDB ID but no localized release date.
+ // Missing years must not suppress exact-ID matches; an explicit wrong year still must.
+ const noYear=await helper.forInfo({kind:'movie',tmdbId:550,title:'Fight Club'});
+ assert.equal(noYear.articles.length,1);
+ assert.equal(noYear.videos.length,1);
+ assert.equal((await load.forInfo({kind:'tv',tmdbId:303745,title:'我的有罪之人'})).articles.length>=4,true);
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:550,year:'2026-01-01'}),null);
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
  assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
