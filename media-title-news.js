@@ -79,7 +79,7 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=3',{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=4',{
           signal:AbortSignal.timeout(17500)});
         if(!r.ok)return null;
         const d=await r.json();
