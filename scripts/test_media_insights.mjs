@@ -416,6 +416,57 @@ test('all-title Bilibili discovery verifies TMDB identity and each matching BVID
   assert.ok(body.videos[0].verifiedSource.endsWith('/'+bvid+'/'));
  }finally{globalThis.fetch=previous;}
 });
+test('all-title Bilibili discovery can fall back to an indexed public link and validate its BVID',async()=>{
+ const old=globalThis.fetch,bvid='BV1F3aF6mEQn';
+ globalThis.fetch=async input=>{
+  const uri=new URL(String(input));
+  if(uri.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+   title:uri.searchParams.get('language')==='zh-CN'?'我的有罪之人':'My Guilty Person',
+   original_title:'My Guilty Person',release_date:'2026-10-19'});
+  if(uri.hostname==='api.bilibili.com'&&uri.pathname.endsWith('/search/type'))
+    return json({code:-412,message:'search unavailable'});
+  if(uri.hostname==='www.bing.com'&&uri.pathname==='/search')
+    return new Response('<rss><channel>'+
+      '<item><title>《我的有罪之人》官方预告</title><link>https://www.bilibili.com/video/'+bvid+'/</link></item>'+
+      '<item><title>《我的有罪之人》花絮</title><link>https://attacker.example/video/'+bvid+'/</link></item>'+
+      '</channel></rss>',{status:200});
+  if(uri.hostname==='api.bilibili.com'&&uri.pathname.endsWith('/view'))
+    return json({code:0,data:{bvid,title:'《我的有罪之人》预告片',state:0,
+      owner:{name:'Film Channel'},stat:{like:427,view:13570}}});
+  throw Error('Unexpected '+uri.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.equal(body.videos.length,1);
+  assert.equal(body.videos[0].videoId,bvid);
+  assert.equal(body.videos[0].likes,427);
+  assert.ok(body.videos[0].verifiedByTitleId);
+  assert.match(body.source,/Bing public index/);
+ }finally{globalThis.fetch=old;}
+});
+test('regional TMDB translations discover genuine news for non-indexed catalog movies',async()=>{
+ const old=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const uri=new URL(String(input));
+  if(uri.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+   title:'Great Wave',original_title:'Great Wave',release_date:'2023-06-05',
+   translations:{translations:[{iso_639_1:'zh',iso_3166_1:'CN',data:{title:'大浪潮'}}]}});
+  if(uri.hostname==='news.google.com')return new Response('<rss><channel>'+
+    '<item><title>《大浪潮》2023年电影首映</title><link>https://news.google.com/rss/articles/film-news</link>'+
+    '<pubDate>'+new Date(Date.now()-86400000).toUTCString()+'</pubDate><source>Film Press</source></item>'+
+    '</channel></rss>',{status:200});
+  if(uri.hostname==='www.bing.com')return new Response('<rss><channel></channel></rss>',{status:200});
+  throw Error('Unexpected '+uri.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.equal(body.tmdbId,550);
+  assert.ok(body.articles.some(x=>x.title.includes('大浪潮')));
+  assert.ok(body.articles.every(x=>x.titleMatchVerified));
+ }finally{globalThis.fetch=old;}
+});
 test('blocked Bilibili public search fails closed and does not invent video cards',async()=>{
  const previous=globalThis.fetch;
  globalThis.fetch=async input=>{
