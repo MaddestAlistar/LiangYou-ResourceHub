@@ -25,7 +25,7 @@
         if (naturalW < 100 || naturalH < 100) return;
         // Work on a bounded canvas: avoids repeated multi-megapixel image-data
         // passes on iPhones and slower mainland mobile connections.
-        const scale = Math.min(1, 640 / Math.max(naturalW, naturalH));
+        const scale = Math.min(1, 320 / Math.max(naturalW, naturalH));
         const w = Math.max(1, Math.round(naturalW * scale));
         const h = Math.max(1, Math.round(naturalH * scale));
         const canvas = document.createElement('canvas');
@@ -61,7 +61,7 @@
           }
         }
         // Low-cost harmonic fill smooths the patch without altering the rest.
-        for (let pass = 0; pass < 26; pass++) {
+        for (let pass = 0; pass < 8; pass++) {
           for (let y = y1; y <= y2; y++) {
             for (let x = x1; x <= x2; x++) {
               const n = (y * w + x) * 4;
@@ -86,8 +86,13 @@
         img.dataset.channelCleaned = 'unsupported';
       }
     };
-    if (img.complete) clean();
-    else img.addEventListener('load', clean, { once: true });
+    const schedule = () => {
+      // Keep image decode and the visible thumbnail ahead of CPU retouching.
+      if ('requestIdleCallback' in window) requestIdleCallback(clean, {timeout:1100});
+      else setTimeout(clean, 160);
+    };
+    if (img.complete) schedule();
+    else img.addEventListener('load', schedule, { once:true });
   }
 
   const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
