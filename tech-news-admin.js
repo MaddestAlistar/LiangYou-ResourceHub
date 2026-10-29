@@ -2,17 +2,25 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const ROOT='https://liangyou-icon-review.maddestalistar.workers.dev';
-const ENDPOINT=ROOT+'/news-admin',UPLOAD=ROOT+'/news-video-upload';
+const ENDPOINT=ROOT+'/news-admin',UPLOAD=ROOT+'/news-video-upload',IMAGE_UPLOAD=ROOT+'/news-image-upload';
 const CATEGORIES=['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选'];
-const MAX_BYTES=20*1000*1000;
+const MAX_BYTES=20*1000*1000,MAX_IMAGE_ORIGINAL_BYTES=5*1000*1000,MAX_IMAGE_UPLOAD_BYTES=1200000;
 const VIDEO_TITLE_MAX=20,VIDEO_DESC_MAX=38;
 const list=$('news-items'),category=$('news-category'),title=$('news-title'),content=$('news-content'),notice=$('news-message');
 const refresh=$('news-refresh'),save=$('news-save'),reset=$('news-reset'),heading=$('news-form-title');
 const source=$('news-source-url'),videoFile=$('news-video-file'),videoFields=$('news-video-fields'),preview=$('news-video-preview'),videoHelp=$('news-video-help'),fileError=$('news-video-file-error');
-if(!list||!category||!title||!content||!notice||!videoFields||!source||!videoFile||!fileError)return;
-let editingId=null,busy=false,items=[],uploadedMedia=null,previewUrl=null;
+const imageFields=$('news-image-fields'),imageFile=$('news-image-file'),imagePreview=$('news-image-preview'),imageRemove=$('news-image-remove'),imageError=$('news-image-error'),imageHelp=$('news-image-help');
+if(!list||!category||!title||!content||!notice||!videoFields||!source||!videoFile||!fileError||!imageFields||!imageFile||!imagePreview||!imageRemove||!imageError)return;
+let editingId=null,busy=false,items=[],uploadedMedia=null,previewUrl=null,uploadedImageUrl='',imagePreviewUrl=null;
 function notify(message){notice.textContent=message}
 function showFileError(message){fileError.textContent=message;fileError.hidden=!message}
+function showImageError(message){imageError.textContent=message;imageError.hidden=!message}
+function showImagePreview(source){
+ if(imagePreviewUrl){URL.revokeObjectURL(imagePreviewUrl);imagePreviewUrl=null}
+ imagePreview.hidden=!source;imagePreview.removeAttribute('src');
+ if(source){imagePreview.src=typeof source==='string'?source:(imagePreviewUrl=URL.createObjectURL(source))}
+ imageRemove.hidden=!source;
+}
 function tag(name,value){const n=document.createElement(name);if(value!==undefined)n.textContent=value;return n}
 function key(){const value=$('key').value;if(value.length<24)throw new Error('请先输入管理员密钥（至少 24 字符）');return value}
 function sourcePlatform(raw){
@@ -40,6 +48,7 @@ function showPreview(file){
 function toggleFields(){
  const isVideo=category.value==='视频精选';
  videoFields.hidden=!isVideo;
+ imageFields.hidden=isVideo;
  $('news-title-label').textContent=isVideo?'内容标题':'新闻标题';
  $('news-content-label').textContent=isVideo?'内容描述':'新闻内容';
  $('news-title-required').hidden=!isVideo;
@@ -48,13 +57,14 @@ function toggleFields(){
  content.maxLength=isVideo?VIDEO_DESC_MAX:3000;
  source.required=isVideo;
  videoFile.required=isVideo&&!uploadedMedia?.videoUrl;
+ imageHelp.textContent=uploadedImageUrl?'已保存图片：不选择新文件将保持原图；选择新图片可替换，点击「移除图片」可删除显示。':'建议 16:9 横图（1200 × 675）；支持 JPG、PNG、WebP，原图不超过 5 MB，系统会等比压缩后上传。';
  videoHelp.textContent=editingId&&uploadedMedia?.videoUrl
   ?'已保存的视频可直接沿用；选择新的 MP4 会替换视频。旧文件保留在 videos 仓库，以便追溯。'
   :'上传后保存到 MaddestAlistar/videos。仅支持 MP4，单条不超过 20 MB。';
 }
 function resetForm(){
- editingId=null;uploadedMedia=null;category.value=CATEGORIES[0];title.value='';content.value='';source.value='';videoFile.value='';
- heading.textContent='发布一条新闻';save.textContent='发布新闻';showPreview(null);showFileError('');toggleFields();
+ editingId=null;uploadedMedia=null;uploadedImageUrl='';category.value=CATEGORIES[0];title.value='';content.value='';source.value='';videoFile.value='';imageFile.value='';
+ heading.textContent='发布一条新闻';save.textContent='发布新闻';showPreview(null);showImagePreview(null);showFileError('');showImageError('');toggleFields();
 }
 function render(){
  list.replaceChildren();$('news-total').textContent='已发布 '+items.length+' 条';
@@ -66,6 +76,9 @@ function render(){
   const when=tag('span',new Date(item.createdAt).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'}));when.className='muted';
   meta.append(kind,when);card.append(meta,tag('h3',item.title));
   const body=tag('p',item.content);body.className='news-admin-body';card.append(body);
+  if(item.category!=='视频精选'&&item.newsImageUrl){
+   const img=tag('img');img.className='news-admin-photo';img.src=item.newsImageUrl;img.alt=item.title;img.loading='lazy';card.append(img);
+  }
   if(item.category==='视频精选'&&item.sourceUrl){
    const origin=tag('a','原帖 · '+(item.platform==='tg'?'Telegram':'小红书')+' ↗');
    origin.href=item.sourceUrl;origin.target='_blank';origin.rel='noopener noreferrer';card.append(origin);
@@ -76,19 +89,20 @@ function render(){
   edit.addEventListener('click',()=>{
    editingId=item.id;category.value=item.category;title.value=item.title;content.value=item.content;
    source.value=item.sourceUrl||'';uploadedMedia=item.videoUrl?{videoUrl:item.videoUrl,posterUrl:item.posterUrl||''}:null;
-   videoFile.value='';showPreview(null);showFileError('');toggleFields();
+   uploadedImageUrl=item.newsImageUrl||'';imageFile.value='';videoFile.value='';
+   showPreview(null);showImagePreview(uploadedImageUrl);showFileError('');showImageError('');toggleFields();
    heading.textContent='编辑新闻';save.textContent='保存修改';$('tech-news-admin').scrollIntoView({behavior:'smooth',block:'start'});title.focus();
   });
   const del=tag('button','删除');del.className='danger';del.type='button';
   del.addEventListener('click',async()=>{
-   if(busy||!confirm('确认删除这条新闻？\n'+item.title+'\n（视频文件会保留在 videos 仓库）'))return;
+   if(busy||!confirm('确认删除这条新闻？\n'+item.title+'\n（已上传媒体文件会保留在素材仓库）'))return;
    await change({action:'delete',id:item.id,confirm:true},'新闻已删除');
    if(editingId===item.id)resetForm();
   });
   tools.append(edit,del);card.append(tools);list.append(card);
  }
 }
-function setBusy(state){busy=state;for(const b of [refresh,save,reset,category,videoFile])b.disabled=state}
+function setBusy(state){busy=state;for(const b of [refresh,save,reset,category,videoFile,imageFile,imageRemove])b.disabled=state}
 async function refreshNews(){
  if(busy)return;setBusy(true);notify('正在读取新闻记录…');
  try{const data=await request();items=data.items||[];render();notify('新闻已同步。新增、修改或删除后，首页会自动获取最新内容。')}
@@ -137,8 +151,63 @@ async function uploadVideo(file){
  if(!response.ok||!result.ok)throw new Error(result.error||'视频上传失败（HTTP '+response.status+'）');
  return {videoUrl:result.videoUrl,posterUrl:result.posterUrl||''};
 }
+function verifyImageFile(file){
+ if(!file)return;
+ if(file.size<=0||file.size>MAX_IMAGE_ORIGINAL_BYTES)throw new Error('图片原文件不得超过 5 MB');
+ if(!/\.(?:jpe?g|png|webp)$/i.test(file.name)||
+   !['image/jpeg','image/png','image/webp','application/octet-stream',''].includes(file.type))
+   throw new Error('仅支持 JPG、PNG、WebP 静态图片');
+}
+async function optimizeImage(file){
+ verifyImageFile(file);
+ const url=URL.createObjectURL(file);
+ try{
+  const img=new Image();
+  await new Promise((resolve,reject)=>{
+   img.onload=resolve;img.onerror=()=>reject(new Error('图片无法解码，请更换文件'));img.src=url;
+  });
+  const width=img.naturalWidth||img.width,height=img.naturalHeight||img.height;
+  if(!width||!height||width>10000||height>10000||width<100||height<100)
+   throw new Error('图片尺寸异常，至少需要 100 × 100 px');
+  const scale=Math.min(1,1200/width,900/height),canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+  const ctx=canvas.getContext('2d');
+  if(!ctx)throw new Error('浏览器不支持图片处理');
+  ctx.fillStyle='#11192a';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  for(const quality of [.85,.76,.65,.52]){
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+   if(blob?.size>=128&&blob.size<=MAX_IMAGE_UPLOAD_BYTES)return blob;
+  }
+  throw new Error('图片压缩后仍超出限制，请使用更小的图片');
+ }finally{URL.revokeObjectURL(url)}
+}
+async function uploadImage(file){
+ notify('正在压缩新闻图片…');
+ const blob=await optimizeImage(file),data=new FormData();
+ data.append('image',blob,'news.jpg');
+ notify('正在上传图片到素材仓库…');
+ const response=await fetch(IMAGE_UPLOAD,{method:'POST',headers:{'X-Admin-Key':key()},body:data,
+   cache:'no-store',signal:AbortSignal.timeout(90000)});
+ let result;try{result=await response.json()}catch{throw new Error('图片上传服务器未返回 JSON')}
+ if(!response.ok||!result.ok)throw new Error(result.error||'图片上传失败（HTTP '+response.status+'）');
+ return result.newsImageUrl;
+}
+imageFile.addEventListener('change',()=>{
+ const file=imageFile.files?.[0];showImageError('');
+ try{
+  verifyImageFile(file);
+  showImagePreview(file||uploadedImageUrl);
+ }catch(error){
+  imageFile.value='';showImagePreview(uploadedImageUrl);showImageError(error.message);notify(error.message);
+ }
+});
+imageRemove.addEventListener('click',()=>{
+ if(busy)return;
+ imageFile.value='';uploadedImageUrl='';showImagePreview(null);showImageError('');toggleFields();
+});
 refresh.addEventListener('click',refreshNews);
-category.addEventListener('change',()=>{showFileError('');toggleFields()});
+category.addEventListener('change',()=>{showFileError('');showImageError('');toggleFields()});
 videoFile.addEventListener('change',()=>{
  const file=videoFile.files?.[0];showFileError('');
  if(file&&file.size>MAX_BYTES){
@@ -165,8 +234,18 @@ save.addEventListener('click',async()=>{
   if(!sourcePlatform(item.sourceUrl)){notify('请输入有效的小红书或 Telegram HTTPS 原帖链接');return}
   if(!videoFile.files?.[0]&&!uploadedMedia?.videoUrl){notify('视频精选必须上传 MP4 视频（不超过 20 MB）');return}
  }
+ if(item.category!=='视频精选'){
+  try{verifyImageFile(imageFile.files?.[0])}catch(error){showImageError(error.message);notify(error.message);return}
+ }
  setBusy(true);
  try{
+  if(item.category!=='视频精选'){
+   if(imageFile.files?.[0]){
+    uploadedImageUrl=await uploadImage(imageFile.files[0]);
+    imageFile.value='';showImagePreview(uploadedImageUrl);toggleFields();
+   }
+   if(uploadedImageUrl)item.newsImageUrl=uploadedImageUrl;
+  }
   if(item.category==='视频精选'){
    if(videoFile.files?.[0]){uploadedMedia=await uploadVideo(videoFile.files[0]);videoFile.value='';showPreview(null);toggleFields();}
    item.videoUrl=uploadedMedia.videoUrl;item.posterUrl=uploadedMedia.posterUrl||'';
@@ -174,7 +253,7 @@ save.addEventListener('click',async()=>{
   notify('正在发布到新闻数据源…');
   const data=await request({action:editingId?'update':'create',...(editingId?{id:editingId}:{}),...item});
   items=data.items||[];render();resetForm();notify('已保存。首页新闻与视频精选会自动更新，可能有约 1 分钟缓存。');
- }catch(error){notify('保存失败：'+error.message+'。如视频已经上传成功，可再次保存，不会重复上传。')}
+ }catch(error){notify('保存失败：'+error.message+'。如媒体已上传成功，可直接重新保存，无需重复上传。')}
  finally{setBusy(false)}
 });
 reset.addEventListener('click',resetForm);
