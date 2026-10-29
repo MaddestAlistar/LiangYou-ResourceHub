@@ -51,13 +51,25 @@
       (x.date==null||Number.isFinite(Date.parse(x.date)))&&
       ['zh','en','ja','ko'].includes(x.language)).slice(0,24)
       .map(x=>({...x,url:safeUrl(x.url),verifiedByCatalogTitle:true}));
+    const youtubeTrailers=(Array.isArray(item.youtubeTrailers)?item.youtubeTrailers:[])
+      .filter(x=>x?.verifiedByTitleId===true&&
+        x.kind===kind&&Number(x.tmdbId)===id&&
+        Number.isInteger(Number(x.year))&&(!(year>=1850)||Math.abs(Number(x.year)-year)<=1)&&
+        /^[A-Za-z0-9_-]{11}$/.test(String(x.id||''))&&
+        safeUrl(x.url)==='https://www.youtube.com/watch?v='+x.id)
+      .slice(0,3).map(x=>({
+        id:x.id,title:String(x.title||'Trailer').slice(0,145),type:'Trailer',
+        verifiedBy:'TMDB',official:true,embeddable:null,
+        url:'https://www.youtube.com/watch?v='+x.id
+      }));
     const videos=item.videos.filter(x=>x?.verifiedByTitleId===true&&
       x.kind===kind&&Number(x.tmdbId)===id&&
       x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
       safeUrl(x.verifiedSource)==='https://www.bilibili.com/video/'+x.videoId+'/'&&
       Number.isInteger(Number(x.year))&&(!(year>=1850)||Math.abs(Number(x.year)-year)<=1))
       .slice(0,10).map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
-    return articles.length||videos.length?{articles,videos,aliases:[]}:null;
+    return articles.length||videos.length||youtubeTrailers.length?
+      {articles,videos,youtubeTrailers,aliases:[]}:null;
   }
   async function forInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId),year=Number(String(info?.year||'').slice(0,4));
@@ -87,8 +99,9 @@
       row=>safeUrl(row.url),30);
     const mergedVideos=dedupe([...videos,...(catalog?.videos||[])],
       row=>row.platform+':'+row.videoId,16);
-    return mergedArticles.length||mergedVideos.length||aliases.length?
-      {articles:mergedArticles,videos:mergedVideos,aliases}:null;
+    const youtubeTrailers=dedupe(catalog?.youtubeTrailers||[],row=>row.id,3);
+    return mergedArticles.length||mergedVideos.length||youtubeTrailers.length||aliases.length?
+      {articles:mergedArticles,videos:mergedVideos,youtubeTrailers,aliases}:null;
   }
   // Separate from the checked-in editorial index: a blocked optional search must
   // never delay or erase already verified records.
