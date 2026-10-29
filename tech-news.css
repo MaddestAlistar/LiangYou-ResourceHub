@@ -24,6 +24,8 @@
 @media(prefers-reduced-motion:reduce){.ly-news *{scroll-behavior:auto}}
 /* 小红书视频笔记：统一纳入科技圈新闻，延续网站深蓝底色 */
 .ly-news-item p{white-space:pre-wrap;overflow-wrap:anywhere}
+.ly-news-item .ly-news-photo{display:block;width:100%;height:auto;max-height:190px;aspect-ratio:16/9;object-fit:contain;object-position:center;border:1px solid rgba(155,180,222,.21);border-radius:11px;background:#0c1626;margin-top:12px}
+@media(max-width:760px){.ly-news-item .ly-news-photo{max-height:240px;margin-top:8px;border-radius:9px}}
 .ly-news-empty{grid-column:1/-1;font-size:13px;color:#adbbd1;padding:12px 0}
 .ly-news-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
 .ly-news-video-card{position:relative;display:grid;grid-template-columns:clamp(112px,13vw,150px) minmax(0,1fr);gap:13px;min-width:0;padding:11px;border:1px solid rgba(212,161,171,.30);border-radius:17px;background:linear-gradient(145deg,rgba(48,41,60,.74),rgba(21,28,45,.96));box-shadow:0 8px 24px #0002;transition:border-color .2s ease,transform .2s ease}
