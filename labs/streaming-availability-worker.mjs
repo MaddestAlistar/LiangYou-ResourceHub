@@ -638,11 +638,18 @@ async function titleNews(kind,id,env){
    }catch{stats.bingNetworkError++;return [];}finally{clearTimeout(timer);}
  });
  const [batches,guardianRows,bingBatches]=await Promise.all([Promise.all(requests),guardian,Promise.all(bingRequests)]),seen=new Set(),seenTitle=new Set();
- const articles=[...batches.flat(),...guardianRows,...bingBatches.flat()].filter(x=>{
+ const rankedArticles=[...batches.flat(),...guardianRows,...bingBatches.flat()].filter(x=>{
   const key=normalizedHeadline(x.title),signature=key.replace(/\\s+/g,"");
   if(seen.has(x.url)||seenTitle.has(signature))return false;
   seen.add(x.url);seenTitle.add(signature);return true;
- }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,24);
+ }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+ // Mixed-language coverage matters as much as raw popularity: prevent one
+ // publisher market from occupying all cached headlines for this TMDB ID.
+ const balanced=[...rankedArticles.filter(x=>x.language==="zh").slice(0,12),
+   ...rankedArticles.filter(x=>x.language!=="zh").slice(0,12)];
+ const selectedUrls=new Set(balanced.map(x=>x.url));
+ const articles=[...balanced,...rankedArticles.filter(x=>!selectedUrls.has(x.url))]
+   .slice(0,24).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
  // Identity-linked community reviews are a clearly labeled fallback, not
  // publisher headlines. Their URLs are attached to this exact TMDB title ID.
  const community=[];
