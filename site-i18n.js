@@ -106,6 +106,8 @@
   // Live Photo JPEG submission: keep the new format option bilingual.
   Object.assign(translations, {
     "动态图标（GIF / 内嵌视频 Live Photo JPG）": "Animated icon (GIF / Live Photo JPG with embedded video)",
+    "动态图标（GIF / Live Photo JPG / MOV / MP4）": "Animated icon (GIF / Live Photo JPG / MOV / MP4)",
+    "视频将自动转换为 320 × 320 循环 GIF，生成成功后可在审核后台预览。": "Video will be converted to a 320 × 320 looping GIF; the finished GIF will appear in the review dashboard.",
     "Live Photo 投稿": "Live Photo submission",
     "已检测到内嵌视频。提交后自动生成循环 GIF；审核后台将在转换成功后显示最终 GIF。": "Embedded video found. A looping GIF will be generated automatically after submission; the final GIF appears in the review dashboard when ready.",
     "静态投稿": "Static submissions",
