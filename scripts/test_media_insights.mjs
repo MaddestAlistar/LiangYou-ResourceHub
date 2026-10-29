@@ -500,6 +500,54 @@ test('all-title Bilibili discovery can fall back to an indexed public link and v
   assert.match(body.source,/Bing public index/);
  }finally{globalThis.fetch=old;}
 });
+test('Bing backup finds title-specific videos without a year only for distinctive catalog films',async()=>{
+ const old=globalThis.fetch;
+ const id='BV1F3aF6mEQn',queries=[];
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+   title:'Far Away Oceanic Journey',original_title:'Far Away Oceanic Journey',
+   release_date:'2024-03-03',alternative_titles:{titles:[]},translations:{translations:[]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))
+   return json({code:-412,message:'blocked'});
+  if(u.hostname==='www.bing.com'&&u.pathname==='/search'){
+   queries.push(u.searchParams.get('q'));
+   return new Response('<rss><channel><item><title>Far Away Oceanic Journey film review</title>'+
+    '<link>https://www.bilibili.com/video/'+id+'/</link></item></channel></rss>',{status:200});
+  }
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view'))
+   return json({code:0,data:{bvid:id,title:'Far Away Oceanic Journey film review',state:0,
+    owner:{name:'Film Critics'},stat:{like:157,view:2045}}});
+  throw Error('Unexpected '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.videos.length,1);
+  assert.ok(queries.some(q=>q.includes('Far Away Oceanic Journey')&&!q.includes('2024')));
+  assert.equal(body.videos[0].likes,157);
+ }finally{globalThis.fetch=old;}
+});
+test('Bing backup retains edition-year guard for short ambiguous film titles',async()=>{
+ const old=globalThis.fetch,seen=[];
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+   title:'Moana',original_title:'Moana',release_date:'2026-07-10'});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))
+   return json({code:-412,message:'blocked'});
+  if(u.hostname==='www.bing.com'&&u.pathname==='/search'){
+   seen.push(u.searchParams.get('q'));
+   return new Response('<rss><channel><item><title>Moana 2016 film review</title>'+
+    '<link>https://www.bilibili.com/video/BV1F3aF6mEQn/</link></item></channel></rss>',{status:200});
+  }
+  throw Error('Unexpected '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.videos.length,0);
+  assert.ok(seen.every(q=>q.includes('2026')));
+ }finally{globalThis.fetch=old;}
+});
 test('non-indexed Japanese films use actual Chinese and Japanese titles in region-specific news searches',async()=>{
  const original=globalThis.fetch,queries=[];
  const date=new Date(Date.now()-86400000).toUTCString();
