@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const ENDPOINT='https://liangyou-icon-review.maddestalistar.workers.dev/news-admin';
-const CATEGORIES=['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广'];
+const CATEGORIES=['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选'];
 const list=$('news-items'),category=$('news-category'),title=$('news-title'),content=$('news-content'),notice=$('news-message');
 const refresh=$('news-refresh'),save=$('news-save'),reset=$('news-reset'),heading=$('news-form-title');
 if(!list||!category||!title||!content||!notice)return;
