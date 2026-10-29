@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {inspectEmbeddedMotion} from '../icon-motion.mjs';
+import {inspectEmbeddedMotion, inspectUploadedMotionVideo} from '../icon-motion.mjs';
 import {inspectImage} from '../icon-image.mjs';
 
 function jpeg720(withVideo=true) {
@@ -30,4 +30,11 @@ test('bogus trailing bytes and oversized JPEGs are rejected',()=>{
  let data=jpeg720();const mdat=data.findIndex((v,i)=>v===109&&data[i+1]===100&&data[i+2]===97&&data[i+3]===116);assert(mdat>0);data[mdat+1]=0;
  assert.equal(inspectEmbeddedMotion(data),null);
  assert.equal(inspectEmbeddedMotion(new Uint8Array(10*1024*1024+1)),null);
+});
+
+test('direct Live Photo MOV/MP4 has a valid media container header',()=>{
+ const wrapped=jpeg720();const movie=wrapped.subarray(23);
+ assert.equal(inspectUploadedMotionVideo(movie)?.brand,'isom');
+ assert.equal(inspectUploadedMotionVideo(jpeg720(false)),null);
+ assert.equal(inspectUploadedMotionVideo(new Uint8Array(16)),null);
 });
