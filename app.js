@@ -241,7 +241,9 @@
   // on intermittent connections. It never overwrites current news or score feeds.
   const catalogCacheKey = "liangyou-project-directory-v1";
   const validCatalog = data => Array.isArray(data?.projects) && Array.isArray(data?.future) && !!data.metrics;
-  fetch("./data/projects.json", { cache: "no-cache", signal: AbortSignal.timeout(9000) })
+  const catalogController = new AbortController();
+  const catalogTimeout = setTimeout(() => catalogController.abort(), 9000);
+  fetch("./data/projects.json", { cache: "no-cache", signal: catalogController.signal })
     .then(response => { if (!response.ok) throw new Error("catalog unavailable"); return response.json(); })
     .then(data => {
       if (!validCatalog(data)) throw new Error("invalid catalog");
@@ -251,6 +253,7 @@
         if (content.length < 450000) localStorage.setItem(catalogCacheKey,content);
       } catch { /* private browsing or quota limits must not block the site */ }
     })
+    .finally(() => clearTimeout(catalogTimeout))
     .catch(error => {
       console.warn("Resource catalog could not be loaded", error);
       try {
