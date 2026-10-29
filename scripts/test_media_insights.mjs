@@ -625,6 +625,21 @@ test('Bilibili mismatched IDs and unavailable like counters cannot be shown as p
   assert.equal(body.likes,undefined);
  }finally{globalThis.fetch=origin;}
 });
+test('older movies may show a TMDB-linked unflagged trailer without falsely claiming it is official',async()=>{
+ stub({movie:{videos:{results:[
+  {site:"YouTube",official:false,type:"Trailer",key:"OldFilm1234",name:"Classic Film theatrical trailer"},
+  {site:"YouTube",official:false,type:"Clip",key:"Pirated1234",name:"Full movie watch online"}
+ ]}},youtubeVideos:[{
+  id:"OldFilm1234",snippet:{title:"Classic Film theatrical trailer",channelTitle:"Film Archive"},
+  status:{privacyStatus:"public",embeddable:true},contentDetails:{duration:"PT2M"},
+  statistics:{viewCount:"800",likeCount:"40"}
+ }]});
+ const {status,body}=await invoke("/api/insights/movie/550?media=1",
+   {TMDB_API_KEY:"test",YOUTUBE_API_KEY:"test"});
+ assert.equal(status,200);
+ assert.ok(body.trailers.some(x=>x.id==="OldFilm1234"&&x.official===false&&x.embeddable===true));
+ assert.ok(!body.trailers.some(x=>x.id==="Pirated1234"));
+});
 test('TMDB official YouTube IDs get metadata without guessing the video title',async()=>{
  stub({movie:{videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official Film Trailer'}]}}});
  const {status,body}=await invoke('/api/insights/movie/550?media=1',{TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
