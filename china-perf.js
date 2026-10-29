@@ -127,9 +127,25 @@
       module.enhanced = false;
     });
   };
+  const prefetchMediaSnapshot = () => {
+    // Start the 0.8 MB public film snapshot request in parallel with CSS/JS,
+    // not after they finish. A single shared Promise avoids duplicate requests.
+    if (window.LiangYouMediaSnapshotPrefetch) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 16000);
+    window.LiangYouMediaSnapshotPrefetch = fetch('./data/media-intel.json',
+      {cache:'no-cache', signal:controller.signal})
+      .then(response => {
+        if (!response.ok) throw new Error('media_snapshot_unavailable');
+        return response.json();
+      })
+      .catch(() => null)
+      .finally(() => clearTimeout(timer));
+  };
   const start = module => {
     if (module.started) return;
     module.started = true;
+    if (module.id === 'media') prefetchMediaSnapshot();
     // Preload all URLs in parallel to avoid a 9-request sequential network waterfall.
     module.urls.forEach(preload);
     (async () => {
