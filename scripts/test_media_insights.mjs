@@ -44,7 +44,8 @@ test('a localized title with no Chinese trailer uses exact-ID English TMDB video
   if(u.pathname==='/3/movie/550/videos')return json({id:550,results:[
    {site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official English trailer'},
    {site:'YouTube',official:false,type:'Teaser',key:'NonOffi1234',name:'TMDB-linked public teaser'},
-   {site:'YouTube',official:true,type:'Clip',key:'BadClip1234',name:'Not a trailer'}
+   {site:'YouTube',official:false,type:'Featurette',key:'Feature1234',name:'Cast behind the scenes'},
+   {site:'YouTube',official:true,type:'Clip',key:'BadClip1234',name:'Full movie download'}
   ]});
   if(u.pathname==='/3/movie/550')return json({id:550,title:'测试影片',
    original_title:'Sample Film',release_date:'2026-03-20',adult:false,videos:{results:[]},
@@ -57,7 +58,8 @@ test('a localized title with no Chinese trailer uses exact-ID English TMDB video
   assert.equal(body.tmdb_id,550);
   assert.deepEqual(body.profile.videos.map(x=>x.url),[
    'https://www.youtube.com/watch?v=AbCdEf12345',
-   'https://www.youtube.com/watch?v=NonOffi1234']);
+   'https://www.youtube.com/watch?v=NonOffi1234',
+   'https://www.youtube.com/watch?v=Feature1234']);
   assert.equal(body.profile.videos[0].official,true);
   assert.equal(body.profile.videos[1].official,false);
   assert.ok(body.profile.videos.every(v=>v.verifiedBy==='TMDB'));
