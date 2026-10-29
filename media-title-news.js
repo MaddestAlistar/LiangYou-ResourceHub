@@ -50,25 +50,34 @@
   }
   async function forInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId),year=Number(String(info?.year||'').slice(0,4));
-    // Exact TMDB kind + numeric ID is authoritative even when a search card
-    // has not supplied a release year. Compare edition years only when known.
     if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return null;
-    // Start the scheduled catalog lookup alongside the small manual index.
-    // Previously, every other movie waited for both files sequentially.
-    const catalogLookup=cachedForInfo(kind,id,year);
-    const d=await read();
-    const item=d?.titles?.[kind+':'+id];
-    if(!item||item.kind!==kind||item.tmdbId!==id||(year>=1850&&item.year!==year))
-      return catalogLookup;
-    const articles=(Array.isArray(item.articles)?item.articles:[]).filter(x=>x&&
+    // Fetch both sources in parallel. Verified catalog additions must not be
+    // discarded just because this film also has a hand-checked editorial entry.
+    const [d,catalog]=await Promise.all([read(),cachedForInfo(kind,id,year)]);
+    const found=d?.titles?.[kind+':'+id];
+    const item=found&&found.kind===kind&&found.tmdbId===id&&
+      (!(year>=1850)||found.year===year)?found:null;
+    const articles=(Array.isArray(item?.articles)?item.articles:[]).filter(x=>x&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=200&&
       typeof x.source==='string'&&safeUrl(x.url)&&Number.isFinite(Date.parse(x.date||'')))
       .map(x=>({...x,url:safeUrl(x.url),verifiedByTitleId:true}));
-    const videos=(Array.isArray(item.videos)?item.videos:[]).filter(x=>x&&x.kind===kind&&
-      Number(x.year)===year&&x.title===item.title&&safeUrl(x.verifiedSource))
+    const videos=(Array.isArray(item?.videos)?item.videos:[]).filter(x=>x&&x.kind===kind&&
+      (!(year>=1850)||Number(x.year)===year)&&x.title===item.title&&safeUrl(x.verifiedSource))
       .map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
-    const aliases=(Array.isArray(item.aliases)?item.aliases:[]).filter(x=>typeof x==='string'&&x.length>=3&&x.length<=80).slice(0,18);
-    return {articles,videos,aliases};
+    const aliases=(Array.isArray(item?.aliases)?item.aliases:[])
+      .filter(x=>typeof x==='string'&&x.length>=3&&x.length<=80).slice(0,18);
+    const dedupe=(rows,key,limit)=>{
+      const seen=new Set();return rows.filter(row=>{
+        const id=key(row);if(!id||seen.has(id))return false;
+        seen.add(id);return true;
+      }).slice(0,limit);
+    };
+    const mergedArticles=dedupe([...articles,...(catalog?.articles||[])],
+      row=>safeUrl(row.url),30);
+    const mergedVideos=dedupe([...videos,...(catalog?.videos||[])],
+      row=>row.platform+':'+row.videoId,16);
+    return mergedArticles.length||mergedVideos.length||aliases.length?
+      {articles:mergedArticles,videos:mergedVideos,aliases}:null;
   }
   // Separate from the checked-in editorial index: a blocked optional search must
   // never delay or erase already verified records.
