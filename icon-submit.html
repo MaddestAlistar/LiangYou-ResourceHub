@@ -88,7 +88,7 @@ function checkImage(){
         previewUrl=URL.createObjectURL(f.slice(motion.videoOffset,f.size,motion.container==="mov"?"video/quicktime":"video/mp4"));
         const v=$("motion-preview");v.src=previewUrl;v.hidden=false;
         if(!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)v.play().catch(()=>{});
-        $("info").textContent+=` + " ` + `+ "内嵌视频 "+(motion.videoBytes/1024/1024).toFixed(2)+" MB";
+        $("info").textContent+=" · 内嵌视频 "+(motion.videoBytes/1024/1024).toFixed(2)+" MB";
         $("preview-hint").hidden=false;$("preview-hint").textContent="已检测到内嵌视频。提交后自动生成循环 GIF；审核后台将在转换成功后显示最终 GIF。";
         fieldError("file",null);status("motionReady");
       }catch(e){if(run!==validationRun)return;fieldError("file","unreadable");status("unreadable",true)}
