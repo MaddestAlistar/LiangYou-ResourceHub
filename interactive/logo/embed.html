@@ -199,7 +199,39 @@ energyBtn.addEventListener('click',()=>setEnergy(!energy));spinBtn.addEventListe
 resetBtn.addEventListener('click',()=>{targetX=-6;targetY=-13;zoom=1;energy=false;app.classList.remove('active');energyBtn.classList.remove('on');energyBtn.textContent='✦ 能量模式'});
 
 // Both official social cards are direct HTTPS links and work without JavaScript.
-function frame(now){const dt=Math.min(50,now-last);last=now;if(spin&&!drag)targetY+=dt*.0038;currentX+=(targetX-currentX)*Math.min(1,dt*.0075);currentY+=(targetY-currentY)*Math.min(1,dt*.0075);document.documentElement.style.setProperty('--pitch',currentX+'deg');document.documentElement.style.setProperty('--yaw',currentY+'deg');document.documentElement.style.setProperty('--zoom',zoom+(shock*.045));shock*=.92;if(shock<.001)shock=0;requestAnimationFrame(frame)}requestAnimationFrame(frame);
+let frameHandle=0, logoPaused=false;
+function scheduleFrame() {
+  if(frameHandle || logoPaused || document.hidden) return;
+  last=performance.now();
+  frameHandle=requestAnimationFrame(frame);
+}
+function frame(now) {
+  frameHandle=0;
+  if(logoPaused || document.hidden)return;
+  const dt=Math.min(50,now-last);last=now;
+  if(spin&&!drag)targetY+=dt*.0038;
+  currentX+=(targetX-currentX)*Math.min(1,dt*.0075);
+  currentY+=(targetY-currentY)*Math.min(1,dt*.0075);
+  document.documentElement.style.setProperty('--pitch',currentX+'deg');
+  document.documentElement.style.setProperty('--yaw',currentY+'deg');
+  document.documentElement.style.setProperty('--zoom',zoom+(shock*.045));
+  shock*=.92;if(shock<.001)shock=0;
+  frameHandle=requestAnimationFrame(frame);
+}
+function setFramePaused(value) {
+  logoPaused=!!value;
+  if(logoPaused){if(frameHandle)cancelAnimationFrame(frameHandle);frameHandle=0;}
+  else scheduleFrame();
+}
+document.addEventListener('visibilitychange',()=> {
+  if(document.hidden){if(frameHandle)cancelAnimationFrame(frameHandle);frameHandle=0;}
+  else scheduleFrame();
+});
+window.addEventListener('message', event => {
+  if(event.origin!==location.origin || event.data?.type!=='liangyou:logo-visibility')return;
+  setFramePaused(!event.data.visible);
+});
+scheduleFrame();
 })();
 </script>
 </body></html>
