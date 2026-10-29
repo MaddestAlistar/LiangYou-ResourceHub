@@ -198,6 +198,33 @@ test('uncurated catalog films discover historical Chinese and English articles b
  assert.ok(origins.some(x=>x.ceid==='US:en'));
  assert.ok(origins.every(x=>!x.q.includes('when:2y')));
 });
+test('modern remakes cannot inherit same-name Guardian articles from an older film',async()=>{
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{
+   const u=new URL(String(input));
+   if(u.hostname==='api.themoviedb.org')return json({
+     id:550,title:'The Cat in the Hat',original_title:'The Cat in the Hat',
+     adult:false,release_date:'2026-11-06',credits:{crew:[],cast:[]},
+     genres:[{name:'Family'}],alternative_titles:{titles:[]},translations:{translations:[]}});
+   if(u.hostname==='content.guardianapis.com')return json({response:{status:'ok',results:[
+     {webTitle:'The Cat in the Hat review – family film',
+      webUrl:'https://www.theguardian.com/film/2004/apr/02/dvdreviews.shopping5',
+      webPublicationDate:'2004-04-02T16:30:26Z'},
+     {webTitle:'The Cat in the Hat 2026 movie review',
+      webUrl:'https://www.theguardian.com/film/2026/nov/12/new-film-review',
+      webPublicationDate:'2026-10-20T12:00:00Z'}]}});
+   if(u.hostname==='news.google.com'||u.hostname==='www.bing.com')
+     return new Response('<rss><channel></channel></rss>',{status:200});
+   throw Error('unexpected external source');
+ };
+ try{
+  const {status,body}=await invoke('/api/news/title/movie/550',{
+   TMDB_API_KEY:'test',THE_GUARDIAN_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.articles.some(x=>x.url.includes('/2026/nov/12/')));
+  assert.ok(body.articles.every(x=>!x.url.includes('/2004/apr/02/')));
+ }finally{globalThis.fetch=original;}
+});
 test('Guardian film-section reviews can match a distinctive film even without its year in the headline',async()=>{
  const old=globalThis.fetch;
  globalThis.fetch=async input=>{
