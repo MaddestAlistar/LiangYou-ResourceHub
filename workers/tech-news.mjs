@@ -3,6 +3,7 @@
 export const NEWS_PATH = 'news/tech-news.json';
 export const NEWS_CATEGORIES = Object.freeze(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const categories = new Set(NEWS_CATEGORIES);
+// Strict 20 MB (decimal), shared with the browser-side video upload limit.
 export const VIDEO_MAX_BYTES = 20 * 1000 * 1000;
 export const VIDEO_TITLE_MAX = 20;
 export const VIDEO_DESC_MAX = 38;
