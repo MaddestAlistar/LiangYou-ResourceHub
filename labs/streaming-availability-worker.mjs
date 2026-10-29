@@ -561,7 +561,11 @@ async function titleNews(kind,id,env){
     const url=safeHttps(article.webUrl,"theguardian.com");
     const date=String(article.webPublicationDate||"");
     const stamp=Date.parse(date);
-    if(!url||!Number.isFinite(stamp))return null;
+    // A publisher title search can return reviews of an older film with the
+    // exact same name. Enforce the edition's release-era boundary for *every*
+    // provider, including The Guardian (RSS already checks its own dates).
+    const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
+    if(!url||!Number.isFinite(stamp)||stamp<oldest||stamp>Date.now()+86400000)return null;
     const summary=rssDecoded(String(article.fields?.trailText||"")+" "+String(article.fields?.standfirst||"")).slice(0,400);
     const context={year,people,editorialFilm:true};
     const headlineMatch=rssArticleMatches(title,originalLatin,context);
