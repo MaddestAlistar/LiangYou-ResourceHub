@@ -759,7 +759,8 @@ async function titleBilibiliVideos(kind,id,env){
  const regionName=[...new Set(names)].find(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x));
  const latinName=[...new Set(names)].find(x=>/^[a-z0-9 .:'()&!-]+$/i.test(x)&&x.length>=7);
  const searchName=regionName||latinName;
- const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
+ const checks={nativeReturned:0,nativeHttpSuccess:0,nativeRejected:0,indexReturned:0,titleMatched:0,detailChecked:0,detailVerified:0,detailFailed:0};
+ const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[],sourceDiagnostics:checks});
  if(!searchName||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
  // Two independent searches per work: year-specific trailers and unyeared
  // reviews/clips. Both still need a verified title and Bilibili video ID.
@@ -790,8 +791,11 @@ async function titleBilibiliVideos(kind,id,env){
    const payload=await jsonRemote(uri.toString(),{
     headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
-   if(payload?.code===0&&Array.isArray(payload.data?.result)){nativeWorking=true;return payload.data.result;}
-   return [];
+   if(payload?.code===0&&Array.isArray(payload.data?.result)){
+     nativeWorking=true;checks.nativeHttpSuccess++;checks.nativeReturned+=payload.data.result.length;
+     return payload.data.result;
+   }
+   checks.nativeRejected++;return [];
   }catch{return [];}
  }))).flat();
  const unique=new Set();
@@ -801,6 +805,7 @@ async function titleBilibiliVideos(kind,id,env){
  })).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
    filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
    !unique.has(v.bvid)&&unique.add(v.bvid)).slice(0,14);
+ checks.titleMatched=shortlist.length;
  // Some Bilibili uploads omit "预告"/"影评" from their titles. The first
  // two searches are contextual, then one plain-title probe is permitted only
  // when the official public endpoint worked but no usable candidates survived.
@@ -821,6 +826,7 @@ async function titleBilibiliVideos(kind,id,env){
        filmVideoTitleMatches(x.heading,titleChoices,rawYear,kind)&&
        !unique.has(x.bvid)&&unique.add(x.bvid));
     shortlist=[...shortlist,...found].slice(0,14);
+    checks.titleMatched=shortlist.length;
    }
   }catch{/* A rate-limited public search never fabricates a result. */}
  }
@@ -853,7 +859,9 @@ async function titleBilibiliVideos(kind,id,env){
        return match?{bvid:match[1],heading:title}:null;
       }).filter(v=>v&&filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
         !unique.has(v.bvid)&&unique.add(v.bvid));
+      checks.indexReturned+=extra.length;
       if(extra.length){shortlist=[...shortlist,...extra].slice(0,14);source="Bilibili + Bing public index"; }
+      checks.titleMatched=shortlist.length;
      }
     }
    }finally{clearTimeout(timer);}
@@ -861,7 +869,8 @@ async function titleBilibiliVideos(kind,id,env){
  }
  if(!shortlist.length)return {ok:true,kind,tmdbId:Number(id),year,
    status:nativeWorking||indexedWorking?"no_match":"unavailable",
-   source:"Bilibili public search",videos:[]};
+   source:"Bilibili public search",videos:[],sourceDiagnostics:checks};
+ checks.detailChecked=shortlist.length;
  const checked=await Promise.all(shortlist.map(async v=>{
    try{
     const uri=new URL("https://api.bilibili.com/x/web-interface/view");
@@ -870,9 +879,10 @@ async function titleBilibiliVideos(kind,id,env){
       headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
        "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},5500);
     const d=resp?.data;
-    if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0)return null;
+    if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0){checks.detailFailed++;return null;}
     const title=String(d.title||"").normalize("NFKC").trim();
-    if(!filmVideoTitleMatches(title,titleChoices,rawYear,kind))return null;
+    if(!filmVideoTitleMatches(title,titleChoices,rawYear,kind)){checks.detailFailed++;return null;}
+    checks.detailVerified++;
     const likes=Number(d.stat?.like),views=Number(d.stat?.view);
     return {kind,tmdbId:Number(id),verifiedByTitleId:true,title:canonical,year,
       platform:"bilibili",videoId:v.bvid,name:title.slice(0,145),
@@ -881,11 +891,11 @@ async function titleBilibiliVideos(kind,id,env){
       type:/预告|定档|teaser|trailer/i.test(title)?"Trailer":"Related",
       likes:Number.isSafeInteger(likes)&&likes>=0?likes:null,
       views:Number.isSafeInteger(views)&&views>=0?views:null};
-   }catch{return null;}
+   }catch{checks.detailFailed++;return null;}
  }));
  const videos=checked.filter(Boolean).slice(0,6);
  return {ok:true,kind,tmdbId:Number(id),year,source,
-   status:videos.length?"ok":"no_match",videos};
+   status:videos.length?"ok":"no_match",videos,sourceDiagnostics:checks};
 }
 
 async function koreanBoxOffice(env){
