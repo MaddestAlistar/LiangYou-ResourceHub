@@ -19,8 +19,9 @@ function db(){
 const call=(path,method='GET',body,authenticated=true)=>new Request('https://demo.local'+path,{method,
  headers:{Origin:origin,...(authenticated?{'X-Admin-Key':env.ADMIN_KEY}:{}),...(body?{'Content-Type':'application/json'}:{})},
  ...(body?{body:JSON.stringify(body)}:{})});
-test('Seven categories, authentication and publishing flow',async()=>{
- assert.equal(NEWS_CATEGORIES.length,7);
+test('Eight categories, authentication and publishing flow',async()=>{
+ assert.equal(NEWS_CATEGORIES.length,8);
+ assert.ok(NEWS_CATEGORIES.includes('视频精选'));
  const store=db(),extra={origin,allowed:origin,fetcher:store.fetcher};
  const denied=await serveTechNews(call('/news-admin','GET',null,false),env,extra);
  assert.equal(denied.status,401);
