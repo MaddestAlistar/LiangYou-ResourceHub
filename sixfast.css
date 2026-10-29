@@ -1,0 +1,42 @@
+
+/* Sixfast • compact featured app, scoped to its own section. */
+.sixfast-section{padding-top:26px;padding-bottom:28px;scroll-margin-top:110px}
+.sixfast-shell{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) 252px;gap:28px;align-items:stretch;overflow:hidden;border:1px solid rgba(74,229,175,.32);border-radius:27px;padding:32px 34px;background:radial-gradient(ellipse at 89% 5%,rgba(0,194,145,.17),transparent 45%),linear-gradient(122deg,#0b1820 0%,#112b2b 55%,#0c1a25 100%);box-shadow:0 20px 55px rgba(0,0,0,.22)}
+.sixfast-shell::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(80,251,169,.72),transparent);pointer-events:none}
+.sixfast-main{position:relative;z-index:1;min-width:0}
+.sixfast-eyebrow{font-size:11px!important;letter-spacing:.18em;color:#65e9b9!important;font-weight:750;margin:0 0 16px}
+.sixfast-title-row{display:flex;align-items:center;gap:15px}
+.sixfast-logo{display:block;flex:0 0 auto;width:70px;height:70px;object-fit:cover;border-radius:18px;box-shadow:0 9px 28px #0006}
+.sixfast-title-copy{min-width:0}
+.sixfast-title-copy h2{margin:0;font-size:clamp(25px,2.9vw,35px);font-weight:800;letter-spacing:-.035em;color:#f4fffa;line-height:1.2}
+.sixfast-title-copy h2 span{font-size:.68em;color:#89f7c9;font-weight:650;letter-spacing:0}
+.sixfast-title-copy>p{margin:7px 0 0;color:#acccc9;font-size:13px}
+.sixfast-lead{max-width:670px;margin:20px 0 14px;color:#e0efee;font-size:15px;line-height:1.85}
+.sixfast-tags{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 22px}
+.sixfast-tags span{padding:6px 11px;border:1px solid rgba(120,240,195,.23);border-radius:999px;background:rgba(62,198,151,.07);color:#bce8d9;font-size:12px;line-height:1.15}
+.sixfast-download-title{margin:0 0 10px;font-size:12px;font-weight:750;color:#b2cfc7;letter-spacing:.025em}
+.sixfast-downloads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:665px}
+.sixfast-downloads a{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;padding:11px 12px;border:1px solid rgba(118,220,183,.27);border-radius:12px;background:rgba(255,255,255,.045);color:#effff9!important;font-size:13px;font-weight:650;line-height:1.25;text-decoration:none;transition:border-color .18s ease,background .18s ease,transform .18s ease}
+.sixfast-downloads a:hover,.sixfast-downloads a:focus-visible{border-color:#55eeb4;background:rgba(50,218,160,.15);transform:translateY(-1px)}
+.sixfast-downloads a small{font-size:13px;color:#59eaba}
+.sixfast-downloads a:focus-visible,.sixfast-copy:focus-visible{outline:2px solid #7bf8cf;outline-offset:3px}
+.sixfast-all-link{display:inline-flex;margin:12px 0 17px;font-size:12px;color:#8be4c4!important;text-decoration:underline;text-underline-offset:4px}
+.sixfast-code{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:665px;padding:13px 15px;border:1px dashed rgba(105,238,187,.45);border-radius:14px;background:linear-gradient(110deg,rgba(23,119,95,.20),rgba(20,39,45,.76))}
+.sixfast-code-text{min-width:0}
+.sixfast-code-caption{font-size:11px;color:#a0c6bc}
+.sixfast-code-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:3px}
+.sixfast-code-line strong{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.075em;font-size:23px;color:#8bffd1}
+.sixfast-code-line span{font-size:11px;color:#c2d4d0;line-height:1.5}
+.sixfast-copy{border:0;border-radius:10px;padding:10px 15px;background:linear-gradient(125deg,#38e7ad,#20c8ad);color:#062c24;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}
+.sixfast-copy:hover{filter:brightness(1.08)}
+.sixfast-note{max-width:665px;margin:10px 0 0;color:#8daaa4;font-size:11px;line-height:1.65}
+.sixfast-visual{position:relative;display:flex;align-items:center;justify-content:center;min-width:0}
+.sixfast-glow{position:absolute;width:250px;height:290px;border-radius:50%;background:#17f5b11f;filter:blur(38px);pointer-events:none}
+.sixfast-device{position:relative;width:min(100%,220px);padding:8px 8px 9px;border:1px solid rgba(130,255,213,.36);border-radius:30px;background:linear-gradient(145deg,#1d3c3c,#09171b);box-shadow:0 22px 55px #0008,0 0 28px #38e8a018;transform:rotate(3deg)}
+.sixfast-device::before{content:"";position:absolute;z-index:2;top:9px;left:50%;transform:translateX(-50%);height:12px;width:52px;border-radius:0 0 12px 12px;background:#09171b}
+.sixfast-device img{width:100%;height:auto;display:block;border-radius:23px;object-fit:cover}
+.sixfast-device-label{position:absolute;bottom:8px;left:-22px;right:-14px;text-align:center;border:1px solid #6fe3c052;border-radius:999px;background:rgba(11,36,34,.89);padding:8px 10px;color:#b2f7dc;font-size:11px;font-weight:650;backdrop-filter:blur(7px)}
+@media(max-width:980px){.sixfast-shell{grid-template-columns:minmax(0,1fr) 205px;gap:12px;padding:25px}.sixfast-device{max-width:175px}.sixfast-device-label{left:-10px;right:-10px}.sixfast-downloads{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sixfast-section{padding-top:12px;padding-bottom:14px}.sixfast-shell{display:flex;flex-direction:column;gap:4px;padding:21px 16px;border-radius:20px}.sixfast-eyebrow{font-size:10px!important;margin-bottom:12px}.sixfast-title-row{gap:11px}.sixfast-logo{width:55px;height:55px;border-radius:13px}.sixfast-title-copy h2{font-size:25px}.sixfast-title-copy h2 span{font-size:.60em}.sixfast-title-copy>p{font-size:11px;line-height:1.5}.sixfast-lead{margin:13px 0 10px;font-size:13px;line-height:1.72}.sixfast-tags{gap:6px;margin-bottom:15px}.sixfast-tags span{font-size:10px;padding:5px 8px}.sixfast-downloads{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sixfast-downloads a{padding:10px 7px;font-size:11px;border-radius:10px}.sixfast-code{gap:7px;padding:11px 10px}.sixfast-copy{padding:10px;font-size:11px}.sixfast-code-line strong{font-size:22px}.sixfast-code-line span{font-size:10px}.sixfast-note{font-size:10px;margin-top:8px}.sixfast-visual{display:none}}
+@media(max-width:370px){.sixfast-downloads{grid-template-columns:repeat(2,minmax(0,1fr))}.sixfast-title-copy h2{font-size:22px}.sixfast-copy{padding:9px}}
+@media(prefers-reduced-motion:reduce){.sixfast-downloads a{transition:none}}
