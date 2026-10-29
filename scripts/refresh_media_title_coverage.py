@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!ausrabin/env python3
 """Gradually build exact-TMDB-ID news/video coverage for all catalog titles.
 
 The Cloudflare Worker verifies title identity. This job only stores URL metadata
