@@ -28,6 +28,23 @@ test('one section and one shared card grid contain YouTube and verified Bilibili
  assert.match(h,/data-mi-cn-id="BV1ULFPeEEBh"/);
  assert.doesNotMatch(h,/国内预告片|mi-domestic-trailers|mi-cn-video-card/);
 });
+test('ID-linked clips render for catalog entries missing a release year without cross-title leaks',()=>{
+ const row={kind:'movie',tmdbId:550,verifiedByTitleId:true,year:1999,
+   title:'Fight Club',platform:'bilibili',videoId:'BV1234567890',
+   name:'Fight Club cast interview',
+   verifiedSource:'https://www.bilibili.com/video/BV1234567890/'};
+ const noYear={kind:'movie',tmdbId:550,title:'搏击俱乐部',originalTitle:'Fight Club'};
+ const html=gallery({},noYear,[row],'ready');
+ assert.match(html,/data-mi-cn-id="BV1234567890"/);
+ assert.equal(verified({...noYear,tmdbId:551},[row]).length,0);
+ assert.equal(verified({...noYear,kind:'tv'},[row]).length,0);
+ assert.equal(verified({...noYear,year:'2026-01-01'},[row]).length,0);
+ assert.equal(verified({...noYear,tmdbId:null},[row]).length,0);
+ const unsafe={...row,verifiedSource:'https://attacker.example/video/BV1234567890/'};
+ assert.equal(verified(noYear,[unsafe]).length,0);
+ const unverified={...row,verifiedByTitleId:false};
+ assert.equal(verified(noYear,[unverified]).length,0);
+});
 test('all platforms share one six-video limit, with at most four additional Chinese clips',()=>{
  const ytRows=Array.from({length:15},(_,i)=>({
   id:'Video'+String(i).padStart(6,'0'),title:'Ne Zha 2 cast and filming',
