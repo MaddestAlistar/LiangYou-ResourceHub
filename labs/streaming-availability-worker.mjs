@@ -440,6 +440,12 @@ async function titleNews(kind,id,env){
   ...(local?.alternative_titles?.titles||local?.alternative_titles?.results||[])];
  names.push(...alt.filter(v=>["CN","HK","TW","US","GB","KR","JP"].includes(v.iso_3166_1))
    .map(v=>String(v.title||v.name||"").trim()));
+ // TMDB translations differ from alternate titles. Search all films with their
+ // ID-bound Chinese, Cantonese, Japanese and Korean localized names as well.
+ const translations=[...(item.translations?.translations||[]),...(local?.translations?.translations||[])];
+ names.push(...translations.filter(v=>["zh","ja","ko","en"].includes(v.iso_639_1)&&
+   ["CN","HK","TW","US","GB","JP","KR","SG"].includes(v.iso_3166_1))
+   .map(v=>String(v.data?.title||v.data?.name||"").trim()));
  const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
  const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
   ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
