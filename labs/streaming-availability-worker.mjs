@@ -139,9 +139,14 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    .filter(v=>v.length>=2&&v.length<=100&&!/^(?:untitled|未定名|无标题)$/i.test(v)))].slice(0,45);
  const keyYouTube=(env.YOUTUBE_API_KEY||env.YOUTUBE_DATA_API_KEY||env.YOUTUBE_DATA_API_V3_KEY||"").trim();
  const tmdbTrailerRows=(title.videos?.results||[]).filter(v=>v.site==="YouTube"&&
-   ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key));
+   ["Trailer","Teaser","Clip","Featurette"].includes(v.type)&&/^[A-Za-z0-9_-]{11}$/.test(v.key)&&
+   !/full\s*(?:movie|film|episode)|entire\s*(?:movie|film)|完整版|全集|网盘|资源下载/i.test(v.name||""));
  const seenIds=new Set();
- tmdbTrailerRows.sort((a,b)=>Number(b.official===true)-Number(a.official===true));
+ // Prefer authenticated public trailers, then other TMDB-ID-linked trailers.
+ // Unofficial clips are labeled as such; they never inherit an "official" badge.
+ tmdbTrailerRows.sort((a,b)=>Number(b.official===true)-Number(a.official===true)||
+   Number(b.type==="Trailer")-Number(a.type==="Trailer")||
+   Number(b.type==="Teaser")-Number(a.type==="Teaser"));
  result.trailers=tmdbTrailerRows.filter(v=>{if(seenIds.has(v.key))return false;seenIds.add(v.key);return true;})
    .slice(0,12).map(v=>({id:v.key,title:String(v.name||"Trailer").slice(0,140),
      type:v.type,language:v.iso_639_1||"",channel:"",publishedAt:v.published_at||null,
