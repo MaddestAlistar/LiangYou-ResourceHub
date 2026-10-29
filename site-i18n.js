@@ -115,12 +115,14 @@
     localStorage.setItem('liangyou-site-language', language);
     apply();
   }));
+  // Live sport/film updates can mutate hundreds of nodes at once. Coalesce
+  // translation work instead of rescanning the entire document every frame.
   const observer = new MutationObserver(mutations => {
     if (busy || language !== 'en' || scheduled) return;
     for (const mutation of mutations) {
       if (mutation.type === 'childList' || mutation.type === 'characterData') {
         scheduled = true;
-        requestAnimationFrame(() => { scheduled = false; apply(); });
+        setTimeout(() => { scheduled = false; apply(); }, 180);
         return;
       }
     }
