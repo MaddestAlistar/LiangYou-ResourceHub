@@ -222,6 +222,34 @@ test('Guardian film-section reviews can match a distinctive film even without it
   assert.ok(!body.articles.some(v=>v.title.includes('future of technology')));
  }finally{globalThis.fetch=old;}
 });
+test('Guardian standfirst can identify a specific movie when the headline has no title',async()=>{
+ const old=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==="api.themoviedb.org")return json({id:550,adult:false,
+   title:"Spirited Away",original_title:"Spirited Away",release_date:"2001-07-20"});
+  if(u.hostname==="news.google.com")return new Response("<rss><channel></channel></rss>");
+  if(u.hostname==="content.guardianapis.com")return json({response:{status:"ok",results:[
+   {webTitle:"A wondrous animated film by Hayao Miyazaki",
+    webUrl:"https://www.theguardian.com/film/2001/jul/30/miyazaki-feature",
+    webPublicationDate:"2001-07-30T12:00:00Z",
+    fields:{trailText:"Review: Spirited Away takes viewers into a magical world",standfirst:"Japanese animation"}},
+   {webTitle:"Film industry obsession with nostalgia",
+    webUrl:"https://www.theguardian.com/film/2022/aug/20/unrelated",
+    webPublicationDate:"2022-08-20T12:00:00Z",
+    fields:{trailText:"Our collective obsession with cinema",standfirst:"An unrelated film trend"}}
+  ]}});
+  if(u.hostname==="www.bing.com")return new Response("<rss><channel></channel></rss>");
+  throw Error("Unexpected "+u.href);
+ };
+ try{
+  const {status,body}=await invoke("/api/news/title/movie/550",
+     {TMDB_API_KEY:"test",THE_GUARDIAN_API_KEY:"test"});
+  assert.equal(status,200);
+  assert.ok(body.articles.some(v=>v.source==="The Guardian"&&v.title.startsWith("A wondrous")));
+  assert.ok(body.articles.every(v=>!v.title.includes("obsession with nostalgia")));
+ }finally{globalThis.fetch=old;}
+});
 test('a movie with no news can show clearly labeled, ID-linked user review links without inventing popularity',async()=>{
  const original=globalThis.fetch;
  globalThis.fetch=async input=>{
