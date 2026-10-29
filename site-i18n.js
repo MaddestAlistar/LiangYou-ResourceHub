@@ -91,6 +91,18 @@
     "途播连接 Emby / Jellyfin，体验 CarPlay 视频播放。":"Tubo connects to Emby / Jellyfin for CarPlay playback.",
     "如何在 CarPlay 上看影视？｜途播":"CarPlay video playback with Tubo"
   });
+  // Headlines and descriptions added through the news CMS must only use full
+  // translations. Partial dictionary substitutions made user-authored text
+  // read like "良友AnimatedIcons已Updated", rather than natural language.
+  Object.assign(translations, {
+    "良友动态图标在Explayer内展示效果":"LiangYou animated icons showcased in Explayer",
+    "良友动态图标已更新至近百款。诚邀大家体验。若有任何优化建议或二创灵感，欢迎随时交流或投稿。":"Nearly 100 LiangYou animated icons are now available. Try them out and share suggestions, creative ideas or your own submissions.",
+    "频道视频":"Channel video",
+    "暂无文字新闻更新":"No written news yet",
+    "视频来源：Telegram":"Source: Telegram",
+    "网页内播放":"Play video",
+    "查看原帖 ↗":"Original ↗"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
@@ -100,13 +112,13 @@
   let language = localStorage.getItem('liangyou-site-language') === 'en' ? 'en' : 'zh';
   let busy = false;
   let scheduled = false;
-  function translateText(raw) {
+  function translateText(raw, exactOnly = false) {
     const trimmed = raw.trim();
     if (!trimmed) return raw;
     let result = translations[trimmed];
     if (!result) {
       result = trimmed;
-      for (const [cn,en] of sortedTranslations) {
+      if (!exactOnly) for (const [cn,en] of sortedTranslations) {
         if (cn.length >= 2 && result.includes(cn)) result = result.split(cn).join(en);
       }
     }
@@ -125,7 +137,8 @@
       if (!parent || parent.closest('script,style,textarea,code,pre,[data-site-lang],#officialFixtures,#media,.sports-match,.sports-prob,.sports-track')) continue;
       if (!original.has(node) || (node.nodeValue !== original.get(node) && node.nodeValue !== translatedValues.get(node))) original.set(node,node.nodeValue);
       const source = original.get(node);
-      const desired = language === 'en' ? translateText(source) : source;
+      const isNewsCopy = !!parent.closest('.ly-news-item h3,.ly-news-item p,.ly-news-video-card h3,.ly-news-video-card p');
+      const desired = language === 'en' ? translateText(source, isNewsCopy) : source;
       if (node.nodeValue !== desired) node.nodeValue = desired;
       translatedValues.set(node, desired);
     }
