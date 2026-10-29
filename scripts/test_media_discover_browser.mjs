@@ -56,7 +56,7 @@ try{
  await page.waitForFunction(()=>{
    const d=document.querySelector('#media-dialog');
    return d?.querySelector('.mi-trailer-card')&&d.querySelector('.mi-international-news')&&
-      d.querySelector('.mi-editorial-card a');
+      d.querySelector('[data-mi-discover-slot="domestic"] .mi-editorial-card a');
  },{timeout:20000});
  const result=await page.evaluate(()=>{
    const d=document.querySelector('#media-dialog'),slot=s=>d.querySelector('[data-mi-discover-slot="'+s+'"]');
