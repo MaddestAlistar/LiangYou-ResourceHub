@@ -43,6 +43,7 @@
   });
   Object.assign(translations, {
     "良友科技圈新闻":"LiangYou Tech News",
+    "良友科技圈新闻•Amazing Group":"LiangYou Tech News • Amazing Group",
     "图标动态":"Icon updates",
     "热点播报":"Trending news",
     "联合抽奖":"Joint giveaways",
