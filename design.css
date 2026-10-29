@@ -709,3 +709,36 @@ img.is-fallback { object-fit: contain!important; transform: none!important; bord
   .art-icons .preview-caption--split .caption-lead {font-size:12px;letter-spacing:.025em}
   .art-icons .preview-caption--split .caption-detail {font-size:12px;letter-spacing:.012em}
 }
+
+/* Optional Save-Data mode: preserve content and all controls, skip only decor. */
+html.cn-save-data .cinema-float,
+html.cn-save-data .section-orbit {
+  display:none!important;
+}
+html.cn-save-data .reading-progress,
+html.cn-save-data .liangyou-hourglass,
+html.cn-save-data .channel-live-ring {
+  animation:none!important;
+  transition:none!important;
+}
+html.cn-save-data .tf-image-pane,
+html.cn-save-data .bookmark-dialog::backdrop {
+  backdrop-filter:none!important;
+}
+.cn-module-retry {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin:10px 0;padding:13px 15px;border-radius:13px;
+  border:1px solid rgba(217,191,143,.35);
+  background:rgba(34,42,64,.95);color:#e6e4e0;font-size:12px;line-height:1.65;
+}
+.cn-module-retry button {
+  padding:8px 12px;border:1px solid rgba(232,202,152,.48);
+  background:rgba(228,195,138,.16);border-radius:9px;
+  color:#e9d0a7;font:inherit;font-weight:700;white-space:nowrap;
+  cursor:pointer;
+}
+.cn-module-retry button:focus-visible {outline:2px solid #f0d7a3;outline-offset:2px}
+@media(max-width:700px) {
+  .cn-module-retry {flex-direction:column;align-items:flex-start}
+  .cn-module-retry button {width:100%}
+}
