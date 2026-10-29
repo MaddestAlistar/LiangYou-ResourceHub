@@ -22,24 +22,34 @@
 .ly-news-item p{font-size:11px;line-height:1.55}
 }
 @media(prefers-reduced-motion:reduce){.ly-news *{scroll-behavior:auto}}
-
-/* Featured Xiaohongshu videos: loaded with existing tech news stylesheet. */
-.ly-video{padding-block:12px 16px;scroll-margin-top:112px}
-.ly-video-panel{position:relative;display:grid;grid-template-columns:minmax(160px,218px) minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,30px);padding:18px 20px;border:1px solid rgba(171,190,226,.28);border-radius:22px;background:radial-gradient(ellipse at 100% 0%,rgba(92,79,149,.15),transparent 52%),linear-gradient(130deg,#182234,#111927 70%,#151a2a);box-shadow:0 14px 36px #0003}
-.ly-video-cover{position:relative;display:block;width:100%;aspect-ratio:4/3;overflow:hidden;border:1px solid rgba(207,185,146,.25);border-radius:15px;background:linear-gradient(140deg,#25283d,#101c2f);cursor:pointer;padding:0}
-.ly-video-cover img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
-.ly-video-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(7,12,22,.62),transparent 60%);pointer-events:none}
-.ly-video-play-icon{position:absolute;z-index:1;inset:50% auto auto 50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:rgba(245,220,170,.90);color:#121926;font-size:22px;box-shadow:0 8px 25px #0008}
-.ly-video-cover:hover .ly-video-play-icon{background:#ffebc2;transform:translate(-50%,-50%) scale(1.06)}
-.ly-video-content{min-width:0}
-.ly-video-label{font-size:10px;font-weight:700;letter-spacing:.15em;color:#dbc18e;margin:0 0 7px}
-.ly-video-content h2{margin:0 0 10px;color:#f2f4fc;font-size:clamp(19px,2.6vw,28px);line-height:1.36}
-.ly-video-content p{font-size:13px;line-height:1.75;color:#acbdd5;margin:0 0 14px}
-.ly-video-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
-.ly-video-action,.ly-video-original{font:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:999px;font-weight:700;font-size:12px;padding:9px 16px;text-decoration:none;cursor:pointer}
-.ly-video-action{color:#211b15;background:linear-gradient(110deg,#f3deb6,#d6b57d);border:1px solid rgba(236,210,166,.65)}
-.ly-video-original{color:#ddd1b9;background:rgba(255,255,255,.045);border:1px solid rgba(228,206,169,.25)}
-.ly-video-action:hover,.ly-video-original:hover{filter:brightness(1.08)}
+/* 小红书视频笔记：统一纳入科技圈新闻，延续网站深蓝底色 */
+.ly-news-item p{white-space:pre-wrap;overflow-wrap:anywhere}
+.ly-news-empty{grid-column:1/-1;font-size:13px;color:#adbbd1;padding:12px 0}
+.ly-news-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.ly-news-video-card{position:relative;display:grid;grid-template-columns:clamp(112px,13vw,150px) minmax(0,1fr);gap:13px;min-width:0;padding:11px;border:1px solid rgba(212,161,171,.30);border-radius:17px;background:linear-gradient(145deg,rgba(48,41,60,.74),rgba(21,28,45,.96));box-shadow:0 8px 24px #0002;transition:border-color .2s ease,transform .2s ease}
+.ly-news-video-card:hover{border-color:rgba(239,174,184,.55);transform:translateY(-2px)}
+.ly-news-video-cover{position:relative;display:block;width:100%;aspect-ratio:3/4;min-height:0;overflow:hidden;border:0;border-radius:12px;background:#24273a;cursor:pointer;padding:0;color:#fff;text-align:left}
+.ly-news-video-cover img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;background:#24273a}
+.ly-news-video-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,18,.64),transparent 42%);pointer-events:none}
+.ly-news-video-cover-label{position:absolute;left:9px;bottom:9px;z-index:1;font-size:10px;font-weight:700;letter-spacing:.04em;color:#fff}
+.ly-news-video-play-icon{position:absolute;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;place-items:center;width:43px;height:43px;padding-left:3px;border:1px solid #fff7;border-radius:50%;font-size:17px;color:#fff;background:rgba(211,63,90,.89);box-shadow:0 6px 18px #0007}
+.ly-news-video-cover:hover .ly-news-video-play-icon{background:#fa4563}
+.ly-news-video-content{min-width:0;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:7px}
+.ly-news-video-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ly-news-kind-video{display:inline-flex;align-items:center;margin:0;padding:3px 8px;border-radius:6px;background:rgba(229,91,114,.17);color:#ffb9c5;border:1px solid rgba(235,114,134,.27);letter-spacing:0}
+.ly-news-video-platform{display:inline-flex;align-items:center;gap:4px;color:#eab5bd;font-size:10px;white-space:nowrap}
+.ly-news-video-platform span{display:grid;place-items:center;width:16px;height:16px;border-radius:5px;background:#e9536b;color:#fff;font-size:10px;font-weight:800}
+.ly-news-video-content h3{margin:0;font-size:clamp(13px,1.36vw,15px);line-height:1.45;font-weight:730;color:#fff1f3;overflow-wrap:anywhere}
+.ly-news-video-content p{margin:0;color:#b8b9d0;font-size:11px;line-height:1.55;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ly-news-video-author{display:flex;align-items:center;min-width:0;gap:5px;color:#e8dce0;font-size:10px;white-space:nowrap}
+.ly-news-video-avatar{display:grid;place-items:center;width:20px;height:20px;flex:none;border:1px solid rgba(244,204,210,.45);border-radius:50%;background:linear-gradient(140deg,#f8d2d6,#99738b);color:#4d2339;font-weight:900}
+.ly-news-video-note{color:#b8a3b3;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ly-news-video-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:1px}
+.ly-video-action,.ly-video-original{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:9px;font:inherit;font-size:11px;font-weight:700;line-height:1.35;text-decoration:none;cursor:pointer;white-space:nowrap}
+.ly-video-action{border:1px solid rgba(242,148,161,.50);background:linear-gradient(105deg,#e95e73,#cc4965);color:#fff}
+.ly-video-original{border:1px solid rgba(225,177,188,.28);background:rgba(255,255,255,.045);color:#efd9dd}
+.ly-video-action:hover,.ly-video-original:hover{filter:brightness(1.09)}
+.ly-news-video-cover:focus-visible,.ly-video-action:focus-visible,.ly-video-original:focus-visible{outline:2px solid #ffbdc9;outline-offset:2px}
 .ly-video-dialog{border:1px solid rgba(178,191,219,.28);background:#0e1624;border-radius:20px;padding:0;color:#f1f2f8;width:min(480px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);box-shadow:0 25px 70px #000b;overflow:hidden}
 .ly-video-dialog::backdrop{background:rgba(1,6,14,.83);backdrop-filter:blur(8px)}
 .ly-video-dialog-head,.ly-video-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px}
@@ -49,10 +59,6 @@
 .ly-video-stage iframe{display:block;width:100%;height:100%;border:0;background:#05070d}
 .ly-video-dialog-foot{font-size:11px;color:#9eacc4}
 .ly-video-dialog-foot a{color:#e9d0a5;text-decoration:none}
-@media(max-width:670px){.ly-video{padding-block:8px 12px}.ly-video-panel{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px;border-radius:16px;align-items:center}.ly-video-cover{aspect-ratio:3/4;border-radius:12px}.ly-video-play-icon{width:43px;height:43px;font-size:18px}.ly-video-label{font-size:9px;margin-bottom:5px}.ly-video-content h2{font-size:15px;line-height:1.4;margin-bottom:6px}.ly-video-content p{font-size:11px;line-height:1.5;margin-bottom:9px}.ly-video-actions{gap:6px}.ly-video-action,.ly-video-original{font-size:11px;padding:7px 11px}.ly-video-stage{height:min(72dvh,680px)}}
-@media(prefers-reduced-motion:reduce){.ly-video-play-icon{transition:none}}
-
-/* Multiple featured XHS videos share the same compact, responsive card layout. */
-.ly-video-panel + .ly-video-panel{margin-top:12px}
-@media(max-width:670px){.ly-video-panel + .ly-video-panel{margin-top:9px}}
-\n.ly-news-item p{white-space:pre-wrap;overflow-wrap:anywhere}\n.ly-news-empty{grid-column:1/-1;font-size:13px;color:#adbbd1;padding:12px 0}\n
+@media(max-width:900px){.ly-news-videos{grid-template-columns:1fr}.ly-news-video-card{grid-template-columns:clamp(112px,23vw,150px) minmax(0,1fr)}}
+@media(max-width:480px){.ly-news-videos{gap:9px;margin-top:9px}.ly-news-video-card{grid-template-columns:102px minmax(0,1fr);gap:10px;padding:9px;border-radius:13px}.ly-news-video-cover{border-radius:9px}.ly-news-video-content{gap:5px}.ly-news-video-content h3{font-size:12px;line-height:1.4}.ly-news-video-content p{font-size:10px;-webkit-line-clamp:2}.ly-news-video-note{display:none}.ly-news-video-play-icon{width:35px;height:35px;font-size:14px}.ly-news-video-cover-label{font-size:9px;left:7px;bottom:7px}.ly-video-action,.ly-video-original{font-size:10px;padding:6px 8px}.ly-video-stage{height:min(72dvh,680px)}}
+@media(prefers-reduced-motion:reduce){.ly-news-video-card{transition:none}.ly-news-video-card:hover{transform:none}}
