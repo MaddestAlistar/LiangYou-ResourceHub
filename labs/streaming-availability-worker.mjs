@@ -449,37 +449,51 @@ async function titleNews(kind,id,env){
  const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
  const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
   ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
- const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v)&&v.length>=2);
+ // Country-specific names belong to one verified TMDB identity, but the original
+ // may be Japanese or Korean. Never assume "first Asian name" is Chinese.
+ const zhTranslated=translations.filter(v=>v.iso_639_1==="zh"&&["CN","HK","TW"].includes(v.iso_3166_1))
+   .map(v=>String(v.data?.title||v.data?.name||"").trim());
+ const zhAlternate=alt.filter(v=>["CN","HK","TW"].includes(v.iso_3166_1))
+   .map(v=>String(v.title||v.name||"").trim());
+ const zhOptions=[localized,...zhTranslated,...zhAlternate].filter(v=>
+   /[\u3400-\u9fff]/.test(v)&&v.length>=2);
+ const chinese=[...new Set(zhOptions)].slice(0,3);
  const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
  const hangul=distinct.find(v=>/[\uac00-\ud7af]/.test(v)&&v.length>=4);
+ const japanese=distinct.find(v=>/[\u3040-\u30ff]/.test(v)&&v.length>=4);
  const genre=String(item.genres?.[0]?.name||"").trim();
  const queries=[];
- const add=(alias,query,locale,requireEdition=false)=>{if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale,requireEdition});};
- if(asian){
-  add(asian,'"'+asian+'" '+year+' 电影','zh');
-  add(asian,'"'+asian+'" 电影','zh');
-  // "海洋奇缘：启航" is widely covered as "真人版《海洋奇缘》".
-  const root=asian.split(/[：:]/)[0].trim();
-  if(root!==asian&&root.length>=4)
-   add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)','zh',true);
-  else if(asian!==root)add(asian,'"'+asian+'" 影评','zh');
+ const add=(alias,query,locale,requireEdition=false)=>{
+  if(alias&&query&&!queries.some(q=>q.query===query))queries.push({alias,query,locale,requireEdition});
+ };
+ if(chinese.length){
+  const first=chinese[0];
+  add(first,'"'+first+'" '+year+' '+(kind==="movie"?"电影":"电视剧"),"zh");
+  add(first,'"'+first+'" '+(kind==="movie"?"影评 电影":"剧评 电视剧"),"zh");
+  // Search an independently verified variant, rather than assuming one area's
+  // translation is how every Chinese publisher spells the same film.
+  if(chinese[1]&&chinese[1]!==first)
+   add(chinese[1],'"'+chinese[1]+'" '+(kind==="movie"?"电影":"电视剧"),"zh");
+  const root=first.split(/[：:]/)[0].trim();
+  if(root!==first&&root.length>=4)
+   add(root,'"'+root+'" '+year+' (真人版 OR 真人电影 OR 翻拍)',"zh",true);
  }
  if(originalLatin){
   const rare=originalLatin.length<13&&!originalLatin.includes(" ");
-  if(rare){
-   add(originalLatin,'"'+originalLatin+'" '+year+' '+(genre||"movie")+' film','en');
-   if(people.length)add(originalLatin,'"'+originalLatin+'" "'+people[0]+'" movie','en');
-   add(originalLatin,'"'+originalLatin+'" movie review','en');
-  }else{
-   add(originalLatin,'"'+originalLatin+'" '+year+' movie','en');
-   add(originalLatin,'"'+originalLatin+'" movie review','en');
-  }
+  const type=kind==="movie"?"film":"TV series";
+  add(originalLatin,'"'+originalLatin+'" '+year+' '+(genre||type)+' '+type,"en");
+  if(rare&&people.length)
+   add(originalLatin,'"'+originalLatin+'" "'+people[0]+'" '+type,"en");
+  add(originalLatin,'"'+originalLatin+'" '+type+' review',"en");
  }
- if(hangul)add(hangul,'"'+hangul+'" 드라마 OR 영화','ko');
+ if(hangul)add(hangul,'"'+hangul+'" '+(kind==="movie"?"영화":"드라마"),"ko");
+ if(japanese)add(japanese,'"'+japanese+'" '+(kind==="movie"?"映画":"ドラマ"),"ja");
+ // A title may have only a Chinese translation and no searchable romanized name.
+ // Those works should still be queried; absence of an English alias is not a failure.
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
  const stats={rssOk:0,rssHttpError:0,rssInvalidXml:0,rssNetworkError:0,rssItems:0,rssMatched:0,guardianItems:0,bingOk:0,bingHttpError:0,bingInvalidXml:0,bingNetworkError:0,bingItems:0,bingMatched:0};
- const requests=queries.slice(0,6).map(async ({alias,query,locale,requireEdition})=>{
+ const requests=queries.slice(0,8).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
   // Permit historical coverage of older catalog films; the old two-year window excluded it.
   endpoint.searchParams.set("q",query);
@@ -489,6 +503,8 @@ async function titleNews(kind,id,env){
    endpoint.searchParams.set("ceid","CN:zh-Hans");
   }else if(locale==="ko"){
    endpoint.searchParams.set("hl","ko");endpoint.searchParams.set("gl","KR");endpoint.searchParams.set("ceid","KR:ko");
+  }else if(locale==="ja"){
+   endpoint.searchParams.set("hl","ja");endpoint.searchParams.set("gl","JP");endpoint.searchParams.set("ceid","JP:ja");
   }else{
    endpoint.searchParams.set("hl","en-US");
    endpoint.searchParams.set("gl","US");
@@ -552,8 +568,8 @@ async function titleNews(kind,id,env){
  // has no matching titles. Bing's feed is not a versioned API, so failures are
  // optional and returned links must resolve to HTTPS publisher pages.
  const bingNames=[
-   asian?{alias:asian,q:'"'+asian+'" 电影 '+year,market:"zh-CN"}:null,
-   originalLatin?{alias:originalLatin,q:'"'+originalLatin+'" '+year+' film review',market:"en-US"}:null
+   chinese[0]?{alias:chinese[0],q:'"'+chinese[0]+'" '+year+' '+(kind==="movie"?"电影":"电视剧"),market:"zh-CN"}:null,
+   originalLatin?{alias:originalLatin,q:'"'+originalLatin+'" '+year+' '+(kind==="movie"?"film review":"TV review"),market:"en-US"}:null
  ].filter(Boolean).slice(0,2);
  const bingRequests=bingNames.map(async ({alias,q,market})=>{
    const url=new URL("https://www.bing.com/news/search");
