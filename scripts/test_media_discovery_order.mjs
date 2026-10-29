@@ -70,7 +70,11 @@ test('Discover renders trailer, international news and similar titles together w
     ()=>'<section class="mi-trailer-grid">VERIFIED_TRAILER</section>'
   );
   const d={title:'Fight Club',originalTitle:'Fight Club',
-    news:[{title:'Fight Club: the movie revisited',url:'https://www.theguardian.com/film/example',date:'2026-10-27',source:'The Guardian'}],
+    news:[
+     {title:'Fight Club: the movie revisited',url:'https://www.theguardian.com/film/example',date:'2026-10-27',source:'The Guardian'},
+     {title:'David Fincher discusses the original ending',url:'https://news.google.com/rss/articles/director-interview',
+      date:'2026-10-29',source:'Cinema interviews',titleMatchVerified:true,matchType:'title_search'}
+    ],
     suggestions:[{title:'A related title'}]};
   const world=[
     {title:'Fight Club celebrates a new edition',url:'https://variety.com/story',date:'2026-10-28',source:'Variety'},
@@ -80,6 +84,7 @@ test('Discover renders trailer, international news and similar titles together w
   const rendered=render(d,world);
   assert.match(rendered.trailers,/VERIFIED_TRAILER/);
   assert.match(rendered.international,/The Guardian/);
+  assert.match(rendered.international,/David Fincher discusses the original ending/);
   assert.match(rendered.international,/Variety/);
   assert.doesNotMatch(rendered.international,/Unrelated headline/);
   assert.equal((rendered.international.match(/variety\.com\/story/g)||[]).length,1);
