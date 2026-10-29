@@ -509,7 +509,7 @@ def main():
         for name in names:
             secret=os.environ.get(name,'').strip()
             if len(secret)>=8 and secret in serialized: raise RuntimeError('Credential detected in output; refusing write')
-    write_json(PATH,output);write_json(STATE,CACHE)
+    write_json(PATH,output,compact=True);write_json(STATE,CACHE)
     return 0 if any(s.get('items') for s in sources.values()) else 1
 
 if __name__=='__main__': sys.exit(main())
