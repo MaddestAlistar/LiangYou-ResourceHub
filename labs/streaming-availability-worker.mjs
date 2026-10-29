@@ -776,7 +776,7 @@ async function titleBilibiliVideos(kind,id,env){
  const regionName=[...new Set(names)].find(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x));
  const latinName=[...new Set(names)].find(x=>/^[a-z0-9 .:'()&!-]+$/i.test(x)&&x.length>=7);
  const searchName=regionName||latinName;
- const checks={nativeReturned:0,nativeHttpSuccess:0,nativeRejected:0,indexReturned:0,titleMatched:0,detailChecked:0,detailVerified:0,detailFailed:0};
+ const checks={nativeReturned:0,nativeHttpSuccess:0,nativeRejected:0,nativeNetworkError:0,indexReturned:0,indexNetworkError:0,titleMatched:0,detailChecked:0,detailVerified:0,detailFailed:0};
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[],sourceDiagnostics:checks});
  if(!searchName||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
  // Two independent searches per work: year-specific trailers and unyeared
@@ -813,7 +813,7 @@ async function titleBilibiliVideos(kind,id,env){
      return payload.data.result;
    }
    checks.nativeRejected++;return [];
-  }catch{return [];}
+  }catch{checks.nativeNetworkError++;return [];}
  }))).flat();
  const unique=new Set();
  let source="Bilibili public search";
@@ -882,10 +882,12 @@ async function titleBilibiliVideos(kind,id,env){
      }
     }
    }finally{clearTimeout(timer);}
-  }catch{/* No third-party indexed result must never become a fake video. */}
+  }catch{checks.indexNetworkError++;/* An indexed search failure is not proof that this film has no videos. */}
  }
  if(!shortlist.length)return {ok:true,kind,tmdbId:Number(id),year,
-   status:nativeWorking||indexedWorking?"no_match":"unavailable",
+   // A valid but empty Bing RSS response does not establish that Bilibili has
+   // no clips; the native source may be geo-blocked or refuse automated access.
+   status:nativeWorking||checks.indexReturned>0?"no_match":"upstream_unavailable",
    source:"Bilibili public search",videos:[],sourceDiagnostics:checks};
  checks.detailChecked=shortlist.length;
  const checked=await Promise.all(shortlist.map(async v=>{
