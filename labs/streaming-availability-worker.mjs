@@ -801,6 +801,29 @@ async function titleBilibiliVideos(kind,id,env){
  })).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
    filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
    !unique.has(v.bvid)&&unique.add(v.bvid)).slice(0,14);
+ // Some Bilibili uploads omit "预告"/"影评" from their titles. The first
+ // two searches are contextual, then one plain-title probe is permitted only
+ // when the official public endpoint worked but no usable candidates survived.
+ // Every candidate still has to pass video-title and real BVID verification.
+ if(shortlist.length<3&&nativeWorking){
+  try{
+   const u=new URL("https://api.bilibili.com/x/web-interface/search/type");
+   u.searchParams.set("search_type","video");u.searchParams.set("keyword",searchName);
+   u.searchParams.set("order","totalrank");u.searchParams.set("page","1");
+   const data=await jsonRemote(u.toString(),{headers:{
+    Accept:"application/json",Referer:"https://www.bilibili.com/",
+    "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"
+   }},6000);
+   if(data?.code===0&&Array.isArray(data.data?.result)){
+    const found=data.data.result.map(x=>({
+     bvid:String(x.bvid||"").trim(),heading:rssDecoded(x.title||"")
+    })).filter(x=>/^BV[A-Za-z0-9]{10}$/.test(x.bvid)&&
+       filmVideoTitleMatches(x.heading,titleChoices,rawYear,kind)&&
+       !unique.has(x.bvid)&&unique.add(x.bvid));
+    shortlist=[...shortlist,...found].slice(0,14);
+   }
+  }catch{/* A rate-limited public search never fabricates a result. */}
+ }
  // When the native search is blocked or returned only unrelated titles,
  // try a public index without scraping inaccessible player pages.
  if(shortlist.length<3){
