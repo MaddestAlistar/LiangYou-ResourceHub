@@ -30,6 +30,12 @@
 .news-video-preview{max-height:260px;max-width:100%;width:auto;border-radius:10px;background:#080e18}
 .news-upload-error{margin:0;padding:8px 10px;border:1px solid rgba(249,108,120,.42);border-radius:9px;color:#ffbbc4;background:rgba(144,27,49,.18);font-size:12px}
 .news-upload-error[hidden]{display:none}
+.news-image-fields{display:grid;gap:9px;padding:13px;border:1px solid rgba(121,162,222,.3);border-radius:13px;background:linear-gradient(135deg,#15243b,#0e192b)}
+.news-image-fields[hidden],.news-image-preview[hidden]{display:none!important}
+.news-image-fields input[type=file]{background:#0b1526;border:1px solid #526a8b;color:#cddcf0;border-radius:10px;padding:10px;width:100%;font:inherit;font-size:12px}
+.news-image-preview{display:block;width:100%;max-width:440px;max-height:240px;object-fit:contain;object-position:left center;background:#090f1c;border-radius:11px}
+.news-image-remove{justify-self:start;padding:8px 12px;font-size:12px}
+.news-admin-photo{display:block;width:100%;max-height:210px;object-fit:contain;background:#090f1c;border-radius:10px;margin-top:8px}
 
 </style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p></section><section class="panel icon-review-filter-panel" aria-label="图标审核筛选"><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
   <div class="news-admin-header"><div><p class="news-admin-eyebrow">LIANGYOU · TECH NEWS</p><h2 id="tech-news-admin-heading">良友科技圈新闻管理</h2><p class="muted">使用上方管理员密钥发布与管理新闻。选择“视频精选”时填写原帖链接、上传视频、内容标题和内容描述。</p></div><button id="news-refresh" class="secondary" type="button">刷新新闻</button></div>
@@ -60,6 +66,14 @@
     <input id="news-title" type="text" maxlength="120" autocomplete="off" placeholder="输入新闻标题">
     <label for="news-content"><span id="news-content-label">新闻内容</span> <span id="news-content-required" hidden>（必填 · 最多 38 字）</span></label>
     <textarea id="news-content" maxlength="3000" rows="5" placeholder="输入新闻正文"></textarea>
+    <div id="news-image-fields" class="news-image-fields">
+      <label for="news-image-file">新闻配图 <span class="news-required">（选填 · JPG / PNG / WebP）</span></label>
+      <input id="news-image-file" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" aria-describedby="news-image-help news-image-error">
+      <p id="news-image-help" class="muted">建议 16:9 横图，1200 × 675 或 1280 × 720；最大 5 MB，自动等比压缩优化。编辑时可保留、替换或移除现有图片。</p>
+      <p id="news-image-error" class="news-upload-error" role="alert" hidden></p>
+      <img id="news-image-preview" class="news-image-preview" alt="新闻配图上传预览" hidden>
+      <button id="news-image-remove" class="secondary news-image-remove" type="button" hidden>移除图片</button>
+    </div>
     <div class="row"><button id="news-save" type="button">发布新闻</button><button id="news-reset" class="secondary" type="button">清空 / 取消编辑</button></div>
     <p id="news-message" class="muted" role="status">输入上方管理员密钥后点击「刷新新闻」即可管理已发布内容。</p>
   </div>
@@ -165,4 +179,4 @@ $("load").onclick=async()=>{
  finally{busy=false;$("load").disabled=false;render()}
 };
 $("filter").onchange=render;$("search").oninput=render;
-</script><script src="./tech-news-admin.js?v=20261030.video-limits1" defer></script></body></html>
+</script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script></body></html>
