@@ -1,0 +1,91 @@
+name: XHS video one-time connection probe
+on:
+  push:
+    paths:
+      - '.github/workflows/xhs-video-one-time-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      XHS_NOTE: https://xhslink.cn/o/3eUyzuksTQC
+    steps:
+      - name: Try RedNote Downloader first
+        id: rednote
+        shell: bash
+        run: |
+          set +e
+          git clone --quiet --depth 1 https://github.com/icekale/rednote-downloader.git /tmp/rednote
+          if [ $? -ne 0 ]; then echo "REDNOTE_SOURCE_UNAVAILABLE"; exit 0; fi
+          cd /tmp/rednote
+          HOST=127.0.0.1 PORT=3000 TELEGRAM_ENABLED=false node src/server.js > /tmp/rednote-server.log 2>&1 &
+          for i in $(seq 1 25); do curl -fsS --max-time 2 http://127.0.0.1:3000/healthz > /dev/null && break; sleep 1; done
+          curl -sS --max-time 55 -X POST http://127.0.0.1:3000/api/resolve -H 'content-type: application/json' -d '{"input":"https://xhslink.cn/o/3eUyzuksTQC","download":false}' -o /tmp/rednote-result.json -w 'REDNOTE_HTTP:%{http_code}\n'
+          if [ ! -s /tmp/rednote-result.json ]; then echo "REDNOTE_EMPTY_RESPONSE"; tail -15 /tmp/rednote-server.log; exit 0; fi
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          let j;try{j=JSON.parse(fs.readFileSync('/tmp/rednote-result.json','utf8'))}catch(e){console.log('REDNOTE_BAD_JSON');process.exit(0)}
+          const found=[];
+          const walk=(o,level=0)=>{if(level>8||!o)return;if(typeof o==='string'){if(/^https:\/\/[^\s]+/.test(o)&&(/xhscdn|\.mp4|\.m3u8/.test(o))) found.push(o);return}if(Array.isArray(o)){for(const x of o.slice(0,20))walk(x,level+1);return}if(typeof o==='object')for(const [k,v] of Object.entries(o))if(!/cookie|token|secret/i.test(k))walk(v,level+1)};
+          walk(j);
+          console.log('REDNOTE_RESULT',JSON.stringify({ok:j.ok??j.success??null,error:j.error??j.message??null,keys:Object.keys(j),videoCandidates:found.length}).slice(0,1200));
+          if(found.length){fs.writeFileSync('/tmp/xhs-video-url.txt',found[0]);console.log('REDNOTE_VIDEO_FOUND')}
+          JS
+          if [ -s /tmp/xhs-video-url.txt ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Try XHS-Downloader if RedNote cannot parse
+        if: steps.rednote.outputs.ok != 'true'
+        shell: bash
+        run: |
+          set +e
+          git clone --quiet --depth 1 https://github.com/JoeanAmier/XHS-Downloader.git /tmp/xhs-downloader
+          if [ $? -ne 0 ]; then echo "XHS_DOWNLOADER_SOURCE_UNAVAILABLE"; exit 0; fi
+          cd /tmp/xhs-downloader
+          python3 -m pip install -q -r requirements.txt > /tmp/xhs-pip.log 2>&1
+          if [ $? -ne 0 ]; then echo "XHS_INSTALL_FAILED"; tail -8 /tmp/xhs-pip.log; exit 0; fi
+          API_TOKEN=$(python3 main.py token 2>/tmp/xhs-token-error.log | sed -n 's/.*: //p' | tail -1)
+          if [ -z "$API_TOKEN" ]; then echo "XHS_TOKEN_FAILED"; exit 0; fi
+          python3 main.py api >/tmp/xhs-service.log 2>&1 &
+          for i in $(seq 1 24); do curl -sS --max-time 1 http://127.0.0.1:5556/docs -o /dev/null && break; sleep 1; done
+          curl -sS --max-time 55 -X POST 'http://127.0.0.1:5556/xhs/detail' -H 'content-type: application/json' -H "Authorization: Bearer $API_TOKEN" -d '{"url":"https://xhslink.cn/o/3eUyzuksTQC","download":false}' -o /tmp/xhs-result.json -w 'XHS_HTTP:%{http_code}\n'
+          python3 - <<'PY'
+          import json,os,re
+          try: data=json.load(open('/tmp/xhs-result.json'))
+          except Exception: print("XHS_BAD_RESPONSE");raise SystemExit
+          urls=[]
+          def walk(v,d=0):
+              if d>8: return
+              if isinstance(v,str) and v.startswith('https://') and ('xhscdn' in v or '.mp4' in v):urls.append(v)
+              if isinstance(v,dict):
+                  for k,x in v.items():
+                      if k.lower() not in ['cookie','token','secret']:walk(x,d+1)
+              if isinstance(v,list):
+                  for x in v[:30]:walk(x,d+1)
+          walk(data)
+          print("XHS_RESULT",json.dumps({'keys':list(data)[:18], 'video_candidates':len(urls), 'message':str(data.get('message',''))[:160]},ensure_ascii=False))
+          if urls:open('/tmp/xhs-video-url.txt','w').write(urls[0])
+          PY
+      - name: Verify media availability without downloading full video
+        shell: bash
+        if: always()
+        run: |
+          set +e
+          if [ ! -s /tmp/xhs-video-url.txt ]; then echo 'PROBE_OUTCOME=NO_MEDIA_URL'; exit 0; fi
+          URL=$(cat /tmp/xhs-video-url.txt)
+          echo "PROBE_OUTCOME=MEDIA_URL_FOUND"
+          echo "MEDIA_HOST=$(echo "$URL" | sed -E 's#https?://([^/]+).*#\1#')"
+          curl -L -sS --max-time 20 -o /dev/null -H 'Range: bytes=0-2047' -H 'Referer:' -w 'MEDIA_HTTP=%{http_code} CONTENT_TYPE=%{content_type} SIZE=%{size_download}\n' "$URL"
+          printf '%s\n' "$URL" > /tmp/xhs-playable-url.txt
+      - name: Upload probe result for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xhs-one-time-probe
+          path: |
+            /tmp/rednote-result.json
+            /tmp/xhs-result.json
+            /tmp/xhs-playable-url.txt
+          if-no-files-found: ignore
+          retention-days: 1
