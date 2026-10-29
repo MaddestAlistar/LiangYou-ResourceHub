@@ -1,5 +1,5 @@
 import { inspectImage } from "../icon-image.mjs";
-import { inspectEmbeddedMotion } from "../icon-motion.mjs";
+import { inspectEmbeddedMotion, inspectUploadedMotionVideo } from "../icon-motion.mjs";
 import { serveTechNews } from "./tech-news.mjs";
 import { isUUID, submitBatchItem } from "./icon-batch-submission.mjs";
 import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
@@ -71,7 +71,7 @@ export default {async fetch(request,env){
    if(!["approved","withdrawn"].includes(status)&&(meta.publishedUrl||["approved","withdrawn"].includes(meta.status)))return reply({error:"已发布图标不能改回待审核或拒绝；如需下架，须同步移除正式库索引"},409,origin);
    if(status==="approved"){
     // A JPG cover must never be published as a moving icon.
-    if(meta.motionSource==="embedded-video"&&(meta.conversionStatus!=="ready"||
+    if(["embedded-video","uploaded-video"].includes(meta.motionSource)&&(meta.conversionStatus!=="ready"||
       !/\.gif$/i.test(String(meta.filename||""))||meta.kind!=="动态"))
       return reply({error:"Live Photo 尚未成功转换成 GIF；请等待转换完成或检查失败原因"},409,origin);
     if(!env.PUBLISH_GITHUB_TOKEN)return reply({error:"正式图标库发布权限未配置"},503,origin);
@@ -115,16 +115,21 @@ export default {async fetch(request,env){
  if(file.size>10*1024*1024||file.size===0)return reply({error:"Maximum file size is 10 MB"},413,origin);
  const ext=(file.name.split(".").pop()||"").toLowerCase();
  const wantsMotion=kind==="动态"&&(ext==="jpg"||ext==="jpeg");
- if(!["png","jpg","jpeg","gif"].includes(ext)||(!wantsMotion&&((kind==="动态")!==(ext==="gif"))))
+ const wantsVideo=kind==="动态"&&(ext==="mov"||ext==="mp4");
+ if(!["png","jpg","jpeg","gif","mov","mp4"].includes(ext)||(!wantsMotion&&!wantsVideo&&((kind==="动态")!==(ext==="gif"))))
    return reply({error:"图片类型与投稿类型不匹配"},400,origin);
  const bytes=new Uint8Array(await file.arrayBuffer());let imageInfo;
- try{imageInfo=inspectImage(bytes,file.name)}catch(error){return reply({error:error.message},400,origin)}
+ if(!wantsVideo){
+  try{imageInfo=inspectImage(bytes,file.name)}catch(error){return reply({error:error.message},400,origin)}
+ }
  const motion=wantsMotion?inspectEmbeddedMotion(bytes):null;
- if(wantsMotion&&!motion)return reply({error:"该 JPG 未发现有效的内嵌 MP4/MOV 视频。普通 Apple Live Photo JPG 需配套 MOV，不能直接作为动态图标"},400,origin);
- const {width:w,height:h}=imageInfo;
+ const uploadedVideo=wantsVideo?inspectUploadedMotionVideo(bytes):null;
+ if(wantsMotion&&!motion)return reply({error:"这张 JPG 没有内嵌视频。请从苹果相册选择「存储为视频」，然后上传导出的 MOV / MP4 文件"},400,origin);
+ if(wantsVideo&&!uploadedVideo)return reply({error:"MOV / MP4 视频格式无法识别，请从原实况照片重新导出视频"},400,origin);
+ const {width:w,height:h}=imageInfo||{width:0,height:0};
  const submissionKey=String(form.get("submissionKey")||""),batchId=String(form.get("batchId")||"");
  if(submissionKey||batchId){
-  if(motion)return reply({error:"Live Photo 自动转换暂支持单张投稿，请切换到单张投稿"},400,origin);
+  if(motion||uploadedVideo)return reply({error:"Live Photo 自动转换暂支持单张投稿，请切换到单张投稿"},400,origin);
   if(form.get("namesConfirmed")!=="true")return reply({error:"请确认打包文件中的单独图片都有命名"},400,origin);
   if(!isUUID(submissionKey)||!isUUID(batchId))return reply({error:"Invalid batch identifier"},400,origin);
   try{
@@ -143,10 +148,11 @@ export default {async fetch(request,env){
  const uploaded=await put(base+"."+ext,b64);
  if(!uploaded.ok)return reply({error:"GitHub upload failed",status:uploaded.status},502,origin);
  const metadata={id,name,author,kind,notes,...(contactEmailEncrypted?{contactEmailEncrypted}:{}),filename:base+"."+ext,bytes:file.size,width:w,height:h,submittedAt:new Date().toISOString(),status:"pending",
-   ...(motion?{sourceFormat:"motion-jpeg",motionSource:"embedded-video",sourceFilename:base+"."+ext,
-     sourceBytes:file.size,motionVideoBytes:motion.videoBytes,conversionStatus:"processing"}:{})};
+   ...(motion||uploadedVideo?{sourceFormat:motion?"motion-jpeg":"livephoto-video",
+     motionSource:motion?"embedded-video":"uploaded-video",sourceFilename:base+"."+ext,
+     sourceBytes:file.size,motionVideoBytes:motion?motion.videoBytes:file.size,conversionStatus:"processing"}:{})};
  const meta=await put(base+".json",btoa(unescape(encodeURIComponent(JSON.stringify(metadata,null,2)))));
  if(!meta.ok)return reply({error:"Image uploaded but metadata failed",id},502,origin);
- return reply({ok:true,id,...(motion?{conversionStatus:"processing"}:{}),reviewUrl:"https://github.com/"+env.REVIEW_REPO+"/tree/main/pending"},201,origin);
+ return reply({ok:true,id,...(motion||uploadedVideo?{conversionStatus:"processing"}:{}),reviewUrl:"https://github.com/"+env.REVIEW_REPO+"/tree/main/pending"},201,origin);
 } catch { return reply({error:"服务暂时不可用，请刷新记录后重试；已完成发布的投稿不会重复入库"},503,origin===allowed?origin:"null"); }
 }};
