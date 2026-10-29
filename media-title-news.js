@@ -39,7 +39,7 @@
       typeof x.source==='string'&&safeUrl(x.url)&&
       (x.date==null||Number.isFinite(Date.parse(x.date)))&&
       ['zh','en','ja','ko'].includes(x.language)).slice(0,24)
-      .map(x=>({...x,url:safeUrl(x.url)}));
+      .map(x=>({...x,url:safeUrl(x.url),verifiedByCatalogTitle:true}));
     const videos=item.videos.filter(x=>x?.verifiedByTitleId===true&&
       x.kind===kind&&Number(x.tmdbId)===id&&
       x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
@@ -51,11 +51,13 @@
   async function forInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId),year=Number(String(info?.year||'').slice(0,4));
     if(!validKind(kind)||!Number.isSafeInteger(id)||id<1||!Number.isSafeInteger(year))return null;
+    // Start the scheduled catalog lookup alongside the small manual index.
+    // Previously, every other movie waited for both files sequentially.
+    const catalogLookup=cachedForInfo(kind,id,year);
     const d=await read();
     const item=d?.titles?.[kind+':'+id];
-    // Do not penalize films absent from the tiny manually curated index.
     if(!item||item.kind!==kind||item.tmdbId!==id||item.year!==year)
-      return cachedForInfo(kind,id,year);
+      return catalogLookup;
     const articles=(Array.isArray(item.articles)?item.articles:[]).filter(x=>x&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=200&&
       typeof x.source==='string'&&safeUrl(x.url)&&Number.isFinite(Date.parse(x.date||'')))
