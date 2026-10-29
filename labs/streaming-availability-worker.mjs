@@ -925,8 +925,27 @@ export async function titleDomesticVideos(kind,id,env){
 
 // Best-effort domestic video discovery for EVERY TMDB title. This source is
 // uncredentialed and may reject automated requests; do not bypass its controls.
-// Search results alone are NOT sufficient: each BVID is checked against the
-// actual public video-details endpoint before a playable card is returned.
+// External index results always require destination checks. Native Bilibili
+// metadata can survive a temporary details outage only when its independent
+// aid, BVID, original URL, title and publication date agree.
+function nativeBilibiliRecord(row,names,year,kind,id,title){
+ const bvid=String(row?.bvid||''),aid=Number(row?.aid),stamp=Number(row?.pubdate);
+ if(row?.type!=="video"||!/^BV[A-Za-z0-9]{10}$/.test(bvid)||!Number.isSafeInteger(aid)||aid<=0||
+    !Number.isFinite(stamp)||stamp<Date.UTC(Math.max(2009,year-3),0,1)/1000||stamp>Date.now()/1000+86400)return null;
+ let original;
+ try{original=new URL(row.arcurl);}catch{return null;}
+ if(!["http:","https:"].includes(original.protocol)||original.username||original.password||
+    !["www.bilibili.com","bilibili.com"].includes(original.hostname)||
+    !["/video/"+bvid,"/video/"+bvid+"/","/video/av"+aid,"/video/av"+aid+"/"].includes(original.pathname))return null;
+ const heading=rssDecoded(row.title||'');
+ if(!filmVideoTitleMatches(heading,names,String(year),kind))return null;
+ return {kind,tmdbId:Number(id),year,title,verifiedByTitleId:true,
+  platform:"bilibili",videoId:bvid,name:heading.slice(0,145),publisher:String(row.author||"Bilibili").slice(0,65),
+  verifiedSource:"https://www.bilibili.com/video/"+bvid+"/",type:/预告|定档|teaser|trailer/i.test(heading)?"Trailer":"Related",
+  verification:"provider_search_metadata",availability:"unconfirmed",
+  likes:Number.isSafeInteger(row.like)&&row.like>=0?row.like:null,
+  views:Number.isSafeInteger(row.play)&&row.play>=0?row.play:null};
+}
 async function titleBilibiliVideos(kind,id,env,identity){
  const [primary,local]=identity||await Promise.all([
    tmdbInfo(kind,id,env,true),
@@ -988,7 +1007,8 @@ async function titleBilibiliVideos(kind,id,env,identity){
  const unique=new Set();
  let source="Bilibili public search";
  let shortlist=results.map(v=>({
-  bvid:String(v.bvid||"").trim(),heading:rssDecoded(v.title||"")
+  bvid:String(v.bvid||"").trim(),heading:rssDecoded(v.title||""),
+  native:nativeBilibiliRecord(v,titleChoices,year,kind,id,canonical)
  })).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
    filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
    !unique.has(v.bvid)&&unique.add(v.bvid)).slice(0,14);
@@ -1008,7 +1028,8 @@ async function titleBilibiliVideos(kind,id,env,identity){
    }},2500);
    if(data?.code===0&&Array.isArray(data.data?.result)){
     const found=data.data.result.map(x=>({
-     bvid:String(x.bvid||"").trim(),heading:rssDecoded(x.title||"")
+     bvid:String(x.bvid||"").trim(),heading:rssDecoded(x.title||""),
+     native:nativeBilibiliRecord(x,titleChoices,year,kind,id,canonical)
     })).filter(x=>/^BV[A-Za-z0-9]{10}$/.test(x.bvid)&&
        filmVideoTitleMatches(x.heading,titleChoices,rawYear,kind)&&
        !unique.has(x.bvid)&&unique.add(x.bvid));
@@ -1068,8 +1089,8 @@ async function titleBilibiliVideos(kind,id,env,identity){
       headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
        "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},3500);
     const d=resp?.data;
-    if(resp.code===-412||resp.code===-352)throw Error("public_api_unavailable");
-    if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0){checks.detailFailed++;return null;}
+    if(resp.code!==0&&![-404,-403,-62002,-62004].includes(resp.code))throw Error("public_api_unavailable");
+    if(resp.code!==0||d?.bvid!==v.bvid||(d.state!=null&&d.state!==0)){checks.detailFailed++;return null;}
     const title=String(d.title||"").normalize("NFKC").trim();
     if(!filmVideoTitleMatches(title,titleChoices,rawYear,kind)){checks.detailFailed++;return null;}
     checks.detailVerified++;
@@ -1085,6 +1106,7 @@ async function titleBilibiliVideos(kind,id,env,identity){
     const page=await verifiedPublicVideo({platform:"bilibili",videoId:v.bvid,
       url:"https://www.bilibili.com/video/"+v.bvid+"/"},titleChoices,year,kind,id,canonical);
     if(page){checks.detailVerified++;return page;}
+    if(v.native){checks.nativeMetadataVerified=(checks.nativeMetadataVerified||0)+1;return v.native;}
     checks.detailFailed++;return null;
    }
  }));
@@ -1149,7 +1171,7 @@ export default {
   // Per-work exact ID contextual news search, cached for six hours.
   const titleNewsRoute=u.pathname.match(/^\/api\/news\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(titleNewsRoute){
-   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v12",u.origin));
+   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v13",u.origin));
    const cached=await caches.default.match(cacheKey);if(cached)return cached;
    try{
     const body=await titleNews(titleNewsRoute[1],titleNewsRoute[2],env);
@@ -1160,7 +1182,7 @@ export default {
   }
   const matchingVideos=u.pathname.match(/^\/api\/videos\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(matchingVideos){
-   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v12",u.origin));
+   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v13",u.origin));
    const cached=await caches.default.match(cacheKey);if(cached)return cached;
    try{
     const body=await titleDomesticVideos(matchingVideos[1],matchingVideos[2],env);

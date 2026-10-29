@@ -82,3 +82,33 @@ test('partial platform outages never produce synthetic video URLs or erase valid
  assert.equal(body.status,'upstream_unavailable');assert.deepEqual(body.videos,[]);
  assert.ok(body.sourceDiagnostics.platformSearchFailed>0);
 });
+
+test('native provider records survive a detail outage only with consistent aid, BVID, URL and date',async()=>{
+ let removed=false;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,adult:false,title:'搏击俱乐部',release_date:'1999-10-15'});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))return json({code:0,data:{result:[
+   {type:'video',aid:12345,bvid:'BV1234567890',arcurl:'http://www.bilibili.com/video/av12345',
+    pubdate:1700000000,title:'《搏击俱乐部》电影预告',author:'Film creator',like:230},
+   {type:'video',aid:45678,bvid:'BV1234567891',arcurl:'https://www.bilibili.com/video/av99999',
+    pubdate:1700000000,title:'《搏击俱乐部》电影预告'}
+  ]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view')){
+   if(removed)return json({code:-404});
+   throw Error('details unavailable');
+  }
+  throw Error('unavailable');
+ };
+ const get=async()=>{
+  const r=await worker.fetch(new Request('https://test.example/api/videos/title/movie/550'),{TMDB_API_KEY:'test'},{waitUntil(){}});
+  return r.json();
+ };
+ const available=await get();
+ assert.equal(available.videos.length,1);
+ assert.equal(available.videos[0].videoId,'BV1234567890');
+ assert.equal(available.videos[0].verification,'provider_search_metadata');
+ assert.equal(available.videos[0].likes,230);
+ removed=true;
+ assert.deepEqual((await get()).videos,[],'explicit removal must override a cached search record');
+});
