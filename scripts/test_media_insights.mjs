@@ -688,6 +688,55 @@ test('catalog movies without a Chinese title still receive checked English-title
   assert.ok(search.some(x=>x.includes("Northern Lights")));
  }finally{globalThis.fetch=before;}
 });
+test('all-title Bilibili discovery accepts a dated pre-release teaser without mixing an old remake',async()=>{
+ const original=globalThis.fetch;
+ const good='BV12Pre2026a',wrong='BV12Old2016a';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Beyond the Moon',original_title:'Beyond the Moon',
+    release_date:'2026-07-10',adult:false,alternative_titles:{titles:[]},translations:{translations:[]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))
+   return json({code:0,data:{result:[
+     {bvid:good,title:'《Beyond the Moon》2025 official teaser'},
+     {bvid:wrong,title:'《Beyond the Moon》2016 old movie trailer'}
+   ]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view')){
+   const id=u.searchParams.get('bvid');
+   return json({code:0,data:{bvid:id,state:0,
+     title:id===good?'Beyond the Moon 2025 official teaser':'Beyond the Moon 2016 old movie trailer',
+     owner:{name:'Film media'},stat:{like:123,view:1200}}});
+  }
+  if(u.hostname==='www.bing.com')return new Response('<rss><channel></channel></rss>');
+  throw Error('unexpected URL '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.deepEqual(body.videos.map(v=>v.videoId),[good]);
+  assert.equal(body.videos[0].year,2026);
+ }finally{globalThis.fetch=original;}
+});
+test('new seasons of correctly identified older TV series retain verified clips',async()=>{
+ const original=globalThis.fetch,id='BV12Season33';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:1399,name:'Game of Thrones',original_name:'Game of Thrones',
+    first_air_date:'2011-04-17',adult:false,alternative_titles:{results:[]},translations:{translations:[]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))
+   return json({code:0,data:{result:[{bvid:id,title:'Game of Thrones 2026 new season episode trailer'}]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view'))
+   return json({code:0,data:{bvid:id,state:0,title:'Game of Thrones 2026 new season episode trailer',
+      owner:{name:'Official films'},stat:{like:400,view:9000}}});
+  if(u.hostname==='www.bing.com')return new Response('<rss><channel></channel></rss>');
+  throw Error('unexpected URL '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/tv/1399',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.deepEqual(body.videos.map(v=>v.videoId),[id]);
+  assert.equal(body.videos[0].year,2011);
+ }finally{globalThis.fetch=original;}
+});
 test('blocked Bilibili public search fails closed and does not invent video cards',async()=>{
  const previous=globalThis.fetch;
  globalThis.fetch=async input=>{
