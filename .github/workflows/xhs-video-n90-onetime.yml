@@ -1,0 +1,120 @@
+name: One-time Xiaohongshu N90 video extract
+on:
+  push:
+    paths:
+      - '.github/workflows/xhs-video-n90-onetime.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: RedNote Downloader API
+        shell: bash
+        run: |
+          set +e
+          git clone --quiet --depth 1 https://github.com/icekale/rednote-downloader.git /tmp/rednote
+          if [ ! -f /tmp/rednote/src/server.js ]; then echo "REDNOTE_CLONE_FAILED"; exit 0; fi
+          cd /tmp/rednote
+          HOST=127.0.0.1 PORT=3000 TELEGRAM_ENABLED=false node src/server.js >/tmp/rednote-n90.log 2>&1 &
+          sleep 3
+          curl --silent --show-error --max-time 58 -X POST http://127.0.0.1:3000/api/resolve -H 'content-type: application/json' --data '{"input":"https://xhslink.cn/o/7X4yBrtmKpu","download":false}' -o /tmp/n90-rednote.json -w 'REDNOTE_HTTP=%{http_code}\n'
+          if [ ! -s /tmp/n90-rednote.json ]; then echo 'REDNOTE_NO_DATA'; tail -8 /tmp/rednote-n90.log; fi
+          node <<'JS'
+          const fs=require('fs');
+          if(!fs.existsSync('/tmp/n90-rednote.json'))process.exit(0);
+          let d;try{d=JSON.parse(fs.readFileSync('/tmp/n90-rednote.json','utf8'))}catch(e){console.log('REDNOTE_INVALID_JSON');process.exit(0)}
+          let n=d.note||d.data||{};
+          let keys=Object.keys(n).slice(0,35);
+          console.log('REDNOTE_KEYS',JSON.stringify({ok:d.ok,top:Object.keys(d),noteKeys:keys,title:n.title||n.desc||'',error:d.error||d.message||''}).slice(0,1200));
+          const urls=[];function walk(v,path='',depth=0){if(depth>12)return;if(typeof v==='string'){if(/^https?:\/\//.test(v)&&(/\.mp4|xhscdn\.com|\/stream\//i).test(v)) urls.push({key:path,url:v});return}if(Array.isArray(v)){for(let i=0;i<Math.min(v.length,30);i++)walk(v[i],path+'['+i+']',depth+1)}else if(v&&typeof v==='object')for(const [k,z] of Object.entries(v)){if(/cookie|secret|token|authorization/i.test(k))continue;walk(z,path+'.'+k,depth+1)}}
+          walk(d);
+          const videos=urls.filter(x=>/video|stream|mp4|h264|h265|origin|play/i.test(x.key+' '+x.url)&&!/cover|image|thumb|avatar/i.test(x.key)).slice(0,12);
+          console.log('REDNOTE_MEDIA',JSON.stringify({all:urls.length,videos:videos.map(x=>({key:x.key,host:(new URL(x.url)).hostname,path:(new URL(x.url)).pathname.slice(0,160)}))}).slice(0,2700));
+          if(videos.length){fs.writeFileSync('/tmp/n90-urls.json',JSON.stringify(videos))}
+          JS
+      - name: XHS-Downloader API fallback
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          git clone --quiet --depth 1 https://github.com/JoeanAmier/XHS-Downloader.git /tmp/xhs
+          if [ ! -f /tmp/xhs/main.py ]; then echo "XHS_CLONE_FAILED"; exit 0; fi
+          cd /tmp/xhs
+          python3 -m pip install -q -r requirements.txt >/tmp/xhs-pip.log 2>&1
+          if [ $? -ne 0 ]; then echo "XHS_INSTALL_FAILED"; tail -8 /tmp/xhs-pip.log; exit 0; fi
+          API_TOKEN=$(python3 main.py token 2>/dev/null | sed -n 's/.*: //p' | tail -1)
+          if [ -z "$API_TOKEN" ]; then echo "XHS_TOKEN_FAILED"; exit 0; fi
+          python3 main.py api > /tmp/xhs-api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sS --max-time 1 http://127.0.0.1:5556/docs -o /dev/null 2>/dev/null && break; sleep 1; done
+          curl --silent --show-error --max-time 60 -X POST http://127.0.0.1:5556/xhs/detail -H 'content-type: application/json' -H "Authorization: Bearer $API_TOKEN" --data '{"url":"https://xhslink.cn/o/7X4yBrtmKpu","download":false}' -o /tmp/n90-xhs.json -w 'XHS_HTTP=%{http_code}\n'
+          python3 - <<'PY'
+          import json,os,re
+          try:data=json.load(open('/tmp/n90-xhs.json'))
+          except Exception as ex:print('XHS_BAD_JSON',str(ex));raise SystemExit
+          d=data.get('data') if isinstance(data,dict) else {}
+          print('XHS_SUMMARY',json.dumps({'message':data.get('message',''),'data_type':str(type(d).__name__),'top':list(data),'data_keys':list(d)[:30] if isinstance(d,dict) else None},ensure_ascii=False)[:1700])
+          paths=[]
+          def scan(v,path='',dep=0):
+              if dep>12:return
+              if isinstance(v,str):
+                  if v.startswith(('http://','https://')) and any(a in v for a in ['.mp4','xhscdn.com','/stream/']): paths.append({'key':path,'url':v})
+              elif isinstance(v,dict):
+                  for k,x in v.items():
+                      if not any(y in k.lower() for y in ('cookie','secret','token','authorization')):scan(x,path+'.'+k,dep+1)
+              elif isinstance(v,list):
+                  for i,x in enumerate(v[:25]):scan(x,path+'['+str(i)+']',dep+1)
+          scan(data)
+          videos=[x for x in paths if re.search('video|stream|mp4|h264|h265|origin|play',x['key']+' '+x['url'],re.I) and not re.search('cover|image|thumb|avatar',x['key'],re.I)]
+          from urllib.parse import urlparse
+          print('XHS_MEDIA',json.dumps({'all':len(paths),'video_count':len(videos),'videos':[{'key':x['key'],'host':urlparse(x['url']).hostname,'path':urlparse(x['url']).path[:160]} for x in videos[:10]]},ensure_ascii=False)[:3500])
+          if videos:
+              open('/tmp/n90-urls.json','w').write(json.dumps(videos))
+          PY
+      - name: Validate CDN origin and no-referrer for web player
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          if [ ! -s /tmp/n90-urls.json ]; then echo 'N90_NO_VIDEO_URL'; exit 0; fi
+          python3 - <<'PY'
+          import json,urllib.parse
+          a=json.load(open('/tmp/n90-urls.json'))
+          seen=set()
+          candidates=[]
+          for x in a:
+              url=x['url']
+              if url in seen:continue
+              seen.add(url);candidates.append(url)
+              u=urllib.parse.urlparse(url)
+              if u.hostname and u.hostname.endswith('.xhscdn.com') and '/stream/' in u.path:
+                  backup='https://sns-bak-v10.xhscdn.com'+u.path
+                  if backup not in seen:seen.add(backup);candidates.append(backup)
+          open('/tmp/n90-candidates.txt','w').write('\n'.join(candidates[:12]))
+          print('N90_CANDIDATES',len(candidates))
+          PY
+          i=0
+          while IFS= read -r url; do
+            i=$((i+1))
+            echo "N90_CHECK $i"
+            curl -L -sS --max-time 23 --range 0-1023 -H 'Referer:' -o /tmp/n90-firstbytes.bin -w 'RESULT HTTP=%{http_code} MIME=%{content_type} BYTES=%{size_download}\n' "$url"
+            if [ -s /tmp/n90-firstbytes.bin ] && head -c 16 /tmp/n90-firstbytes.bin | xxd -p | grep -q '66747970'; then
+              echo "N90_MP4_VALID candidate=$i host=$(echo "$url" | cut -d/ -f3)"
+              printf '%s' "$url" > /tmp/n90-selected-url.txt
+              break
+            fi
+          done < /tmp/n90-candidates.txt
+      - name: Export findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n90-xhs-results
+          path: |
+            /tmp/n90-rednote.json
+            /tmp/n90-xhs.json
+            /tmp/n90-selected-url.txt
+            /tmp/n90-urls.json
+          if-no-files-found: ignore
+          retention-days: 1
