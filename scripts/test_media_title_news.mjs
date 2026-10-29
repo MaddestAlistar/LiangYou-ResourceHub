@@ -78,6 +78,28 @@ test('automatic rotating coverage makes previously unindexed titles available wi
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
  assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
 });
+test('curated and scheduled articles merge by TMDB ID without duplicate headlines or wrong-edition leaks',async()=>{
+ const curated=JSON.parse(JSON.stringify(index));
+ const existing=curated.titles['movie:1108427'];
+ assert.ok(existing);
+ const snapshot={schema:1,items:{
+  'movie:1108427':{year:2026,articles:[
+   {title:'Moana 2026 new interview',url:'https://news.google.com/rss/articles/genuine',
+    language:'en',source:'Coverage',date:'2026-10-29',titleMatchVerified:true},
+   {title:existing.articles[0].title,url:existing.articles[0].url,
+    language:'zh',source:'Duplicate',date:'2026-10-29',titleMatchVerified:true}
+  ],videos:[]}
+ }};
+ const loadMerged=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+  {},async url=>new Response(JSON.stringify(String(url).includes('media-title-coverage.json')?snapshot:curated),{status:200}),
+  AbortSignal
+ );
+ const film=await loadMerged.forInfo({kind:'movie',tmdbId:1108427,year:'2026-07-10'});
+ assert.ok(film.articles.some(x=>x.verifiedByTitleId));
+ assert.ok(film.articles.some(x=>x.url.endsWith('/genuine')&&x.verifiedByCatalogTitle===true));
+ assert.equal(film.articles.filter(x=>x.url===existing.articles[0].url).length,1);
+ assert.equal(await loadMerged.forInfo({kind:'movie',tmdbId:1108427,year:'2016-07-10'}),null);
+});
 test('the full scheduled catalog is consumable by the same ID-bound frontend, not only curated films',async()=>{
  const snapshot=JSON.parse(readFileSync(new URL('../data/media-title-coverage.json',import.meta.url),'utf8'));
  const entries=Object.entries(snapshot.items||{});
