@@ -227,7 +227,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    const firstTerm=titleName+" "+releaseYear+" "+(kind==="movie"?"movie":"TV series");
    const firstIds=await lookupIds(firstTerm);
    const firstDetails=await lookupDetails(firstIds);
-   const norm=x=>" "+String(x||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g," ").trim()+" ";
+   const norm=x=>" "+String(x||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]+/g," ").trim()+" ";
    // Accept only verified TMDB regional aliases of the SAME title ID, never
    // loosely related actors, franchises or short ambiguous search terms.
    const matchingNames=[titleName,...result.aliases].map(v=>norm(v).trim()).filter(v=>{
@@ -375,7 +375,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
 }
 // Title-scoped RSS discovery is supplemental to human-verified ID-linked articles.
 // A long-tail title is queried by verified TMDB aliases, not by popular/general headlines.
-const normalizedHeadline=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g," ").trim();
+const normalizedHeadline=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]+/g," ").trim();
 function rssDecoded(value){
  return String(value||"").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
    .replace(/&#(x[0-9a-f]+|\d+);|&(amp|quot|apos|lt|gt);/gi,(_,num,named)=>{
@@ -391,7 +391,7 @@ function rssField(xml,tag){
 function rssArticleMatches(headline,alias,context={}){
  const name=normalizedHeadline(alias),text=normalizedHeadline(headline);
  if(!name||!text)return false;
- const tight=name.replace(/ /g,""),asian=/[\u3400-\u9fff\uac00-\ud7af]/.test(name);
+ const tight=name.replace(/ /g,""),asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(name);
  const quoted=["《"+alias+"》","“"+alias+"”",'"'+alias+'"',"'"+alias+"'"].some(v=>
    headline.toLowerCase().includes(v.toLowerCase()));
  const exists=asian?text.replace(/ /g,"").includes(tight):(" "+text+" ").includes(" "+name+" ");
@@ -661,7 +661,7 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
   if(!candidate)return false;
   const key=normalizedHeadline(candidate),plain=key.replace(/ /g,"");
   if(plain.length<2)return false;
-  const asian=/[\u3400-\u9fff\uac00-\ud7af]/.test(key);
+  const asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(key);
   const found=asian?compact.includes(plain):(" "+normalizedHeadline(line)+" ").includes(" "+key+" ");
   if(!found)return false;
   if(typeof entry==="object"&&entry.requireEdition===true&&!edition&&!line.includes(yearString))return false;
