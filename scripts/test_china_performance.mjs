@@ -33,4 +33,9 @@ assert(cache.includes("request.mode === 'navigate'"),'Do not cache full HTML nav
 assert(!/\.json[^\n]*test\(/.test(cache),'Live JSON feeds must never be cached');
 assert(gallery.includes('liangyou-project-directory-v1'),'Only directory may use bounded local fallback');
 assert(style.includes('cn-save-data'),'Save-Data should disable decorative motion');
+const logo=read('interactive/logo/embed.html');
+assert(logo.includes("liangyou:logo-visibility"),'Embedded 3D animation must honor visibility messages');
+assert(loader.includes('logoFrame.contentWindow?.postMessage'),'Homepage must pause offscreen logo rendering');
+assert(page.includes('embed.html?v=4.1'),'Animation iframe must use updated version');
+
 console.log('PASS: mainland-friendly homepage loads core first, lazy-loads modules, and only caches local artwork');
