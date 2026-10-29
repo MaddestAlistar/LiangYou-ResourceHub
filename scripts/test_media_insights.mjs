@@ -35,6 +35,49 @@ async function invoke(path,env={}){
  const response=await worker.fetch(new Request('https://test.example'+path),env,{waitUntil:()=>{}});
  return {status:response.status,body:await response.json()};
 }
+test('a localized title with no Chinese trailer uses exact-ID English TMDB video metadata',async()=>{
+ const previous=globalThis.fetch;
+ const requested=[];
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));requested.push(u.pathname+'?'+u.searchParams.toString());
+  if(u.hostname!=='api.themoviedb.org')throw Error('unexpected host');
+  if(u.pathname==='/3/movie/550/videos')return json({id:550,results:[
+   {site:'YouTube',official:true,type:'Trailer',key:'AbCdEf12345',name:'Official English trailer'},
+   {site:'YouTube',official:false,type:'Teaser',key:'NonOffi1234',name:'TMDB-linked public teaser'},
+   {site:'YouTube',official:true,type:'Clip',key:'BadClip1234',name:'Not a trailer'}
+  ]});
+  if(u.pathname==='/3/movie/550')return json({id:550,title:'测试影片',
+   original_title:'Sample Film',release_date:'2026-03-20',adult:false,videos:{results:[]},
+   genres:[],credits:{cast:[],crew:[]},recommendations:{results:[]}});
+  throw Error('unexpected URI '+u.pathname);
+ };
+ try{
+  const {status,body}=await invoke('/api/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.ok,true);
+  assert.equal(body.tmdb_id,550);
+  assert.deepEqual(body.profile.videos.map(x=>x.url),[
+   'https://www.youtube.com/watch?v=AbCdEf12345',
+   'https://www.youtube.com/watch?v=NonOffi1234']);
+  assert.equal(body.profile.videos[0].official,true);
+  assert.equal(body.profile.videos[1].official,false);
+  assert.ok(body.profile.videos.every(v=>v.verifiedBy==='TMDB'));
+  assert.ok(requested.some(x=>x.includes('/videos?language=en-US')));
+ }finally{globalThis.fetch=previous;}
+});
+test('an unrelated English TMDB video-list ID cannot inject a cached trailer',async()=>{
+ const original=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.pathname==='/3/movie/550/videos')return json({id:551,results:[
+   {site:'YouTube',official:true,type:'Trailer',key:'Injected1234',name:'Another film trailer'}]});
+  return json({id:550,title:'Sample Film',release_date:'2024-01-10',adult:false,
+   videos:{results:[]},credits:{cast:[],crew:[]},recommendations:{results:[]}});
+ };
+ try{
+  const {status,body}=await invoke('/api/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.deepEqual(body.profile.videos,[]);
+ }finally{globalThis.fetch=original;}
+});
 test('movie enrichment requires an exact TMDB ID; no fabricated ratings',async()=>{
  stub({});
  const {status,body}=await invoke('/api/insights/movie/550',{TMDB_API_KEY:'test',OMDB_API_KEY:'test'});
