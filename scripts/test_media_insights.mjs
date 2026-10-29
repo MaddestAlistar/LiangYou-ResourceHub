@@ -943,6 +943,38 @@ test('verified TMDB regional aliases and real YouTube likes improve related cove
  assert.deepEqual(body.relatedVideos.map(v=>v.likes),[420,100]);
  assert.ok(body.relatedVideos.every(v=>v.embeddable===true&&!v.ageRestricted));
 });
+test('every-film YouTube matching rejects older remake editions even when they have more likes',async()=>{
+ const prior=globalThis.fetch;
+ const official='NewTrailer1',oldVideo='OldEdition1',newVideo='NewEdition1';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,title:'Moana',original_title:'Moana',
+    release_date:'2026-07-10',adult:false,genres:[{name:'Adventure'}],
+    videos:{results:[{site:'YouTube',official:true,type:'Trailer',key:official,name:'Official 2026 Trailer'}]},
+    alternative_titles:{titles:[]},translations:{translations:[]},credits:{cast:[],crew:[]}});
+  if(u.hostname==='www.googleapis.com'&&u.pathname.endsWith('/search'))return json({items:[
+    {id:{videoId:oldVideo}},{id:{videoId:newVideo}}
+  ]});
+  if(u.hostname==='www.googleapis.com'&&u.pathname.endsWith('/videos'))return json({items:[
+    {id:official,snippet:{title:'Moana 2026 official trailer',channelTitle:'Official'},
+      status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT2M'}},
+    {id:oldVideo,snippet:{title:'Moana 2016 animated movie review',channelTitle:'Review'},
+      status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT3M'},
+      statistics:{likeCount:'500000',viewCount:'900000'}},
+    {id:newVideo,snippet:{title:'Moana 2026 live-action film review',channelTitle:'Review'},
+      status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT3M'},
+      statistics:{likeCount:'75',viewCount:'900'}}
+  ]});
+  throw Error('unexpected '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/insights/movie/550?media=1',
+    {TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(body.relatedVideos.some(x=>x.id===newVideo));
+  assert.ok(!body.relatedVideos.some(x=>x.id===oldVideo));
+ }finally{globalThis.fetch=prior;}
+});
 test('age-restricted and non-embeddable trailers are labeled and ranked behind anonymous-playable clips',async()=>{
  stub({movie:{videos:{results:[
    {site:'YouTube',official:true,type:'Trailer',key:'AgeGate1234',name:'Restricted Trailer'},
