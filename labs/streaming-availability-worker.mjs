@@ -20,7 +20,7 @@ async function jsonRemote(uri,opts={},timeout=8500){
  finally{clearTimeout(timer);}
 }
 function safeHttps(v,host){
- try{const u=new URL(v);return u.protocol==="https:"&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
+ try{const u=new URL(v);return u.protocol==="https:"&&!u.username&&!u.password&&(!host||u.hostname===host||u.hostname.endsWith("."+host))?u.href:null;}catch{return null;}
 }
 async function tmdbInfo(kind,id,env,withMedia=false,language="en-US",withReviews=false){
  const token=env.TMDB_READ_ACCESS_TOKEN?.trim(),api=env.TMDB_API_KEY?.trim();
@@ -397,7 +397,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
 }
 // Title-scoped RSS discovery is supplemental to human-verified ID-linked articles.
 // A long-tail title is queried by verified TMDB aliases, not by popular/general headlines.
-const normalizedHeadline=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]+/g," ").trim();
+const normalizedHeadline=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim();
 function rssDecoded(value){
  return String(value||"").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1")
    .replace(/&#(x[0-9a-f]+|\d+);|&(amp|quot|apos|lt|gt);/gi,(_,num,named)=>{
@@ -418,11 +418,12 @@ function rssArticleMatches(headline,alias,context={}){
    headline.toLowerCase().includes(v.toLowerCase()));
  const exists=asian?text.replace(/ /g,"").includes(tight):(" "+text+" ").includes(" "+name+" ");
  if(!exists)return false;
+ if(wrongTitleEdition(headline,alias,context.year))return false;
  const distinctive=asian?tight.length>=6:name.length>=12&&name.includes(" ");
  const year=String(context.year||""),oldYear=String(Number(context.year||0)-10);
  const hasYear=year.length===4&&headline.includes(year);
  const isRemake=/live[\s-]?action|真人[版电影]|真人化|重制|翻拍|remake/i.test(headline);
- const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版|映画|監督|レビュー|予告|영화|드라마|예고|리뷰/i.test(headline);
+ const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature|series|season|episode|television)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版|剧集|电视剧|剧评|新季|映画|監督|レビュー|予告|영화|드라마|예고|리뷰/i.test(headline);
  const person=(Array.isArray(context.people)?context.people:[]).some(p=>p.length>=5&&
    normalizedHeadline(headline).includes(normalizedHeadline(p)));
  // Remakes and homonymous films need edition-aware checks *before*
@@ -447,6 +448,29 @@ function rssArticleMatches(headline,alias,context={}){
  // by a film-specific context even when the headline omits the release year.
  if(!asian&&name.includes(" ")&&name.length>=8&&filmContext)return true;
  return quoted||hasYear&&filmContext||person&&filmContext;
+}
+function wrongTitleEdition(line,alias,year){
+ const escape=v=>v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ const title=escape(String(alias||"").normalize("NFKC"));
+ if(!title)return false;
+ // "Dune 2" must not be accepted for "Dune"; an explicit title (year)
+ // describes the work's edition rather than the article's publication date.
+ const suffix=new RegExp(title+"\\s*(?:[：:]\\s*)?(?:[2-9](?![0-9])|II\\b|III\\b|IV\\b|第二部|第三部)","i");
+ if(suffix.test(String(line).normalize("NFKC"))&&!/[2-9]$|\b(?:II|III|IV)$/.test(alias))return true;
+ const dated=new RegExp(title+"[》\"']?\\s*[（(]((?:19|20)\\d{2})[）)]","i").exec(line);
+ return !!dated&&Number(year)>1900&&Math.abs(Number(dated[1])-Number(year))>1;
+}
+export function articleRelevance(title,summary,aliases,context={}){
+ const names=(Array.isArray(aliases)?aliases:[]).filter(v=>typeof v==="string"&&v.length>=2);
+ const heading=String(title||""),description=String(summary||"").slice(0,500);
+ const direct=names.some(alias=>rssArticleMatches(heading,alias,context));
+ const relevantSummary=names.some(alias=>!wrongTitleEdition(heading+" "+description,alias,context.year)&&
+   rssArticleMatches(description,alias,context));
+ const movieHeadline=/电影|影片|影评|票房|导演|预告|演员|剧集|电视剧|首映|\b(film|movie|review|director|trailer|cast|box office|series|season|cinema)\b/i.test(heading);
+ if(!direct&&!(relevantSummary&&movieHeadline))return 0;
+ const combined=normalizedHeadline(heading+" "+description);
+ const people=(context.people||[]).some(p=>normalizedHeadline(p).length>=3&&combined.includes(normalizedHeadline(p)));
+ return (direct?100:65)+(people?25:0)+(context.year&&combined.includes(String(context.year))?15:0);
 }
 async function titleNews(kind,id,env){
  // Fetch both language records concurrently: waiting for them sequentially
@@ -488,8 +512,8 @@ async function titleNews(kind,id,env){
   }
  }
  const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
- const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
-  ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
+ const people=[item,local].flatMap(record=>[...(record?.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
+  ...(record?.credits?.cast||[]).slice(0,3)]).map(v=>String(v.name||"").trim()).filter(v=>v.length>=3);
  // Country-specific names belong to one verified TMDB identity, but the original
  // may be Japanese or Korean. Never assume "first Asian name" is Chinese.
  const zhTranslated=translations.filter(v=>v.iso_639_1==="zh"&&["CN","HK","TW"].includes(v.iso_3166_1))
@@ -499,7 +523,7 @@ async function titleNews(kind,id,env){
  const zhOptions=[localized,...zhTranslated,...zhAlternate,wikidataChinese].filter(v=>
    /[\u3400-\u9fff]/.test(v)&&v.length>=2);
  const chinese=[...new Set(zhOptions)].slice(0,3);
- const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
+ const originalLatin=distinct.find(v=>!/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(v)&&/\p{L}/u.test(v)&&v.length>=2);
  const hangul=distinct.find(v=>/[\uac00-\ud7af]/.test(v)&&v.length>=4);
  const japanese=distinct.find(v=>/[\u3040-\u30ff]/.test(v)&&v.length>=4);
  const genre=String(item.genres?.[0]?.name||"").trim();
@@ -511,6 +535,8 @@ async function titleNews(kind,id,env){
   const first=chinese[0];
   add(first,'"'+first+'" '+year+' '+(kind==="movie"?"电影":"电视剧"),"zh");
   add(first,'"'+first+'" '+(kind==="movie"?"影评 电影":"剧评 电视剧"),"zh");
+  // A short query also finds announcements/interviews that omit the year.
+  add(first,'"'+first+'" '+(kind==="movie"?"电影":"电视剧"),"zh");
   // Search an independently verified variant, rather than assuming one area's
   // translation is how every Chinese publisher spells the same film.
   if(chinese[1]&&chinese[1]!==first)
@@ -558,7 +584,7 @@ async function titleNews(kind,id,env){
    const xml=(await res.text()).slice(0,400000);
    if(!/<rss[\s>]/i.test(xml)||!/<item>/i.test(xml)){stats.rssInvalidXml++;return [];}
    stats.rssOk++;
-   const now=Date.now(),ctx={year,people,requireEdition};
+   const now=Date.now(),ctx={year,people,requireEdition,kind};
    const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
    const parsed=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,50);
    stats.rssItems+=parsed.length;
@@ -567,11 +593,13 @@ async function titleNews(kind,id,env){
     const stamp=Date.parse(rssField(raw,"pubDate"));
     // Use the query alias and independent movie identity signals. A random
     // "obsession" article must not pass just because the word is in the title.
-    const match=rssArticleMatches(title,alias,ctx);
+    const summary=rssField(raw,"description").slice(0,400);
+    const relevance=articleRelevance(title,summary,[alias],ctx);
+    const match=relevance>0;
     if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<oldest)return null;
     const publisher=rssField(raw,"source");
     return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
-      source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:locale==="ja"?"ja":locale==="ko"?"ko":/[\u3400-\u9fff]/.test(title)?"zh":"en",matchType:"title_search"};
+      source:publisher.slice(0,60)||"Google News",relevance,titleMatchVerified:true,language:locale==="ja"?"ja":locale==="ko"?"ko":locale==="zh"?"zh":"en",matchType:"title_search"};
    }).filter(Boolean);
    stats.rssMatched+=accepted.length;
    return accepted;
@@ -663,22 +691,40 @@ async function titleNews(kind,id,env){
       const date=rssField(row,"pubDate"),stamp=Date.parse(date);
       const oldest=Number(year)>1900?Date.UTC(Math.max(1970,Number(year)-3),0,1):Date.UTC(1990,0,1);
       if(Number.isFinite(stamp)&&(stamp>Date.now()+86400000||stamp<oldest))return null;
-      if(!rssArticleMatches(title,alias,{year,people}))return null;
+      const relevance=articleRelevance(title,rssField(row,"description"),[alias],{year,people,kind});
+      if(!relevance)return null;
       return {title:title.slice(0,180),url:target,
         date:Number.isFinite(stamp)?new Date(stamp).toISOString():null,
         source:rssField(row,"source").slice(0,60)||new URL(target).hostname.replace(/^www\./,""),
         language:/[\u3400-\u9fff]/.test(title)?"zh":/[\uac00-\ud7af]/.test(title)?"ko":"en",
-        matchType:"title_search",titleMatchVerified:true};
+        relevance,matchType:"title_search",titleMatchVerified:true};
     }).filter(Boolean);
     stats.bingMatched+=matched.length;return matched;
    }catch{stats.bingNetworkError++;return [];}finally{clearTimeout(timer);}
  });
- const [batches,guardianRows,bingBatches]=await Promise.all([Promise.all(requests),guardian,Promise.all(bingRequests)]),seen=new Set(),seenTitle=new Set();
- const rankedArticles=[...batches.flat(),...guardianRows,...bingBatches.flat()].filter(x=>{
-  const key=normalizedHeadline(x.title),signature=key.replace(/\s+/g,"");
+ const domestic=chinese[0]?(async()=>{
+  try{
+   const uri="https://search.1905.com/search/index-p-type-news-q-"+encodeURIComponent(chinese[0])+".html";
+   const html=await publicMarkup(uri,4500);
+   return markupLinks(html,uri).map(row=>{
+    const url=safeHttps(row.url,"1905.com");
+    if(!url)return null;
+    const path=new URL(url).pathname,dated=/^\/news\/(20\d{2})(\d{2})(\d{2})\/[1-9]\d+\.shtml$/.exec(path);
+    if(!dated)return null;
+    const date=dated[1]+"-"+dated[2]+"-"+dated[3],stamp=Date.parse(date);
+    if(!Number.isFinite(stamp)||stamp>Date.now()+86400000||Number(dated[1])<Number(year)-3)return null;
+    const relevance=articleRelevance(row.title,"",chinese,{year,people,kind});
+    return relevance?{title:row.title.slice(0,180),url,date,source:"1905电影网",language:"zh",relevance,
+      titleMatchVerified:true,matchType:"title_search"}:null;
+   }).filter(Boolean).slice(0,12);
+  }catch{return [];}
+ })():Promise.resolve([]);
+ const [batches,guardianRows,bingBatches,domesticRows]=await Promise.all([Promise.all(requests),guardian,Promise.all(bingRequests),domestic]),seen=new Set(),seenTitle=new Set();
+ const rankedArticles=[...domesticRows,...bingBatches.flat(),...guardianRows,...batches.flat()].filter(x=>{
+  const key=normalizedHeadline(x.title.replace(/\s[-–—|]\s[^–—|]{2,60}$/,'')),signature=key.replace(/\s+/g,"");
   if(seen.has(x.url)||seenTitle.has(signature))return false;
   seen.add(x.url);seenTitle.add(signature);return true;
- }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
+ }).sort((a,b)=>(b.relevance||100)-(a.relevance||100)||Date.parse(b.date||0)-Date.parse(a.date||0)||a.url.localeCompare(b.url));
  // Mixed-language coverage matters as much as raw popularity: prevent one
  // publisher market from occupying all cached headlines for this TMDB ID.
  const balanced=[...rankedArticles.filter(x=>x.language==="zh").slice(0,12),
@@ -731,6 +777,7 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
   const asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(key);
   const found=asian?compact.includes(plain):(" "+normalizedHeadline(line)+" ").includes(" "+key+" ");
   if(!found)return false;
+  if(wrongTitleEdition(line,candidate,year))return false;
   if(conflictingYear){
    const release=Number(yearString),numbers=statedYears.map(Number);
    const promotional=/预告|定档|首曝|先导|teaser|trailer|coming soon|first look|予告/i.test(line);
@@ -745,7 +792,7 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
   }
   if(typeof entry==="object"&&entry.requireEdition===true&&!edition&&!line.includes(yearString))return false;
   if(asian&&plain.length<4)return quoted(candidate)&&contextual;
-  if(!asian&&plain.length<7)return false;
+  if(!asian&&plain.length<7&&!line.includes(yearString)&&!quoted(candidate))return false;
   if(!contextual&&!line.includes(yearString)&&!quoted(candidate))return false;
   // Single common English nouns (e.g. Obsession) still need a movie context
   // or the correct release year, never merely the coincidental word.
@@ -753,12 +800,135 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
  });
 }
 
+// Canonicalize only actual video pages. Cover/album/search/profile URLs are
+// never converted into a made-up video ID or player URL.
+export function domesticVideoLink(value){
+ try{
+  const u=new URL(value);
+  if(u.protocol!=="https:"||u.username||u.password)return null;
+  let m,platform,videoId,url;
+  if(["www.bilibili.com","bilibili.com","m.bilibili.com"].includes(u.hostname)&&
+     (m=/^\/video\/(BV[A-Za-z0-9]{10})\/?$/.exec(u.pathname))){
+   platform="bilibili";videoId=m[1];url="https://www.bilibili.com/video/"+videoId+"/";
+  }else if(u.hostname==="v.qq.com"&&(m=/^\/x\/(?:page|cover\/[A-Za-z0-9]+)\/([A-Za-z0-9]{11})\.html$/.exec(u.pathname))){
+   platform="tencent";videoId=m[1];url="https://v.qq.com/x/page/"+videoId+".html";
+  }else if(u.hostname==="v.youku.com"&&(m=/^\/v_show\/id_([A-Za-z0-9=_-]{8,80})\.html$/.exec(u.pathname))){
+   platform="youku";videoId=m[1];url="https://v.youku.com/v_show/id_"+videoId+".html";
+  }else if(u.hostname==="www.iqiyi.com"&&(m=/^\/v_([A-Za-z0-9]{6,40})\.html$/.exec(u.pathname))){
+   platform="iqiyi";videoId=m[1];url="https://www.iqiyi.com/v_"+videoId+".html";
+  }else if((u.hostname==="www.1905.com"&&(m=/^\/video\/play\/([1-9]\d{4,10})\.shtml$/.exec(u.pathname)))||
+           (u.hostname==="m.1905.com"&&(m=/^\/m\/video\/([1-9]\d{4,10})\.shtml$/.exec(u.pathname)))){
+   platform="1905";videoId=m[1];url="https://www.1905.com/video/play/"+videoId+".shtml";
+  }else return null;
+  return {platform,videoId,url};
+ }catch{return null;}
+}
+async function publicMarkup(url,timeout=4000){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
+ try{
+  // No credentials, cookies, captcha handling or private playback APIs.
+  const r=await fetch(url,{signal:controller.signal,redirect:"error",headers:{Accept:"text/html, application/rss+xml","User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}});
+  if(!r.ok)throw Error("public_page_unavailable");
+  const body=await r.text();
+  if(body.length>1500000)throw Error("public_page_too_large");
+  return body;
+ }finally{clearTimeout(timer);}
+}
+function markupAttribute(tag,name){
+ return new RegExp("\\b"+name+"\\s*=\\s*([\"'])([\\s\\S]*?)\\1","i").exec(tag)?.[2]||"";
+}
+function pageMeta(html,key){
+ for(const tag of html.match(/<meta\b[^>]*>/gi)||[]){
+  if((markupAttribute(tag,"property")||markupAttribute(tag,"name")).toLowerCase()===key)
+   return rssDecoded(markupAttribute(tag,"content"));
+ }
+ return "";
+}
+function markupLinks(html,base){
+ const rows=[];
+ for(const m of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)){
+  const href=rssDecoded(markupAttribute(m[1],"href"));
+  try{rows.push({url:new URL(href,base).href,title:rssDecoded(markupAttribute(m[1],"title")||m[2])});}catch{}
+ }
+ return rows;
+}
+function domesticNames(primary,local){
+ return [...new Set([local?.title,local?.name,primary.title,primary.name,primary.original_title,primary.original_name,
+  ...[primary,local].flatMap(x=>[...(x?.alternative_titles?.titles||x?.alternative_titles?.results||[])]
+    .filter(v=>["CN","HK","TW","US","GB"].includes(v.iso_3166_1)).map(v=>v.title||v.name)),
+  ...[primary,local].flatMap(x=>(x?.translations?.translations||[]).filter(v=>["zh","en"].includes(v.iso_639_1)).map(v=>v.data?.title||v.data?.name))
+ ].map(v=>String(v||"").normalize("NFKC").trim()).filter(v=>v.length>=2&&v.length<=90))];
+}
+async function verifiedPublicVideo(candidate,names,year,kind,id,canonical){
+ try{
+  const html=await publicMarkup(candidate.url,3500);
+  const title=pageMeta(html,"og:title")||rssField(html,"title");
+  // An index title is just a candidate. Recheck the destination's own title.
+  if(!filmVideoTitleMatches(title,names,String(year),kind))return null;
+  const declared=pageMeta(html,"og:url");
+  const linked=declared?domesticVideoLink(declared):null;
+  if(declared&&(!linked||linked.platform!==candidate.platform||linked.videoId!==candidate.videoId))return null;
+  if(/视频已删除|视频不存在|视频已下架|内容已删除/.test(title))return null;
+  return {kind,tmdbId:Number(id),year,title:canonical,verifiedByTitleId:true,
+   platform:candidate.platform,videoId:candidate.videoId,name:title.slice(0,145),
+   verifiedSource:candidate.url,publisher:({bilibili:"Bilibili",tencent:"腾讯视频",youku:"优酷",iqiyi:"爱奇艺","1905":"1905电影网"})[candidate.platform],
+   type:/预告|定档|teaser|trailer/i.test(title)?"Trailer":"Related",
+   verification:"public_video_page",likes:null,views:null};
+ }catch{return null;}
+}
+async function otherDomesticVideos(kind,id,identity){
+ const [primary,local]=identity,names=domesticNames(primary,local);
+ const year=Number(String(primary.release_date||primary.first_air_date||"").slice(0,4));
+ if(!names.length||!Number.isInteger(year)||year<1900)return {videos:[],diagnostics:{}};
+ const queryName=names.find(v=>/[\u3400-\u9fff]/.test(v))||names[0];
+ const diagnostics={platformSearchOk:0,platformSearchFailed:0,platformCandidates:0,platformVerified:0};
+ const queries=[
+  "https://search.bilibili.com/all?keyword="+encodeURIComponent(queryName+" 预告"),
+  "https://v.qq.com/x/search/?q="+encodeURIComponent(queryName+" 预告"),
+  "https://search.1905.com/search/index-p-type-video-q-"+encodeURIComponent(queryName)+".html"
+ ];
+ const index=new URL("https://www.bing.com/search");
+ index.searchParams.set("q",'"'+queryName+'" '+(queryName.length<7?year+' ':'')+'预告 (site:v.qq.com OR site:1905.com/video/play OR site:v.youku.com OR site:iqiyi.com)');
+ index.searchParams.set("format","rss");index.searchParams.set("setmkt","zh-CN");
+ queries.push(index.toString());
+ const batches=await Promise.all(queries.map(async uri=>{
+  try{
+   const html=await publicMarkup(uri);diagnostics.platformSearchOk++;
+   return /<rss[\s>]/i.test(html)?[...html.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,30)
+    .map(m=>({url:rssField(m[1],"link"),title:rssField(m[1],"title")})):markupLinks(html,uri);
+  }catch{diagnostics.platformSearchFailed++;return [];}
+ }));
+ const seen=new Set(),perPlatform=new Map();
+ const candidates=batches.flat().map(row=>({...row,link:domesticVideoLink(row.url)}))
+  .filter(row=>row.link&&filmVideoTitleMatches(row.title,names,String(year),kind))
+  .filter(row=>{
+   const key=row.link.platform+":"+row.link.videoId,count=perPlatform.get(row.link.platform)||0;
+   if(seen.has(key)||count>=3)return false;
+   seen.add(key);perPlatform.set(row.link.platform,count+1);return true;
+  }).slice(0,8);
+ diagnostics.platformCandidates=candidates.length;
+ const videos=(await Promise.all(candidates.map(row=>verifiedPublicVideo(row.link,names,year,kind,id,names[0])))).filter(Boolean);
+ diagnostics.platformVerified=videos.length;
+ return {videos,diagnostics};
+}
+async function titleDomesticVideos(kind,id,env){
+ const identity=await Promise.all([tmdbInfo(kind,id,env,true),tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)]);
+ const [bili,other]=await Promise.all([titleBilibiliVideos(kind,id,env,identity),otherDomesticVideos(kind,id,identity)]);
+ const seen=new Set();
+ const videos=[...bili.videos,...other.videos].filter(v=>{
+   const key=v.platform+":"+v.videoId;if(seen.has(key))return false;seen.add(key);return true;
+ }).sort((a,b)=>Number(b.type==="Trailer")-Number(a.type==="Trailer")||
+   (b.likes||0)-(a.likes||0)||a.videoId.localeCompare(b.videoId)).slice(0,10);
+ return {...bili,videos,status:videos.length?"ok":bili.status,
+  source:bili.source+" + domestic public video pages",sourceDiagnostics:{...bili.sourceDiagnostics,...other.diagnostics}};
+}
+
 // Best-effort domestic video discovery for EVERY TMDB title. This source is
 // uncredentialed and may reject automated requests; do not bypass its controls.
 // Search results alone are NOT sufficient: each BVID is checked against the
 // actual public video-details endpoint before a playable card is returned.
-async function titleBilibiliVideos(kind,id,env){
- const [primary,local]=await Promise.all([
+async function titleBilibiliVideos(kind,id,env,identity){
+ const [primary,local]=identity||await Promise.all([
    tmdbInfo(kind,id,env,true),
    tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)
  ]);
@@ -774,14 +944,14 @@ async function titleBilibiliVideos(kind,id,env){
  ].map(x=>String(x||"").normalize("NFKC").trim())
   .filter(x=>x.length>=2&&x.length<=65);
  const regionName=[...new Set(names)].find(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x));
- const latinName=[...new Set(names)].find(x=>/^[a-z0-9 .:'()&!-]+$/i.test(x)&&x.length>=7);
+ const latinName=[...new Set(names)].find(x=>/^[a-z0-9 .:'()&!-]+$/i.test(x)&&x.length>=2);
  const searchName=regionName||latinName;
  const checks={nativeReturned:0,nativeHttpSuccess:0,nativeRejected:0,nativeNetworkError:0,indexReturned:0,indexNetworkError:0,titleMatched:0,detailChecked:0,detailVerified:0,detailFailed:0};
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[],sourceDiagnostics:checks});
  if(!searchName||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
  // Two independent searches per work: year-specific trailers and unyeared
  // reviews/clips. Both still need a verified title and Bilibili video ID.
- const titleChoices=[...new Set(names)].filter(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x)&&x.length>=2||/^[a-z0-9 .:\'()&!-]+$/i.test(x)&&x.length>=7);
+ const titleChoices=[...new Set(names)].filter(x=>x.length>=2);
  // Bilibili's title search weighs every query token heavily. A query
  // combining year, film, review, behind-the-scenes AND trailer can suppress
  // legitimate matches completely. Use short, distinct probes; verify every
@@ -807,7 +977,7 @@ async function titleBilibiliVideos(kind,id,env){
    uri.searchParams.set("order","totalrank");uri.searchParams.set("page","1");
    const payload=await jsonRemote(uri.toString(),{
     headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
-      "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
+      "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},4000);
    if(payload?.code===0&&Array.isArray(payload.data?.result)){
      nativeWorking=true;checks.nativeHttpSuccess++;checks.nativeReturned+=payload.data.result.length;
      return payload.data.result;
@@ -835,7 +1005,7 @@ async function titleBilibiliVideos(kind,id,env){
    const data=await jsonRemote(u.toString(),{headers:{
     Accept:"application/json",Referer:"https://www.bilibili.com/",
     "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"
-   }},6000);
+   }},2500);
    if(data?.code===0&&Array.isArray(data.data?.result)){
     const found=data.data.result.map(x=>({
      bvid:String(x.bvid||"").trim(),heading:rssDecoded(x.title||"")
@@ -861,7 +1031,7 @@ async function titleBilibiliVideos(kind,id,env){
      '(预告 OR 影评 OR 花絮 OR 幕后 OR 剪辑)':rawYear+' (预告 OR 影评 OR 花絮)';
    uri.searchParams.set("q",'site:bilibili.com/video/ "'+searchName+'" '+indexTerm);
    uri.searchParams.set("format","rss");uri.searchParams.set("setmkt","zh-CN");
-   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),5500);
+   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),3500);
    try{
     const response=await fetch(uri.toString(),{signal:ac.signal,headers:{Accept:"application/rss+xml, application/xml"}});
     if(response.ok){
@@ -896,8 +1066,9 @@ async function titleBilibiliVideos(kind,id,env){
     uri.searchParams.set("bvid",v.bvid);
     const resp=await jsonRemote(uri.toString(),{
       headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
-       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},5500);
+       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},3500);
     const d=resp?.data;
+    if(resp.code===-412||resp.code===-352)throw Error("public_api_unavailable");
     if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0){checks.detailFailed++;return null;}
     const title=String(d.title||"").normalize("NFKC").trim();
     if(!filmVideoTitleMatches(title,titleChoices,rawYear,kind)){checks.detailFailed++;return null;}
@@ -910,9 +1081,14 @@ async function titleBilibiliVideos(kind,id,env){
       type:/预告|定档|teaser|trailer/i.test(title)?"Trailer":"Related",
       likes:Number.isSafeInteger(likes)&&likes>=0?likes:null,
       views:Number.isSafeInteger(views)&&views>=0?views:null};
-   }catch{checks.detailFailed++;return null;}
+   }catch{
+    const page=await verifiedPublicVideo({platform:"bilibili",videoId:v.bvid,
+      url:"https://www.bilibili.com/video/"+v.bvid+"/"},titleChoices,year,kind,id,canonical);
+    if(page){checks.detailVerified++;return page;}
+    checks.detailFailed++;return null;
+   }
  }));
- const videos=checked.filter(Boolean).slice(0,6);
+ const videos=checked.filter(Boolean).sort((a,b)=>(b.likes||0)-(a.likes||0)||a.videoId.localeCompare(b.videoId)).slice(0,6);
  return {ok:true,kind,tmdbId:Number(id),year,source,
    status:videos.length?"ok":"no_match",videos,sourceDiagnostics:checks};
 }
@@ -973,21 +1149,23 @@ export default {
   // Per-work exact ID contextual news search, cached for six hours.
   const titleNewsRoute=u.pathname.match(/^\/api\/news\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(titleNewsRoute){
-   const cached=await caches.default.match(request);if(cached)return cached;
+   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v12",u.origin));
+   const cached=await caches.default.match(cacheKey);if(cached)return cached;
    try{
     const body=await titleNews(titleNewsRoute[1],titleNewsRoute[2],env);
     const response=reply(body,200,body.articles.length?21600:300);
-    ctx.waitUntil(caches.default.put(request,response.clone()));
+    ctx.waitUntil(caches.default.put(cacheKey,response.clone()));
     return response;
    }catch{return reply({ok:true,kind:titleNewsRoute[1],tmdbId:Number(titleNewsRoute[2]),status:"unavailable",articles:[]},200,900);}
   }
   const matchingVideos=u.pathname.match(/^\/api\/videos\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(matchingVideos){
-   const cached=await caches.default.match(request);if(cached)return cached;
+   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v12",u.origin));
+   const cached=await caches.default.match(cacheKey);if(cached)return cached;
    try{
-    const body=await titleBilibiliVideos(matchingVideos[1],matchingVideos[2],env);
+    const body=await titleDomesticVideos(matchingVideos[1],matchingVideos[2],env);
     const response=reply(body,200,body.videos.length?86400:900);
-    ctx.waitUntil(caches.default.put(request,response.clone()));
+    ctx.waitUntil(caches.default.put(cacheKey,response.clone()));
     return response;
    }catch{return reply({ok:true,kind:matchingVideos[1],tmdbId:Number(matchingVideos[2]),
        status:"unavailable",videos:[]},200,300);}

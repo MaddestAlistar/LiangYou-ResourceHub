@@ -53,7 +53,8 @@ test('source attribution follows all discovery slots and cache-busted scripts ar
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")>=0);
   assert.ok(rendered.indexOf("detailTab==='discover'?discoverPanel(w)")<rendered.indexOf("text('资料来源','Sources')"));
   for(const name of ['media-intel.js','media-insights.js','media-cn-enhance.js','media-title-news.js']){
-    const version=index.split('./'+name+'?v=')[1]?.split('"')[0];
+    const assets=index+readFileSync(new URL('../china-perf.js',import.meta.url),'utf8');
+    const version=assets.split('./'+name+'?v=')[1]?.split(/[\"']/)[0];
     assert.ok(version&&version.length>=8,name+' must use a versioned asset URL');
   }
 });

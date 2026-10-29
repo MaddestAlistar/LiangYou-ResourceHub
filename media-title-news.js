@@ -9,6 +9,15 @@
     }catch{return null;}
   };
   const validKind=x=>x==='movie'||x==='tv';
+  function validDomesticVideo(x){
+    const id=String(x?.videoId||''),url=safeUrl(x?.verifiedSource);
+    if(x?.platform==='bilibili')return /^BV[A-Za-z0-9]{10}$/.test(id)&&url==='https://www.bilibili.com/video/'+id+'/';
+    if(x?.platform==='tencent')return /^[A-Za-z0-9]{11}$/.test(id)&&url==='https://v.qq.com/x/page/'+id+'.html';
+    if(x?.platform==='youku')return /^[A-Za-z0-9=_-]{8,80}$/.test(id)&&url==='https://v.youku.com/v_show/id_'+id+'.html';
+    if(x?.platform==='iqiyi')return /^[A-Za-z0-9]{6,40}$/.test(id)&&url==='https://www.iqiyi.com/v_'+id+'.html';
+    if(x?.platform==='1905')return /^[1-9]\d{4,10}$/.test(id)&&url==='https://www.1905.com/video/play/'+id+'.shtml';
+    return false;
+  }
   function read(){
     if(!pending)pending=fetch('./data/media-title-news.json',{cache:'no-cache',signal:AbortSignal.timeout(6500)})
       .then(r=>{if(!r.ok)throw Error('title_news_snapshot_unavailable');return r.json();})
@@ -65,8 +74,7 @@
       }));
     const videos=item.videos.filter(x=>x?.verifiedByTitleId===true&&
       x.kind===kind&&Number(x.tmdbId)===id&&
-      x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
-      safeUrl(x.verifiedSource)==='https://www.bilibili.com/video/'+x.videoId+'/'&&
+      validDomesticVideo(x)&&
       Number.isInteger(Number(x.year))&&(!(year>=1850)||Math.abs(Number(x.year)-year)<=1))
       .slice(0,10).map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
     return articles.length||videos.length||youtubeTrailers.length?
@@ -116,8 +124,8 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=11',{
-          signal:AbortSignal.timeout(21000)});
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=12',{
+          signal:AbortSignal.timeout(26000)});
         if(!r.ok)return null;
         const d=await r.json();
         if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||!Array.isArray(d.articles))return null;
@@ -126,7 +134,7 @@
           x.titleMatchVerified===true&&safeUrl(x.url)&&!['localhost','127.0.0.1'].includes(new URL(safeUrl(x.url)).hostname)&&
           (x.date==null||Number.isFinite(Date.parse(x.date)))&&
           ['zh','ko','ja','en'].includes(x.language))
-          .slice(0,18).map(x=>({...x,url:safeUrl(x.url)}));
+          .slice(0,24).map(x=>({...x,url:safeUrl(x.url)}));
         return {articles};
       }catch{return null;}
     })().then(result=>{
@@ -153,20 +161,18 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=7',{
-          signal:AbortSignal.timeout(17500)});
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=8',{
+          signal:AbortSignal.timeout(30000)});
         if(!r.ok)return null;
         const d=await r.json();
         if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||
            !Number.isSafeInteger(d.year)||(yearKnown&&Math.abs(d.year-year)>1)||
            !Array.isArray(d.videos))return null;
         const videos=d.videos.filter(v=>v?.verifiedByTitleId===true&&
-          v.kind===kind&&v.tmdbId===id&&v.platform==='bilibili'&&
-          /^BV[A-Za-z0-9]{10}$/.test(String(v.videoId||''))&&
+          v.kind===kind&&v.tmdbId===id&&validDomesticVideo(v)&&
           Number(v.year)===d.year&&
-          safeUrl(v.verifiedSource)==='https://www.bilibili.com/video/'+v.videoId+'/'&&
           typeof v.name==='string'&&v.name.length>=4&&v.name.length<=145)
-          .slice(0,8).map(v=>({...v,verifiedSource:safeUrl(v.verifiedSource)}));
+          .slice(0,10).map(v=>({...v,verifiedSource:safeUrl(v.verifiedSource)}));
         return {videos};
       }catch{return null;}
     })().then(result=>{

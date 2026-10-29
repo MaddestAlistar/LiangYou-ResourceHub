@@ -166,6 +166,7 @@
       if(p==='tencent')verified=/^[A-Za-z0-9]{11}$/.test(id)&&u==='https://v.qq.com/x/page/'+id+'.html';
       if(p==='youku')verified=/^[A-Za-z0-9=_-]{8,80}$/.test(id)&&u==='https://v.youku.com/v_show/id_'+id+'.html';
       if(p==='iqiyi')verified=/^[A-Za-z0-9]{6,40}$/.test(id)&&u==='https://www.iqiyi.com/v_'+id+'.html';
+      if(p==='1905')verified=/^[1-9]\d{4,10}$/.test(id)&&u==='https://www.1905.com/video/play/'+id+'.shtml';
       // A 1905 movie profile is not a verified trailer playback URL. Show as
       // source link only, never construct an unapproved streaming iframe.
       if(!verified||ids.has(p+':'+id))continue;
@@ -237,7 +238,7 @@
     for(const v of verifiedRelated)candidates.push({key:'youtube:'+v.id,domestic:false,
       type:'related',official:false,playable:true,likes:v.likes,card:youtubeCard(v,true)});
     for(const x of domestic){
-      const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':x.platform==='youku'?'优酷':'爱奇艺';
+      const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':x.platform==='youku'?'优酷':x.platform==='1905'?'1905电影网':'爱奇艺';
       const name=String(x.name||t('影视预告片','Trailer'));
       const supportedPlayer=x.platform==='bilibili'||x.platform==='tencent'||x.platform==='youku';
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
@@ -322,9 +323,9 @@
     function matchScore(article){
       // Curated articles are already keyed to the exact TMDB kind, ID and release
       // year. They may discuss a film without spelling its public title verbatim.
-      if(article.verifiedByTitleId===true)return 200;
+      if(article.verifiedByTitleId===true)return article.type==='community'?85:145;
       // Exact film-ID Worker matches are pre-screened by release year and title.
-      if(article.titleMatchVerified===true)return article.type==='community'?85:145;
+      if(article.titleMatchVerified===true)return article.type==='community'?85:145+Math.min(25,Math.max(0,Number(article.relevance||100)-100));
       const headline=String(article.title||'').normalize('NFKC'),line=' '+normalize(headline)+' ';
       let confidence=0;
       for(const label of rawTitles){
@@ -352,11 +353,18 @@
     const all=[...(Array.isArray(d.news)?d.news:[]),...sources]
       .filter(x=>x&&safe(x.url)).map(x=>({...x,confidence:matchScore(x)})).filter(x=>x.confidence>0);
     const seen=new Set(),seenTitle=new Set();
-    const rows=all.sort((a,b)=>b.confidence-a.confidence||Date.parse(b.date||0)-Date.parse(a.date||0)).filter(x=>{
-      const url=safe(x.url),title=normalize(x.title);
+    const ordered=all.sort((a,b)=>b.confidence-a.confidence||Date.parse(b.date||0)-Date.parse(a.date||0)).filter(x=>{
+      const url=safe(x.url),title=normalize(String(x.title||'').replace(/\s[-–—|]\s[^–—|]{2,60}$/, ''));
       if(!url||seen.has(url)||seenTitle.has(title))return false;
       seen.add(url);seenTitle.add(title);return true;
+    });
+    const publisherCounts=new Map();
+    const diverse=ordered.filter(x=>{
+      const publisher=x.source||new URL(x.url).hostname,count=publisherCounts.get(publisher)||0;
+      publisherCounts.set(publisher,count+1);return count<2;
     }).slice(0,6);
+    const selected=new Set(diverse.map(x=>x.url));
+    const rows=[...diverse,...ordered.filter(x=>!selected.has(x.url))].slice(0,6);
     const international='<section class="mi-insight-block mi-international-news"><div class="mi-insight-head"><h3>'+t('国际新闻','International news')+'</h3><span class="mi-tech-tag">'+t('多来源','Multiple sources')+'</span></div>'+
       (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>{
         const image=safe(x.thumbnail);

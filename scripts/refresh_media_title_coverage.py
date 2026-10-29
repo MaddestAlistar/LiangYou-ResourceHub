@@ -44,7 +44,7 @@ def fetch(path):
         "User-Agent": "LiangYou-ResourceHub/1.0 (+https://maddestalistar.github.io/LiangYou-ResourceHub/)",
         "Accept": "application/json",
     })
-    with urllib.request.urlopen(req, timeout=28) as res:
+    with urllib.request.urlopen(req, timeout=35) as res:
         if res.status != 200:
             raise RuntimeError("http_not_ok")
         return json.loads(res.read(500000))
@@ -73,10 +73,11 @@ def candidates():
                 identities.add(f"{m[1]}:{int(m[2])}")
     except (OSError, ValueError, TypeError):
         pass
-    # Known curated records are already covered. Spend the API budget on others.
+    # Curated examples also need automatic refresh; manual records are a seed,
+    # never an exclusion from future discovery.
     try:
         curated = json.loads((ROOT / "data" / "media-title-news.json").read_text(encoding="utf-8"))
-        identities -= set((curated.get("titles") or {}).keys())
+        identities |= set((curated.get("titles") or {}).keys())
     except (OSError, ValueError, TypeError):
         pass
     return sorted(identities)
@@ -111,6 +112,7 @@ def clean_articles(doc, kind, ident):
             "language": row.get("language") if row.get("language") in ("zh", "en", "ja", "ko") else "en",
             "date": row.get("date") if isinstance(row.get("date"), str) else None,
             "titleMatchVerified": True,
+            "relevance": min(150, max(0, int(row.get("relevance") or 100))),
             "type": row.get("type") if row.get("type") == "community" else "article",
         })
         if len(results) >= 24:
@@ -130,22 +132,32 @@ def clean_videos(doc, kind, ident):
     for row in doc["videos"][:35]:
         if not isinstance(row, dict) or row.get("verifiedByTitleId") is not True:
             continue
-        bvid = str(row.get("videoId") or "")
-        if not re.fullmatch(r"BV[A-Za-z0-9]{10}", bvid):
+        video_id = str(row.get("videoId") or "")
+        platform = row.get("platform")
+        formats = {
+            "bilibili": (r"BV[A-Za-z0-9]{10}", "https://www.bilibili.com/video/{}/"),
+            "tencent": (r"[A-Za-z0-9]{11}", "https://v.qq.com/x/page/{}.html"),
+            "youku": (r"[A-Za-z0-9=_-]{8,80}", "https://v.youku.com/v_show/id_{}.html"),
+            "iqiyi": (r"[A-Za-z0-9]{6,40}", "https://www.iqiyi.com/v_{}.html"),
+            "1905": (r"[1-9]\d{4,10}", "https://www.1905.com/video/play/{}.shtml"),
+        }
+        pattern, template = formats.get(platform, (r"(?!)", ""))
+        if not re.fullmatch(pattern, video_id):
             continue
-        if row.get("tmdbId") != ident or row.get("kind") != kind or row.get("platform") != "bilibili":
+        if row.get("tmdbId") != ident or row.get("kind") != kind:
             continue
-        if row.get("year") != year or row.get("verifiedSource") != f"https://www.bilibili.com/video/{bvid}/":
+        if row.get("year") != year or row.get("verifiedSource") != template.format(video_id):
             continue
-        if bvid in seen:
+        key = (platform, video_id)
+        if key in seen:
             continue
-        seen.add(bvid)
+        seen.add(key)
         results.append({
             "kind": kind, "tmdbId": ident, "title": str(row.get("title") or "")[:100],
-            "year": year, "platform": "bilibili", "videoId": bvid,
+            "year": year, "platform": platform, "videoId": video_id,
             "verifiedSource": row["verifiedSource"],
             "verifiedByTitleId": True, "name": str(row.get("name") or "")[:145],
-            "publisher": str(row.get("publisher") or "Bilibili")[:65],
+            "publisher": str(row.get("publisher") or platform)[:65],
             "type": "Trailer" if row.get("type") == "Trailer" else "Related",
             "likes": row.get("likes") if type(row.get("likes")) is int and row["likes"] >= 0 else None,
         })
@@ -200,8 +212,8 @@ def collect(key):
     ident = int(raw_id)
     fetched = {}
     for label, route in (
-        ("articles", f"/api/news/title/{kind}/{ident}?v=11"),
-        ("videos", f"/api/videos/title/{kind}/{ident}?v=7"),
+        ("articles", f"/api/news/title/{kind}/{ident}?v=12"),
+        ("videos", f"/api/videos/title/{kind}/{ident}?v=8"),
         ("youtube", f"/api/title/{kind}/{ident}?v=3"),
     ):
         try:
@@ -250,7 +262,7 @@ def main():
     # These are TMDB-ID-linked YouTube/film-provider records; Bilibili's
     # rate-limited search remains an independent best-effort source.
     missing_trailers = sorted(
-        (key for key in works if not items.get(key, {}).get("youtubeTrailers") and key not in chosen_set),
+        (key for key in works if not items.get(key, {}).get("videos") and key not in chosen_set),
         key=by_age)
     video_quota = min(len(missing_trailers), max(1, limit // 4))
     chosen.extend(missing_trailers[:video_quota])

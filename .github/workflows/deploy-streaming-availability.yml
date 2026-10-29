@@ -36,7 +36,9 @@ jobs:
         with:
           node-version: '24'
       - name: Validate syntax
-        run: node --check labs/streaming-availability-worker.mjs
+        run: |
+          node --check labs/streaming-availability-worker.mjs
+          node --test scripts/test_media_matching.mjs scripts/test_media_insights.mjs
       - name: Deploy Worker
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
@@ -86,9 +88,11 @@ jobs:
           const videoResults=await Promise.all(examples.map(async x=>{
             try{
               const uri='https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/movie/'+x.id+'?audit='+encodeURIComponent(process.env.GITHUB_SHA||'unknown');
-              const r=await fetch(uri,{signal:AbortSignal.timeout(23000)});
+              const r=await fetch(uri,{signal:AbortSignal.timeout(35000)});
               const d=await r.json();
-              return {title:x.title,status:d.status||'unknown',verifiedBilibiliVideos:d.videos?.length||0,
+              return {title:x.title,status:d.status||'unknown',verifiedDomesticVideos:d.videos?.length||0,
+                platforms:Object.fromEntries([...new Set((d.videos||[]).map(v=>v.platform))].map(p=>[p,d.videos.filter(v=>v.platform===p).length])),
+                diagnostics:d.sourceDiagnostics||{},
                 source:d.source||'unknown'};
             }catch(error){return {title:x.title,status:'network_error',verifiedBilibiliVideos:0,
               error:String(error).slice(0,100)};}

@@ -20,9 +20,9 @@
       ],
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
-        './media-title-news.js?v=20261029-identityyear8',
-        './media-insights.js?v=20261029-yearsafe10',
-        './media-cn-enhance.js?v=20261029.catalog-unified5',
+        './media-title-news.js?v=20261029-multiplatform9',
+        './media-insights.js?v=20261029-relevance11',
+        './media-cn-enhance.js?v=20261029.catalog-diverse6',
         './media-exact-scores.js?v=20261029.newsroom1',
         './media-boxoffice-rankings.js?v=20261029.noarchive1'
       ]

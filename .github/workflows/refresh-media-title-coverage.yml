@@ -2,6 +2,10 @@ name: Refresh every catalog film's verified news and video coverage
 on:
   schedule:
     - cron: '23 */6 * * *'
+  workflow_run:
+    workflows: [Deploy independent JustWatch availability adapter]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
   push:
     branches: [main]
@@ -16,6 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
@@ -29,6 +34,7 @@ jobs:
       - name: Validate cross-title coverage builder
         run: |
           python -m py_compile scripts/refresh_media_title_coverage.py
+          python scripts/test_media_coverage.py
           python - <<'PY'
           from scripts.refresh_media_title_coverage import clean_youtube_trailers
           sample={

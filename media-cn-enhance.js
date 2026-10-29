@@ -135,19 +135,27 @@ function domesticNews(info){
   function renderAdditional(dynamic=[]){
     const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
     const live=d?.schema===1&&Array.isArray(d.items)&&Number.isFinite(age)&&age>=0&&age<=7*86400000?d.items:[];
+    const score=x=>x.type==='community'?60:130+Math.min(25,Math.max(0,Number(x.relevance||100)-100));
     const identityNews=(verified?.articles||[]).filter(x=>x.language==='zh')
-      .map(x=>({...x,confidence:200}));
+      .map(x=>({...x,confidence:score(x)}));
     const seenUrl=new Set(),seenTitle=new Set();
-    const matched=[...identityNews,...dynamic.map(x=>({...x,confidence:x.type==='community'?60:115})),...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
+    const candidates=[...dynamic.map(x=>({...x,confidence:score(x)})),...identityNews,...live.map(x=>({...x,confidence:headlineMatch(x.title,info)}))]
      .filter(x=>x.confidence>0&&safe(x.url)&&x.title)
      .sort((a,b)=>b.confidence-a.confidence||
        (Number.isSafeInteger(b.likes)?b.likes:-1)-(Number.isSafeInteger(a.likes)?a.likes:-1)||
        Date.parse(b.date||0)-Date.parse(a.date||0))
      .filter(x=>{
-      const u=safe(x.url),name=sameTitle(x.title);
+      const u=safe(x.url),name=sameTitle(x.title.replace(/\s[-–—|]\s[^–—|]{2,60}$/,''));
       if(seenUrl.has(u)||seenTitle.has(name))return false;
       seenUrl.add(u);seenTitle.add(name);return true;
-     }).slice(0,6);
+     });
+    const publisherCounts=new Map();
+    const diverse=candidates.filter(x=>{
+      const publisher=x.source||new URL(x.url).hostname,count=publisherCounts.get(publisher)||0;
+      publisherCounts.set(publisher,count+1);return count<2;
+    }).slice(0,6);
+    const selected=new Set(diverse.map(x=>x.url));
+    const matched=[...diverse,...candidates.filter(x=>!selected.has(x.url))].slice(0,6);
     if(!matched.length){
       const ongoing=!remoteDone||!feedDone;
       pane.innerHTML='<p class="mi-caption">'+(ongoing?

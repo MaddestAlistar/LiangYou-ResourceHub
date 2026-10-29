@@ -55,7 +55,8 @@ test('changed assets invalidate old browser cache',()=>{
  const assets=['media-intel.js','media-toolkit.js','media-insights.js','media-title-news.js',
    'media-cn-enhance.js','media-exact-scores.js','media-boxoffice-rankings.js'];
  for(const name of assets){
-   const version=index.split('./'+name+'?v=')[1]?.split('"')[0];
+   const loaded=index+readFileSync(new URL('../china-perf.js',import.meta.url),'utf8');
+   const version=loaded.split('./'+name+'?v=')[1]?.split(/[\"']/)[0];
    assert.ok(version&&version.length>=8,name+' must carry a cache-busting version');
  }
 });
