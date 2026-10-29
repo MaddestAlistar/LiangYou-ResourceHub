@@ -1,4 +1,5 @@
 import { inspectImage } from "../icon-image.mjs";
+import { serveTechNews } from "./tech-news.mjs";
 import { isUUID, submitBatchItem } from "./icon-batch-submission.mjs";
 import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
 import { publishIcon, withdrawIcon, renameIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
@@ -12,6 +13,7 @@ export default {async fetch(request,env){
  try {
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, X-Admin-Key","Access-Control-Max-Age":"600"}});
  const url=new URL(request.url);
+ if(url.pathname==="/news-feed"||url.pathname==="/news-admin")return await serveTechNews(request,env,{origin,allowed});
  // Public liveness/version only; no credentials, configuration or queue data.
  if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin===allowed?origin:"");
  if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
