@@ -30,7 +30,7 @@ jobs:
         run: python -m py_compile scripts/refresh_media_title_coverage.py
       - name: Refresh rotating title snapshots
         env:
-          COVERAGE_BATCH: '20'
+          COVERAGE_BATCH: '30'
         run: python scripts/refresh_media_title_coverage.py
       - name: Validate snapshot identity and size
         run: |
