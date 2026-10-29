@@ -144,8 +144,10 @@
   function videoForInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId);
     const year=Number(String(info?.year||'').slice(0,4));
-    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1||!Number.isSafeInteger(year))
-      return Promise.resolve(null);
+    // TMDB ID is canonical. A missing year on a localized card must not stop
+    // title-specific discovery, but a known mismatched year still blocks it.
+    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return Promise.resolve(null);
+    const yearKnown=Number.isSafeInteger(year)&&year>=1900;
     const key=kind+':'+id,prior=videoCache.get(key);
     if(prior&&Date.now()-prior.at<prior.ttl)return prior.promise;
     const entry={at:Date.now(),ttl:120000,promise:null};
@@ -156,7 +158,7 @@
         if(!r.ok)return null;
         const d=await r.json();
         if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||
-           !Number.isSafeInteger(d.year)||Math.abs(d.year-year)>1||
+           !Number.isSafeInteger(d.year)||(yearKnown&&Math.abs(d.year-year)>1)||
            !Array.isArray(d.videos))return null;
         const videos=d.videos.filter(v=>v?.verifiedByTitleId===true&&
           v.kind===kind&&v.tmdbId===id&&v.platform==='bilibili'&&
