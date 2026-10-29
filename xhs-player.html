@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>良友视频精选 · CarPlay 途播</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#05070e;color:#e8eaf2;font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;position:relative}
+video{display:block;max-height:100%;max-width:100%;height:100%;width:100%;object-fit:contain;background:#05070e}
+#status{position:absolute;bottom:14px;inset-inline:12px;text-align:center;padding:12px;border:1px solid #7777;border-radius:10px;background:rgba(18,25,38,.96);color:#eceaf1}
+#status[hidden]{display:none}
+#status a{color:#ead09f}
+</style>
+</head>
+<body>
+<main>
+<video id="xhs-video" controls playsinline webkit-playsinline preload="metadata" poster="https://ci.xiaohongshu.com/1040g008324l43dlsna0049g0m2ors2l1d17lnmg?imageView2/format/jpeg" aria-label="如何在 CarPlay 上看影视，途播实测视频">
+  <source src="https://sns-bak-v10.xhscdn.com/stream/1/110/258/01ea9907a778280801037001a065d45879_258.mp4" type="video/mp4">
+  当前浏览器不支持视频播放。
+</video>
+<div id="status" role="status" hidden>小红书视频暂时无法直接加载。<a href="https://xhslink.cn/o/3eUyzuksTQC" target="_blank" rel="noopener noreferrer">查看原视频 ↗</a></div>
+</main>
+<script>
+(()=>{'use strict';const video=document.getElementById('xhs-video'),status=document.getElementById('status');video.addEventListener('error',()=>status.hidden=false);video.querySelector('source')?.addEventListener('error',()=>status.hidden=false);video.addEventListener('loadedmetadata',()=>{status.hidden=true});})();
+</script>
+</body>
+</html>
