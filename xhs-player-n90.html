@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>良友视频精选 · 小米澎程 N90 CarPlay 演示</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#05070e;color:#e8eaf2;font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;position:relative}
+video{display:block;max-height:100%;max-width:100%;height:100%;width:100%;object-fit:contain;background:#05070e}
+#status{position:absolute;bottom:14px;inset-inline:12px;text-align:center;padding:12px;border:1px solid #7777;border-radius:10px;background:rgba(18,25,38,.96);color:#eceaf1}
+#status[hidden]{display:none}
+#status a{color:#ead09f}
+</style>
+</head>
+<body>
+<main>
+<video id="xhs-video" controls playsinline webkit-playsinline preload="metadata" poster="https://ci.xiaohongshu.com/1040g2sg3250nkp463ce049g0m2ors2l14jgc7rg?imageView2/format/jpeg" aria-label="小米澎程 N90 在 CarPlay 上部分 APP 实际演示">
+  <source src="https://sns-bak-v10.xhscdn.com/stream/1/110/258/01eaa4e9a60a2e6c01037001a09437ef94_258.mp4" type="video/mp4">
+  当前浏览器不支持视频播放。
+</video>
+<div id="status" role="status" hidden>小红书视频暂时无法直接加载。<a href="https://xhslink.cn/o/7X4yBrtmKpu" target="_blank" rel="noopener noreferrer">查看原视频 ↗</a></div>
+</main>
+<script>
+(()=>{'use strict';const video=document.getElementById('xhs-video'),status=document.getElementById('status');video.addEventListener('error',()=>status.hidden=false);video.querySelector('source')?.addEventListener('error',()=>status.hidden=false);video.addEventListener('loadedmetadata',()=>{status.hidden=true});})();
+</script>
+</body>
+</html>
