@@ -186,10 +186,11 @@ def clean_youtube_trailers(doc, kind, ident):
         out.append({
             "kind": kind, "tmdbId": ident, "year": year,
             "id": video_id, "official": row.get("official") is True, "verifiedByTitleId": True,
-            "type": "Trailer", "title": str(row.get("name") or "Official trailer")[:145],
+            "type": row.get("type") if row.get("type") in ("Trailer", "Teaser", "Clip", "Featurette", "Behind the Scenes", "Bloopers") else "Trailer",
+            "title": str(row.get("name") or "Film video")[:145],
             "url": f"https://www.youtube.com/watch?v={video_id}"
         })
-        if len(out) >= 3:
+        if len(out) >= 6:
             break
     return out
 
