@@ -150,7 +150,7 @@ save.addEventListener('click',async()=>{
  setBusy(true);
  try{
   if(item.category==='视频精选'){
-   if(videoFile.files?.[0])uploadedMedia=await uploadVideo(videoFile.files[0]);
+   if(videoFile.files?.[0]){uploadedMedia=await uploadVideo(videoFile.files[0]);videoFile.value='';showPreview(null);toggleFields();}
    item.videoUrl=uploadedMedia.videoUrl;item.posterUrl=uploadedMedia.posterUrl||'';
   }
   notify('正在发布到新闻数据源…');
