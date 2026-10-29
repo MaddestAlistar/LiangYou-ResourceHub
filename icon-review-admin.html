@@ -28,6 +28,8 @@
 .news-video-fields input[type=file]{background:#0b1526;border:1px solid #526a8b;color:#cddcf0;border-radius:10px;padding:10px;width:100%;font:inherit;font-size:12px}
 .news-video-fields input[type=url]{width:100%}
 .news-video-preview{max-height:260px;max-width:100%;width:auto;border-radius:10px;background:#080e18}
+.news-upload-error{margin:0;padding:8px 10px;border:1px solid rgba(249,108,120,.42);border-radius:9px;color:#ffbbc4;background:rgba(144,27,49,.18);font-size:12px}
+.news-upload-error[hidden]{display:none}
 
 </style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p></section><section class="panel icon-review-filter-panel" aria-label="图标审核筛选"><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
   <div class="news-admin-header"><div><p class="news-admin-eyebrow">LIANGYOU · TECH NEWS</p><h2 id="tech-news-admin-heading">良友科技圈新闻管理</h2><p class="muted">使用上方管理员密钥发布与管理新闻。选择“视频精选”时填写原帖链接、上传视频、内容标题和内容描述。</p></div><button id="news-refresh" class="secondary" type="button">刷新新闻</button></div>
@@ -49,13 +51,14 @@
       <label for="news-source-url">原网站链接 <span class="news-required">（必填 · 小红书 / Telegram）</span></label>
       <input id="news-source-url" type="url" maxlength="1200" inputmode="url" placeholder="https://xhslink.cn/o/... 或 https://t.me/频道/消息编号" autocomplete="off">
       <label for="news-video-file">上传视频 <span class="news-required">（必填 · MP4 · 单条不超过 20 MB）</span></label>
-      <input id="news-video-file" type="file" accept=".mp4,video/mp4">
+      <input id="news-video-file" type="file" accept=".mp4,video/mp4" aria-describedby="news-video-file-error">
+      <p id="news-video-file-error" class="news-upload-error" role="alert" hidden></p>
       <p id="news-video-help" class="muted">上传后保存至 GitHub 的 MaddestAlistar/videos 仓库。编辑时可保留原视频，也可选择新文件替换。</p>
       <video id="news-video-preview" class="news-video-preview" controls playsinline preload="metadata" hidden></video>
     </div>
-    <label for="news-title"><span id="news-title-label">新闻标题</span> <span id="news-title-required" hidden>（必填）</span></label>
+    <label for="news-title"><span id="news-title-label">新闻标题</span> <span id="news-title-required" hidden>（必填 · 最多 20 字）</span></label>
     <input id="news-title" type="text" maxlength="120" autocomplete="off" placeholder="输入新闻标题">
-    <label for="news-content"><span id="news-content-label">新闻内容</span> <span id="news-content-required" hidden>（必填）</span></label>
+    <label for="news-content"><span id="news-content-label">新闻内容</span> <span id="news-content-required" hidden>（必填 · 最多 38 字）</span></label>
     <textarea id="news-content" maxlength="3000" rows="5" placeholder="输入新闻正文"></textarea>
     <div class="row"><button id="news-save" type="button">发布新闻</button><button id="news-reset" class="secondary" type="button">清空 / 取消编辑</button></div>
     <p id="news-message" class="muted" role="status">输入上方管理员密钥后点击「刷新新闻」即可管理已发布内容。</p>
@@ -147,4 +150,4 @@ $("load").onclick=async()=>{
  finally{busy=false;$("load").disabled=false;render()}
 };
 $("filter").onchange=render;$("search").oninput=render;
-</script><script src="./tech-news-admin.js?v=20261030.videos1" defer></script></body></html>
+</script><script src="./tech-news-admin.js?v=20261030.video-limits1" defer></script></body></html>
