@@ -10,7 +10,7 @@
       styles: ['./media-intel.css?v=20261029.newsvideo6'],
       urls: [
         './media-core.js?v=20261028.3',
-        './media-intel.js?v=20261029.newsroom1'
+        './media-intel.js?v=20261029.cnfast2'
       ],
       // Optional film detail modules hydrate after the catalogue is responsive.
       extraStyles: [
