@@ -61,6 +61,30 @@ test('optional remotely searched headlines are ID-bound and cannot erase local a
  assert.equal(calls,1);
  assert.deepEqual(await helper.forInfo({...fixture,tmdbId:999999}),null);
 });
+test('new automatic domestic video service only accepts verified same-ID publisher links',async()=>{
+ let count=0;
+ const runtime={};
+ const response=async url=>{
+  if(String(url).includes('/api/videos/title/tv/303745')){
+   count++;
+   const row={kind:'tv',tmdbId:303745,verifiedByTitleId:true,title:'我的有罪之人',
+     year:2026,platform:'bilibili',videoId:'BV1spJR6yEci',
+     name:'我的有罪之人演员访谈',verifiedSource:'https://www.bilibili.com/video/BV1spJR6yEci/'};
+   return new Response(JSON.stringify({ok:true,kind:'tv',tmdbId:303745,year:2026,
+     videos:[row,{...row,tmdbId:123},{...row,videoId:'BV0000000000',
+       verifiedSource:'https://untrusted.example/watch'}]}),{status:200});
+  }
+  return new Response(JSON.stringify(index),{status:200});
+ };
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+   runtime,response,AbortSignal);
+ const result=await helper.videoForInfo(fixture);
+ assert.equal(result.videos.length,1);
+ assert.equal(result.videos[0].videoId,'BV1spJR6yEci');
+ assert.equal((await helper.videoForInfo(fixture)).videos.length,1);
+ assert.equal(count,1);
+ assert.equal(await helper.videoForInfo({...fixture,tmdbId:0}),null);
+});
 test('wrong movie year or ID cannot receive the 2026 Korean series articles or videos',async()=>{
  for(const info of [
   {...fixture,tmdbId:303744},{...fixture,kind:'movie'},{...fixture,year:'2025-10-19'},
