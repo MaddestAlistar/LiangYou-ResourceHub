@@ -22,7 +22,7 @@ export function inspectEmbeddedMotion(bytes) {
     if(bytes[i]===0xff&&bytes[i+1]===0xd9){lastEoi=i+2;i++;continue;}
     if(bytes[i]!==0x66||bytes[i+1]!==0x74||bytes[i+2]!==0x79||bytes[i+3]!==0x70)continue;
     const videoOffset=i-4;
-    if(lastEoi<0||lastEoi>videoOffset||videoOffset-lastEoi>131072||videoOffset<32)continue;
+    if(lastEoi<0||lastEoi>videoOffset||videoOffset-lastEoi>131072||videoOffset<16)continue;
     const length=atomSize(bytes,videoOffset);
     if(length<16||length>4096||videoOffset+length>bytes.length)continue;
     const brand=ascii(bytes,i+4,4);
