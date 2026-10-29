@@ -181,11 +181,14 @@ html,body{background:transparent!important}
 'use strict';
 const data='./logo.webp';
 const app=document.getElementById('app'),stage=document.getElementById('stage'),logo=document.getElementById('logo'),stars=document.getElementById('stars'),holder=document.getElementById('holder');
-const makeLayer=(cl,z)=>{const e=document.createElement('img');e.className='face '+cl;e.alt='';e.draggable=false;e.src=data;e.style.transform=`translateZ(${z}px)`;logo.appendChild(e);return e};
-for(let i=0;i<16;i++)makeLayer('depth',-31+i*4);
+const makeLayer=(cl,z)=>{const e=document.createElement('img');e.className='face '+cl;e.alt='';e.draggable=false;e.decoding='async';e.src=data;e.style.transform=`translateZ(${z}px)`;logo.appendChild(e);return e};
+// Keep the same visual depth with fewer composited faces on mobile.
+const depthCount=matchMedia('(max-width:700px)').matches?7:11;
+for(let i=0;i<depthCount;i++)makeLayer('depth',-31+i*60/(depthCount-1));
 makeLayer('rim',29);makeLayer('front',35);
 const back=makeLayer('back',0);back.style.transform='rotateY(180deg) translateZ(36px)';
-for(let i=0;i<65;i++){let e=document.createElement('i');e.className='star';let xx=(i*73.151+17.3)%100,yy=(i*41.73+13.5)%100;e.style.cssText=`left:${xx}%;top:${yy}%;--alpha:${(.2+(i%6)*.12).toFixed(2)};--time:${2.3+i%7*.6}s`;stars.appendChild(e)}
+const starCount=matchMedia('(max-width:700px)').matches?28:48;
+for(let i=0;i<starCount;i++){let e=document.createElement('i');e.className='star';let xx=(i*73.151+17.3)%100,yy=(i*41.73+13.5)%100;e.style.cssText=`left:${xx}%;top:${yy}%;--alpha:${(.2+(i%6)*.12).toFixed(2)};--time:${2.3+i%7*.6}s`;stars.appendChild(e)}
 let spin=true,energy=false,drag=false,moved=false,clickStartX=0,clickStartY=0,oldX=0,oldY=0,targetX=-6,targetY=-13,currentX=-6,currentY=-13,zoom=1,last=performance.now(),shock=0;
 const energyBtn=document.getElementById('btnEnergy'),spinBtn=document.getElementById('btnSpin'),resetBtn=document.getElementById('btnReset');
 function setEnergy(v){energy=v;app.classList.toggle('active',energy);energyBtn.classList.toggle('on',energy);energyBtn.textContent=energy?'✦ 能量模式 ON':'✦ 能量模式';shock=1.0;burst()}
