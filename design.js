@@ -21,8 +21,13 @@
     const clean = () => {
       if (!img.naturalWidth || !img.naturalHeight || img.classList.contains('is-fallback')) return;
       try {
-        const w = img.naturalWidth, h = img.naturalHeight;
-        if (w < 100 || h < 100) return;
+        const naturalW = img.naturalWidth, naturalH = img.naturalHeight;
+        if (naturalW < 100 || naturalH < 100) return;
+        // Work on a bounded canvas: avoids repeated multi-megapixel image-data
+        // passes on iPhones and slower mainland mobile connections.
+        const scale = Math.min(1, 640 / Math.max(naturalW, naturalH));
+        const w = Math.max(1, Math.round(naturalW * scale));
+        const h = Math.max(1, Math.round(naturalH * scale));
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -56,7 +61,7 @@
           }
         }
         // Low-cost harmonic fill smooths the patch without altering the rest.
-        for (let pass = 0; pass < 110; pass++) {
+        for (let pass = 0; pass < 26; pass++) {
           for (let y = y1; y <= y2; y++) {
             for (let x = x1; x <= x2; x++) {
               const n = (y * w + x) * 4;
@@ -75,7 +80,7 @@
         }
         ctx.putImageData(bitmap, 0, 0);
         img.dataset.channelCleaned = 'true';
-        img.src = canvas.toDataURL('image/webp', .9);
+        img.src = canvas.toDataURL('image/webp', .86);
       } catch {
         // Graceful fallback: preserve the source picture if canvas is unavailable.
         img.dataset.channelCleaned = 'unsupported';
