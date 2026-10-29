@@ -556,6 +556,35 @@ test('all-title Bilibili discovery verifies TMDB identity and each matching BVID
   assert.ok(body.videos[0].verifiedSource.endsWith('/'+bvid+'/'));
  }finally{globalThis.fetch=previous;}
 });
+test('plain-title Bilibili fallback recovers on-topic clips after contextual searches return none',async()=>{
+ const prior=globalThis.fetch,bvid='BV1F3aF6mEQn',searches=[];
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({id:550,adult:false,
+   title:u.searchParams.get('language')==='zh-CN'?'星河之旅':'Journey to the Stars',
+   original_title:'Journey to the Stars',release_date:'2024-08-01'});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type')){
+   const q=u.searchParams.get('keyword');searches.push(q);
+   return json({code:0,data:{result:q==='星河之旅'?
+    [{bvid,title:'《星河之旅》幕后制作花絮'},
+     {bvid:'BV1spJR6yEci',title:'不相关热门综艺'}]:[]}});
+  }
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view')){
+   assert.equal(u.searchParams.get('bvid'),bvid);
+   return json({code:0,data:{bvid,state:0,title:'《星河之旅》幕后制作花絮',
+    owner:{name:'Film creator'},stat:{like:340,view:18800}}});
+  }
+  if(u.hostname==='www.bing.com')return new Response('<rss><channel></channel></rss>',{status:200});
+  throw Error('unexpected URL '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.status,'ok');
+  assert.equal(body.videos.length,1);assert.equal(body.videos[0].videoId,bvid);
+  assert.ok(searches.includes('星河之旅'),'unmodified title must be searched');
+  assert.ok(searches.length<=3,'limit public search to three requests');
+ }finally{globalThis.fetch=prior;}
+});
 test('all-title Bilibili discovery can fall back to an indexed public link and validate its BVID',async()=>{
  const old=globalThis.fetch,bvid='BV1F3aF6mEQn';
  globalThis.fetch=async input=>{
