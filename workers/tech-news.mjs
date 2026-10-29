@@ -3,17 +3,46 @@
 export const NEWS_PATH = 'news/tech-news.json';
 export const NEWS_CATEGORIES = Object.freeze(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const categories = new Set(NEWS_CATEGORIES);
+export const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
+const VIDEO_REPO = 'MaddestAlistar/videos';
+const VIDEO_PREFIX = 'clips/';
+const VIDEO_ROOT = 'https://raw.githubusercontent.com/' + VIDEO_REPO + '/main/' + VIDEO_PREFIX;
+export function sourceOf(urlValue){
+ if(typeof urlValue!=='string'||urlValue.length>1200)return null;
+ let url;try{url=new URL(urlValue.trim())}catch{return null}
+ if(url.protocol!=='https:'||url.username||url.password||url.port)return null;
+ const host=url.hostname.toLowerCase();
+ if(['xhslink.cn','www.xiaohongshu.com','xiaohongshu.com','m.xiaohongshu.com'].includes(host)&&url.pathname.length>1)return 'xhs';
+ if(['t.me','www.t.me','telegram.me','www.telegram.me'].includes(host)&&url.pathname.length>1)return 'tg';
+ return null;
+}
+function videoAsset(value,ext,required=true){
+ if(!value&&!required)return '';
+ if(typeof value!=='string'||!value.startsWith(VIDEO_ROOT))throw new Error('请先上传视频到 videos 仓库');
+ const suffix=value.slice(VIDEO_ROOT.length);
+ if(!new RegExp('^[a-f0-9-]{36}\\.'+ext+'$').test(suffix))throw new Error('视频素材地址无效');
+ return value;
+}
 const json = (data,status,origin,cache='no-store') => new Response(JSON.stringify(data),{status,headers:{
   'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':origin,
   'Vary':'Origin','Cache-Control':cache,'X-Content-Type-Options':'nosniff'
 }});
 const validText = (value,max) => typeof value === 'string' && value.trim().length>=1 &&
   value.trim().length <= max && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value);
-export function validateNewsItem(body){
+export function validateNewsItem(body,{legacy=false}={}){
   const category=body?.category, title=body?.title?.trim(), content=body?.content?.trim();
   if(!categories.has(category))throw new Error('请选择有效的新闻标签');
   if(!validText(title,120))throw new Error('新闻标题须为 1–120 个字符');
   if(!validText(content,3000))throw new Error('新闻内容须为 1–3000 个字符');
+  if(category==='视频精选'){
+    if(legacy&&!body?.videoUrl&&!body?.sourceUrl)return {category,title,content};
+    const sourceUrl=body?.sourceUrl?.trim();
+    const platform=sourceOf(sourceUrl);
+    if(!platform)throw new Error('原网站链接仅支持小红书或 Telegram 的 HTTPS 链接');
+    const videoUrl=videoAsset(body?.videoUrl,'mp4');
+    const posterUrl=videoAsset(body?.posterUrl,'jpg',false);
+    return {category,title,content,sourceUrl,platform,videoUrl,posterUrl};
+  }
   return {category,title,content};
 }
 export function cleanNewsData(data){
@@ -22,11 +51,11 @@ export function cleanNewsData(data){
   const items=data.items.map(row=>{
     if(typeof row.id!=='string'||!/^news-[a-z0-9-]{6,64}$/.test(row.id)||ids.has(row.id))throw new Error('新闻编号损坏或重复');
     ids.add(row.id);
-    const {category,title,content}=validateNewsItem(row);
+    const validated=validateNewsItem(row,{legacy:true});
     const createdAt=typeof row.createdAt==='string'?row.createdAt:'';
     const updatedAt=typeof row.updatedAt==='string'?row.updatedAt:createdAt;
     if(!Number.isFinite(Date.parse(createdAt))||!Number.isFinite(Date.parse(updatedAt)))throw new Error('新闻时间格式错误');
-    return {id:row.id,category,title,content,createdAt,updatedAt};
+    return {id:row.id,...validated,createdAt,updatedAt};
   });
   items.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
   return {schema:1,updatedAt:data.updatedAt||null,items};
