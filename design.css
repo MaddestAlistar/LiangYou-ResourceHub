@@ -742,3 +742,21 @@ html.cn-save-data .bookmark-dialog::backdrop {
   .cn-module-retry {flex-direction:column;align-items:flex-start}
   .cn-module-retry button {width:100%}
 }
+
+/* Icon Library: restore four round profile previews instead of tall, rotated poster cards. */
+.art-icons .preview-gallery > .preview-image:nth-child(n){
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:1 / 1;
+  min-width:0;
+  max-width:none;
+  object-fit:cover;
+  object-position:center 40%;
+  border:2px solid rgba(174,208,252,.68);
+  border-radius:50%;
+  background:#101a2c;
+  --icon-tilt:0deg;
+  box-shadow:0 10px 26px rgba(0,0,0,.40),0 0 0 4px rgba(119,165,245,.10);
+}
