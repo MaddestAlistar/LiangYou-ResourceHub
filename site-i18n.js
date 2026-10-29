@@ -54,6 +54,20 @@
     "APTV 正式版正在重新上架中":"APTV is working on its App Store return",
     "正式版正在推进重新上架，测试版不受影响，并且仍在继续更新。":"The public release is being relisted; the beta remains available and continues receiving updates."
   });
+  Object.assign(translations, {
+    "视频精选":"Featured Videos",
+    "如何在 CarPlay 上看影视？｜途播":"CarPlay video playback with Tubo",
+    "良哥看未来原创体验分享：途播连接 Emby / Jellyfin，体验 CarPlay 视频播放。":"An original video by LiangGe: explore Emby / Jellyfin playback with Tubo on CarPlay.",
+    "网页内播放":"Play on this page",
+    "小红书原视频 ↗":"Original on Xiaohongshu ↗",
+    "小红书原视频":"Original on Xiaohongshu",
+    "视频来源：良哥看未来 · 小红书":"Source: LiangGe · Xiaohongshu",
+    "原帖 ↗":"Original post ↗",
+    "关闭 ×":"Close ×",
+    "在网页内播放：如何在 CarPlay 上看影视":"Play CarPlay video on this page",
+    "途播 CarPlay · 良友视频播放器":"Tubo CarPlay · LiangYou video player",
+    "良哥看未来 · 途播 CarPlay 视频封面":"LiangGe's Tubo CarPlay video cover"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
