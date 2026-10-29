@@ -7,8 +7,8 @@
 - 页面：https://maddestalistar.github.io/LiangYou-ResourceHub/#liangyou-video
 - 插入位置：良友科技圈新闻之后、首页“好资源，一处找到”之前
 - 视频展示：`index.html` 中的 `#liangyou-video`，一条视频一张 `.ly-video-panel`。
-- 按钮交互：`ly-video.js` 维护视频卡片 ID 到独立播放页的白名单映射。统一使用同一个 `#ly-video-dialog` 弹窗。
-- 样式：`ly-video.css`，包含手机端响应式布局。
+- 按钮交互：`ly-video.js` 维护视频卡片 ID 到独立播放页的白名单映射。统一使用同一个 `#ly-video-dialog` 弹窗，点击后才动态建立 iframe。
+- 样式：视频样式合并到 `tech-news.css`，与新闻板块共享一个 CSS 请求，包含手机端响应式布局。
 - 语言：`site-i18n.js` 增加新视频标题和描述的英文文本。
 - 视频页分别独立：`xhs-player.html`、`xhs-player-n90.html`。
 
@@ -30,7 +30,7 @@
 5. **检查 HTTP 和防盗链**：对实际选中的 HTTPS 链接发送 `Range: bytes=0-1023`；要求返回 `206`、`video/mp4`、MP4 文件头中含 `ftyp`。对比不发送 Referer 与发送 `maddestalistar.github.io` 来源的结果。已观察到该 CDN **不带 Referer 为 206，站点 Referer 为 403**，因此不能直接从普通主站视频标签引用。
 6. **独立无 Referer 播放页**：复制当前 `xhs-player.html`，给每条新视频建立独立静态页。只在该视频播放页写入 `<meta name="referrer" content="no-referrer">`，而不是对整个网站修改 Referrer Policy。视频使用 `<video controls playsinline preload="metadata">`，带封面及原帖故障回退链接。
 7. **新增卡片与路由**：在 `index.html` 同一区域增加 `.ly-video-panel`；触发按钮设置唯一 `data-ly-video-open` 标识；在 `ly-video.js` 的 `players` 映射中配置白名单播放页路径。同步完善文案翻译与 CSS，更新静态资源缓存查询参数。
-8. **核验、清理**：检查新闻区—视频区—首页内容顺序，现有视频仍可播放，手机端布局正常，视频弹窗关闭后不继续发声。删除 GitHub Actions **一次性测试工作流**，保留本说明。
+8. **核验、清理**：检查新闻区—视频区—首页内容顺序，现有视频仍可播放，手机端布局正常，视频弹窗关闭后不继续发声；首页保持 5 个直载 CSS 和唯一的静态 3D Logo iframe。删除 GitHub Actions **一次性测试工作流**，保留本说明。
 
 ## 两次有效测试的重要发现
 
