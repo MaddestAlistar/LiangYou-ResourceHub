@@ -622,6 +622,77 @@ async function titleNews(kind,id,env){
    status:finalArticles.length?"ok":"no_data",articles:finalArticles,source:"Film title search",sourceDiagnostics:stats};
 }
 
+// Best-effort domestic video discovery for EVERY TMDB title. This source is
+// uncredentialed and may reject automated requests; do not bypass its controls.
+// Search results alone are NOT sufficient: each BVID is checked against the
+// actual public video-details endpoint before a playable card is returned.
+async function titleBilibiliVideos(kind,id,env){
+ const [primary,local]=await Promise.all([
+   tmdbInfo(kind,id,env,true),
+   tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)
+ ]);
+ const rawYear=String(primary.release_date||primary.first_air_date||"").slice(0,4);
+ const year=Number(rawYear);
+ const canonical=String(local?.title||local?.name||primary.title||primary.name||"").trim();
+ const names=[
+   canonical,primary.title,primary.name,primary.original_title,primary.original_name,
+   ...(primary.alternative_titles?.titles||primary.alternative_titles?.results||[])
+     .filter(v=>["CN","HK","TW"].includes(v.iso_3166_1)).map(v=>v.title||v.name),
+   ...(primary.translations?.translations||[]).filter(v=>v.iso_639_1==="zh")
+     .map(v=>v.data?.title||v.data?.name)
+ ].map(x=>String(x||"").normalize("NFKC").trim())
+  .filter(x=>x.length>=4&&x.length<=65);
+ const asian=[...new Set(names)].find(x=>/[\u3400-\u9fff]/.test(x));
+ const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
+ if(!asian||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
+ const kw=asian+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear;
+ let results;
+ try{
+   const uri=new URL("https://api.bilibili.com/x/web-interface/search/type");
+   uri.searchParams.set("search_type","video");uri.searchParams.set("keyword",kw);
+   uri.searchParams.set("order","totalrank");uri.searchParams.set("page","1");
+   const payload=await jsonRemote(uri.toString(),{
+      headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
+       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
+   if(payload?.code!==0||!Array.isArray(payload.data?.result))return empty("unavailable");
+   results=payload.data.result;
+ }catch{return empty("unavailable");}
+ const shortlist=results.map(v=>{
+   const bvid=String(v.bvid||"").trim();
+   const heading=rssDecoded(v.title||"");
+   return {bvid,heading};
+ }).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
+    rssArticleMatches(v.heading,asian,{year:rawYear})&&
+    !/完整版|全集|全片|在线观看|免费观看|资源下载|网盘|磁力/i.test(v.heading))
+   .slice(0,6);
+ if(!shortlist.length)return empty("no_match");
+ const checked=await Promise.all(shortlist.map(async v=>{
+   try{
+    const uri=new URL("https://api.bilibili.com/x/web-interface/view");
+    uri.searchParams.set("bvid",v.bvid);
+    const resp=await jsonRemote(uri.toString(),{
+      headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
+       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},5500);
+    const d=resp?.data;
+    if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0)return null;
+    const title=String(d.title||"").normalize("NFKC").trim();
+    if(!rssArticleMatches(title,asian,{year:rawYear})||
+       /完整版|全集|全片|在线观看|免费观看|资源下载|网盘|磁力/i.test(title))return null;
+    const likes=Number(d.stat?.like),views=Number(d.stat?.view);
+    return {kind,tmdbId:Number(id),verifiedByTitleId:true,title:canonical,year,
+      platform:"bilibili",videoId:v.bvid,name:title.slice(0,145),
+      publisher:String(d.owner?.name||"Bilibili").slice(0,65),
+      verifiedSource:"https://www.bilibili.com/video/"+v.bvid+"/",
+      type:/预告|定档|teaser|trailer/i.test(title)?"Trailer":"Related",
+      likes:Number.isSafeInteger(likes)&&likes>=0?likes:null,
+      views:Number.isSafeInteger(views)&&views>=0?views:null};
+   }catch{return null;}
+ }));
+ const videos=checked.filter(Boolean).slice(0,6);
+ return {ok:true,kind,tmdbId:Number(id),year,source:"Bilibili public search",
+   status:videos.length?"ok":"no_match",videos};
+}
+
 async function koreanBoxOffice(env){
  if(!env.KOFIC_API_KEY)return {ok:true,status:"not_configured",source:"KOFIC",data:[]};
  const date=new Date(Date.now()-3*86400000);
@@ -685,6 +756,17 @@ export default {
     ctx.waitUntil(caches.default.put(request,response.clone()));
     return response;
    }catch{return reply({ok:true,kind:titleNewsRoute[1],tmdbId:Number(titleNewsRoute[2]),status:"unavailable",articles:[]},200,900);}
+  }
+  const matchingVideos=u.pathname.match(/^\/api\/videos\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
+  if(matchingVideos){
+   const cached=await caches.default.match(request);if(cached)return cached;
+   try{
+    const body=await titleBilibiliVideos(matchingVideos[1],matchingVideos[2],env);
+    const response=reply(body,200,body.videos.length?86400:900);
+    ctx.waitUntil(caches.default.put(request,response.clone()));
+    return response;
+   }catch{return reply({ok:true,kind:matchingVideos[1],tmdbId:Number(matchingVideos[2]),
+       status:"unavailable",videos:[]},200,300);}
   }
   // Bilibili public video statistics; counts are never inferred from view totals.
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
