@@ -168,7 +168,15 @@ def collect(key):
             print("COVERAGE_SOURCE_FAILED", key, label, type(exc).__name__)
     articles = clean_articles(fetched["articles"], kind, ident) if "articles" in fetched else None
     videos = clean_videos(fetched["videos"], kind, ident) if "videos" in fetched else None
-    return key, articles, videos, fetched.get("articles", {}).get("year") if isinstance(fetched.get("articles"), dict) else None
+    news = fetched.get("articles", {})
+    video = fetched.get("videos", {})
+    status = {
+        "news": str(news.get("status") or "unavailable")[:30] if isinstance(news, dict) else "unavailable",
+        "video": str(video.get("status") or "unavailable")[:30] if isinstance(video, dict) else "unavailable",
+        "newsFound": len(articles or ()),
+        "videosFound": len(videos or ()),
+    }
+    return key, articles, videos, news.get("year") if isinstance(news, dict) else None, status
 
 
 def main():
@@ -182,19 +190,36 @@ def main():
     limit = max(1, min(30, int(os.getenv("COVERAGE_BATCH", "20"))))
     # Rotate across every catalog title. A failed or empty search still records
     # the attempt, so 20 popular titles cannot monopolize every daily job.
-    works.sort(key=lambda key: (str(items.get(key, {}).get("checkedAt") or ""), key))
-    chosen = works[:limit]
+    # Reserve some capacity for works whose last search returned no articles.
+    # The remainder still cycles across the entire catalog, so popular films
+    # cannot prevent older or previously successful titles from refreshing.
+    by_age = lambda key: (str(items.get(key, {}).get("checkedAt") or ""), key)
+    missing = sorted((key for key in works if not items.get(key, {}).get("articles")), key=by_age)
+    missing_quota = min(len(missing), max(1, limit // 3))
+    chosen = missing[:missing_quota]
+    chosen_set = set(chosen)
+    chosen.extend(key for key in sorted(works, key=by_age)
+                  if key not in chosen_set and len(chosen) < limit)
     checked_at = utc_now()
     successes = 0
+    status_counts = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
-        for key, articles, videos, year in pool.map(collect, chosen):
+        for key, articles, videos, year, status in pool.map(collect, chosen):
+            for family in ("news", "video"):
+                value = status[family]
+                counter_key = family + ":" + value
+                status_counts[counter_key] = status_counts.get(counter_key, 0) + 1
             old = items.get(key, {})
             # The upstream may temporarily return HTTP 200 with an empty list
             # after rate limiting or search changes. Retain previously verified
             # material instead of erasing a film's existing cards.
             record = {"checkedAt": checked_at,
                       "articles": articles or old.get("articles", []),
-                      "videos": videos or old.get("videos", [])}
+                      "videos": videos or old.get("videos", []),
+                      "newsStatus": status["news"],
+                      "videoStatus": status["video"],
+                      "newsCandidates": status["newsFound"],
+                      "videoCandidates": status["videosFound"]}
             if isinstance(year, int) and 1900 <= year <= 2100:
                 record["year"] = year
             elif isinstance(old.get("year"), int):
@@ -209,8 +234,25 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"schema": 1, "updatedAt": checked_at, "items": items},
                               ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    coverage = {
+        "titles": len(items),
+        "with_news": sum(bool(row.get("articles")) for row in items.values()),
+        "with_native_video": sum(bool(row.get("videos")) for row in items.values()),
+        "without_news": sum(not row.get("articles") for row in items.values()),
+    }
     print("COVERAGE_RESULT", "available_catalog=", len(works), "checked=", len(chosen),
-          "with_material=", successes, "stored=", len(items))
+          "with_material=", successes, "stored=", len(items),
+          "coverage=", json.dumps(coverage, ensure_ascii=False, sort_keys=True),
+          "upstream=", json.dumps(status_counts, ensure_ascii=False, sort_keys=True))
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as summary:
+            summary.write("### Film coverage refresh\n\n")
+            summary.write("| Metric | Count |\n|---|---:|\n")
+            for k, v in coverage.items():
+                summary.write(f"| {k.replace('_', ' ')} | {v} |\n")
+            summary.write("\nSource results (this batch): " +
+                          ", ".join(f"{k}={v}" for k, v in sorted(status_counts.items())) + "\n")
 
 
 if __name__ == "__main__":
