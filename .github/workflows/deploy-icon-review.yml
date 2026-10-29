@@ -27,6 +27,8 @@ jobs:
           package-manager-cache: false
       - name: Verify publisher regressions before deploying
         run: node --test scripts/test_icon*.mjs
+      - name: Verify tech news publishing regressions
+        run: node --test scripts/test_tech_news.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
