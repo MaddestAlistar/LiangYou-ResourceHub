@@ -108,6 +108,24 @@
   addEventListener('hashchange', checkDeepLink);
   addEventListener('popstate', checkDeepLink);
 
+  // Pause the 3D iframe's render loop when scrolled away, not just
+  // when the browser tab is hidden. Scrolling back restores interaction.
+  const logoFrame = document.getElementById('lianggeLogoFrame');
+  if (logoFrame && 'IntersectionObserver' in window) {
+    let visible = true;
+    const sendVisibility = () => {
+      try {
+        logoFrame.contentWindow?.postMessage(
+          {type:'liangyou:logo-visibility',visible},location.origin);
+      } catch {}
+    };
+    logoFrame.addEventListener('load',sendVisibility);
+    new IntersectionObserver(entries => {
+      visible = entries.some(item => item.isIntersecting);
+      sendVisibility();
+    },{rootMargin:'120px 0px'}).observe(logoFrame);
+  }
+
   // No third-party CDN, analytics, image host or proxy is required.
   // Cache only self-hosted artwork; current HTML, JS, CSS and live JSON stay network-managed.
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
