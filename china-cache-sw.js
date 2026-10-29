@@ -1,8 +1,9 @@
-/* LiangYou resource hub: bounded artwork cache for repeat visits.
-   Deliberately never intercepts HTML, scripts, styles, JSON feeds, API calls,
-   video embeds, or other domains, so editorial/data updates remain fresh. */
-const CACHE = 'liangyou-art-v1';
+/* Mainland-friendly artwork cache (same-origin only).
+   HTML, CSS, scripts, JSON, API responses and embeds are NEVER cached here.
+   Immutable hashed posters stay cache-first; mutable icons refresh quietly. */
+const CACHE = 'liangyou-art-v2';
 const MAX_ITEMS = 95;
+const RECHECK_AFTER = 6 * 60 * 60 * 1000;
 const scope = new URL(self.registration.scope);
 self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate', event => event.waitUntil((async () => {
@@ -18,6 +19,15 @@ async function trim(cache) {
     await Promise.all(entries.slice(0, entries.length - MAX_ITEMS).map(key => cache.delete(key)));
   }
 }
+async function store(cache, request, response) {
+  if (!response?.ok || response.type !== 'basic') return;
+  const copied = response.clone();
+  const headers = new Headers(copied.headers);
+  headers.set('X-LiangYou-Cached-At', String(Date.now()));
+  const stored = new Response(copied.body, { status:copied.status, statusText:copied.statusText, headers });
+  await cache.put(request, stored);
+  await trim(cache);
+}
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET' || request.mode === 'navigate') return;
@@ -26,16 +36,27 @@ self.addEventListener('fetch', event => {
   if (!/\.(?:svg|png|jpe?g|webp|avif|gif|ico)$/i.test(url.pathname)) return;
   if (!url.pathname.includes('/assets/') && !url.pathname.includes('/interactive/')) return;
   event.respondWith((async () => {
-    const cache = await caches.open(CACHE);
+    let cache;
+    try { cache = await caches.open(CACHE); }
+    catch { return fetch(request); }
     const hit = await cache.match(request);
-    if (hit) return hit;
+    if (hit) {
+      // Filenames in media-posters are content-hashed: no refresh needed.
+      const immutable = /\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(url.pathname);
+      const createdAt = Number(hit.headers.get('X-LiangYou-Cached-At'));
+      if (!immutable && (!Number.isFinite(createdAt) || Date.now() - createdAt >= RECHECK_AFTER)) {
+        event.waitUntil(fetch(request, {cache:'no-cache'})
+          .then(response => store(cache, request, response))
+          .catch(() => {}));
+      }
+      return hit;
+    }
     try {
       const response = await fetch(request);
-      if (response.ok && response.type === 'basic') {
-        event.waitUntil(cache.put(request, response.clone()).then(() => trim(cache)).catch(() => {}));
-      }
+      if (response.ok && response.type === 'basic')
+        event.waitUntil(store(cache, request, response).catch(() => {}));
       return response;
-    } catch (error) {
+    } catch {
       return Response.error();
     }
   })());
