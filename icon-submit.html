@@ -36,11 +36,11 @@ success:"✓ Image validation passed",incomplete:"Please fix the highlighted fie
 uploading:"Submitting for review…",failed:"Submission failed: ",uploaded:"✓ Submitted for review. ID: "
 };return en?translations[key]:messages[key]}
 function fieldError(id,key){const input=$(id),error=$(id+"-error");input.classList.toggle("is-invalid",!!key);input.setAttribute("aria-invalid",String(!!key));error.hidden=!key;error.textContent=key?message(key):"";if(id==="file")document.querySelector(".upload").classList.toggle("is-invalid",!!key)}
-function status(key,isError=false,extra=""){const el=$("status");el.classList.toggle("is-error",isError);el.classList.toggle("is-success",!isError&&key==="success");el.textContent=key?message(key)+extra:""}
+function status(key,isError=false,extra=""){const el=$("status");el.classList.toggle("is-error",isError);el.classList.toggle("is-success",!isError&&["success","motionReady","motionQueued"].includes(key));el.textContent=key?message(key)+extra:""}
 function clearPreview(){
   if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=""}
   previewFile=null;isMotion=false;$("preview").removeAttribute("src");$("preview").style.display="none";
-  const v=$("motion-preview");if(v){v.pause();v.removeAttribute("src");v.hidden=true;v.load()}
+  const v=$("motion-preview");if(v&&typeof v.pause==="function"){v.pause();v.removeAttribute("src");v.hidden=true;v.load()}
   $("preview-still").hidden=true;$("preview-controls").hidden=true;$("preview-hint").hidden=true;
 }
 function playPreview(){
