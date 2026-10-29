@@ -402,19 +402,22 @@ function rssArticleMatches(headline,alias,context={}){
  const exists=asian?text.replace(/ /g,"").includes(tight):(" "+text+" ").includes(" "+name+" ");
  if(!exists)return false;
  const distinctive=asian?tight.length>=6:name.length>=12&&name.includes(" ");
- if(distinctive)return true;
  const year=String(context.year||""),oldYear=String(Number(context.year||0)-10);
  const hasYear=year.length===4&&headline.includes(year);
  const isRemake=/live[\s-]?action|真人[版电影]|真人化|重制|翻拍|remake/i.test(headline);
  const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版|映画|監督|レビュー|予告|영화|드라마|예고|리뷰/i.test(headline);
  const person=(Array.isArray(context.people)?context.people:[]).some(p=>p.length>=5&&
    normalizedHeadline(headline).includes(normalizedHeadline(p)));
- // Moana (2016) vs the identically named live-action Moana (2026), or any
- // generic-word movie title: never match on the word alone.
+ // Remakes and homonymous films need edition-aware checks *before*
+ // accepting any title length, even distinctive multiword names.
+ const statedYears=[...headline.matchAll(/\\b(?:19|20)\\d{2}\\b/g)].map(x=>Number(x[0]));
+ const releaseYear=Number(year);
+ if(Number.isInteger(releaseYear)&&releaseYear>1900&&
+    statedYears.some(y=>y<=releaseYear-3)&&!hasYear&&!isRemake&&!person)return false;
  if(oldYear.length===4&&headline.includes(oldYear)&&!hasYear&&!isRemake&&!person)return false;
- // Truncated names for reboots/remakes must not import stories about the
- // older work. Quoting "海洋奇缘" alone does not establish 2026's remake.
+ // A truncated Chinese title is ambiguous even when a quoted phrase matches.
  if(context.requireEdition===true)return filmContext&&(hasYear||isRemake||person);
+ if(distinctive)return true;
  if(asian&&tight.length<4)return (quoted&&filmContext)||hasYear&&filmContext||person&&filmContext;
  if(!asian&&!name.includes(" "))return hasYear&&filmContext||isRemake&&filmContext||
    person&&filmContext||quoted&&filmContext||
