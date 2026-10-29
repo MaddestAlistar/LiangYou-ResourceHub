@@ -78,6 +78,34 @@ test('automatic rotating coverage makes previously unindexed titles available wi
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
  assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
 });
+test('scheduled official YouTube fallback is exact-ID, year-safe, and never trusts a forged video URL',async()=>{
+ const key='movie:777',yt='AbCdEf12345';
+ const row={id:yt,kind:'movie',tmdbId:777,year:2025,official:true,
+   verifiedByTitleId:true,title:'Official film trailer',
+   url:'https://www.youtube.com/watch?v='+yt};
+ const snapshot={schema:1,items:{
+  [key]:{year:2025,articles:[],videos:[],youtubeTrailers:[
+    row,{...row,id:'BadVideo001',tmdbId:778},
+    {...row,id:'BadVideo002',url:'https://untrusted.example/watch?v=BadVideo002'},
+    {...row,id:'BadVideo003',year:2017},
+    {...row,id:'BadVideo004',verifiedByTitleId:false}
+  ]}
+ }};
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+  {},async url=>new Response(JSON.stringify(String(url).includes('media-title-coverage.json')?
+    snapshot:{schema:1,titles:{}}),{status:200}),AbortSignal);
+ const info={kind:'movie',tmdbId:777,year:'2025-07-05'};
+ const data=await helper.forInfo(info);
+ assert.ok(data);
+ assert.equal(data.youtubeTrailers.length,1);
+ assert.equal(data.youtubeTrailers[0].id,yt);
+ assert.equal(data.youtubeTrailers[0].official,true);
+ assert.equal(data.youtubeTrailers[0].verifiedBy,'TMDB');
+ assert.equal(await helper.forInfo({...info,year:'2015-07-05'}),null);
+ assert.equal(await helper.forInfo({...info,tmdbId:778}),null);
+ assert.ok(ui.includes('...indexedYoutubeRows'));
+ assert.ok(ui.includes('trailerGallery(enrichedVideo'));
+});
 test('curated and scheduled articles merge by TMDB ID without duplicate headlines or wrong-edition leaks',async()=>{
  const curated=JSON.parse(JSON.stringify(index));
  const existing=curated.titles['movie:1108427'];
