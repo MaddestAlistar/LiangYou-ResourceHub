@@ -652,7 +652,7 @@ async function titleBilibiliVideos(kind,id,env){
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
  if(!asian||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
  const kw=asian+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear;
- let results;
+ let results=[],source="Bilibili public search";
  try{
    const uri=new URL("https://api.bilibili.com/x/web-interface/search/type");
    uri.searchParams.set("search_type","video");uri.searchParams.set("keyword",kw);
@@ -660,9 +660,38 @@ async function titleBilibiliVideos(kind,id,env){
    const payload=await jsonRemote(uri.toString(),{
       headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
        "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
-   if(payload?.code!==0||!Array.isArray(payload.data?.result))return empty("unavailable");
-   results=payload.data.result;
- }catch{return empty("unavailable");}
+   if(payload?.code===0&&Array.isArray(payload.data?.result))results=payload.data.result;
+ }catch{/* Public search can refuse anonymous requests; do not evade controls. */}
+ // Public search indexes can still discover a Bilibili URL when Bilibili
+ // restricts its own anonymous search API. This is a separate, best-effort
+ // search. Every candidate must pass Bilibili's public /view identity check.
+ if(!results.length){
+  try{
+   const uri=new URL("https://www.bing.com/search");
+   uri.searchParams.set("q",'site:bilibili.com/video/ "'+asian+'" '+rawYear+' 预告 OR 影评 OR 花絮');
+   uri.searchParams.set("format","rss");uri.searchParams.set("setmkt","zh-CN");
+   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),5500);
+   try{
+    const response=await fetch(uri.toString(),{signal:ac.signal,
+      headers:{Accept:"application/rss+xml, application/xml"}});
+    if(response.ok){
+     const xml=(await response.text()).slice(0,220000);
+     if(/<rss[\\s>]/i.test(xml)){
+      results=[...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)].slice(0,24).map(m=>{
+       const title=rssField(m[1],"title"),link=rssField(m[1],"link");
+       let u;try{u=new URL(link);}catch{return null;}
+       // Do not follow search redirects or trust arbitrary external video URLs.
+       if(u.protocol!=="https:"||!["www.bilibili.com","bilibili.com"].includes(u.hostname))return null;
+       const match=/^\\/video\\/(BV[A-Za-z0-9]{10})\\/?$/.exec(u.pathname);
+       return match?{bvid:match[1],title}:null;
+      }).filter(Boolean);
+      if(results.length)source="Bing public index + Bilibili verified metadata";
+     }
+    }
+   }finally{clearTimeout(timer);}
+  }catch{/* No indexed results is acceptable; never create guessed BV IDs. */}
+ }
+ if(!results.length)return empty("unavailable");
  const shortlist=results.map(v=>{
    const bvid=String(v.bvid||"").trim();
    const heading=rssDecoded(v.title||"");
@@ -695,7 +724,7 @@ async function titleBilibiliVideos(kind,id,env){
    }catch{return null;}
  }));
  const videos=checked.filter(Boolean).slice(0,6);
- return {ok:true,kind,tmdbId:Number(id),year,source:"Bilibili public search",
+ return {ok:true,kind,tmdbId:Number(id),year,source,
    status:videos.length?"ok":"no_match",videos};
 }
 
