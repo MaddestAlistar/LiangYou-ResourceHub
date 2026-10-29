@@ -5,6 +5,7 @@ if(!list)return;
 const endpoint='https://liangyou-icon-review.maddestalistar.workers.dev/news-feed';
 const categories=new Set(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const VIDEO_ROOT='https://raw.githubusercontent.com/MaddestAlistar/videos/main/clips/';
+const NEWS_IMAGE_ROOT='https://raw.githubusercontent.com/MaddestAlistar/videos/main/news-images/';
 const FIXED_SOURCE_URLS=new Set(['https://xhslink.cn/o/3eUyzuksTQC','https://xhslink.cn/o/7X4yBrtmKpu']);
 function element(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node}
 function sourcePlatform(value){
