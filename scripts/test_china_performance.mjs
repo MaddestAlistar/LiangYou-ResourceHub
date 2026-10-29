@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 const read = path => readFileSync(path,'utf8');
 const page=read('index.html');
 const loader=read('china-perf.js');
@@ -58,4 +58,19 @@ assert(loader.includes('logoFrame.contentWindow?.postMessage'),'Homepage must pa
 assert(page.includes('embed.html?v=4.2'),'Animation iframe must use updated version');
 assert(page.includes('rel="preload" as="image" type="image/webp" href="./interactive/logo/logo.webp"'), '3D hero texture must preload in the parent document');
 
+// The large thumbnail and source snapshot must stay compact on future refreshes.
+const projectData=JSON.parse(read('data/projects.json'));
+const iconProject=projectData.projects.find(p=>p.id==='icons');
+assert(iconProject?.images.includes('./assets/previews/icons-komic.webp'),
+  'Icon Library should use the converted WebP instead of the oversized PNG');
+assert(statSync('assets/previews/icons-komic.webp').size < 130000,
+  'The gallery WebP must remain smaller than the original 514 KB PNG');
+const mediaSnapshot=read('data/media-intel.json');
+assert(mediaSnapshot.startsWith('{"schema":'), 'Film snapshot should be compact JSON');
+const mediaRecord=JSON.parse(mediaSnapshot);
+assert(mediaRecord.schema===1 && Object.keys(mediaRecord.works||{}).length>100,
+  'Film snapshot must retain full verified works and source data');
+const embed=read('interactive/logo/embed.html');
+assert(embed.includes('const depthCount='),'Mobile logo should reduce compositing work');
+assert(loader.includes("startMediaExtras(module)"),'Media detail enrichment must run after base catalogue');
 console.log('PASS: mainland-friendly homepage loads core first, lazy-loads modules, and only caches local artwork');
