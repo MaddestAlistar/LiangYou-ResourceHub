@@ -1,0 +1,70 @@
+name: Refresh every catalog film's verified news and video coverage
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_media_title_coverage.py'
+      - '.github/workflows/refresh-media-title-coverage.yml'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: refresh-media-title-coverage
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate cross-title coverage builder
+        run: python -m py_compile scripts/refresh_media_title_coverage.py
+      - name: Refresh rotating title snapshots
+        env:
+          COVERAGE_BATCH: '20'
+        run: python scripts/refresh_media_title_coverage.py
+      - name: Validate snapshot identity and size
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('data/media-title-coverage.json')
+          d=json.loads(p.read_text())
+          assert d['schema']==1 and isinstance(d['items'],dict)
+          assert len(d['items'])<=650
+          assert p.stat().st_size<2000000
+          for key,entry in d['items'].items():
+              kind,ident=key.split(':')
+              ident=int(ident)
+              assert kind in ('movie','tv') and ident>0
+              assert len(entry['articles'])<=24 and len(entry['videos'])<=10
+              for video in entry['videos']:
+                  assert video['verifiedByTitleId'] is True
+                  assert video['tmdbId']==ident and video['kind']==kind
+          PY
+      - name: Publish accumulated exact-title coverage
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/media-title-coverage.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh all-film title coverage cache [skip ci]'
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = "3" ]; then exit 1; fi
+            done
+          fi
+      - name: Update published snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/publish_pages.py
