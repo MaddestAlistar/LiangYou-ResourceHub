@@ -6,6 +6,12 @@
   const modules = [
     {
       id: 'media',
+      styles: [
+        './media-intel.css?v=20261029.newsvideo6',
+        './media-toolkit.css?v=20261028.7',
+        './media-cn-enhance.css?v=20261029.newsvideo6',
+        './media-boxoffice-rankings.css?v=20261029.1'
+      ],
       urls: [
         // Install detail listeners first so the initial catalogue response
         // cannot dispatch an event before enrichment modules are ready.
@@ -21,10 +27,18 @@
     },
     {
       id: 'daily-free',
+      styles: ['./daily-free.css?v=20261025.1'],
       urls: ['./daily-free.js?v=20261024.4']
     },
     {
       id: 'sports',
+      styles: [
+        './sports.css?v=20261027.4',
+        './fixtures.css?v=20261028.1',
+        './sports-personal.css?v=20261028.3',
+        './sports-share.css?v=20261028.1',
+        './sports-history.css?v=20261028.1'
+      ],
       urls: [
         './sports-i18n.js?v=20261027.2',
         './sports-link.js?v=20261028.2',
@@ -46,6 +60,19 @@
     link.href = url;
     document.head.appendChild(link);
   };
+  const loadStyles = module => Promise.all(module.styles.map(url => new Promise((resolve, reject) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = url;
+    // Scoped styles are added in their original order, preserving cascade precedence.
+    const timer = setTimeout(() => {
+      link.onload = link.onerror = null;
+      reject(new Error('module_style_timeout'));
+    }, 12000);
+    link.onload = () => { clearTimeout(timer); resolve(); };
+    link.onerror = () => { clearTimeout(timer); reject(new Error('module_style_unavailable')); };
+    document.head.appendChild(link);
+  })));
   const loadOne = url => new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = url;
@@ -80,6 +107,7 @@
     // Preload all URLs in parallel to avoid a 9-request sequential network waterfall.
     module.urls.forEach(preload);
     (async () => {
+      await loadStyles(module);
       for (const url of module.urls) await loadOne(url);
       module.loaded = true;
       // Market snapshots can complete before fixtures.js registers listeners.
