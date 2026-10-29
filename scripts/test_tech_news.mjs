@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {serveTechNews,NEWS_CATEGORIES,sourceOf,VIDEO_MAX_BYTES} from '../workers/tech-news.mjs';
+import {serveTechNews,NEWS_CATEGORIES,sourceOf,VIDEO_MAX_BYTES,VIDEO_TITLE_MAX,VIDEO_DESC_MAX} from '../workers/tech-news.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'sample-admin-passphrase-not-real',GITHUB_TOKEN:'sample',REVIEW_REPO:'demo/review'};
 function db(){
@@ -42,7 +42,9 @@ test('Eight categories, authentication and publishing flow',async()=>{
 });
 
 test('Video items require uploaded MP4 and a supported original source',async()=>{
- assert.equal(VIDEO_MAX_BYTES,20*1024*1024);
+ assert.equal(VIDEO_MAX_BYTES,20*1000*1000);
+ assert.equal(VIDEO_TITLE_MAX,20);
+ assert.equal(VIDEO_DESC_MAX,38);
  assert.equal(sourceOf('https://xhslink.cn/o/abc'),'xhs');
  assert.equal(sourceOf('https://t.me/example/7309'),'tg');
  assert.equal(sourceOf('https://www.xiaohongshu.com/explore/123'),'xhs');
@@ -85,4 +87,37 @@ test('Video upload requires admin authentication and dedicated videos write toke
  assert.match(body.videoUrl,/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/videos\/main\/clips\/[a-f0-9-]{36}\.mp4$/);
  assert.equal(hits.length,1);
  assert.equal(hits[0].opts.headers.Authorization,'Bearer videos-test-token');
+});
+
+test('Video-picked title and description enforce 20/38; regular news keeps old limits',async()=>{
+ const store=db(),extra={origin,allowed:origin,fetcher:store.fetcher};
+ const videoUrl='https://raw.githubusercontent.com/MaddestAlistar/videos/main/clips/12345678-abcd-4567-aaaa-123456789abc.mp4';
+ const base={action:'create',category:'视频精选',sourceUrl:'https://t.me/channel/1',videoUrl};
+ const rejectTitle=await serveTechNews(call('/news-admin','POST',{...base,title:'中'.repeat(21),content:'简短描述'}),env,extra);
+ assert.equal(rejectTitle.status,400);
+ assert.match((await rejectTitle.json()).error,/20/);
+ const rejectDesc=await serveTechNews(call('/news-admin','POST',{...base,title:'视频标题',content:'中'.repeat(39)}),env,extra);
+ assert.equal(rejectDesc.status,400);
+ assert.match((await rejectDesc.json()).error,/38/);
+ const accepted=await serveTechNews(call('/news-admin','POST',{...base,title:'中'.repeat(20),content:'文'.repeat(38)}),env,extra);
+ assert.equal(accepted.status,200);
+ const id=(await accepted.json()).items[0].id;
+ const rejectEdit=await serveTechNews(call('/news-admin','POST',{...base,action:'update',id,title:'中'.repeat(21),content:'简介'}),env,extra);
+ assert.equal(rejectEdit.status,400);
+ assert.equal(store.read().items[0].title,'中'.repeat(20));
+ const regular=await serveTechNews(call('/news-admin','POST',{action:'create',category:'应用动态',title:'中'.repeat(21),content:'文'.repeat(39)}),env,extra);
+ assert.equal(regular.status,200);
+});
+
+test('Video upload rejects oversize before any GitHub write',async()=>{
+ const fd=new FormData();
+ fd.append('video',new Blob([new Uint8Array([0,0,0,16,102,116,121,112,105,115,111,109,0,0,0,0])],{type:'video/mp4'}),'clip.mp4');
+ const request=new Request('https://example.com/news-video-upload',{method:'POST',headers:{
+  Origin:origin,'X-Admin-Key':env.ADMIN_KEY,'Content-Length':String(VIDEO_MAX_BYTES+800001)
+ },body:fd});
+ const result=await serveTechNews(request,{...env,VIDEOS_GITHUB_TOKEN:'test-key'},{
+  origin,allowed:origin,fetcher:async()=>{throw new Error('Must not write to GitHub')}
+ });
+ assert.equal(result.status,413);
+ assert.match((await result.json()).error,/文件过大/);
 });
