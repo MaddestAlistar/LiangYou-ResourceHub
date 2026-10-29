@@ -25,3 +25,7 @@
 .ly-video-dialog-foot a{color:#e9d0a5;text-decoration:none}
 @media(max-width:670px){.ly-video{padding-block:8px 12px}.ly-video-panel{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px;border-radius:16px;align-items:center}.ly-video-cover{aspect-ratio:3/4;border-radius:12px}.ly-video-play-icon{width:43px;height:43px;font-size:18px}.ly-video-label{font-size:9px;margin-bottom:5px}.ly-video-content h2{font-size:15px;line-height:1.4;margin-bottom:6px}.ly-video-content p{font-size:11px;line-height:1.5;margin-bottom:9px}.ly-video-actions{gap:6px}.ly-video-action,.ly-video-original{font-size:11px;padding:7px 11px}.ly-video-stage{height:min(72dvh,680px)}}
 @media(prefers-reduced-motion:reduce){.ly-video-play-icon{transition:none}}
+
+/* Multiple featured XHS videos share the same compact, responsive card layout. */
+.ly-video-panel + .ly-video-panel{margin-top:12px}
+@media(max-width:670px){.ly-video-panel + .ly-video-panel{margin-top:9px}}
