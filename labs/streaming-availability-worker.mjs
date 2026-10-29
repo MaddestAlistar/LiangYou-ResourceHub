@@ -761,10 +761,20 @@ async function titleBilibiliVideos(kind,id,env){
  // Two independent searches per work: year-specific trailers and unyeared
  // reviews/clips. Both still need a verified title and Bilibili video ID.
  const titleChoices=[...new Set(names)].filter(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x)&&x.length>=2||/^[a-z0-9 .:\'()&!-]+$/i.test(x)&&x.length>=7);
- const variants=[{name:searchName,query:searchName+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear+" 预告"},
-   {name:searchName,query:searchName+" "+(kind==="movie"?"电影 影评 花絮":"剧集 剧评 花絮")}];
- const secondary=titleChoices.find(v=>v!==searchName&&v.length>=4);
- if(secondary)variants[1]={name:secondary,query:secondary+" "+(kind==="movie"?"电影 预告 解析":"电视剧 预告 花絮")};
+ // Bilibili's title search weighs every query token heavily. A query
+ // combining year, film, review, behind-the-scenes AND trailer can suppress
+ // legitimate matches completely. Use short, distinct probes; verify every
+ // returned ID against the exact film identity downstream.
+ const longDistinctive=/[\u3400-\u9fff]/.test(searchName)?
+   searchName.replace(/[^\u3400-\u9fff]/g,"").length>=5:
+   searchName.trim().split(/\s+/).length>=2&&searchName.length>=13;
+ const queryBase=longDistinctive?searchName:searchName+" "+rawYear;
+ const variants=[{name:searchName,query:queryBase+" 预告"},
+   {name:searchName,query:queryBase+" "+(kind==="movie"?"影评":"花絮")}];
+ const secondary=titleChoices.find(v=>v!==searchName&&v.length>=4&&
+   (/[\u3400-\u9fff]/.test(v)||v.length>=9));
+ if(secondary)variants[1]={name:secondary,
+   query:(longDistinctive?secondary:secondary+" "+rawYear)+" "+(kind==="movie"?"预告":"花絮")};
  let nativeWorking=false,indexedWorking=false;
  const results=(await Promise.all(variants.map(async item=>{
   try{
