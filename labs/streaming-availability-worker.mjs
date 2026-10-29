@@ -451,6 +451,22 @@ async function titleNews(kind,id,env){
  names.push(...translations.filter(v=>["zh","ja","ko","en"].includes(v.iso_639_1)&&
    ["CN","HK","TW","US","GB","JP","KR","SG"].includes(v.iso_3166_1))
    .map(v=>String(v.data?.title||v.data?.name||"").trim()));
+ // Some TMDB records do not have a Chinese translation or alternative name.
+ // Wikidata can supply one, but ONLY if its entity verifies the same TMDB/IMDb ID.
+ // Do not perform a fuzzy Wikidata search for an arbitrary title string.
+ let wikidataChinese="";
+ if(!names.some(v=>/[\u3400-\u9fff]/.test(v))){
+  const qid=String(item.external_ids?.wikidata_id||"");
+  const imdb=String(item.external_ids?.imdb_id||item.imdb_id||"");
+  if(/^Q[1-9]\d{0,11}$/.test(qid)){
+   try{
+    const linked=await verifiedWikimedia(qid,kind,id,/^tt\d{5,12}$/.test(imdb)?imdb:null);
+    if(linked?.verified&&/[\u3400-\u9fff]{2,}/.test(linked.label||"")){
+     wikidataChinese=linked.label;names.push(linked.label);
+    }
+   }catch{/* Missing Wikimedia labels must never block the other title searches. */}
+  }
+ }
  const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
  const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
   ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
@@ -460,7 +476,7 @@ async function titleNews(kind,id,env){
    .map(v=>String(v.data?.title||v.data?.name||"").trim());
  const zhAlternate=alt.filter(v=>["CN","HK","TW"].includes(v.iso_3166_1))
    .map(v=>String(v.title||v.name||"").trim());
- const zhOptions=[localized,...zhTranslated,...zhAlternate].filter(v=>
+ const zhOptions=[localized,...zhTranslated,...zhAlternate,wikidataChinese].filter(v=>
    /[\u3400-\u9fff]/.test(v)&&v.length>=2);
  const chinese=[...new Set(zhOptions)].slice(0,3);
  const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
