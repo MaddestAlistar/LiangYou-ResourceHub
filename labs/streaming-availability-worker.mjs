@@ -686,7 +686,7 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
  const quoted=x=>['《'+x+'》','【'+x+'】','「'+x+'」','"'+x+'"'].some(q=>line.toLowerCase().includes(q.toLowerCase()));
  const yearString=String(year||"");
  const statedYears=[...line.matchAll(/\b(?:19|20)\d{2}\b/g)].map(v=>v[0]);
- if(statedYears.length&&yearString.length===4&&!statedYears.includes(yearString)&&!edition)return false;
+ const conflictingYear=statedYears.length&&yearString.length===4&&!statedYears.includes(yearString)&&!edition;
  return (Array.isArray(titles)?titles:[]).some(entry=>{
   const candidate=typeof entry==="string"?entry:entry?.name;
   if(!candidate)return false;
@@ -695,6 +695,18 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
   const asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(key);
   const found=asian?compact.includes(plain):(" "+normalizedHeadline(line)+" ").includes(" "+key+" ");
   if(!found)return false;
+  if(conflictingYear){
+   const release=Number(yearString),numbers=statedYears.map(Number);
+   const promotional=/预告|定档|首曝|先导|teaser|trailer|coming soon|first look|予告/i.test(line);
+   // A genuine early teaser for a 2026 film may have a 2024/2025 date.
+   // The shortened/single-word names of remakes still need edition cues.
+   const distinctive=asian?plain.length>=6:key.includes(" ")&&plain.length>=12;
+   const prerelease=kind==="movie"&&distinctive&&promotional&&numbers.every(n=>n>=release-2&&n<release);
+   // TV titles keep the TMDB year of their FIRST season, not the latest one.
+   const season=kind==="tv"&&numbers.every(n=>n>=release&&n<=new Date().getUTCFullYear()+1)&&
+     /第.{0,3}季|第.{0,3}集|season|episode|新季|新一季|更新|季度|시즌|シーズン/i.test(line);
+   if(!prerelease&&!season)return false;
+  }
   if(typeof entry==="object"&&entry.requireEdition===true&&!edition&&!line.includes(yearString))return false;
   if(asian&&plain.length<4)return quoted(candidate)&&contextual;
   if(!asian&&plain.length<7)return false;
