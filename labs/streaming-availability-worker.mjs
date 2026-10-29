@@ -410,7 +410,7 @@ function rssArticleMatches(headline,alias,context={}){
    normalizedHeadline(headline).includes(normalizedHeadline(p)));
  // Remakes and homonymous films need edition-aware checks *before*
  // accepting any title length, even distinctive multiword names.
- const statedYears=[...headline.matchAll(/\\b(?:19|20)\\d{2}\\b/g)].map(x=>Number(x[0]));
+ const statedYears=[...headline.matchAll(/\b(?:19|20)\d{2}\b/g)].map(x=>Number(x[0]));
  const releaseYear=Number(year);
  if(Number.isInteger(releaseYear)&&releaseYear>1900&&
     statedYears.some(y=>y<=releaseYear-3)&&!hasYear&&!isRemake&&!person)return false;
