@@ -44,7 +44,7 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=6',{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=7',{
           signal:AbortSignal.timeout(21000)});
         if(!r.ok)return null;
         const d=await r.json();
