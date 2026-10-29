@@ -131,7 +131,7 @@ function domesticNews(info){
   const feedPending=news();
   const verified=await (window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null));
   const pane=box.querySelector('.mi-cn-news-results');if(!pane?.isConnected)return;
-  let d=null,remoteArticles=[];
+  let d=null,remoteArticles=[],remoteDone=!(liveSearch&&typeof liveSearch.then==='function'),feedDone=false;
   function renderAdditional(dynamic=[]){
     const published=Date.parse(d?.updatedAt||''),age=Date.now()-published;
     const live=d?.schema===1&&Array.isArray(d.items)&&Number.isFinite(age)&&age>=0&&age<=7*86400000?d.items:[];
@@ -148,7 +148,13 @@ function domesticNews(info){
       if(seenUrl.has(u)||seenTitle.has(name))return false;
       seenUrl.add(u);seenTitle.add(name);return true;
      }).slice(0,6);
-    if(!matched.length){pane.innerHTML='<p class="mi-caption">'+t('目前没有找到能与这部作品准确对应的国内报道。','No verified Chinese headlines for this title.')+'</p>';return;}
+    if(!matched.length){
+      const ongoing=!remoteDone||!feedDone;
+      pane.innerHTML='<p class="mi-caption">'+(ongoing?
+        t('正在进一步检索这部作品的相关报道…','Searching more sources for this title…'):
+        t('目前没有找到能与这部作品准确对应的国内报道。','No verified Chinese headlines for this title.'))+'</p>';
+      return;
+    }
     pane.innerHTML='<div class="mi-insight-news mi-editorial-grid">'+matched.map(x=>
      '<article class="mi-editorial-card"><div class="mi-editorial-body"><span>'+
      esc(x.source||'')+' · '+esc(fmtDate(x.date))+'</span><strong>'+
@@ -158,12 +164,18 @@ function domesticNews(info){
   // Show ID-verified editorial articles as soon as the local index is ready.
   // Do not wait for the global feed or an optional cross-border RSS service.
   renderAdditional();
-  feedPending.then(snapshot=>{if(!pane.isConnected)return;d=snapshot;renderAdditional(remoteArticles);}).catch(()=>{});
+  feedPending.then(snapshot=>{
+    feedDone=true;if(!pane.isConnected)return;
+    d=snapshot;renderAdditional(remoteArticles);
+  }).catch(()=>{
+    feedDone=true;if(pane.isConnected)renderAdditional(remoteArticles);
+  });
   if(liveSearch&&typeof liveSearch.then==='function')liveSearch.then(remote=>{
-    if(!pane.isConnected)return;
     remoteArticles=(remote?.articles||[]).filter(x=>x.language==='zh');
-    renderAdditional(remoteArticles);
-  }).catch(()=>{});
+  }).catch(()=>{}).finally(()=>{
+    remoteDone=true;
+    if(pane.isConnected)renderAdditional(remoteArticles);
+  });
  })().catch(()=>{if(box.isConnected)box.querySelector('.mi-cn-news-results').textContent=t('相关报道暂不可用。','Coverage temporarily unavailable.');});
 }
 root.addEventListener('liangyou:media-detail',e=>{
