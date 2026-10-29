@@ -86,10 +86,60 @@ async function loadNews(gh) {
   let data;try{data=JSON.parse(decodeNews(file.content))}catch{throw new Error('新闻 JSON 无法解析')}
   return {sha:file.sha,news:cleanNewsData(data)};
 }
+
+function binaryBase64(buffer){
+ const bytes=new Uint8Array(buffer),pieces=[];
+ for(let i=0;i<bytes.length;i+=8192)pieces.push(String.fromCharCode(...bytes.subarray(i,i+8192)));
+ return btoa(pieces.join(''));
+}
+async function uploadAsset(env,fetcher,path,buffer,mime){
+ const token=env.VIDEOS_GITHUB_TOKEN;
+ if(!token)throw new Error('未配置 VIDEOS_GITHUB_TOKEN：请为 videos 仓库设置专用写入密钥');
+ const url='https://api.github.com/repos/'+VIDEO_REPO+'/contents/'+path;
+ const response=await fetcher(url,{method:'PUT',headers:{
+  'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json',
+  'User-Agent':'LiangYou-Tech-News-Videos','X-GitHub-Api-Version':'2022-11-28'},
+  body:JSON.stringify({message:'videos: upload '+mime+' '+path,content:binaryBase64(buffer),branch:'main'}),
+  signal:AbortSignal.timeout(90000)});
+ if(!response.ok)throw new Error(response.status===401||response.status===403
+  ?'videos 仓库写入权限不足，请检查 VIDEOS_GITHUB_TOKEN 的 Contents 写入权限'
+  :'上传 videos 仓库失败（HTTP '+response.status+'）');
+}
+async function serveVideoUpload(request,env,fetcher,cors){
+ if(!env.VIDEOS_GITHUB_TOKEN)return json({error:'视频上传未启用：请在 Cloudflare Worker 设置 VIDEOS_GITHUB_TOKEN（videos 仓库写入权限）'},503,cors);
+ const size=Number(request.headers.get('content-length')||0);
+ if(size>VIDEO_MAX_BYTES+800000)return json({error:'视频不得超过 20 MB'},413,cors);
+ if(!request.headers.get('content-type')?.toLowerCase().startsWith('multipart/form-data;'))
+  return json({error:'请上传 MP4 视频文件'},415,cors);
+ let form;try{form=await request.formData()}catch{return json({error:'上传表单格式无效'},400,cors)}
+ const video=form.get('video');
+ if(!(video instanceof File)||!video.name.toLowerCase().endsWith('.mp4')||video.size<12||video.size>VIDEO_MAX_BYTES
+   ||!['video/mp4','application/mp4','application/octet-stream',''].includes(video.type))
+  return json({error:'请选择 MP4 视频，单条不得超过 20 MB'},400,cors);
+ const buffer=await video.arrayBuffer(),header=new Uint8Array(buffer,0,Math.min(buffer.byteLength,12));
+ if(String.fromCharCode(...header.subarray(4,8))!=='ftyp')return json({error:'文件不是有效的 MP4 容器'},400,cors);
+ const poster=form.get('poster');
+ let posterBuffer=null;
+ if(poster instanceof File&&poster.size){
+  if(poster.size>450000||poster.type!=='image/jpeg')return json({error:'自动封面需为小于 450 KB 的 JPEG'},400,cors);
+  posterBuffer=await poster.arrayBuffer();
+  const head=new Uint8Array(posterBuffer,0,2);
+  if(head[0]!==0xff||head[1]!==0xd8)return json({error:'封面格式错误'},400,cors);
+ }
+ const basename=crypto.randomUUID(),videoPath=VIDEO_PREFIX+basename+'.mp4';
+ await uploadAsset(env,fetcher,videoPath,buffer,'video/mp4');
+ let posterUrl='';
+ if(posterBuffer){
+  try{await uploadAsset(env,fetcher,VIDEO_PREFIX+basename+'.jpg',posterBuffer,'image/jpeg');posterUrl=VIDEO_ROOT+basename+'.jpg'}
+  catch(error){console.warn('Video poster upload failed; video remains available:',String(error))}
+ }
+ return json({ok:true,videoUrl:VIDEO_ROOT+basename+'.mp4',posterUrl,size:video.size},200,cors);
+}
 export async function serveTechNews(request,env,{origin='',allowed='https://maddestalistar.github.io',fetcher=fetch}={}){
   const pathname=new URL(request.url).pathname;
   const publicFeed=pathname==='/news-feed';
-  if(!publicFeed&&pathname!=='/news-admin')return null;
+  const videoUpload=pathname==='/news-video-upload';
+  if(!publicFeed&&pathname!=='/news-admin'&&!videoUpload)return null;
   const cors=publicFeed?'*':(origin===allowed?origin:'null');
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{
     'Access-Control-Allow-Origin':cors,'Access-Control-Allow-Methods':'GET, POST, OPTIONS',
@@ -101,9 +151,11 @@ export async function serveTechNews(request,env,{origin='',allowed='https://madd
     if(!env.ADMIN_KEY)return json({error:'管理员密钥未配置'},503,cors);
     const key=request.headers.get('X-Admin-Key')||'';
     if(key.length<24||key!==env.ADMIN_KEY)return json({error:'管理员密钥错误'},401,cors);
+    if(videoUpload&&request.method!=='POST')return json({error:'Method not allowed'},405,cors);
     if(!['GET','POST'].includes(request.method))return json({error:'Method not allowed'},405,cors);
   }
   try {
+    if(videoUpload)return await serveVideoUpload(request,env,fetcher,cors);
     const gh=newsGithub(env,fetcher);
     if(request.method==='GET'){
       const {news}=await loadNews(gh);
