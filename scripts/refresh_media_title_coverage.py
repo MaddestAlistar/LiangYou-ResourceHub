@@ -1,4 +1,4 @@
-#!ausrabin/env python3
+#!/usr/bin/env python3
 """Gradually build exact-TMDB-ID news/video coverage for all catalog titles.
 
 The Cloudflare Worker verifies title identity. This job only stores URL metadata
@@ -213,7 +213,10 @@ def collect(key):
     youtube = clean_youtube_trailers(fetched["youtube"], kind, ident) if "youtube" in fetched else None
     news = fetched.get("articles", {})
     video = fetched.get("videos", {})
+    debug = video.get("sourceDiagnostics") if isinstance(video, dict) else None
+    debug = {k: int(v) for k, v in debug.items() if isinstance(v, int) and v >= 0} if isinstance(debug, dict) else {}
     status = {
+        "videoDebug": debug,
         "news": str(news.get("status") or "unavailable")[:30] if isinstance(news, dict) else "unavailable",
         "video": str(video.get("status") or "unavailable")[:30] if isinstance(video, dict) else "unavailable",
         "newsFound": len(articles or ()),
@@ -248,12 +251,15 @@ def main():
     checked_at = utc_now()
     successes = 0
     status_counts = {}
+    video_diagnostics = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
         for key, articles, videos, youtube, year, status in pool.map(collect, chosen):
             for family in ("news", "video", "youtube"):
                 value = status[family]
                 counter_key = family + ":" + value
                 status_counts[counter_key] = status_counts.get(counter_key, 0) + 1
+            for metric, value in status.get("videoDebug", {}).items():
+                video_diagnostics[metric] = video_diagnostics.get(metric, 0) + value
             old = items.get(key, {})
             # The upstream may temporarily return HTTP 200 with an empty list
             # after rate limiting or search changes. Retain previously verified
@@ -266,6 +272,7 @@ def main():
                       "videoStatus": status["video"],
                       "newsCandidates": status["newsFound"],
                       "videoCandidates": status["videosFound"],
+                      "videoDiagnostics": status.get("videoDebug", {}),
                       "youtubeStatus": status["youtube"],
                       "youtubeCandidates": status["youtubeFound"]}
             if isinstance(year, int) and 1900 <= year <= 2100:
@@ -292,7 +299,8 @@ def main():
     print("COVERAGE_RESULT", "available_catalog=", len(works), "checked=", len(chosen),
           "with_material=", successes, "stored=", len(items),
           "coverage=", json.dumps(coverage, ensure_ascii=False, sort_keys=True),
-          "upstream=", json.dumps(status_counts, ensure_ascii=False, sort_keys=True))
+          "upstream=", json.dumps(status_counts, ensure_ascii=False, sort_keys=True),
+          "video_stages=", json.dumps(video_diagnostics, ensure_ascii=False, sort_keys=True))
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as summary:
@@ -302,6 +310,8 @@ def main():
                 summary.write(f"| {k.replace('_', ' ')} | {v} |\n")
             summary.write("\nSource results (this batch): " +
                           ", ".join(f"{k}={v}" for k, v in sorted(status_counts.items())) + "\n")
+            summary.write("\nBilibili stage counts: " +
+                          ", ".join(f"{k}={v}" for k, v in sorted(video_diagnostics.items())) + "\n")
 
 
 if __name__ == "__main__":
