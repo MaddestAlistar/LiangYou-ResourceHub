@@ -89,7 +89,7 @@
         <div><h3>${escapeHTML(p.title)}</h3><p class="card-stat">${escapeHTML(p.stats)}</p></div>
         <p class="card-desc">${escapeHTML(p.description)}</p>${p.id === "sports" ? "" : `<div class="app-chips">${p.apps.map(a => `<span>${escapeHTML(a)}</span>`).join("")}</div>`}
         <div class="highlights">${(p.highlights || []).map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
-        <div class="card-actions">${p.id === "sports" ? `<a class="button button-primary" href="#sports">查看赛事数据 <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="https://conflux.kami.asia/i/VM3ZA" target="_blank" rel="noopener noreferrer">获取汇流直播 ↗</a>` : `<button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button>`}<div class="card-repo">${link(p.repo, "原仓库", "")}<time datetime="${escapeHTML(p.updated)}">${p.id === "sports" ? "同步时间以赛事看板为准" : ("数据核对")}${p.id === "sports" ? "" : " " + escapeHTML(p.updated)}${p.id !== "sports" ? "（北京时间）" : ""}</time></div></div></div>
+        <div class="card-actions">${p.id === "sports" ? `<a class="button button-primary" href="#sports">查看赛事数据 <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="https://conflux.kami.asia/i/VM3ZA" target="_blank" rel="noopener noreferrer">获取汇流直播 ↗</a>` : `<button class="button button-primary" type="button" data-open="${escapeHTML(p.id)}" aria-label="选择${escapeHTML(p.title)}的版本与导入">选择版本与导入 <span aria-hidden="true">↗</span></button>`}<div class="card-repo"><time datetime="${escapeHTML(p.updated)}">${p.id === "sports" ? "同步时间以赛事看板为准" : ("数据核对")}${p.id === "sports" ? "" : " " + escapeHTML(p.updated)}${p.id !== "sports" ? "（北京时间）" : ""}</time></div></div></div>
       </article>`;
     }).join("");
     $("emptyState").hidden = visible.length > 0;
@@ -128,7 +128,7 @@
     $("quickLinks").innerHTML = projects.map((p, i) => `<button class="quick-item" type="button" data-open="${escapeHTML(p.id)}" aria-label="打开${escapeHTML(p.title)}"><span class="quick-number">${circled(i + 1)}</span><span class="quick-symbol" aria-hidden="true">${({badges:"badges",icons:"icons",channels:"channels",sports:"sports"})[p.id] ? `<img src="./assets/shortcut-icons/${({badges:"badges",icons:"icons",channels:"channels",sports:"sports"})[p.id]}.svg" width="256" height="256" alt="" loading="eager" decoding="async">` : "◇"}</span><span class="quick-copy"><strong>${escapeHTML(p.title)}</strong><small>${escapeHTML(p.short)}</small></span><span class="quick-arrow" aria-hidden="true">↗</span></button>`).join("");
     const metrics = [["已上线项目", projects.length], ["媒体图标", data.metrics.icons], ["精选与专属", data.metrics.originalIcons], ["主播单直播间", data.metrics.channels]];
     $("metrics").innerHTML = metrics.map(([label, value]) => `<div><dt>${label}</dt><dd>${number(value)}</dd></div>`).join("");
-    $("dataNote").textContent = `数据核对 ${data.checkedAt}（北京时间） · 数量按 GitHub 原仓库每日核对`;
+    $("dataNote").textContent = `数据核对 ${data.checkedAt}（北京时间）`;
     $("roadmapGrid").innerHTML = data.future.map((p, i) => `<article class="roadmap-card lab-card">
       <div class="roadmap-meta"><span class="roadmap-number">${circled(i + 1)} · ${escapeHTML(p.en)}</span><span class="lab-type">JSON 资源索引</span></div>
       ${labSymbol(p.id)}
@@ -156,7 +156,7 @@
       <div class="import-list">${p.imports.map((item, i) => `<div class="import-item"><div class="import-main"><div class="import-text"><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)}</small></div><button type="button" class="button button-primary copy-btn" data-copy="${i}" aria-label="复制${escapeHTML(item.name)}链接">复制链接</button></div><details class="url-disclosure"><summary>查看完整链接 / 手动复制</summary><a class="import-url" href="${escapeHTML(safeURL(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.url)}</a></details></div>`).join("")}</div>
       <div class="dialog-section-head"><h3>如何导入</h3></div><ol class="howto-list">${p.steps.map(s => `<li>${escapeHTML(s)}</li>`).join("")}</ol>
       ${p.sections ? `<div class="dialog-section-head"><h3>内容分区</h3></div><div class="app-chips">${p.sections.map(s => `<span>${escapeHTML(s)}</span>`).join("")}</div>` : ""}
-      <p class="dialog-notice">${escapeHTML(p.note || "具体适配与使用方法，以原项目说明为准。")}</p><div class="dialog-links">${link(p.repo, "查看原仓库与说明")}${link("https://t.me/liangyouuniversity", "前往 TG 交流")}</div></div>`;
+      <p class="dialog-notice">${escapeHTML(p.note || "具体适配与使用方法，以原项目说明为准。")}</p><div class="dialog-links">${link("https://t.me/liangyouuniversity", "前往 TG 交流")}</div></div>`;
     if (typeof dialog.showModal === "function") {
       if (!dialog.open) dialog.showModal();
     } else dialog.setAttribute("open", "");
@@ -269,7 +269,7 @@
         }
       } catch { /* Local storage unavailable: show the existing safe fallback */ }
       grid.setAttribute("aria-busy", "false");
-      grid.innerHTML = `<div class="notice"><p>资源目录暂时无法加载。刷新页面，或直接打开原仓库：</p><ul><li>${link("https://github.com/MaddestAlistar/liangyou-appletv-badges", "媒体徽章库")}</li><li>${link("https://github.com/MaddestAlistar/LiangYou-IconLibrary", "媒体图标库")}</li><li>${link("https://github.com/MaddestAlistar/LiangyouChannels", "频道库")}</li></ul></div>`;
+      grid.innerHTML = `<div class="notice"><p>资源目录暂时无法加载，请刷新页面重试。</p></div>`;
       $("libraryCount").textContent = "目录加载失败";
       search.disabled = true;
       filters.querySelectorAll("button").forEach(button => { button.disabled = true; });
