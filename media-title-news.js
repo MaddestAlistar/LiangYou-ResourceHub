@@ -19,13 +19,24 @@
   // Scheduled coverage for the full catalog, independently of the three
   // hand-checked editorial records. Read once per open tab and fail quietly
   // when the first scheduled refresh has not published yet.
-  let coveragePromise;
+  let coveragePromise,coverageUntil=0;
   async function readCoverage(){
-    if(!coveragePromise)coveragePromise=fetch('./data/media-title-coverage.json',{
-      cache:'no-cache',signal:AbortSignal.timeout(7500)
-    }).then(r=>r.ok?r.json():null)
-      .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
-      .catch(()=>null);
+    // A visitor can keep the site open while scheduled GitHub refreshes publish
+    // new title results. Revalidate the snapshot without requiring an app reload.
+    if(!coveragePromise||Date.now()>=coverageUntil){
+      coverageUntil=Date.now()+15*60000;
+      coveragePromise=fetch('./data/media-title-coverage.json',{
+        cache:'no-cache',signal:AbortSignal.timeout(7500)
+      }).then(r=>r.ok?r.json():null)
+        .then(d=>{
+          if(d?.schema===1&&d.items&&typeof d.items==='object')return d;
+          coverageUntil=Math.min(coverageUntil,Date.now()+60000);
+          return null;
+        }).catch(()=>{
+          coverageUntil=Math.min(coverageUntil,Date.now()+60000);
+          return null;
+        });
+    }
     return coveragePromise;
   }
   async function cachedForInfo(kind,id,year){
