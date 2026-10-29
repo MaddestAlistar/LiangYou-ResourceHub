@@ -246,6 +246,15 @@ def main():
     missing_quota = min(len(missing), max(1, limit // 3))
     chosen = missing[:missing_quota]
     chosen_set = set(chosen)
+    # Don't let an empty video shelf wait behind already-covered catalog films.
+    # These are TMDB-ID-linked YouTube/film-provider records; Bilibili's
+    # rate-limited search remains an independent best-effort source.
+    missing_trailers = sorted(
+        (key for key in works if not items.get(key, {}).get("youtubeTrailers") and key not in chosen_set),
+        key=by_age)
+    video_quota = min(len(missing_trailers), max(1, limit // 4))
+    chosen.extend(missing_trailers[:video_quota])
+    chosen_set.update(chosen)
     chosen.extend(key for key in sorted(works, key=by_age)
                   if key not in chosen_set and len(chosen) < limit)
     checked_at = utc_now()
