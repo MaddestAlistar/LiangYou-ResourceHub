@@ -863,7 +863,8 @@ test('blocked Bilibili public search fails closed and does not invent video card
  };
  try{
   const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
-  assert.equal(status,200);assert.equal(body.status,'unavailable');
+  assert.equal(status,200);assert.equal(body.status,'upstream_unavailable');
+  assert.ok(body.sourceDiagnostics.nativeRejected>0);
   assert.deepEqual(body.videos,[]);
  }finally{globalThis.fetch=previous;}
 });
