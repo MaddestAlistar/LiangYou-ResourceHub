@@ -27,7 +27,21 @@ jobs:
         with:
           python-version: '3.12'
       - name: Validate cross-title coverage builder
-        run: python -m py_compile scripts/refresh_media_title_coverage.py
+        run: |
+          python -m py_compile scripts/refresh_media_title_coverage.py
+          python - <<'PY'
+          from scripts.refresh_media_title_coverage import clean_youtube_trailers
+          sample={
+            'ok':True,'kind':'movie','tmdb_id':12345,'id':'tmdb-movie-12345',
+            'date':'2026-05-20',
+            'profile':{'videos':[{'name':'Official Trailer',
+              'url':'https://www.youtube.com/watch?v=AbCdEf12345'}]}
+          }
+          videos=clean_youtube_trailers(sample,'movie',12345)
+          assert len(videos)==1 and videos[0]['year']==2026, 'Official YouTube trailers must not be discarded'
+          assert clean_youtube_trailers(sample,'movie',12346) is None, 'TMDB cross-ID contamination'
+          print('COVERAGE_YEAR_PARSER_OK',videos[0]['id'])
+          PY
       - name: Refresh rotating title snapshots
         env:
           COVERAGE_BATCH: '30'
