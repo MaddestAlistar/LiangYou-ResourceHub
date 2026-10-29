@@ -15,6 +15,32 @@
   Object.assign(translations, {"欢迎来到良友资源中心":"Welcome to LiangYou Resource Hub","进入资源中心":"Enter Resource Hub"});
   Object.assign(translations, {"收藏本站":"Save this site","收藏良友资源中心":"Save LiangYou Resource Hub","打开系统分享":"Open system share","复制网站地址":"Copy site address","关闭收藏说明":"Close bookmark guide"});
   Object.assign(translations, {"海外加速器":"Overseas Accelerator","海外华人、留学生的回国加速助手":"A China-access accelerator for overseas Chinese and students","玩国服、国际服游戏，追国产剧、看中文赛事直播；也能辅助改善抖音、豆包及其他国内应用在海外的访问体验。":"Optimize game connections, Chinese shows and live sports, with better access to everyday Chinese apps abroad.","游戏专线":"Gaming routes","影音赛事":"Streaming & sports","生活学习":"Daily life & study","多端支持 · 至多5台同时在线":"Up to 5 devices at once","选择平台下载 · 官方入口":"Choose your platform · official links","Sixfast 六个平台下载":"Sixfast platform downloads","Chrome 插件":"Chrome extension","安装包更新？前往 Sixfast 官方全平台下载页 ↗":"Download out of date? Open the official Sixfast download page ↗","良友专属口令":"LiangYou exclusive code","免费体验及优惠券":"Free trial & coupons","复制口令":"Copy code","下载登录后，在「优惠券 / 口令兑换」输入 sk999 领取；权益及使用条件以 Sixfast App 内实际显示为准。":"After signing in, enter sk999 under Coupons / Redeem Code. Benefits and terms are determined in the Sixfast app.","影音 · 游戏 · 一键加速":"Streaming · Gaming · One-tap boost","复制 Sixfast 专属口令 sk999":"Copy Sixfast exclusive code sk999"});
+  Object.assign(translations, {
+    "海外加速器":"China Access Accelerator",
+    "奇游旗下 · 海外华人、留学生的回国加速助手":"From Qiyou · China access for overseas Chinese and students",
+    "海外华人、留学生的回国加速助手":"China access for overseas Chinese and students",
+    "玩国服、国际服游戏，追国产剧、看中文赛事直播；也能辅助改善抖音、豆包及其他国内应用在海外的访问体验。":"Accelerate Chinese and international games, stream Chinese dramas and sports, and improve access to Chinese apps such as Douyin and Doubao from overseas.",
+    "游戏专线":"Gaming routes",
+    "影音赛事":"Streaming & sports",
+    "生活学习":"Daily life & study",
+    "多端支持 · 至多5台同时在线":"Up to 5 devices online",
+    "选择平台下载 · 官方入口":"Official downloads by platform",
+    "iOS · App Store":"iOS · App Store",
+    "Android TV":"Android TV",
+    "Chrome 插件":"Chrome Extension",
+    "安装包更新？前往 Sixfast 官方全平台下载页 ↗":"Need the latest installer? Visit Sixfast's official downloads ↗",
+    "Microsoft Store 下载 ↗":"Microsoft Store ↗",
+    "良友专属口令":"LiangYou exclusive code",
+    "免费体验及优惠券":"Trial time & coupons",
+    "复制口令":"Copy code",
+    "已复制":"Copied",
+    "请手动复制口令":"Please copy the code manually",
+    "下载登录后，在「优惠券 / 口令兑换」输入 sk999 领取；权益及使用条件以 Sixfast App 内实际显示为准。":"After installing and signing in, enter sk999 in Coupons / Redeem Code. Trial time and offers are subject to the Sixfast app.",
+    "影音 · 游戏 · 一键加速":"Streaming · Gaming · One-tap acceleration",
+    "复制 Sixfast 专属口令 sk999":"Copy Sixfast exclusive code sk999",
+    "Sixfast 六个平台下载":"Sixfast downloads for six platforms",
+    "Sixfast 六毫秒 App 图标":"Sixfast app icon"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
