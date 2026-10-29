@@ -260,8 +260,12 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
     const person=people.some(name=>label.includes(" "+name+" "));
     const promotional=/\b(teaser|trailer|first look|coming soon)\b|预告|先导|首曝|定档|予告/i.test(heading);
     const earlierPromo=promotional&&stated.length>0&&stated.every(y=>y>=release-2&&y<release);
-    if(stated.length&&stated.some(y=>Math.abs(y-release)>1)&&!edition&&!person&&!earlierPromo)return false;
-    const ambiguous=compact.length<=11&&!matchedName.includes(" ");
+    const laterSeason=kind==="tv"&&stated.every(y=>y>=release&&y<=new Date().getUTCFullYear()+1)&&
+      /\b(season|episode)\b|新一季|新季|第.{0,3}季|第.{0,3}集|시즌|シーズン/i.test(heading);
+    if(stated.length&&stated.some(y=>Math.abs(y-release)>1)&&
+       !edition&&!person&&!earlierPromo&&!laterSeason)return false;
+    const asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(matchedName);
+    const ambiguous=!matchedName.includes(" ")&&(asian?compact.length<4:compact.length<=11);
     if(ambiguous&&!(heading.includes(releaseYear)||edition&&isFilmContext.test(heading)||
        person&&isFilmContext.test(heading)||earlierPromo))return false;
     if(compact.length<=6&&!isFilmContext.test(heading)&&!heading.includes(releaseYear))return false;
