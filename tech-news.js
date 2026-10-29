@@ -63,6 +63,13 @@ function hydrate(items){
   }
   const article=element('article',undefined,'ly-news-item');
   article.append(element('span',item.category,'ly-news-kind'),element('h3',item.title),element('p',item.content));
+  const image=typeof item.newsImageUrl==='string'&&item.newsImageUrl.startsWith(NEWS_IMAGE_ROOT)
+    &&/^[a-f0-9-]{36}\.jpg$/.test(item.newsImageUrl.slice(NEWS_IMAGE_ROOT.length))?item.newsImageUrl:'';
+  if(image){
+   const img=element('img',undefined,'ly-news-photo');
+   img.src=image;img.alt=item.title;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+   article.append(img);
+  }
   fragment.append(article);added++;
  }
  if(!added)fragment.append(element('p','暂无文字新闻更新','ly-news-empty'));
