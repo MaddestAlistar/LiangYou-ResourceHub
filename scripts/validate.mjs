@@ -87,8 +87,8 @@ assert(html.includes('quick-symbol'), 'Resource shortcut visual refresh missing'
 assert(!html.includes('class="hero-byline"'), 'Old author byline remains in hero');
 assert(html.includes('APP OFFERS · 良友福利'), 'Benefits label was not updated');
 assert(html.includes('id="collabs"'), 'Collaboration showcase missing');
-assert(Array.isArray(data.collabs) && data.collabs.length === 12, 'Expected twelve collaborations');
-assert.equal((html.match(/class="collab-card/g) || []).length, 12, 'Twelve collaboration cards expected');
+assert(Array.isArray(data.collabs) && data.collabs.length === 14, 'Expected fourteen collaborations');
+assert.equal((html.match(/class="collab-card/g) || []).length, 14, 'Fourteen collaboration cards expected');
 assert.equal(data.collabs[0].id, 'aptv');
 assert.equal(data.collabs[1].id, 'senplayer');
 for (const entry of data.collabs) {
@@ -98,12 +98,12 @@ for (const entry of data.collabs) {
 assert(!html.includes('图片按你提供的联名原稿整理'), 'Removed gallery note came back');
 assert(!html.includes('class="tf-disclaimer"'), 'Unrequested TF footer disclaimer remains');
 assert(html.includes('通过 TestFlight Store 分发 TestFlight 内测名额，获取更多用户'), 'Updated TF subtitle missing');
-assert(html.includes('12 款联名作品'), 'Collaboration gallery count not updated');
+assert(html.includes('14 款联名作品'), 'Collaboration gallery count not updated');
 assert(html.includes('id="tf-store"'), 'TestFlight Store section missing');
 assert(html.includes(data.tfstore.url), 'TestFlight Store registration URL mismatch');
 assert(existsSync('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store image missing');
 assert(html.includes('assets/collabs/tfapp-v2.webp'), 'New TestFlight Store image reference missing');
-for(const id of ['comink','carlink','floating','appcollection']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
+for(const id of ['comink','carlink','floating','appcollection','noctra','hunpi']) assert(data.collabs.some(p=>p.id===id),'New collaboration missing: '+id);
 assert(!data.projects.find(p=>p.id==='badges').imports.some(i=>/原\s*(EplayerX|OopsPlayer|V12)/i.test(i.detail)), 'Historic badge labels still shown');
 assert.equal(text('.nojekyll'), '', '.nojekyll must remain empty');
 assert(html.includes('id="lab"') && html.includes('<h2 id="roadmap-title">资源实验室</h2>') && html.includes('<a href="#lab">资源实验室</a>'), 'Resource Lab section not found');
