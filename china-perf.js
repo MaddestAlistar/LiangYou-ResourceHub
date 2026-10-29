@@ -18,6 +18,10 @@
       ]
     },
     {
+      id: 'daily-free',
+      urls: ['./daily-free.js?v=20261024.4']
+    },
+    {
       id: 'sports',
       urls: [
         './sports-i18n.js?v=20261027.2',
@@ -81,7 +85,8 @@
   const checkDeepLink = () => {
     const hash = location.hash.toLowerCase();
     if (hash === '#media' || new URLSearchParams(location.search).has('film')) start(modules[0]);
-    if (hash === '#sports') start(modules[1]);
+    if (hash === '#daily-free') start(modules.find(x => x.id === 'daily-free'));
+    if (hash === '#sports') start(modules.find(x => x.id === 'sports'));
   };
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
