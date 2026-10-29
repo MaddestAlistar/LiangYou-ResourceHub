@@ -148,8 +148,11 @@
     if(!aliases.length||!Number.isSafeInteger(year)||year<1900||!['movie','tv'].includes(kind))return [];
     const found=[],ids=new Set();
     for(const x of Array.isArray(records)?records:[]){
-      if(!x||x.kind!==kind||Number(x.year)!==year||
-         !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase()))continue;
+      if(!x||x.kind!==kind)continue;
+      const idBound=x.verifiedByTitleId===true&&Number(x.tmdbId)===Number(info?.tmdbId)&&
+        Math.abs(Number(x.year)-year)<=1;
+      if(!idBound&&(Number(x.year)!==year||
+         !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())))continue;
       const u=safe(x.verifiedSource);
       if(!u)continue;
       const id=String(x.videoId||''),p=x.platform;
@@ -510,6 +513,11 @@
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[];
+    let indexedDomesticRows=[],discoveredDomesticRows=[];
+    function setDomesticRows(){
+      domesticRows=[...indexedDomesticRows,...discoveredDomesticRows];
+      paintTrailers();
+    }
     function paintTrailers(){
       if(!discoverSlots?.trailers||!pane.isConnected)return;
       const enrichedInfo={...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]};
@@ -552,8 +560,10 @@
       Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
         const all=[...rows,...(index?.videos||[])];
         verifiedAliases=[...new Set([...verifiedAliases,...(index?.aliases||[])])];
-        domesticRows=all;paintTrailers();
-        const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)).slice(0,20);
+        indexedDomesticRows=all;setDomesticRows();
+        // Curated public videos may not include like counts. Never invent them.
+        const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)&&
+          !Number.isSafeInteger(x.likes)).slice(0,16);
         if(!relevant.length)return;
         const withLikes=await Promise.all(relevant.map(async x=>{
           try{
@@ -565,8 +575,15 @@
         }));
         if(!pane.isConnected)return;
         const known=new Map(withLikes.map(v=>[v.videoId,v]));
-        domesticRows=all.map(x=>known.get(x.videoId)||x);
-        paintTrailers();
+        indexedDomesticRows=all.map(x=>known.get(x.videoId)||x);
+        setDomesticRows();
+      }).catch(()=>{});
+      // Platform availability can vary by region or rate-limit, so this is
+      // independent of the already-rendered curated video cards.
+      window.LiangYouTitleNews?.videoForInfo?.(info)?.then(data=>{
+        if(!pane.isConnected||!Array.isArray(data?.videos))return;
+        discoveredDomesticRows=data.videos;
+        setDomesticRows();
       }).catch(()=>{});
     }
     else if(info.section==='boxoffice'){
