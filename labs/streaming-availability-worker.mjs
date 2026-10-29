@@ -704,6 +704,7 @@ async function titleBilibiliVideos(kind,id,env){
    {name:asian,query:asian+" "+(kind==="movie"?"电影 影评 花絮":"剧集 剧评 花絮")}];
  const secondary=titleChoices.find(v=>v!==asian&&v.length>=4);
  if(secondary)variants[1]={name:secondary,query:secondary+" "+(kind==="movie"?"电影 预告 解析":"电视剧 预告 花絮")};
+ let nativeWorking=false,indexedWorking=false;
  const results=(await Promise.all(variants.map(async item=>{
   try{
    const uri=new URL("https://api.bilibili.com/x/web-interface/search/type");
@@ -713,7 +714,8 @@ async function titleBilibiliVideos(kind,id,env){
    const payload=await jsonRemote(uri.toString(),{
     headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
-   return payload?.code===0&&Array.isArray(payload.data?.result)?payload.data.result:[];
+   if(payload?.code===0&&Array.isArray(payload.data?.result)){nativeWorking=true;return payload.data.result;}
+   return [];
   }catch{return [];}
  }))).flat();
  const unique=new Set();
@@ -736,6 +738,7 @@ async function titleBilibiliVideos(kind,id,env){
     if(response.ok){
      const xml=(await response.text()).slice(0,220000);
      if(/<rss[\s>]/i.test(xml)){
+      indexedWorking=true;
       const extra=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,24).map(m=>{
        const title=rssField(m[1],"title"),link=rssField(m[1],"link");
        let u;try{u=new URL(link);}catch{return null;}
@@ -750,7 +753,8 @@ async function titleBilibiliVideos(kind,id,env){
    }finally{clearTimeout(timer);}
   }catch{/* No third-party indexed result must never become a fake video. */}
  }
- if(!shortlist.length)return {ok:true,kind,tmdbId:Number(id),year,status:"no_match",
+ if(!shortlist.length)return {ok:true,kind,tmdbId:Number(id),year,
+   status:nativeWorking||indexedWorking?"no_match":"unavailable",
    source:"Bilibili public search",videos:[]};
  const checked=await Promise.all(shortlist.map(async v=>{
    try{
