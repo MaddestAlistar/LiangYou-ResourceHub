@@ -749,14 +749,21 @@ async function titleBilibiliVideos(kind,id,env){
  let shortlist=results.map(v=>({
   bvid:String(v.bvid||"").trim(),heading:rssDecoded(v.title||"")
  })).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
-   !unique.has(v.bvid)&&unique.add(v.bvid)&&
-   filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)).slice(0,14);
+   filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
+   !unique.has(v.bvid)&&unique.add(v.bvid)).slice(0,14);
  // When the native search is blocked or returned only unrelated titles,
  // try a public index without scraping inaccessible player pages.
  if(shortlist.length<3){
   try{
    const uri=new URL("https://www.bing.com/search");
-   uri.searchParams.set("q",'site:bilibili.com/video/ "'+searchName+'" '+rawYear+' 预告 OR 影评 OR 花絮');
+   // Long distinctive titles can be indexed without a release year,
+   // whereas short/homonymous titles require the year to avoid cross-film clips.
+   const sufficientlyDistinctive=/[\u3400-\u9fff]/.test(searchName)?
+     searchName.replace(/[^\u3400-\u9fff]/g,"").length>=5:
+     searchName.trim().split(/\s+/).length>=2&&searchName.length>=13;
+   const indexTerm=sufficientlyDistinctive?
+     '(预告 OR 影评 OR 花絮 OR 幕后 OR 剪辑)':rawYear+' (预告 OR 影评 OR 花絮)';
+   uri.searchParams.set("q",'site:bilibili.com/video/ "'+searchName+'" '+indexTerm);
    uri.searchParams.set("format","rss");uri.searchParams.set("setmkt","zh-CN");
    const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),5500);
    try{
@@ -771,8 +778,8 @@ async function titleBilibiliVideos(kind,id,env){
        if(u.protocol!=="https:"||!["www.bilibili.com","bilibili.com"].includes(u.hostname))return null;
        const match=/^\/video\/(BV[A-Za-z0-9]{10})\/?$/.exec(u.pathname);
        return match?{bvid:match[1],heading:title}:null;
-      }).filter(v=>v&&!unique.has(v.bvid)&&unique.add(v.bvid)&&
-        filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind));
+      }).filter(v=>v&&filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)&&
+        !unique.has(v.bvid)&&unique.add(v.bvid));
       if(extra.length){shortlist=[...shortlist,...extra].slice(0,14);source="Bilibili + Bing public index"; }
      }
     }
