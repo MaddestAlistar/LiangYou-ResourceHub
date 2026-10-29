@@ -3,7 +3,9 @@
 export const NEWS_PATH = 'news/tech-news.json';
 export const NEWS_CATEGORIES = Object.freeze(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const categories = new Set(NEWS_CATEGORIES);
-export const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
+export const VIDEO_MAX_BYTES = 20 * 1000 * 1000;
+export const VIDEO_TITLE_MAX = 20;
+export const VIDEO_DESC_MAX = 38;
 const VIDEO_REPO = 'MaddestAlistar/videos';
 const VIDEO_PREFIX = 'clips/';
 const VIDEO_ROOT = 'https://raw.githubusercontent.com/' + VIDEO_REPO + '/main/' + VIDEO_PREFIX;
@@ -35,6 +37,8 @@ export function validateNewsItem(body,{legacy=false}={}){
   if(!validText(title,120))throw new Error('新闻标题须为 1–120 个字符');
   if(!validText(content,3000))throw new Error('新闻内容须为 1–3000 个字符');
   if(category==='视频精选'){
+    if(!legacy&&title.length>VIDEO_TITLE_MAX)throw new Error('视频精选的内容标题不得超过 20 个字');
+    if(!legacy&&content.length>VIDEO_DESC_MAX)throw new Error('视频精选的内容描述不得超过 38 个字');
     if(legacy&&!body?.videoUrl&&!body?.sourceUrl)return {category,title,content};
     const sourceUrl=body?.sourceUrl?.trim();
     const platform=sourceOf(sourceUrl);
@@ -108,14 +112,16 @@ async function uploadAsset(env,fetcher,path,buffer,mime){
 async function serveVideoUpload(request,env,fetcher,cors){
  if(!env.VIDEOS_GITHUB_TOKEN)return json({error:'视频上传未启用：请在 Cloudflare Worker 设置 VIDEOS_GITHUB_TOKEN（videos 仓库写入权限）'},503,cors);
  const size=Number(request.headers.get('content-length')||0);
- if(size>VIDEO_MAX_BYTES+800000)return json({error:'视频不得超过 20 MB'},413,cors);
+ if(size>VIDEO_MAX_BYTES+800000)return json({error:'文件过大，无法上传：视频不得超过 20 MB'},413,cors);
  if(!request.headers.get('content-type')?.toLowerCase().startsWith('multipart/form-data;'))
   return json({error:'请上传 MP4 视频文件'},415,cors);
  let form;try{form=await request.formData()}catch{return json({error:'上传表单格式无效'},400,cors)}
  const video=form.get('video');
- if(!(video instanceof File)||!video.name.toLowerCase().endsWith('.mp4')||video.size<12||video.size>VIDEO_MAX_BYTES
+ if(!(video instanceof File))return json({error:'请选择 MP4 视频'},400,cors);
+ if(video.size>VIDEO_MAX_BYTES)return json({error:'文件过大，无法上传：视频不得超过 20 MB'},413,cors);
+ if(!video.name.toLowerCase().endsWith('.mp4')||video.size<12
    ||!['video/mp4','application/mp4','application/octet-stream',''].includes(video.type))
-  return json({error:'请选择 MP4 视频，单条不得超过 20 MB'},400,cors);
+  return json({error:'请选择有效的 MP4 视频'},400,cors);
  const buffer=await video.arrayBuffer(),header=new Uint8Array(buffer,0,Math.min(buffer.byteLength,12));
  if(String.fromCharCode(...header.subarray(4,8))!=='ftyp')return json({error:'文件不是有效的 MP4 容器'},400,cors);
  const poster=form.get('poster');
