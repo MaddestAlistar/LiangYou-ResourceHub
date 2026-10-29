@@ -392,7 +392,7 @@ function rssArticleMatches(headline,alias,context={}){
  const name=normalizedHeadline(alias),text=normalizedHeadline(headline);
  if(!name||!text)return false;
  const tight=name.replace(/ /g,""),asian=/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(name);
- const quoted=["《"+alias+"》","“"+alias+"”",'"'+alias+'"',"'"+alias+"'"].some(v=>
+ const quoted=["《"+alias+"》","“"+alias+"”","「"+alias+"」","『"+alias+"』",'"'+alias+'"',"'"+alias+"'"].some(v=>
    headline.toLowerCase().includes(v.toLowerCase()));
  const exists=asian?text.replace(/ /g,"").includes(tight):(" "+text+" ").includes(" "+name+" ");
  if(!exists)return false;
@@ -401,7 +401,7 @@ function rssArticleMatches(headline,alias,context={}){
  const year=String(context.year||""),oldYear=String(Number(context.year||0)-10);
  const hasYear=year.length===4&&headline.includes(year);
  const isRemake=/live[\s-]?action|真人[版电影]|真人化|重制|翻拍|remake/i.test(headline);
- const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版/i.test(headline);
+ const filmContext=/\b(movie|film|cinema|box[\s-]?office|trailer|review|interview|premiere|anniversary|director|horror|actor|actress|theater|screening|disney|feature)\b|电影|恐怖片|影评|预告|访谈|专访|周年|首映|导演|演员|院线|票房|影片|上映|真人版|映画|監督|レビュー|予告|영화|드라마|예고|리뷰/i.test(headline);
  const person=(Array.isArray(context.people)?context.people:[]).some(p=>p.length>=5&&
    normalizedHeadline(headline).includes(normalizedHeadline(p)));
  // Moana (2016) vs the identically named live-action Moana (2026), or any
@@ -493,7 +493,7 @@ async function titleNews(kind,id,env){
  if(!queries.length)return {ok:true,kind,tmdbId:Number(id),status:"no_titles",articles:[]};
  // Limit the number of uncached upstream searches per opened work.
  const stats={rssOk:0,rssHttpError:0,rssInvalidXml:0,rssNetworkError:0,rssItems:0,rssMatched:0,guardianItems:0,bingOk:0,bingHttpError:0,bingInvalidXml:0,bingNetworkError:0,bingItems:0,bingMatched:0};
- const requests=queries.slice(0,8).map(async ({alias,query,locale,requireEdition})=>{
+ const requests=queries.slice(0,10).map(async ({alias,query,locale,requireEdition})=>{
   const endpoint=new URL("https://news.google.com/rss/search");
   // Permit historical coverage of older catalog films; the old two-year window excluded it.
   endpoint.searchParams.set("q",query);
@@ -531,7 +531,7 @@ async function titleNews(kind,id,env){
     const publisher=rssField(raw,"source");
     return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
       source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:/[\u3400-\u9fff]/.test(title)?"zh":
-      /[\uac00-\ud7af]/.test(title)?"ko":"en",matchType:"title_search"};
+      /[\uac00-\ud7af]/.test(title)?"ko":/[\u3040-\u30ff]/.test(title)?"ja":"en",matchType:"title_search"};
    }).filter(Boolean);
    stats.rssMatched+=accepted.length;
    return accepted;
@@ -650,7 +650,7 @@ function filmVideoTitleMatches(heading,titles,year,kind="movie"){
  const line=String(heading||"").normalize("NFKC").trim();
  if(!line||line.length>240||/完整版|全集|全片|免费观看|网盘|磁力|资源下载|破解|在线观看/i.test(line))return false;
  const compact=normalizedHeadline(line).replace(/ /g,"");
- const contextual=/预告|影评|解说|剪辑|混剪|花絮|幕后|采访|特辑|票房|剧情|演员|电影|剧集|电视剧|导演|片段|高能|reaction|trailer|teaser|review|interview|scene|movie|film|drama|episode|behind/i.test(line);
+ const contextual=/预告|影评|解说|剪辑|混剪|花絮|幕后|采访|特辑|票房|剧情|演员|电影|剧集|电视剧|导演|片段|高能|映画|監督|予告|レビュー|영화|예고|리뷰|드라마|reaction|trailer|teaser|review|interview|scene|movie|film|drama|episode|behind/i.test(line);
  const edition=/真人版|真人电影|真人化|翻拍|重启|重制|live[\s-]?action|remake|reboot/i.test(line);
  const quoted=x=>['《'+x+'》','【'+x+'】','「'+x+'」','"'+x+'"'].some(q=>line.toLowerCase().includes(q.toLowerCase()));
  const yearString=String(year||"");
