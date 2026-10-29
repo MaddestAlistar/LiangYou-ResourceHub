@@ -43,6 +43,11 @@
   });
   Object.assign(translations, {
     "良友科技圈新闻":"LiangYou Tech News",
+    "图标动态":"Icon updates",
+    "热点播报":"Trending news",
+    "联合抽奖":"Joint giveaways",
+    "宣传推广":"Promotions",
+    "暂无新闻更新":"No news updates yet",
     "最新 3 条":"3 latest updates",
     "系统提醒":"System notice",
     "联名上新":"New collaborations",
