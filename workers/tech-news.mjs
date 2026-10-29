@@ -7,9 +7,13 @@ const categories = new Set(NEWS_CATEGORIES);
 export const VIDEO_MAX_BYTES = 20 * 1000 * 1000;
 export const VIDEO_TITLE_MAX = 20;
 export const VIDEO_DESC_MAX = 38;
+// News images are compressed client-side before upload; originals stay local.
+export const NEWS_IMAGE_MAX_BYTES = 1_200_000;
 const VIDEO_REPO = 'MaddestAlistar/videos';
 const VIDEO_PREFIX = 'clips/';
 const VIDEO_ROOT = 'https://raw.githubusercontent.com/' + VIDEO_REPO + '/main/' + VIDEO_PREFIX;
+const NEWS_IMAGE_PREFIX = 'news-images/';
+export const NEWS_IMAGE_ROOT = 'https://raw.githubusercontent.com/' + VIDEO_REPO + '/main/' + NEWS_IMAGE_PREFIX;
 export function sourceOf(urlValue){
  if(typeof urlValue!=='string'||urlValue.length>1200)return null;
  let url;try{url=new URL(urlValue.trim())}catch{return null}
@@ -18,6 +22,12 @@ export function sourceOf(urlValue){
  if(['xhslink.cn','www.xiaohongshu.com','xiaohongshu.com','m.xiaohongshu.com'].includes(host)&&url.pathname.length>1)return 'xhs';
  if(['t.me','www.t.me','telegram.me','www.telegram.me'].includes(host)&&url.pathname.length>1)return 'tg';
  return null;
+}
+function newsImageAsset(value){
+ if(!value)return '';
+ if(typeof value!=='string'||!value.startsWith(NEWS_IMAGE_ROOT)||
+    !/^[a-f0-9-]{36}\.jpg$/.test(value.slice(NEWS_IMAGE_ROOT.length)))throw new Error('新闻图片地址无效，请先通过后台上传');
+ return value;
 }
 function videoAsset(value,ext,required=true){
  if(!value&&!required)return '';
@@ -48,7 +58,8 @@ export function validateNewsItem(body,{legacy=false}={}){
     const posterUrl=videoAsset(body?.posterUrl,'jpg',false);
     return {category,title,content,sourceUrl,platform,videoUrl,posterUrl};
   }
-  return {category,title,content};
+  const newsImageUrl=newsImageAsset(body?.newsImageUrl);
+  return {category,title,content,...(newsImageUrl?{newsImageUrl}:{})};
 }
 export function cleanNewsData(data){
   if(data?.schema!==1 || !Array.isArray(data.items) || data.items.length>300)throw new Error('新闻数据结构错误');
@@ -142,11 +153,31 @@ async function serveVideoUpload(request,env,fetcher,cors){
  }
  return json({ok:true,videoUrl:VIDEO_ROOT+basename+'.mp4',posterUrl,size:video.size},200,cors);
 }
+async function serveImageUpload(request,env,fetcher,cors){
+ if(!env.VIDEOS_GITHUB_TOKEN)return json({error:'新闻图片上传尚未启用：需配置 videos 仓库写入权限'},503,cors);
+ const size=Number(request.headers.get('content-length')||0);
+ if(size>NEWS_IMAGE_MAX_BYTES+150000)return json({error:'图片处理后不得超过 1.2 MB'},413,cors);
+ if(!request.headers.get('content-type')?.toLowerCase().startsWith('multipart/form-data;'))
+   return json({error:'请上传图片文件'},415,cors);
+ let form;try{form=await request.formData()}catch{return json({error:'图片表单无效'},400,cors)}
+ const file=form.get('image');
+ if(!(file instanceof File)||!file.name.toLowerCase().endsWith('.jpg')||
+    file.type!=='image/jpeg'||file.size<128)
+   return json({error:'请上传有效的 JPEG 图片'},400,cors);
+ if(file.size>NEWS_IMAGE_MAX_BYTES)return json({error:'图片处理后不得超过 1.2 MB'},413,cors);
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ if(bytes[0]!==255||bytes[1]!==216||bytes[bytes.length-2]!==255||bytes[bytes.length-1]!==217)
+   return json({error:'图片不是完整有效的 JPEG 文件'},400,cors);
+ const basename=crypto.randomUUID();
+ await uploadAsset(env,fetcher,NEWS_IMAGE_PREFIX+basename+'.jpg',bytes.buffer,'image/jpeg');
+ return json({ok:true,newsImageUrl:NEWS_IMAGE_ROOT+basename+'.jpg',size:file.size},200,cors);
+}
 export async function serveTechNews(request,env,{origin='',allowed='https://maddestalistar.github.io',fetcher=fetch}={}){
   const pathname=new URL(request.url).pathname;
   const publicFeed=pathname==='/news-feed';
   const videoUpload=pathname==='/news-video-upload';
-  if(!publicFeed&&pathname!=='/news-admin'&&!videoUpload)return null;
+  const imageUpload=pathname==='/news-image-upload';
+  if(!publicFeed&&pathname!=='/news-admin'&&!videoUpload&&!imageUpload)return null;
   const cors=publicFeed?'*':(origin===allowed?origin:'null');
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{
     'Access-Control-Allow-Origin':cors,'Access-Control-Allow-Methods':'GET, POST, OPTIONS',
@@ -158,11 +189,12 @@ export async function serveTechNews(request,env,{origin='',allowed='https://madd
     if(!env.ADMIN_KEY)return json({error:'管理员密钥未配置'},503,cors);
     const key=request.headers.get('X-Admin-Key')||'';
     if(key.length<24||key!==env.ADMIN_KEY)return json({error:'管理员密钥错误'},401,cors);
-    if(videoUpload&&request.method!=='POST')return json({error:'Method not allowed'},405,cors);
+    if((videoUpload||imageUpload)&&request.method!=='POST')return json({error:'Method not allowed'},405,cors);
     if(!['GET','POST'].includes(request.method))return json({error:'Method not allowed'},405,cors);
   }
   try {
     if(videoUpload)return await serveVideoUpload(request,env,fetcher,cors);
+    if(imageUpload)return await serveImageUpload(request,env,fetcher,cors);
     const gh=newsGithub(env,fetcher);
     if(request.method==='GET'){
       const {news}=await loadNews(gh);
@@ -186,7 +218,7 @@ export async function serveTechNews(request,env,{origin='',allowed='https://madd
       } else {
         const index=news.items.findIndex(x=>x.id===body.id);
         if(index===-1)return json({error:'新闻不存在，请刷新后重试'},404,cors);
-        if(action==='update')news.items[index]={...news.items[index],...validated,updatedAt:now};
+        if(action==='update')news.items[index]={id:news.items[index].id,...validated,createdAt:news.items[index].createdAt,updatedAt:now};
         else news.items.splice(index,1);
       }
       news.updatedAt=now;
