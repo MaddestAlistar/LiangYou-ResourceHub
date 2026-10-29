@@ -44,7 +44,7 @@
       x.kind===kind&&Number(x.tmdbId)===id&&
       x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
       safeUrl(x.verifiedSource)==='https://www.bilibili.com/video/'+x.videoId+'/'&&
-      Number.isInteger(Number(x.year))&&Math.abs(Number(x.year)-year)<=1)
+      Number.isInteger(Number(x.year))&&(!(year>=1850)||Math.abs(Number(x.year)-year)<=1))
       .slice(0,10).map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
     return articles.length||videos.length?{articles,videos,aliases:[]}:null;
   }
