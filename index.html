@@ -69,6 +69,10 @@
 @media(max-width:700px){.site-header .nav.nav-categories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:4px;overflow:visible;padding:2px 0 5px}.site-header .nav-categories .nav-category{min-width:0}.site-header .nav-categories .nav-category-toggle{gap:5px;min-height:36px;padding:7px 3px;font-size:12px;letter-spacing:0}.site-header .nav-categories .nav-panel{min-width:190px;top:calc(100% + 8px)}}
 @media(max-width:360px){.site-header .nav-categories .nav-category-toggle{font-size:11px;gap:3px;padding:7px 2px}.site-header .nav-categories .nav-chevron{width:5px;height:5px}}
 @media(prefers-reduced-motion:reduce){.site-header .nav-categories .nav-category-toggle,.site-header .nav-categories .nav-chevron{transition:none}}
+/* Opaque sticky navigation on mobile prevents scrolling news text ghosting through it. */
+@media(max-width:700px){
+.site-header{background:#0b1422!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;isolation:isolate;box-shadow:0 6px 22px rgba(0,0,0,.36)}
+}
 /* Fully opaque mobile sticky navigation: text behind it must not ghost through. */
 @media(max-width:700px){
   .site-header.site-header{
