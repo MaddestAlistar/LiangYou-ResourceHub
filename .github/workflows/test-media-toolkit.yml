@@ -40,12 +40,12 @@ jobs:
           node --check labs/streaming-availability-worker.mjs
           python - <<'PY'
           from pathlib import Path
-          html=Path("index.html").read_text()
+          html=Path("index.html").read_text()+Path("china-perf.js").read_text()
           base=Path("media-intel.js").read_text()
           toolkit=Path("media-toolkit.js").read_text()
           worker=Path("labs/streaming-availability-worker.mjs").read_text()
-          assert html.count('src="./media-toolkit.js?')==1
-          assert html.count('href="./media-toolkit.css?')==1
+          assert html.count('./media-toolkit.js?')==1
+          assert html.count('./media-toolkit.css?')==1
           assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
           assert "media-insights.js" in html
           assert 'media-cn-enhance.js' in html and 'media-cn-enhance.css' in html

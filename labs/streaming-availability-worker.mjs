@@ -472,7 +472,7 @@ export function articleRelevance(title,summary,aliases,context={}){
  const people=(context.people||[]).some(p=>normalizedHeadline(p).length>=3&&combined.includes(normalizedHeadline(p)));
  return (direct?100:65)+(people?25:0)+(context.year&&combined.includes(String(context.year))?15:0);
 }
-async function titleNews(kind,id,env){
+export async function titleNews(kind,id,env){
  // Fetch both language records concurrently: waiting for them sequentially
  // regularly consumed the entire browser deadline on slower overseas networks.
  const [item,possibleLocal]=await Promise.all([
@@ -911,7 +911,7 @@ async function otherDomesticVideos(kind,id,identity){
  diagnostics.platformVerified=videos.length;
  return {videos,diagnostics};
 }
-async function titleDomesticVideos(kind,id,env){
+export async function titleDomesticVideos(kind,id,env){
  const identity=await Promise.all([tmdbInfo(kind,id,env,true),tmdbInfo(kind,id,env,true,"zh-CN").catch(()=>null)]);
  const [bili,other]=await Promise.all([titleBilibiliVideos(kind,id,env,identity),otherDomesticVideos(kind,id,identity)]);
  const seen=new Set();

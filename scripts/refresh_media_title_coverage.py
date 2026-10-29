@@ -286,6 +286,7 @@ def main():
             # after rate limiting or search changes. Retain previously verified
             # material instead of erasing a film's existing cards.
             record = {"checkedAt": checked_at,
+                      "directCheckedAt": old.get("directCheckedAt"),
                       "articles": articles or old.get("articles", []),
                       "videos": videos or old.get("videos", []),
                       "youtubeTrailers": youtube or old.get("youtubeTrailers", []),

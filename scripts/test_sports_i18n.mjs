@@ -55,8 +55,9 @@ const values=[...html.matchAll(/<option value="(chess|go)">/g)].map(m=>m[1]);
 assert.deepEqual(values,['chess','go'],'Both board-game category filters required');
 assert(html.includes('id="officialFixturesCategory"')&&html.includes('id="officialFixtureDetail"'));
 assert(html.includes('data-fixtures-view="calendar"')&&html.includes('data-fixtures-view="brackets"')&&html.includes('data-fixtures-view="standings"'));
-assert(html.indexOf('sports-i18n.js?')<html.indexOf('fixtures.js?'),'Dictionary must load first');
-assert(/src="\.\/fixtures\.js\?v=\d+(?:\.\d+)+"/.test(html),'Browser cache must refresh fixture JS');
+const assets=html+read('china-perf.js');
+assert(assets.indexOf('sports-i18n.js?')<assets.indexOf('fixtures.js?'),'Dictionary must load first');
+assert(/["']\.\/fixtures\.js\?v=\d+(?:\.\d+)+["']/.test(assets),'Browser cache must refresh fixture JS');
 assert(fixtures.includes("['chess','go'].includes(x.sport)"),'Category records must be validated');
 assert(fixtures.includes("board-games.json") && fixtures.includes('boardGeneratedAt'),'Board feeds must load and show verification date');
 assert(fixtures.includes("providerName(") && fixtures.includes("time_precision==='date'"),'Board provider and date-only support missing');
@@ -171,8 +172,8 @@ assert(styles.includes('grid-template-columns:repeat(2,minmax(0,1fr))')&&styles.
 assert(fixtures.includes('const boardTranslations=window.LiangYouBoardI18n')&&
  fixtures.includes("boardTranslations?.player?.")&&fixtures.includes("boardTranslations?.stage?."),
  'Localized league/round/player rendering must be connected');
-assert(html.indexOf('board-i18n.js?')<html.indexOf('fixtures.js?') &&
- html.includes('./board-i18n.js?'), 'Load board translations before fixture UI');
+assert(assets.indexOf('board-i18n.js?')<assets.indexOf('fixtures.js?') &&
+ assets.includes('./board-i18n.js?'), 'Load board translations before fixture UI');
 const chessActive=board.events.filter(x=>x.sport==='chess'&&x.status==='live');
 const chessCompleted=board.events.filter(x=>x.sport==='chess'&&x.status==='finished');
 // Live feeds may legitimately contain neither state between tournaments.

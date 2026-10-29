@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
-const html=readFileSync('index.html','utf8');
+const html=readFileSync('index.html','utf8')+readFileSync('china-perf.js','utf8');
 const script=readFileSync('sports-share.js','utf8');
 const css=readFileSync('sports-share.css','utf8');
 const fixtureJs=readFileSync('fixtures.js','utf8');
