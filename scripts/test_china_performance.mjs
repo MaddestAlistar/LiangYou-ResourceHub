@@ -23,11 +23,29 @@ for(const file of heavy){
 }
 assert(loader.indexOf('media-core.js')<loader.indexOf('media-intel.js'));
 assert(loader.indexOf('sports-i18n.js')<loader.indexOf('fixtures.js'));
+const stylesheetFiles=[
+  'daily-free.css','sports.css','fixtures.css','sports-personal.css',
+  'sports-share.css','sports-history.css','media-intel.css',
+  'media-toolkit.css','media-cn-enhance.css','media-boxoffice-rankings.css'
+];
+const directStyles=[...page.matchAll(/<link rel="stylesheet" href="\.\/([^"?]+)(?:\?[^"]*)?">/g)].map(x=>x[1]);
+assert(directStyles.length===5,'Only foundational homepage styles should block first render');
+for(const file of stylesheetFiles){
+  assert(existsSync(file),'Missing deferred stylesheet '+file);
+  assert(!directStyles.includes(file),'Feature stylesheet must not block homepage: '+file);
+  assert(loader.includes("'./"+file+'?'),'Missing stylesheet in lazy loader: '+file);
+}
+assert(loader.indexOf('media-boxoffice-rankings.js')<loader.indexOf('media-intel.js'),
+  'Film enhancers should register before initial media-intel fetch');
+assert(loader.includes('await loadStyles(module)'),'Feature CSS must load before its JS initialization');
+assert(loader.includes("module.id === 'sports'"),'Replay market readiness after all sports modules load');
 assert(loader.includes('IntersectionObserver'),'Feature scripts must load near their sections');
 assert(loader.includes('hashchange'),'Hash navigation must load modules');
 assert(loader.includes("hash === '#daily-free'"),'Daily Freebies deep link must be immediate');
 assert(page.includes('id="media"')&&page.includes('id="sports"'));
 assert(!/fonts\.googleapis\.com|fonts\.gstatic\.com|ajax\.googleapis\.com/.test(page));
+assert(cache.includes('RECHECK_AFTER'),'Mutable cached artwork should refresh');
+assert(cache.includes("liangyou-art-v2"),'Artwork cache must be versioned');
 assert(cache.includes("url.origin !== scope.origin"),'Cache must not intercept external domains');
 assert(cache.includes("request.mode === 'navigate'"),'Do not cache full HTML navigation');
 assert(!/\.json[^\n]*test\(/.test(cache),'Live JSON feeds must never be cached');
