@@ -5,7 +5,6 @@
 .ly-news-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
 .ly-news-eyebrow{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:.15em;color:#dbc18e}
 .ly-news-head h2{margin:0;font-size:clamp(21px,2.8vw,29px);line-height:1.3;letter-spacing:.01em;color:#f4eee2}
-.ly-news-count{white-space:nowrap;flex:none;color:#ccba97;font-size:11px;padding:5px 10px;background:rgba(218,190,143,.075);border:1px solid rgba(218,190,143,.25);border-radius:100px}
 .ly-news-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .ly-news-item{position:relative;min-width:0;padding:16px 17px 15px;border:1px solid rgba(151,172,214,.20);border-radius:15px;background:linear-gradient(160deg,rgba(39,46,66,.6),rgba(17,26,42,.75))}
 .ly-news-kind{display:inline-block;margin:0 0 9px;color:#dec79e;font-size:11px;font-weight:700;letter-spacing:.025em}
@@ -56,3 +55,4 @@
 /* Multiple featured XHS videos share the same compact, responsive card layout. */
 .ly-video-panel + .ly-video-panel{margin-top:12px}
 @media(max-width:670px){.ly-video-panel + .ly-video-panel{margin-top:9px}}
+\n.ly-news-item p{white-space:pre-wrap;overflow-wrap:anywhere}\n.ly-news-empty{grid-column:1/-1;font-size:13px;color:#adbbd1;padding:12px 0}\n
