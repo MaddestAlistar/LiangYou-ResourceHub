@@ -59,3 +59,15 @@
 @media(max-width:900px){.ly-news-videos{grid-template-columns:1fr}.ly-news-video-card{grid-template-columns:clamp(112px,23vw,150px) minmax(0,1fr)}}
 @media(max-width:480px){.ly-news-videos{gap:9px;margin-top:9px}.ly-news-video-card{grid-template-columns:102px minmax(0,1fr);gap:10px;padding:9px;border-radius:13px}.ly-news-video-cover{border-radius:9px}.ly-news-video-content{gap:5px}.ly-news-video-content h3{font-size:12px;line-height:1.4}.ly-news-video-content p{font-size:10px;-webkit-line-clamp:2}.ly-news-video-play-icon{width:35px;height:35px;font-size:14px}.ly-news-video-cover-label{font-size:9px;left:7px;bottom:7px}.ly-video-action,.ly-video-original{font-size:10px;padding:6px 8px}.ly-video-stage{height:min(72dvh,680px)}}
 @media(prefers-reduced-motion:reduce){.ly-news-video-card{transition:none}.ly-news-video-card:hover{transform:none}}
+
+/* Platform-specific Telegram cards; XHS remains the familiar small red accent. */
+.ly-news-video-card--tg{border-color:rgba(114,170,223,.32);background:linear-gradient(145deg,rgba(24,50,78,.78),rgba(17,29,47,.96))}
+.ly-news-video-card--tg:hover{border-color:rgba(124,196,244,.65)}
+.ly-news-video-card--tg .ly-news-video-play-icon{background:rgba(31,153,212,.92);border-color:rgba(215,239,255,.52)}
+.ly-news-video-card--tg .ly-news-video-cover:hover .ly-news-video-play-icon{background:#239fd9}
+.ly-news-video-platform--tg{color:#b5ddf3}
+.ly-news-video-platform--tg span{background:#239ed6;font-size:11px;border-radius:50%}
+.ly-news-video-fallback{display:grid;place-items:center;width:100%;height:100%;font-size:45px;color:rgba(255,255,255,.21);background:radial-gradient(circle at 40% 30%,#466581,#18253d 80%)}
+.ly-news-video-card--tg .ly-news-video-fallback{color:rgba(150,222,255,.36);background:radial-gradient(circle at 45% 30%,#246c99,#142c4e 78%)}
+.ly-news-video-cover img{font-size:0}
+.ly-video-stage .ly-video-direct{display:block;width:100%;height:100%;object-fit:contain;background:#05070d}
