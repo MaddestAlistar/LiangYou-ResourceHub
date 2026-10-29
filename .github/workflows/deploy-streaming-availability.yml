@@ -81,4 +81,17 @@ jobs:
           }));
           console.log('FILM_NEWS_LIVE_COVERAGE',JSON.stringify(results));
           if(results.every(v=>v.count===0))console.log('::warning::All sampled uncurated films had zero live news results; check provider access and query matching');
+          // Video metadata uses the same film ID; search errors are distinct
+          // from having zero verified clips. No login or session required.
+          const videoResults=await Promise.all(examples.map(async x=>{
+            try{
+              const uri='https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/movie/'+x.id+'?audit='+encodeURIComponent(process.env.GITHUB_SHA||'unknown');
+              const r=await fetch(uri,{signal:AbortSignal.timeout(23000)});
+              const d=await r.json();
+              return {title:x.title,status:d.status||'unknown',verifiedBilibiliVideos:d.videos?.length||0,
+                source:d.source||'unknown'};
+            }catch(error){return {title:x.title,status:'network_error',verifiedBilibiliVideos:0,
+              error:String(error).slice(0,100)};}
+          }));
+          console.log('FILM_VIDEO_LIVE_COVERAGE',JSON.stringify(videoResults));
           NODE
