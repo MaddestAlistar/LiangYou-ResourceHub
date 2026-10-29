@@ -27,7 +27,7 @@ test('static JPG and EXIF-only Live Photo claims are never mistaken for motion',
  assert.equal(inspectEmbeddedMotion(fake),null);
 });
 test('bogus trailing bytes and oversized JPEGs are rejected',()=>{
- let data=jpeg720();data[data.indexOf(109,28)+1]=0;
+ let data=jpeg720();const mdat=data.findIndex((v,i)=>v===109&&data[i+1]===100&&data[i+2]===97&&data[i+3]===116);assert(mdat>0);data[mdat+1]=0;
  assert.equal(inspectEmbeddedMotion(data),null);
  assert.equal(inspectEmbeddedMotion(new Uint8Array(10*1024*1024+1)),null);
 });
