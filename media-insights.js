@@ -310,7 +310,7 @@
     return worldNewsPromise;
   }
   function discoverySections(d,worldArticles=[]){
-    const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g,' ').trim();
+    const normalize=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]+/g,' ').trim();
     const rawTitles=[d.localTitle,d.originalTitle,d.title,...(Array.isArray(d.aliases)?d.aliases:[])].filter(v=>typeof v==='string').slice(0,36);
     function matchScore(article){
       // Curated articles are already keyed to the exact TMDB kind, ID and release
