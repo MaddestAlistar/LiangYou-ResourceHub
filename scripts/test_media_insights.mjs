@@ -445,6 +445,69 @@ test('all-title Bilibili discovery can fall back to an indexed public link and v
   assert.match(body.source,/Bing public index/);
  }finally{globalThis.fetch=old;}
 });
+test('non-indexed Japanese films use actual Chinese and Japanese titles in region-specific news searches',async()=>{
+ const original=globalThis.fetch,queries=[];
+ const date=new Date(Date.now()-86400000).toUTCString();
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==="api.themoviedb.org")return json({
+   id:550,title:u.searchParams.get("language")==="zh-CN"?"你的名字。":"Your Name",
+   original_title:"君の名は。",adult:false,release_date:"2016-08-26",
+   alternative_titles:{titles:[]},
+   translations:{translations:[{iso_639_1:"zh",iso_3166_1:"CN",data:{title:"你的名字。"}}]}
+  });
+  if(u.hostname==="news.google.com"){
+   const q=u.searchParams.get("q")||"",lang=u.searchParams.get("hl");
+   queries.push({q,lang});
+   const title=lang==="ja"?"「君の名は。」2016年映画レビュー":lang==="zh-CN"?"《你的名字。》2016年电影影评":"Other TV story";
+   return new Response('<rss><channel><item><title>'+title+'</title>'+
+     '<link>https://news.google.com/rss/articles/jp-zh-' + encodeURIComponent(lang||'en')+
+     '</link><pubDate>'+date+'</pubDate><source>Film Publication</source></item></channel></rss>',{status:200});
+  }
+  if(u.hostname==="www.bing.com")return new Response('<rss><channel></channel></rss>',{status:200});
+  throw Error("Unexpected URL "+u.href);
+ };
+ try{
+  const {status,body}=await invoke("/api/news/title/movie/550",{TMDB_API_KEY:"test"});
+  assert.equal(status,200);
+  assert.ok(queries.some(x=>x.lang==="zh-CN"&&x.q.includes("你的名字")), "Chinese title searched");
+  assert.ok(queries.some(x=>x.lang==="ja"&&x.q.includes("君の名は")), "Japanese original searched");
+  assert.ok(body.articles.some(x=>x.title.includes("你的名字")));
+  assert.ok(body.articles.some(x=>x.title.includes("君の名は")));
+ }finally{globalThis.fetch=original;}
+});
+test('all-title Bilibili discovery finds verified unyeared film reviews without unrelated videos',async()=>{
+ const original=globalThis.fetch,bvid="BV1F3aF6mEQn",other="BV1spJR6yEci",searches=[];
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==="api.themoviedb.org")return json({id:550,adult:false,
+   title:u.searchParams.get("language")==="zh-CN"?"大浪潮":"Great Wave",
+   original_title:"Great Wave",release_date:"2024-02-15"});
+  if(u.hostname==="api.bilibili.com"&&u.pathname.endsWith("/search/type")){
+   searches.push(u.searchParams.get("keyword"));
+   return json({code:0,data:{result:[
+    {bvid,title:"《大浪潮》精华影评与幕后采访"},
+    {bvid:other,title:"其他明星的八卦剪辑"}
+   ]}});
+  }
+  if(u.hostname==="api.bilibili.com"&&u.pathname.endsWith("/view")){
+   const vid=u.searchParams.get("bvid");
+   if(vid===other)throw Error("Unrelated BVID must not reach the detail endpoint");
+   return json({code:0,data:{bvid:vid,title:"《大浪潮》精华影评与幕后采访",state:0,
+    owner:{name:"Film reviewer"},stat:{like:907,view:14000}}});
+  }
+  if(u.hostname==="www.bing.com")return new Response('<rss><channel></channel></rss>',{status:200});
+  throw Error("Unexpected "+u.href);
+ };
+ try{
+  const {status,body}=await invoke("/api/videos/title/movie/550",{TMDB_API_KEY:"test"});
+  assert.equal(status,200);
+  assert.equal(body.videos.length,1);
+  assert.equal(body.videos[0].videoId,bvid);
+  assert.equal(body.videos[0].likes,907);
+  assert.ok(searches.some(x=>!x.includes("2024")),"yearless second search enabled");
+ }finally{globalThis.fetch=original;}
+});
 test('regional TMDB translations discover genuine news for non-indexed catalog movies',async()=>{
  const old=globalThis.fetch;
  globalThis.fetch=async input=>{
