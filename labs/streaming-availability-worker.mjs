@@ -639,7 +639,7 @@ async function titleNews(kind,id,env){
  });
  const [batches,guardianRows,bingBatches]=await Promise.all([Promise.all(requests),guardian,Promise.all(bingRequests)]),seen=new Set(),seenTitle=new Set();
  const rankedArticles=[...batches.flat(),...guardianRows,...bingBatches.flat()].filter(x=>{
-  const key=normalizedHeadline(x.title),signature=key.replace(/\\s+/g,"");
+  const key=normalizedHeadline(x.title),signature=key.replace(/\s+/g,"");
   if(seen.has(x.url)||seenTitle.has(signature))return false;
   seen.add(x.url);seenTitle.add(signature);return true;
  }).sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
