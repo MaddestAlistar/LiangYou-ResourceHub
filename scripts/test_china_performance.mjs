@@ -35,9 +35,10 @@ for(const file of stylesheetFiles){
   assert(!directStyles.includes(file),'Feature stylesheet must not block homepage: '+file);
   assert(loader.includes("'./"+file+'?'),'Missing stylesheet in lazy loader: '+file);
 }
-assert(loader.indexOf('media-boxoffice-rankings.js')<loader.indexOf('media-intel.js'),
-  'Film enhancers should register before initial media-intel fetch');
-assert(loader.includes('await loadStyles(module)'),'Feature CSS must load before its JS initialization');
+assert(loader.indexOf('media-intel.js')<loader.indexOf('media-boxoffice-rankings.js'),
+  'Core film catalogue should render before optional enrichment');
+assert(loader.includes('await loadStyles(module.styles)'),'Core feature CSS must load before its JS initialization');
+assert(loader.includes('startMediaExtras(module)'),'Film detail tools should hydrate after core film browsing');
 assert(loader.includes("module.id === 'sports'"),'Replay market readiness after all sports modules load');
 assert(loader.includes('IntersectionObserver'),'Feature scripts must load near their sections');
 assert(loader.includes('hashchange'),'Hash navigation must load modules');
@@ -54,6 +55,7 @@ assert(style.includes('cn-save-data'),'Save-Data should disable decorative motio
 const logo=read('interactive/logo/embed.html');
 assert(logo.includes("liangyou:logo-visibility"),'Embedded 3D animation must honor visibility messages');
 assert(loader.includes('logoFrame.contentWindow?.postMessage'),'Homepage must pause offscreen logo rendering');
-assert(page.includes('embed.html?v=4.1'),'Animation iframe must use updated version');
+assert(page.includes('embed.html?v=4.2'),'Animation iframe must use updated version');
+assert(page.includes('rel="preload" as="image" type="image/webp" href="./interactive/logo/logo.webp"'), '3D hero texture must preload in the parent document');
 
 console.log('PASS: mainland-friendly homepage loads core first, lazy-loads modules, and only caches local artwork');
