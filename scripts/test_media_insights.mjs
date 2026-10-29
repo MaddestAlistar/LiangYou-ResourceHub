@@ -346,6 +346,52 @@ test('all catalog TV titles can use validated Chinese regional aliases to find i
  assert.ok(body.relatedVideos.some(x=>x.id==='CNAlias1234'&&x.likes===930));
  assert.ok(!body.relatedVideos.some(x=>x.id==='BadMatch001'));
 });
+test('all-title Bilibili discovery verifies TMDB identity and each matching BVID before publishing',async()=>{
+ const previous=globalThis.fetch;
+ const bvid='BV1F3aF6mEQn',wrong='BV1spJR6yEci';
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({
+    id:550,adult:false,title:u.searchParams.get('language')==='zh-CN'?'我的有罪之人':'Guilty Person',
+    original_title:'Guilty Person',release_date:'2026-10-19',
+    alternative_titles:{titles:[{iso_3166_1:'CN',title:'我的有罪之人'}]}
+  });
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/search/type'))return json({
+    code:0,data:{result:[
+      {bvid,title:'《我的有罪之人》预告片'},
+      {bvid:wrong,title:'其他电视剧预告片'}
+    ]}});
+  if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view'))
+    return json({code:0,data:{bvid,title:'《我的有罪之人》预告片',state:0,
+      owner:{name:'Film Creator'},stat:{like:238,view:4567}}});
+  throw Error('Unexpected network URL: '+u.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.kind,'movie');assert.equal(body.tmdbId,550);
+  assert.equal(body.videos.length,1);
+  assert.equal(body.videos[0].videoId,bvid);
+  assert.equal(body.videos[0].likes,238);
+  assert.equal(body.videos[0].verifiedByTitleId,true);
+  assert.ok(body.videos[0].verifiedSource.endsWith('/'+bvid+'/'));
+ }finally{globalThis.fetch=previous;}
+});
+test('blocked Bilibili public search fails closed and does not invent video cards',async()=>{
+ const previous=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==='api.themoviedb.org')return json({
+    id:550,adult:false,title:'测试电影',original_title:'Test Movie',release_date:'2024-08-01'
+  });
+  if(u.hostname==='api.bilibili.com')return json({code:-412,message:'request blocked'});
+  throw Error('Unexpected URL');
+ };
+ try{
+  const {status,body}=await invoke('/api/videos/title/movie/550',{TMDB_API_KEY:'test'});
+  assert.equal(status,200);assert.equal(body.status,'unavailable');
+  assert.deepEqual(body.videos,[]);
+ }finally{globalThis.fetch=previous;}
+});
 test('Bilibili likes are returned only from matching public video metadata',async()=>{
  const origin=globalThis.fetch;
  const id='BV1spJR6yEci';
