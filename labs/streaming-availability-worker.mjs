@@ -676,13 +676,13 @@ async function titleBilibiliVideos(kind,id,env){
       headers:{Accept:"application/rss+xml, application/xml"}});
     if(response.ok){
      const xml=(await response.text()).slice(0,220000);
-     if(/<rss[\\s>]/i.test(xml)){
-      results=[...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)].slice(0,24).map(m=>{
+     if(/<rss[\s>]/i.test(xml)){
+      results=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,24).map(m=>{
        const title=rssField(m[1],"title"),link=rssField(m[1],"link");
        let u;try{u=new URL(link);}catch{return null;}
        // Do not follow search redirects or trust arbitrary external video URLs.
        if(u.protocol!=="https:"||!["www.bilibili.com","bilibili.com"].includes(u.hostname))return null;
-       const match=/^\\/video\\/(BV[A-Za-z0-9]{10})\\/?$/.exec(u.pathname);
+       const match=/^\/video\/(BV[A-Za-z0-9]{10})\/?$/.exec(u.pathname);
        return match?{bvid:match[1],title}:null;
       }).filter(Boolean);
       if(results.length)source="Bing public index + Bilibili verified metadata";
