@@ -14,7 +14,7 @@ const heavy=[
   'media-insights.js','media-cn-enhance.js','media-exact-scores.js',
   'media-boxoffice-rankings.js','sports-i18n.js','sports-link.js',
   'sports-personal.js','sports.js','bracket-viz.js','board-i18n.js',
-  'sports-share.js','sports-history.js','fixtures.js'
+  'sports-share.js','sports-history.js','fixtures.js','daily-free.js'
 ];
 for(const file of heavy){
   assert(existsSync(file),'Missing feature module '+file);
@@ -25,6 +25,7 @@ assert(loader.indexOf('media-core.js')<loader.indexOf('media-intel.js'));
 assert(loader.indexOf('sports-i18n.js')<loader.indexOf('fixtures.js'));
 assert(loader.includes('IntersectionObserver'),'Feature scripts must load near their sections');
 assert(loader.includes('hashchange'),'Hash navigation must load modules');
+assert(loader.includes("hash === '#daily-free'"),'Daily Freebies deep link must be immediate');
 assert(page.includes('id="media"')&&page.includes('id="sports"'));
 assert(!/fonts\.googleapis\.com|fonts\.gstatic\.com|ajax\.googleapis\.com/.test(page));
 assert(cache.includes("url.origin !== scope.origin"),'Cache must not intercept external domains');
