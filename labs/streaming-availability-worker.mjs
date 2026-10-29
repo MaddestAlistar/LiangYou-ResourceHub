@@ -449,7 +449,7 @@ async function titleNews(kind,id,env){
  const distinct=[...new Set(names.filter(v=>v.length>=2&&v.length<=90&&!/[<>]/.test(v)))];
  const people=[...(item.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
   ...(item.credits?.cast||[]).slice(0,3)].map(v=>String(v.name||"").trim()).filter(v=>v.length>=5);
- const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v)&&v.length>=4);
+ const asian=distinct.find(v=>/[\u3400-\u9fff]/.test(v)&&v.length>=2);
  const originalLatin=distinct.find(v=>/^[\u0000-\u007f]+$/.test(v)&&v.length>=4);
  const hangul=distinct.find(v=>/[\uac00-\ud7af]/.test(v)&&v.length>=4);
  const genre=String(item.genres?.[0]?.name||"").trim();
@@ -647,7 +647,7 @@ async function titleBilibiliVideos(kind,id,env){
    ...(primary.translations?.translations||[]).filter(v=>v.iso_639_1==="zh")
      .map(v=>v.data?.title||v.data?.name)
  ].map(x=>String(x||"").normalize("NFKC").trim())
-  .filter(x=>x.length>=4&&x.length<=65);
+  .filter(x=>x.length>=2&&x.length<=65);
  const asian=[...new Set(names)].find(x=>/[\u3400-\u9fff]/.test(x));
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
  if(!asian||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
