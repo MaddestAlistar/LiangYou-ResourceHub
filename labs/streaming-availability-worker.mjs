@@ -530,8 +530,7 @@ async function titleNews(kind,id,env){
     if(!match||!url||!Number.isFinite(stamp)||stamp>now+86400000||stamp<oldest)return null;
     const publisher=rssField(raw,"source");
     return {title:title.slice(0,180),url,date:new Date(stamp).toISOString(),
-      source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:/[\u3400-\u9fff]/.test(title)?"zh":
-      /[\uac00-\ud7af]/.test(title)?"ko":/[\u3040-\u30ff]/.test(title)?"ja":"en",matchType:"title_search"};
+      source:publisher.slice(0,60)||"Google News",titleMatchVerified:true,language:locale==="ja"?"ja":locale==="ko"?"ko":/[\u3400-\u9fff]/.test(title)?"zh":"en",matchType:"title_search"};
    }).filter(Boolean);
    stats.rssMatched+=accepted.length;
    return accepted;
