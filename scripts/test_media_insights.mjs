@@ -483,7 +483,7 @@ test('all catalog TV titles can use validated Chinese regional aliases to find i
  assert.equal(status,200);
  assert.equal(body.tmdbId,1399);
  assert.ok(body.aliases.includes('权力的游戏'));
- assert.ok(body.relatedVideos.some(x=>x.id==='CNAlias1234'&&x.likes===930));
+ assert.ok(body.relatedVideos.some(x=>x.id==='CNAlias1234'&&x.likes===930),JSON.stringify({related:body.relatedVideos,sources:body.sources,aliases:body.aliases}));
  assert.ok(!body.relatedVideos.some(x=>x.id==='BadMatch001'));
 });
 test('regional YouTube search recovers film clips that the English-only search missed',async()=>{
@@ -522,7 +522,7 @@ test('regional YouTube search recovers film clips that the English-only search m
     {TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
   assert.equal(status,200);
   assert.ok(youtubeSearches.some(q=>q.includes('搏击俱乐部')),'verified regional title must be queried');
-  assert.ok(body.relatedVideos.some(v=>v.id===regionalId&&v.likes===188));
+  assert.ok(body.relatedVideos.some(v=>v.id===regionalId&&v.likes===188),JSON.stringify({related:body.relatedVideos,sources:body.sources,aliases:body.aliases,searches:youtubeSearches}));
   assert.ok(!body.relatedVideos.some(v=>v.id===unrelatedId));
  }finally{globalThis.fetch=previous;}
 });
