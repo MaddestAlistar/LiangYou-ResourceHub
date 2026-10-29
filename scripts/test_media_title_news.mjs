@@ -72,6 +72,33 @@ test('automatic rotating coverage makes previously unindexed titles available wi
  assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
  assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
 });
+test('non-curated movies start scheduled coverage immediately rather than waiting for editorial index',async()=>{
+ let releaseIndex,coverageRequested=false,manualRequested=false;
+ const coverage={schema:1,items:{'movie:777':{year:2018,articles:[{
+   title:'Example 2018 movie release and director interview',
+   url:'https://news.google.com/rss/articles/example-2018',source:'Film Publisher',
+   date:'2026-10-28',language:'en',titleMatchVerified:true
+ }],videos:[]}}};
+ const request=async url=>{
+   if(String(url).includes('media-title-coverage.json')){
+     coverageRequested=true;
+     return new Response(JSON.stringify(coverage),{status:200});
+   }
+   manualRequested=true;
+   await new Promise(resolve=>{releaseIndex=resolve;});
+   return new Response(JSON.stringify({schema:1,titles:{}}),{status:200});
+ };
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+   {},request,AbortSignal);
+ const result=helper.forInfo({kind:'movie',tmdbId:777,year:'2018-01-10'});
+ assert.equal(coverageRequested,true,'coverage should begin before editorial index completes');
+ assert.equal(manualRequested,true);
+ releaseIndex();
+ const item=await result;
+ assert.equal(item.articles.length,1);
+ assert.equal(item.articles[0].verifiedByCatalogTitle,true);
+ assert.equal(item.articles[0].titleMatchVerified,true);
+});
 test('optional remotely searched headlines are ID-bound and cannot erase local articles',async()=>{
  let calls=0;
  const runtime={};
