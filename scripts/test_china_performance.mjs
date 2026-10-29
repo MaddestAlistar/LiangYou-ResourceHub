@@ -73,4 +73,15 @@ assert(mediaRecord.schema===1 && Object.keys(mediaRecord.works||{}).length>100,
 const embed=read('interactive/logo/embed.html');
 assert(embed.includes('const depthCount='),'Mobile logo should reduce compositing work');
 assert(loader.includes("startMediaExtras(module)"),'Media detail enrichment must run after base catalogue');
+const mediaClient=read('media-intel.js');
+assert(loader.includes('prefetchMediaSnapshot()'),
+  'Film JSON must start downloading in parallel with scripts and styles');
+assert(mediaClient.includes('window.LiangYouMediaSnapshotPrefetch'),
+  'Film catalogue must reuse the in-flight snapshot instead of fetching twice');
+assert(mediaClient.includes('PUBLIC_CACHE_KEY') && mediaClient.includes('usingCachedSnapshot'),
+  'Repeat visits should use dated local snapshots while checking latest information');
+assert(loader.indexOf('module.latestDetail=event.detail')<
+  loader.indexOf('await loadStyles(module.styles)'),
+  'Film detail event capture must precede asynchronous module loading');
+
 console.log('PASS: mainland-friendly homepage loads core first, lazy-loads modules, and only caches local artwork');
