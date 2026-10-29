@@ -693,15 +693,17 @@ async function titleBilibiliVideos(kind,id,env){
      .map(v=>v.data?.title||v.data?.name)
  ].map(x=>String(x||"").normalize("NFKC").trim())
   .filter(x=>x.length>=2&&x.length<=65);
- const asian=[...new Set(names)].find(x=>/[\u3400-\u9fff]/.test(x));
+ const regionName=[...new Set(names)].find(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x));
+ const latinName=[...new Set(names)].find(x=>/^[a-z0-9 .:'()&!-]+$/i.test(x)&&x.length>=7);
+ const searchName=regionName||latinName;
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
- if(!asian||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
+ if(!searchName||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
  // Two independent searches per work: year-specific trailers and unyeared
  // reviews/clips. Both still need a verified title and Bilibili video ID.
- const titleChoices=[...new Set(names)].filter(x=>/[\u3400-\u9fff]/.test(x)&&x.length>=2);
- const variants=[{name:asian,query:asian+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear+" 预告"},
-   {name:asian,query:asian+" "+(kind==="movie"?"电影 影评 花絮":"剧集 剧评 花絮")}];
- const secondary=titleChoices.find(v=>v!==asian&&v.length>=4);
+ const titleChoices=[...new Set(names)].filter(x=>/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/.test(x)&&x.length>=2||/^[a-z0-9 .:\'()&!-]+$/i.test(x)&&x.length>=7);
+ const variants=[{name:searchName,query:searchName+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear+" 预告"},
+   {name:searchName,query:searchName+" "+(kind==="movie"?"电影 影评 花絮":"剧集 剧评 花絮")}];
+ const secondary=titleChoices.find(v=>v!==searchName&&v.length>=4);
  if(secondary)variants[1]={name:secondary,query:secondary+" "+(kind==="movie"?"电影 预告 解析":"电视剧 预告 花絮")};
  let nativeWorking=false,indexedWorking=false;
  const results=(await Promise.all(variants.map(async item=>{
@@ -729,7 +731,7 @@ async function titleBilibiliVideos(kind,id,env){
  if(shortlist.length<3){
   try{
    const uri=new URL("https://www.bing.com/search");
-   uri.searchParams.set("q",'site:bilibili.com/video/ "'+asian+'" '+rawYear+' 预告 OR 影评 OR 花絮');
+   uri.searchParams.set("q",'site:bilibili.com/video/ "'+searchName+'" '+rawYear+' 预告 OR 影评 OR 花絮');
    uri.searchParams.set("format","rss");uri.searchParams.set("setmkt","zh-CN");
    const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),5500);
    try{
