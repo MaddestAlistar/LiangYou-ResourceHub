@@ -189,9 +189,12 @@ def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
         for key, articles, videos, year in pool.map(collect, chosen):
             old = items.get(key, {})
+            # The upstream may temporarily return HTTP 200 with an empty list
+            # after rate limiting or search changes. Retain previously verified
+            # material instead of erasing a film's existing cards.
             record = {"checkedAt": checked_at,
-                      "articles": articles if articles is not None else old.get("articles", []),
-                      "videos": videos if videos is not None else old.get("videos", [])}
+                      "articles": articles or old.get("articles", []),
+                      "videos": videos or old.get("videos", [])}
             if isinstance(year, int) and 1900 <= year <= 2100:
                 record["year"] = year
             elif isinstance(old.get("year"), int):
