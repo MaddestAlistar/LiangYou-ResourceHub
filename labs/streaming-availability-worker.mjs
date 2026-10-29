@@ -1015,6 +1015,30 @@ export default {
     if(!res.ok)throw Error("tmdb_status_"+res.status);
     const x=await res.json();
     if(Number(x?.id)!==Number(id)||x.adult||!(x.title||x.name))throw Error("title_id_mismatch");
+    // A Chinese-language TMDB profile often has no localized trailers even
+    // when English-language video metadata is available for this exact film.
+    const linkedVideo=v=>v?.site==="YouTube"&&
+      /^[A-Za-z0-9_-]{11}$/.test(String(v.key||""))&&
+      ["Trailer","Teaser"].includes(v.type)&&
+      !/full\\s*(?:movie|film|episode)|完整版|全集|watch.*online/i.test(v.name||"");
+    let movieVideoRows=(x.videos?.results||[]).filter(linkedVideo);
+    if(movieVideoRows.length<3){
+      try{
+        const videoUrl=new URL("https://api.themoviedb.org/3/"+kind+"/"+id+"/videos");
+        videoUrl.searchParams.set("language","en-US");
+        if(!token)videoUrl.searchParams.set("api_key",apikey);
+        const extra=await jsonRemote(videoUrl.toString(),{
+          headers:token?{Authorization:"Bearer "+token,Accept:"application/json"}:{Accept:"application/json"}
+        },5500);
+        // ID must match; titles or uploaders are not used to join different works.
+        if(Number(extra?.id)===Number(id)&&Array.isArray(extra.results))
+          movieVideoRows.push(...extra.results.filter(linkedVideo));
+      }catch{/* A blocked extra request must not affect the main film profile. */}
+    }
+    const seenVideoIds=new Set();
+    const verifiedVideoRows=movieVideoRows.filter(v=>{
+      if(seenVideoIds.has(v.key))return false;seenVideoIds.add(v.key);return true;
+    }).sort((a,b)=>Number(b.official===true)-Number(a.official===true)).slice(0,3);
     const person=p=>({name:p.name||"",character:p.character||"",url:"https://www.themoviedb.org/person/"+p.id});
     const crew=(x.credits?.crew||[]).filter(p=>p.job==="Director").slice(0,5).map(p=>({...person(p),role:"Director"}));
     const creators=[...crew,...(x.created_by||[]).slice(0,3).map(p=>({...person(p),role:"Creator"}))].slice(0,6);
@@ -1026,7 +1050,7 @@ export default {
       countries:(x.production_countries||[]).slice(0,6).map(v=>v.name).filter(Boolean),
       creators,cast:(x.credits?.cast||[]).slice(0,10).map(person),
       seasons:(x.seasons||[]).filter(s=>s.season_number>0).slice(0,25).map(s=>({number:s.season_number,name:s.name||"",episodes:s.episode_count,date:s.air_date||"",url:"https://www.themoviedb.org/tv/"+id+"/season/"+s.season_number})),
-      videos:(x.videos?.results||[]).filter(v=>v.site==="YouTube"&&v.official&&/^[A-Za-z0-9_-]{11}$/.test(v.key)&&["Trailer","Teaser"].includes(v.type)).slice(0,3).map(v=>({name:v.name||"Trailer",url:"https://www.youtube.com/watch?v="+v.key})),
+      videos:verifiedVideoRows.map(v=>({name:v.name||"Trailer",official:v.official===true,verifiedBy:"TMDB",url:"https://www.youtube.com/watch?v="+v.key})),
       related:(x.recommendations?.results||[]).filter(v=>Number.isSafeInteger(v.id)&&!v.adult&&(v.title||v.name)).slice(0,6).map(v=>({id:"tmdb-"+kind+"-"+v.id,title:v.title||v.name,url:"https://www.themoviedb.org/"+kind+"/"+v.id})),
       episodes:x.number_of_episodes||null,season_count:x.number_of_seasons||null
     };
