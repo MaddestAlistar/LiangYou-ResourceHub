@@ -27,6 +27,9 @@ jobs:
           node --check media-core.js
           node --test scripts/test_media_core.mjs
           python3 scripts/test_media_intel.py
+          node --check china-perf.js
+          node --check china-cache-sw.js
+          node scripts/test_china_performance.mjs
           node --check app.js
           node --check design.js
           node --check navigation.js
