@@ -159,7 +159,7 @@ def collect(key):
     ident = int(raw_id)
     fetched = {}
     for label, route in (
-        ("articles", f"/api/news/title/{kind}/{ident}?v=7"),
+        ("articles", f"/api/news/title/{kind}/{ident}?v=8"),
         ("videos", f"/api/videos/title/{kind}/{ident}?v=4"),
     ):
         try:
