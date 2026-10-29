@@ -1,0 +1,44 @@
+name: One-time verify Tech News live API and Pages
+on:
+  push:
+    paths: ['.github/workflows/test-tech-news-live-onetime.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify public news feed, blocked unauthenticated admin, and homepage
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          worker='https://liangyou-icon-review.maddestalistar.workers.dev'
+          base='https://maddestalistar.github.io/LiangYou-ResourceHub/'
+          for path in ['/health','/news-feed','/news-admin']:
+              req=urllib.request.Request(worker+path,headers={'Origin':'https://maddestalistar.github.io','Cache-Control':'no-cache'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      status=r.status;payload=r.read().decode()
+              except urllib.error.HTTPError as e:status=e.code;payload=e.read().decode()
+              print('WORKER',path,'status',status,'payload',payload[:450])
+              if path=='/news-feed':
+                  assert status==200
+                  j=json.loads(payload)
+                  assert j.get('schema')==1 and len(j.get('items',[]))>=3
+                  assert 'news-carplay-ios272' in str(j)
+              elif path=='/news-admin':assert status==401
+              else:assert status==200
+          for p in ['','icon-review-admin.html','tech-news-admin.js','tech-news.js']:
+              url=base+p
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}),timeout=20) as r:
+                  body=r.read().decode('utf-8','replace')
+                  print('PAGES',p or 'index',r.status,'length',len(body),
+                    'category_7',('宣传推广' in body) if p=='icon-review-admin.html' else None,
+                    'count_absent',('最新 3 条' not in body) if p=='' else None)
+                  assert r.status==200
+                  if p=='':assert '最新 3 条' not in body and 'id="ly-news-list"' in body
+                  if p=='icon-review-admin.html':assert 'id="tech-news-admin"' in body
+          PY
