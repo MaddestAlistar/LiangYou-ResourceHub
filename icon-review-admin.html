@@ -29,8 +29,8 @@
 .news-video-fields input[type=url]{width:100%}
 .news-video-preview{max-height:260px;max-width:100%;width:auto;border-radius:10px;background:#080e18}
 
-</style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
-  <div class="news-admin-header"><div><p class="news-admin-eyebrow">LIANGYOU · TECH NEWS</p><h2 id="tech-news-admin-heading">良友科技圈新闻管理</h2><p class="muted">使用上方管理员密钥发布新闻。只需填写分类、标题、内容，发布后首页自动更新。</p></div><button id="news-refresh" class="secondary" type="button">刷新新闻</button></div>
+</style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友图标 · 审核后台</h1><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p></section><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
+  <div class="news-admin-header"><div><p class="news-admin-eyebrow">LIANGYOU · TECH NEWS</p><h2 id="tech-news-admin-heading">良友科技圈新闻管理</h2><p class="muted">使用上方管理员密钥发布与管理新闻。选择“视频精选”时填写原帖链接、上传视频、内容标题和内容描述。</p></div><button id="news-refresh" class="secondary" type="button">刷新新闻</button></div>
   <div class="news-admin-form">
     <h3 id="news-form-title">发布一条新闻</h3>
     <label for="news-category">新闻标签分类</label>
@@ -62,7 +62,7 @@
   </div>
   <div class="news-admin-published-head"><h3>已发布新闻</h3><span id="news-total" class="muted"></span></div>
   <div id="news-items" class="news-admin-items"></div>
-</section><p id="count" class="muted"></p><div id="items"></div></main><script>
+</section><section class="panel icon-review-filter-panel" aria-label="图标审核筛选"><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div></main><script>
 const API="https://liangyou-icon-review.maddestalistar.workers.dev/admin";
 const $=id=>document.getElementById(id);let entries=[],busy=false;
 const statusName={pending:"待审核",approved:"已通过",rejected:"已拒绝",withdrawn:"已下架"};
