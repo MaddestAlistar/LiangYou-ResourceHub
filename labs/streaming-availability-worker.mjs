@@ -203,18 +203,30 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    const titleName=String(title.original_title||title.original_name||title.title||title.name||"").normalize("NFKC").trim();
    const releaseYear=String(title.release_date||title.first_air_date||"").slice(0,4);
    if(titleName.length<4||titleName.length>90||!/^(?:19|20)\d{2}$/.test(releaseYear))return null;
-   const search=new URL("https://www.googleapis.com/youtube/v3/search");
-   search.searchParams.set("key",keyYouTube);search.searchParams.set("part","snippet");
-   search.searchParams.set("q",titleName+" "+releaseYear+" "+(kind==="movie"?"movie":"TV series"));
-   search.searchParams.set("type","video");search.searchParams.set("maxResults","25");
-   search.searchParams.set("videoEmbeddable","true");search.searchParams.set("safeSearch","moderate");
-   const feed=await jsonRemote(search.toString(),{},7500);
-   const ids=[...new Set((feed.items||[]).map(v=>v.id?.videoId).filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v)))].slice(0,25);
-   if(!ids.length)return null;
-   const lookup=new URL("https://www.googleapis.com/youtube/v3/videos");
-   lookup.searchParams.set("key",keyYouTube);lookup.searchParams.set("part","snippet,contentDetails,status,statistics");
-   lookup.searchParams.set("id",ids.join(","));
-   const details=await jsonRemote(lookup.toString(),{},7500);
+   // Discover English/original-name videos first, then try a verified
+   // regional Chinese/Japanese/Korean title if fewer than four related videos
+   // survive the public metadata checks. At most two YouTube searches/title.
+   const lookupIds=async (term)=>{
+    const search=new URL("https://www.googleapis.com/youtube/v3/search");
+    search.searchParams.set("key",keyYouTube);search.searchParams.set("part","snippet");
+    search.searchParams.set("q",term);
+    search.searchParams.set("type","video");search.searchParams.set("maxResults","25");
+    search.searchParams.set("videoEmbeddable","true");search.searchParams.set("safeSearch","moderate");
+    const feed=await jsonRemote(search.toString(),{},7500);
+    return [...new Set((feed.items||[]).map(v=>v.id?.videoId)
+      .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v)))].slice(0,25);
+   };
+   const lookupDetails=async ids=>{
+    if(!ids.length)return [];
+    const lookup=new URL("https://www.googleapis.com/youtube/v3/videos");
+    lookup.searchParams.set("key",keyYouTube);lookup.searchParams.set("part","snippet,contentDetails,status,statistics");
+    lookup.searchParams.set("id",ids.join(","));
+    const response=await jsonRemote(lookup.toString(),{},7500);
+    return Array.isArray(response.items)?response.items:[];
+   };
+   const firstTerm=titleName+" "+releaseYear+" "+(kind==="movie"?"movie":"TV series");
+   const firstIds=await lookupIds(firstTerm);
+   const firstDetails=await lookupDetails(firstIds);
    const norm=x=>" "+String(x||"").normalize("NFKC").toLowerCase().replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]+/g," ").trim()+" ";
    // Accept only verified TMDB regional aliases of the SAME title ID, never
    // loosely related actors, franchises or short ambiguous search terms.
@@ -225,7 +237,7 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    const uniqueNames=[...new Set(matchingNames)];
    const banned=/full\s*(?:movie|film|episode)|entire\s*(?:movie|film)|watch\s*(?:movie|film)\s*online|完整版|全集|免费观影/i;
    const already=new Set(result.trailers.map(v=>v.id));
-   const matched=(details.items||[]).filter(v=>{
+   const verifyCandidates=rows=>rows.filter(v=>{
     const id=String(v.id||""),heading=String(v.snippet?.title||""),label=norm(heading);
     if(already.has(id)||v.status?.privacyStatus!=="public"||v.status?.embeddable!==true||
        v.contentDetails?.contentRating?.ytRating==="ytAgeRestricted"||banned.test(heading))return false;
@@ -246,7 +258,19 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
     thumbnail:"https://i.ytimg.com/vi/"+v.id+"/hqdefault.jpg",
     url:"https://www.youtube.com/watch?v="+v.id
    }));
-   matched.sort((a,b)=>b.likes-a.likes||(b.views||0)-(a.views||0));
+   let matched=verifyCandidates(firstDetails);
+   const regional=result.aliases.find(v=>/[\u3400-\u9fff\uac00-\ud7af]/.test(v)&&
+     v.length>=4&&v.length<=65&&v!==titleName);
+   if(matched.length<4&&regional){
+    try{
+     const ids=(await lookupIds(regional+" "+releaseYear+" "+(kind==="movie"?"电影 预告 影评":"剧集 预告 花絮")))
+       .filter(id=>!firstIds.includes(id));
+     const more=verifyCandidates(await lookupDetails(ids));
+     matched=[...matched,...more];
+    }catch{/* The optional second query never hides first-source results. */}
+   }
+   matched.sort((a,b)=>(Number(b.likes)||0)-(Number(a.likes)||0)||
+     (Number(b.views)||0)-(Number(a.views)||0));
    result.relatedVideos=matched.slice(0,16);
    return result.relatedVideos.length>0;
   });
