@@ -40,3 +40,7 @@
 @media(max-width:650px){.sixfast-section{padding-top:12px;padding-bottom:14px}.sixfast-shell{display:flex;flex-direction:column;gap:4px;padding:21px 16px;border-radius:20px}.sixfast-eyebrow{font-size:10px!important;margin-bottom:12px}.sixfast-title-row{gap:11px}.sixfast-logo{width:55px;height:55px;border-radius:13px}.sixfast-title-copy h2{font-size:25px}.sixfast-title-copy h2 span{font-size:.60em}.sixfast-title-copy>p{font-size:11px;line-height:1.5}.sixfast-lead{margin:13px 0 10px;font-size:13px;line-height:1.72}.sixfast-tags{gap:6px;margin-bottom:15px}.sixfast-tags span{font-size:10px;padding:5px 8px}.sixfast-downloads{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.sixfast-downloads a{padding:10px 7px;font-size:11px;border-radius:10px}.sixfast-code{gap:7px;padding:11px 10px}.sixfast-copy{padding:10px;font-size:11px}.sixfast-code-line strong{font-size:22px}.sixfast-code-line span{font-size:10px}.sixfast-note{font-size:10px;margin-top:8px}.sixfast-visual{display:none}}
 @media(max-width:370px){.sixfast-downloads{grid-template-columns:repeat(2,minmax(0,1fr))}.sixfast-title-copy h2{font-size:22px}.sixfast-copy{padding:9px}}
 @media(prefers-reduced-motion:reduce){.sixfast-downloads a{transition:none}}
+
+/* Keep the supplemental Microsoft Store entry visually separate. */
+.sixfast-store-link{margin-left:18px;color:#a2d8c7!important}
+@media(max-width:650px){.sixfast-all-link{margin:10px 0 4px}.sixfast-store-link{display:block;margin:4px 0 15px}}
