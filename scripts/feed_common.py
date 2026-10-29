@@ -43,9 +43,12 @@ def read_json(path, default=None):
     except (OSError, ValueError):
         return {} if default is None else default
 
-def write_json(path, obj):
+def write_json(path, obj, *, compact=False):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + '.tmp')
-    tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    # Large public film snapshots should not carry hundreds of KB of whitespace.
+    # Keep all fields, values, IDs, aliases and snapshot timestamps unchanged.
+    text = json.dumps(obj, ensure_ascii=False, separators=(',', ':')) if compact else json.dumps(obj, ensure_ascii=False, indent=2)
+    tmp.write_text(text + '\n', encoding='utf-8')
     tmp.replace(path)
