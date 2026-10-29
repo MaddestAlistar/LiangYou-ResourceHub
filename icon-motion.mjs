@@ -34,3 +34,21 @@ export function inspectEmbeddedMotion(bytes) {
   }
   return null;
 }
+
+/* A direct Apple Live Photo video export is a MOV/MP4 rather than a JPEG.
+ * This is a fast header sanity check only; GitHub Actions uses ffprobe to
+ * verify the actual video track and duration before producing a GIF.
+ */
+export function inspectUploadedMotionVideo(bytes) {
+  if(!(bytes instanceof Uint8Array)||bytes.length<24||bytes.length>MOTION_LIMIT_BYTES)return null;
+  const headEnd=Math.min(bytes.length-16,256);
+  for(let pos=0;pos<=headEnd;pos++){
+    if(ascii(bytes,pos+4,4)!=="ftyp")continue;
+    const size=atomSize(bytes,pos);
+    const brand=ascii(bytes,pos+8,4);
+    if(size>=16&&size<=4096&&pos+size<=bytes.length&&
+       /^(isom|iso2|iso5|iso6|mp41|mp42|avc1|qt  |M4V |MSNV|3gp[4567])$/.test(brand))
+      return {brand,container:brand==="qt  "?"mov":"mp4"};
+  }
+  return null;
+}
