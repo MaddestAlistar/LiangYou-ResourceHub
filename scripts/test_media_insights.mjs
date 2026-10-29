@@ -346,6 +346,46 @@ test('all catalog TV titles can use validated Chinese regional aliases to find i
  assert.ok(body.relatedVideos.some(x=>x.id==='CNAlias1234'&&x.likes===930));
  assert.ok(!body.relatedVideos.some(x=>x.id==='BadMatch001'));
 });
+test('regional YouTube search recovers film clips that the English-only search missed',async()=>{
+ const regionalId='CnAliasX001',unrelatedId='WrongAlias01',officialId='AbCdEf12345';
+ const previous=globalThis.fetch;
+ const youtubeSearches=[];
+ stub({movie:{release_date:'1999-10-15',alternative_titles:{titles:[
+    {iso_3166_1:'CN',title:'搏击俱乐部'}]},
+   videos:{results:[{site:'YouTube',official:true,type:'Trailer',
+     key:officialId,name:'Fight Club official trailer'}]}}});
+ const underlying=globalThis.fetch;
+ globalThis.fetch=async input=>{
+  const uri=new URL(String(input));
+  if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/search'){
+   youtubeSearches.push(uri.searchParams.get('q')||'');
+   const chinese=youtubeSearches[youtubeSearches.length-1].includes('搏击俱乐部');
+   return json({items:[{id:{videoId:chinese?regionalId:unrelatedId}}]});
+  }
+  if(uri.hostname==='www.googleapis.com'&&uri.pathname==='/youtube/v3/videos'){
+   const wanted=(uri.searchParams.get('id')||'').split(',');
+   const entries=[
+    {id:officialId,title:'Fight Club trailer',likes:10},
+    {id:regionalId,title:'《搏击俱乐部》电影幕后采访',likes:188},
+    {id:unrelatedId,title:'Unrelated productivity interview',likes:99999}
+   ];
+   return json({items:entries.filter(v=>wanted.includes(v.id)).map(v=>({
+      id:v.id,snippet:{title:v.title,channelTitle:'Film Channel'},
+      status:{privacyStatus:'public',embeddable:true},contentDetails:{duration:'PT3M'},
+      statistics:{likeCount:String(v.likes),viewCount:'20000'}
+   }))});
+  }
+  return underlying(input);
+ };
+ try{
+  const {status,body}=await invoke('/api/insights/movie/550?media=1',
+    {TMDB_API_KEY:'test',YOUTUBE_API_KEY:'test'});
+  assert.equal(status,200);
+  assert.ok(youtubeSearches.some(q=>q.includes('搏击俱乐部')),'verified regional title must be queried');
+  assert.ok(body.relatedVideos.some(v=>v.id===regionalId&&v.likes===188));
+  assert.ok(!body.relatedVideos.some(v=>v.id===unrelatedId));
+ }finally{globalThis.fetch=previous;}
+});
 test('all-title Bilibili discovery verifies TMDB identity and each matching BVID before publishing',async()=>{
  const previous=globalThis.fetch;
  const bvid='BV1F3aF6mEQn',wrong='BV1spJR6yEci';
