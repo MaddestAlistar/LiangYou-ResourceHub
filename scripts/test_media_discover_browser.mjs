@@ -53,6 +53,7 @@ try{
        url:'https://ent.sina.com.cn/film/m/test.shtml',date}]
    })}));
  await page.locator('#media-dialog [data-mi-detail="discover"]').click();
+ try{
  await page.waitForFunction(expectWorld=>{
    const d=document.querySelector('#media-dialog');
    return d?.querySelector('.mi-trailer-card')&&
@@ -60,6 +61,17 @@ try{
      d.querySelector('.mi-international-news')&&
      (!expectWorld||d.querySelector('[data-mi-discover-slot="international"]')?.textContent.includes('Variety'));
  },worldName.length>=5,{timeout:25000});
+ }catch(error){
+   const state=await page.evaluate(()=>{
+     const d=document.querySelector('#media-dialog');
+     return {title:d?.querySelector('h2')?.textContent,
+       domestic:d?.querySelector('[data-mi-discover-slot="domestic"]')?.textContent?.slice(0,220),
+       international:d?.querySelector('[data-mi-discover-slot="international"]')?.textContent?.slice(0,220),
+       trailers:d?.querySelectorAll('.mi-trailer-card').length||0};
+   });
+   console.log('DISCOVER_WAIT_DEBUG',JSON.stringify({title,originalTitle,worldName,year,state,pageErrors}));
+   throw error;
+ }
  const result=await page.evaluate(()=>{
    const d=document.querySelector('#media-dialog'),slot=s=>d.querySelector('[data-mi-discover-slot="'+s+'"]');
    return {ordered:[...d.querySelectorAll('[data-mi-discover-slot]')].map(x=>x.dataset.miDiscoverSlot),
