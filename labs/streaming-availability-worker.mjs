@@ -547,7 +547,7 @@ async function titleNews(kind,id,env){
    api.searchParams.set("section","film");
    api.searchParams.set("page-size","30");
    api.searchParams.set("order-by","relevance");
-   api.searchParams.set("show-fields","thumbnail,trailText");
+   api.searchParams.set("show-fields","thumbnail,trailText,standfirst");
    const response=await jsonRemote(api.toString(),{},7500);
    if(response.response?.status!=="ok"||!Array.isArray(response.response.results))return [];
    stats.guardianItems+=response.response.results.length;
@@ -556,10 +556,26 @@ async function titleNews(kind,id,env){
     const url=safeHttps(article.webUrl,"theguardian.com");
     const date=String(article.webPublicationDate||"");
     const stamp=Date.parse(date);
-    if(!url||!Number.isFinite(stamp)||!rssArticleMatches(title,originalLatin,{year,people,editorialFilm:true}))return null;
+    if(!url||!Number.isFinite(stamp))return null;
+    const summary=rssDecoded(String(article.fields?.trailText||"")+" "+String(article.fields?.standfirst||"")).slice(0,400);
+    const context={year,people,editorialFilm:true};
+    const headlineMatch=rssArticleMatches(title,originalLatin,context);
+    const nearTitle=normalizedHeadline(originalLatin);
+    const synopsis=normalizedHeadline(summary);
+    const foundSummary=(" "+synopsis+" ").includes(" "+nearTitle+" ");
+    const nameDistinctive=nearTitle.length>=12&&nearTitle.includes(" ");
+    const filmHeadline=/\b(film|movie|cinema|director|review|ranking|watch|studio|screen|animation|release|movies|films)\b/i.test(title);
+    const corroborated=year.length===4&&(
+      title.includes(year)||summary.includes(year)||people.some(person=>
+        normalizedHeadline(title+" "+summary).includes(normalizedHeadline(person))));
+    // Guardian's formal film-section search is a reliable independent source.
+    // Film titles may appear in the standfirst rather than the short headline.
+    // Do not accept common single-word titles on description-only matches.
+    if(!headlineMatch&&!(foundSummary&&filmHeadline&&(nameDistinctive||corroborated)))return null;
     return {title,url,date:new Date(stamp).toISOString(),source:"The Guardian",
       language:"en",matchType:"title_search",titleMatchVerified:true,
-      thumbnail:safeHttps(article.fields?.thumbnail,"guim.co.uk")};
+      thumbnail:safeHttps(article.fields?.thumbnail,"guim.co.uk"),
+      summary:summary.slice(0,240)};
    }).filter(Boolean);
   }catch{return [];}
  })():Promise.resolve([]);
