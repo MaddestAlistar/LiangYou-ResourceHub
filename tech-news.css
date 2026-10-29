@@ -36,17 +36,14 @@
 .ly-news-video-cover:hover .ly-news-video-play-icon{background:#fa4563}
 .ly-news-video-content{min-width:0;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:7px}
 .ly-news-video-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.ly-news-kind-video{display:inline-flex;align-items:center;margin:0;padding:3px 8px;border-radius:6px;background:rgba(229,91,114,.17);color:#ffb9c5;border:1px solid rgba(235,114,134,.27);letter-spacing:0}
+.ly-news-kind-video{display:inline-flex;align-items:center;margin:0;padding:3px 8px;border-radius:6px;background:linear-gradient(120deg,rgba(55,81,123,.38),rgba(31,51,84,.53));color:#c8dcf7;border:1px solid rgba(143,181,234,.32);letter-spacing:0}
 .ly-news-video-platform{display:inline-flex;align-items:center;gap:4px;color:#eab5bd;font-size:10px;white-space:nowrap}
 .ly-news-video-platform span{display:grid;place-items:center;width:16px;height:16px;border-radius:5px;background:#e9536b;color:#fff;font-size:10px;font-weight:800}
 .ly-news-video-content h3{margin:0;font-size:clamp(13px,1.36vw,15px);line-height:1.45;font-weight:730;color:#fff1f3;overflow-wrap:anywhere}
 .ly-news-video-content p{margin:0;color:#b8b9d0;font-size:11px;line-height:1.55;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ly-news-video-author{display:flex;align-items:center;min-width:0;gap:5px;color:#e8dce0;font-size:10px;white-space:nowrap}
-.ly-news-video-avatar{display:grid;place-items:center;width:20px;height:20px;flex:none;border:1px solid rgba(244,204,210,.45);border-radius:50%;background:linear-gradient(140deg,#f8d2d6,#99738b);color:#4d2339;font-weight:900}
-.ly-news-video-note{color:#b8a3b3;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ly-news-video-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:1px}
 .ly-video-action,.ly-video-original{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;border-radius:9px;font:inherit;font-size:11px;font-weight:700;line-height:1.35;text-decoration:none;cursor:pointer;white-space:nowrap}
-.ly-video-action{border:1px solid rgba(242,148,161,.50);background:linear-gradient(105deg,#e95e73,#cc4965);color:#fff}
+.ly-video-action{border:1px solid rgba(137,179,234,.37);background:linear-gradient(110deg,#2c466b,#1b3152);color:#e0edff;box-shadow:inset 0 1px 0 rgba(205,224,255,.10)}
 .ly-video-original{border:1px solid rgba(225,177,188,.28);background:rgba(255,255,255,.045);color:#efd9dd}
 .ly-video-action:hover,.ly-video-original:hover{filter:brightness(1.09)}
 .ly-news-video-cover:focus-visible,.ly-video-action:focus-visible,.ly-video-original:focus-visible{outline:2px solid #ffbdc9;outline-offset:2px}
@@ -60,5 +57,5 @@
 .ly-video-dialog-foot{font-size:11px;color:#9eacc4}
 .ly-video-dialog-foot a{color:#e9d0a5;text-decoration:none}
 @media(max-width:900px){.ly-news-videos{grid-template-columns:1fr}.ly-news-video-card{grid-template-columns:clamp(112px,23vw,150px) minmax(0,1fr)}}
-@media(max-width:480px){.ly-news-videos{gap:9px;margin-top:9px}.ly-news-video-card{grid-template-columns:102px minmax(0,1fr);gap:10px;padding:9px;border-radius:13px}.ly-news-video-cover{border-radius:9px}.ly-news-video-content{gap:5px}.ly-news-video-content h3{font-size:12px;line-height:1.4}.ly-news-video-content p{font-size:10px;-webkit-line-clamp:2}.ly-news-video-note{display:none}.ly-news-video-play-icon{width:35px;height:35px;font-size:14px}.ly-news-video-cover-label{font-size:9px;left:7px;bottom:7px}.ly-video-action,.ly-video-original{font-size:10px;padding:6px 8px}.ly-video-stage{height:min(72dvh,680px)}}
+@media(max-width:480px){.ly-news-videos{gap:9px;margin-top:9px}.ly-news-video-card{grid-template-columns:102px minmax(0,1fr);gap:10px;padding:9px;border-radius:13px}.ly-news-video-cover{border-radius:9px}.ly-news-video-content{gap:5px}.ly-news-video-content h3{font-size:12px;line-height:1.4}.ly-news-video-content p{font-size:10px;-webkit-line-clamp:2}.ly-news-video-play-icon{width:35px;height:35px;font-size:14px}.ly-news-video-cover-label{font-size:9px;left:7px;bottom:7px}.ly-video-action,.ly-video-original{font-size:10px;padding:6px 8px}.ly-video-stage{height:min(72dvh,680px)}}
 @media(prefers-reduced-motion:reduce){.ly-news-video-card{transition:none}.ly-news-video-card:hover{transform:none}}
