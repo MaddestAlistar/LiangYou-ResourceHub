@@ -514,7 +514,7 @@
     }:null;
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
-    let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[];
+    let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
     let indexedDomesticRows=[],discoveredDomesticRows=[];
     function setDomesticRows(){
       domesticRows=[...indexedDomesticRows,...discoveredDomesticRows];
@@ -523,7 +523,11 @@
     function paintTrailers(){
       if(!discoverSlots?.trailers||!pane.isConnected)return;
       const enrichedInfo={...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]};
-      pane.innerHTML=trailerGallery(trailerResult||{},enrichedInfo,domesticRows,trailerStatus);
+      // TMDB-ID verified static trailers remain usable when dynamic video APIs
+      // are slow, unavailable, or quota-limited. Ranker deduplicates by video ID.
+      const enrichedVideo={...(trailerResult||{}),
+        trailers:[...((trailerResult||{}).trailers||[]),...indexedYoutubeRows]};
+      pane.innerHTML=trailerGallery(enrichedVideo,enrichedInfo,domesticRows,trailerStatus);
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
@@ -566,6 +570,7 @@
       Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
         const all=[...rows,...(index?.videos||[])];
         verifiedAliases=[...new Set([...verifiedAliases,...(index?.aliases||[])])];
+        indexedYoutubeRows=(index?.youtubeTrailers||[]);
         indexedDomesticRows=all;setDomesticRows();
         // Curated public videos may not include like counts. Never invent them.
         const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)&&
