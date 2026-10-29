@@ -120,10 +120,15 @@ function domesticNews(info){
  if(info.section!=='discover')return;
  const target=root.querySelector('#media-dialog .mi-detail-content');if(!target)return;
  const holder=target.querySelector('[data-mi-discover-slot="domestic"]');
- const box=document.createElement('section');box.className='mi-insight-block mi-cn-title-news';
- box.innerHTML='<div class="mi-insight-head"><h3>'+t('国内新闻','Chinese news')+'</h3><span class="mi-tech-tag">'+t('影视资讯','Film coverage')+'</span></div>'+
-  '<div class="mi-cn-news-results" aria-live="polite"><p class="mi-caption">'+t('正在匹配相关新闻…','Matching relevant articles…')+'</p></div>';
- if(holder)holder.replaceChildren(box);else target.appendChild(box);
+ // Verified aliases can arrive after an article has already appeared. Reuse the
+ // current section rather than clearing its links back to a loading placeholder.
+ const box=holder?.querySelector('.mi-cn-title-news')||document.createElement('section');
+ if(!box.isConnected){
+  box.className='mi-insight-block mi-cn-title-news';
+  box.innerHTML='<div class="mi-insight-head"><h3>'+t('国内新闻','Chinese news')+'</h3><span class="mi-tech-tag">'+t('影视资讯','Film coverage')+'</span></div>'+
+   '<div class="mi-cn-news-results" aria-live="polite"><p class="mi-caption">'+t('正在匹配相关新闻…','Matching relevant articles…')+'</p></div>';
+  if(holder)holder.replaceChildren(box);else target.appendChild(box);
+ }
  (async()=>{
   // Start optional source discovery in parallel with local snapshots to limit mobile waiting.
   const liveSearch=window.LiangYouTitleNews?.remoteForInfo?.(info);
