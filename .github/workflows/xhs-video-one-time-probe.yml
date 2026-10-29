@@ -1,4 +1,4 @@
-name: XHS video direct MP4 playback check
+name: XHS embedded browser playback smoke test
 on:
   push:
     paths:
@@ -7,34 +7,36 @@ on:
 permissions:
   contents: read
 jobs:
-  playback:
+  chromium:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 8
     steps:
-      - name: Check media ranges and anti-hotlink behavior
+      - uses: actions/checkout@v4
+      - name: Install Chromium browser for independent playback check
+        run: |
+          mkdir -p /tmp/ly-browser
+          npm install --no-audit --no-fund --prefix /tmp/ly-browser playwright@1.56.0
+          node /tmp/ly-browser/node_modules/playwright/cli.js install chromium
+      - name: Load standalone player and test real video decoding
         shell: bash
         run: |
-          set +e
-          PATH_MP4='/stream/1/110/258/01ea9907a778280801037001a065d45879_258.mp4'
-          for entry in 'backup:https://sns-bak-v10.xhscdn.com' 'source:https://sns-video-zl.xhscdn.com'; do
-            key=${entry%%:*}
-            base=${entry#*:}
-            if [ "$key" = 'source' ]; then
-              url="$base$PATH_MP4?sign=46bc6604348d9c0f78cfb165e9d4e683&t=6ae8062a"
-            else
-              url="$base$PATH_MP4"
-            fi
-            for mode in no-referrer site-referrer xhs-referrer; do
-              case "$mode" in
-                no-referrer) ref='' ;;
-                site-referrer) ref='https://maddestalistar.github.io/LiangYou-ResourceHub/' ;;
-                xhs-referrer) ref='https://www.xiaohongshu.com/' ;;
-              esac
-              echo "TEST $key $mode"
-              curl --location --silent --show-error --max-time 23 --max-filesize 5000000 --range 0-1023 -H "Referer: $ref" -o "/tmp/${key}-${mode}.bin" --write-out 'HTTP=%{http_code} MIME=%{content_type} BYTES=%{size_download} CURL=%{errormsg}\n' "$url"
-              if [ -f "/tmp/${key}-${mode}.bin" ]; then
-                echo "MAGIC: $(head -c 16 "/tmp/${key}-${mode}.bin" | xxd -p)"
-              fi
-            done
-          done
-          echo 'VIDEO_CHECK_DONE'
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/local-xhs-server.log 2>&1 &
+          node <<'JS'
+          const {chromium}=require('/tmp/ly-browser/node_modules/playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--autoplay-policy=no-user-gesture-required']});
+            const page=await browser.newPage({viewport:{width:390,height:750},ignoreHTTPSErrors:false});
+            page.on('response',res=>{if(res.url().includes('xhscdn.com'))console.log('CDN_RESPONSE',res.status(),res.headers()['content-type']||'',res.url().split('/')[2])});
+            page.on('requestfailed',req=>{if(req.url().includes('xhscdn.com'))console.log('CDN_FAILED',req.failure()?.errorText)});
+            await page.goto('http://127.0.0.1:8765/xhs-player.html',{waitUntil:'domcontentloaded',timeout:20000});
+            await page.locator('video').evaluate(v=>v.play().catch(e=>console.log('Autoplay:',e.name)));
+            try{
+              await page.waitForFunction(()=>{const v=document.querySelector('video');return v.readyState>=2||v.error!==null},{timeout:45000});
+            }catch(e){console.log('WAIT_TIMEOUT',String(e.message).slice(0,150))}
+            await page.waitForTimeout(2500);
+            const result=await page.locator('video').evaluate(v=>({readyState:v.readyState,networkState:v.networkState,error:v.error?{code:v.error.code,message:v.error.message}:null,width:v.videoWidth,height:v.videoHeight,duration:v.duration,currentTime:v.currentTime,paused:v.paused}));
+            console.log('BROWSER_VIDEO_RESULT',JSON.stringify(result));
+            await browser.close();
+            if(result.error||result.readyState<2||result.width===0)process.exitCode=1;
+          })().catch(err=>{console.error('BROWSER_RUN_ERROR',err);process.exitCode=1});
+          JS
