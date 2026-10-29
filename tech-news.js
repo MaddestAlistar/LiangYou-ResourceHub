@@ -4,7 +4,7 @@
 const list=document.getElementById('ly-news-list');
 if(!list)return;
 const endpoint='https://liangyou-icon-review.maddestalistar.workers.dev/news-feed';
-const categories=new Set(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广']);
+const categories=new Set(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 function element(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node}
 function hydrate(items){
  if(!Array.isArray(items))return;
