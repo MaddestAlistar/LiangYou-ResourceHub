@@ -14,7 +14,7 @@ export default {async fetch(request,env){
  try {
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin===allowed?origin:"null","Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, X-Admin-Key","Access-Control-Max-Age":"600"}});
  const url=new URL(request.url);
- if(url.pathname==="/news-feed"||url.pathname==="/news-admin"||url.pathname==="/news-video-upload")return await serveTechNews(request,env,{origin,allowed});
+ if(url.pathname==="/news-feed"||url.pathname==="/news-admin"||url.pathname==="/news-video-upload"||url.pathname==="/news-image-upload")return await serveTechNews(request,env,{origin,allowed});
  // Public liveness/version only; no credentials, configuration or queue data.
  if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin===allowed?origin:"");
  if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
