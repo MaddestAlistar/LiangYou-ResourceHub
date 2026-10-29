@@ -148,7 +148,7 @@
     // title-specific discovery, but a known mismatched year still blocks it.
     if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return Promise.resolve(null);
     const yearKnown=Number.isSafeInteger(year)&&year>=1900;
-    const key=kind+':'+id,prior=videoCache.get(key);
+    const key=kind+':'+id+':'+(yearKnown?year:'unknown'),prior=videoCache.get(key);
     if(prior&&Date.now()-prior.at<prior.ttl)return prior.promise;
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
