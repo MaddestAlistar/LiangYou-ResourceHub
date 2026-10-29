@@ -161,7 +161,7 @@ def clean_youtube_trailers(doc, kind, ident):
     if doc.get("tmdb_id") != ident or doc.get("id") != f"tmdb-{kind}-{ident}":
         return None
     date = str(doc.get("date") or "")
-    year = int(date[:4]) if re.fullmatch(r"(?:19|20)\\d{2}", date[:4]) else None
+    year = int(date[:4]) if re.fullmatch(r"(?:19|20)\d{2}", date[:4]) else None
     if not isinstance(year, int):
         return []
     rows = doc.get("profile", {}).get("videos", [])
