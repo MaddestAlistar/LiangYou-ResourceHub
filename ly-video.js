@@ -12,8 +12,8 @@ function openVideo(event){
   const key=button.getAttribute('data-ly-video-open')||'tubo';
   const page=players[key];
   if(!page)return;
-  const item=button.closest('.ly-video-panel');
-  const itemTitle=item?.querySelector('h2');
+  const item=button.closest('.ly-news-video-card, .ly-video-panel');
+  const itemTitle=item?.querySelector('h3, h2');
   const itemSource=item?.querySelector('.ly-video-original');
   if(title&&itemTitle)title.textContent=itemTitle.textContent.trim();
   if(source&&itemSource)source.href=itemSource.href;
