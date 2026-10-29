@@ -80,6 +80,16 @@
     "在网页内播放：小米澎程 N90 CarPlay APP 实际演示":"Play Xiaomi N90 CarPlay video on this page",
     "小米澎程 N90 CarPlay 视频封面":"Xiaomi N90 CarPlay video cover"
   });
+  Object.assign(translations, {
+    "视频精选":"Video Picks",
+    "视频笔记":"Video note",
+    "小红书":"Xiaohongshu",
+    "查看原帖 ↗":"Original post ↗",
+    "原创体验":"Original hands-on",
+    "良哥看未来":"LiangGe Tech",
+    "途播连接 Emby / Jellyfin，体验 CarPlay 视频播放。":"Tubo connects to Emby / Jellyfin for CarPlay playback.",
+    "如何在 CarPlay 上看影视？｜途播":"CarPlay video playback with Tubo"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
