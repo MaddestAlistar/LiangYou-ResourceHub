@@ -770,11 +770,13 @@ async function titleBilibiliVideos(kind,id,env){
    searchName.trim().split(/\s+/).length>=2&&searchName.length>=13;
  const queryBase=longDistinctive?searchName:searchName+" "+rawYear;
  const variants=[{name:searchName,query:queryBase+" 预告"},
-   {name:searchName,query:queryBase+" "+(kind==="movie"?"影评":"花絮")}];
+   // A second short, yearless probe helps find commentary that omits the
+   // release date; ID and video-heading checks still reject unrelated clips.
+   {name:searchName,query:searchName+" "+(kind==="movie"?"影评":"花絮")}];
  const secondary=titleChoices.find(v=>v!==searchName&&v.length>=4&&
    (/[\u3400-\u9fff]/.test(v)||v.length>=9));
  if(secondary)variants[1]={name:secondary,
-   query:(longDistinctive?secondary:secondary+" "+rawYear)+" "+(kind==="movie"?"预告":"花絮")};
+   query:secondary+" "+(kind==="movie"?"影评":"花絮")};
  let nativeWorking=false,indexedWorking=false;
  const results=(await Promise.all(variants.map(async item=>{
   try{
