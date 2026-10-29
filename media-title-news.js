@@ -44,7 +44,7 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=5',{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/news/title/'+kind+'/'+id+'?v=6',{
           signal:AbortSignal.timeout(21000)});
         if(!r.ok)return null;
         const d=await r.json();
@@ -53,7 +53,7 @@
           x.title.length>=8&&x.title.length<=180&&
           x.titleMatchVerified===true&&safeUrl(x.url)&&!['localhost','127.0.0.1'].includes(new URL(safeUrl(x.url)).hostname)&&
           (x.date==null||Number.isFinite(Date.parse(x.date)))&&
-          ['zh','ko','en'].includes(x.language))
+          ['zh','ko','ja','en'].includes(x.language))
           .slice(0,18).map(x=>({...x,url:safeUrl(x.url)}));
         return {articles};
       }catch{return null;}
@@ -79,7 +79,7 @@
     const entry={at:Date.now(),ttl:120000,promise:null};
     entry.promise=(async()=>{
       try{
-        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=2',{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=3',{
           signal:AbortSignal.timeout(17500)});
         if(!r.ok)return null;
         const d=await r.json();
