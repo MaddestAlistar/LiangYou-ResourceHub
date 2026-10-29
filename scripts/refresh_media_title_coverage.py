@@ -154,6 +154,46 @@ def clean_videos(doc, kind, ident):
     return results
 
 
+def clean_youtube_trailers(doc, kind, ident):
+    # This is a server-generated TMDB-ID profile, not a title-only web search.
+    if not isinstance(doc, dict) or doc.get("ok") is not True or doc.get("kind") != kind:
+        return None
+    if doc.get("tmdb_id") != ident or doc.get("id") != f"tmdb-{kind}-{ident}":
+        return None
+    date = str(doc.get("date") or "")
+    year = int(date[:4]) if re.fullmatch(r"(?:19|20)\\d{2}", date[:4]) else None
+    if not isinstance(year, int):
+        return []
+    rows = doc.get("profile", {}).get("videos", [])
+    if not isinstance(rows, list):
+        return []
+    out, seen = [], set()
+    for row in rows[:12]:
+        if not isinstance(row, dict):
+            continue
+        url = valid_url(row.get("url"))
+        try:
+            parsed = urllib.parse.urlparse(url)
+            query = urllib.parse.parse_qs(parsed.query)
+            video_id = (query.get("v") or [""])[0]
+        except (TypeError, ValueError):
+            continue
+        if parsed.hostname not in ("www.youtube.com", "youtube.com") or parsed.path != "/watch":
+            continue
+        if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id) or video_id in seen:
+            continue
+        seen.add(video_id)
+        out.append({
+            "kind": kind, "tmdbId": ident, "year": year,
+            "id": video_id, "official": True, "verifiedByTitleId": True,
+            "type": "Trailer", "title": str(row.get("name") or "Official trailer")[:145],
+            "url": f"https://www.youtube.com/watch?v={video_id}"
+        })
+        if len(out) >= 3:
+            break
+    return out
+
+
 def collect(key):
     kind, raw_id = key.split(":")
     ident = int(raw_id)
@@ -161,6 +201,7 @@ def collect(key):
     for label, route in (
         ("articles", f"/api/news/title/{kind}/{ident}?v=11"),
         ("videos", f"/api/videos/title/{kind}/{ident}?v=6"),
+        ("youtube", f"/api/title/{kind}/{ident}"),
     ):
         try:
             fetched[label] = fetch(route)
@@ -168,6 +209,7 @@ def collect(key):
             print("COVERAGE_SOURCE_FAILED", key, label, type(exc).__name__)
     articles = clean_articles(fetched["articles"], kind, ident) if "articles" in fetched else None
     videos = clean_videos(fetched["videos"], kind, ident) if "videos" in fetched else None
+    youtube = clean_youtube_trailers(fetched["youtube"], kind, ident) if "youtube" in fetched else None
     news = fetched.get("articles", {})
     video = fetched.get("videos", {})
     status = {
@@ -175,8 +217,10 @@ def collect(key):
         "video": str(video.get("status") or "unavailable")[:30] if isinstance(video, dict) else "unavailable",
         "newsFound": len(articles or ()),
         "videosFound": len(videos or ()),
+        "youtubeFound": len(youtube or ()),
+        "youtube": "ok" if youtube else "no_data" if youtube is not None else "unavailable",
     }
-    return key, articles, videos, news.get("year") if isinstance(news, dict) else None, status
+    return key, articles, videos, youtube, news.get("year") if isinstance(news, dict) else None, status
 
 
 def main():
@@ -204,8 +248,8 @@ def main():
     successes = 0
     status_counts = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
-        for key, articles, videos, year, status in pool.map(collect, chosen):
-            for family in ("news", "video"):
+        for key, articles, videos, youtube, year, status in pool.map(collect, chosen):
+            for family in ("news", "video", "youtube"):
                 value = status[family]
                 counter_key = family + ":" + value
                 status_counts[counter_key] = status_counts.get(counter_key, 0) + 1
@@ -216,10 +260,13 @@ def main():
             record = {"checkedAt": checked_at,
                       "articles": articles or old.get("articles", []),
                       "videos": videos or old.get("videos", []),
+                      "youtubeTrailers": youtube or old.get("youtubeTrailers", []),
                       "newsStatus": status["news"],
                       "videoStatus": status["video"],
                       "newsCandidates": status["newsFound"],
-                      "videoCandidates": status["videosFound"]}
+                      "videoCandidates": status["videosFound"],
+                      "youtubeStatus": status["youtube"],
+                      "youtubeCandidates": status["youtubeFound"]}
             if isinstance(year, int) and 1900 <= year <= 2100:
                 record["year"] = year
             elif isinstance(old.get("year"), int):
@@ -238,6 +285,7 @@ def main():
         "titles": len(items),
         "with_news": sum(bool(row.get("articles")) for row in items.values()),
         "with_native_video": sum(bool(row.get("videos")) for row in items.values()),
+        "with_official_youtube": sum(bool(row.get("youtubeTrailers")) for row in items.values()),
         "without_news": sum(not row.get("articles") for row in items.values()),
     }
     print("COVERAGE_RESULT", "available_catalog=", len(works), "checked=", len(chosen),
