@@ -145,13 +145,18 @@
     const kind=info?.kind;
     const aliases=[info?.title,info?.originalTitle,...(Array.isArray(info?.aliases)?info.aliases:[])]
       .filter(x=>typeof x==='string').map(x=>x.normalize('NFKC').trim().toLowerCase()).filter(Boolean);
-    if(!aliases.length||!Number.isSafeInteger(year)||year<1900||!['movie','tv'].includes(kind))return [];
+    // A trusted TMDB-ID-linked catalog clip remains valid when a list card has
+    // no localized release year. Loose/manual title matching still requires a year.
+    const yearKnown=Number.isSafeInteger(year)&&year>=1900;
+    if(!['movie','tv'].includes(kind))return [];
     const found=[],ids=new Set();
     for(const x of Array.isArray(records)?records:[]){
       if(!x||x.kind!==kind)continue;
-      const idBound=x.verifiedByTitleId===true&&Number(x.tmdbId)===Number(info?.tmdbId)&&
-        Math.abs(Number(x.year)-year)<=1;
-      if(!idBound&&(Number(x.year)!==year||
+      const idBound=x.verifiedByTitleId===true&&Number.isSafeInteger(Number(info?.tmdbId))&&
+        Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
+        Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
+        (!yearKnown||Math.abs(Number(x.year)-year)<=1);
+      if(!idBound&&(!yearKnown||Number(x.year)!==year||
          !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())))continue;
       const u=safe(x.verifiedSource);
       if(!u)continue;
