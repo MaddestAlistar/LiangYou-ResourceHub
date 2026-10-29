@@ -6,26 +6,28 @@
   const modules = [
     {
       id: 'media',
-      styles: [
-        './media-intel.css?v=20261029.newsvideo6',
+      // The essential catalogue is usable after these two scripts and one CSS.
+      styles: ['./media-intel.css?v=20261029.newsvideo6'],
+      urls: [
+        './media-core.js?v=20261028.3',
+        './media-intel.js?v=20261029.newsroom1'
+      ],
+      // Optional film detail modules hydrate after the catalogue is responsive.
+      extraStyles: [
         './media-toolkit.css?v=20261028.7',
         './media-cn-enhance.css?v=20261029.newsvideo6',
         './media-boxoffice-rankings.css?v=20261029.1'
       ],
-      urls: [
-        // Install detail listeners first so the initial catalogue response
-        // cannot dispatch an event before enrichment modules are ready.
-        './media-core.js?v=20261028.3',
+      extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-identityyear8',
         './media-insights.js?v=20261029-yearsafe10',
         './media-cn-enhance.js?v=20261029.catalog-unified5',
         './media-exact-scores.js?v=20261029.newsroom1',
-        './media-boxoffice-rankings.js?v=20261029.noarchive1',
-        './media-intel.js?v=20261029.newsroom1'
+        './media-boxoffice-rankings.js?v=20261029.noarchive1'
       ]
     },
-    {
+        {
       id: 'daily-free',
       styles: ['./daily-free.css?v=20261025.1'],
       urls: ['./daily-free.js?v=20261024.4']
@@ -60,7 +62,7 @@
     link.href = url;
     document.head.appendChild(link);
   };
-  const loadStyles = module => Promise.all(module.styles.map(url => new Promise((resolve, reject) => {
+  const loadStyles = urls => Promise.all(urls.map(url => new Promise((resolve, reject) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = url;
@@ -101,15 +103,40 @@
     panel.append(text, retry);
     element.prepend(panel);
   };
+  // A movie can be opened while enrichment files are downloading.
+  // Capture the latest detail before those listeners exist and replay it once
+  // they are ready; the core catalogue never waits for slow third-party tools.
+  const startMediaExtras = module => {
+    if (module.enhancementStarted) return;
+    module.enhancementStarted = true;
+    const root = document.getElementById('media');
+    let latestDetail = null;
+    root?.addEventListener('liangyou:media-detail', event => {
+      if (!module.enhanced) latestDetail = event.detail;
+    }, true);
+    module.extraUrls.forEach(preload);
+    (async () => {
+      await loadStyles(module.extraStyles);
+      for (const url of module.extraUrls) await loadOne(url);
+      module.enhanced = true;
+      if (latestDetail && document.getElementById('media-dialog')?.open) {
+        root.dispatchEvent(new CustomEvent('liangyou:media-detail', {detail:latestDetail}));
+      }
+    })().catch(() => {
+      // Main film browsing stays available even if enrichment cannot load.
+      module.enhanced = false;
+    });
+  };
   const start = module => {
     if (module.started) return;
     module.started = true;
     // Preload all URLs in parallel to avoid a 9-request sequential network waterfall.
     module.urls.forEach(preload);
     (async () => {
-      await loadStyles(module);
+      await loadStyles(module.styles);
       for (const url of module.urls) await loadOne(url);
       module.loaded = true;
+      if (module.id === 'media') startMediaExtras(module);
       // Market snapshots can complete before fixtures.js registers listeners.
       // Replaying the completed state makes first-view odds deterministic.
       if (module.id === 'sports') {
