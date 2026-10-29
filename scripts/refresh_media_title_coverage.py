@@ -89,10 +89,18 @@ def clean_articles(doc, kind, ident):
         return None
     results = []
     seen = set()
+    edition = doc.get("year")
+    minimum_year = max(1970, edition - 3) if isinstance(edition, int) and edition > 1900 else 1990
     for row in doc["articles"][:65]:
         if not isinstance(row, dict) or row.get("titleMatchVerified") is not True:
             continue
         title = str(row.get("title") or "").strip()[:180]
+        published = str(row.get("date") or "")
+        try:
+            if published and datetime.fromisoformat(published.replace("Z", "+00:00")).year < minimum_year:
+                continue
+        except ValueError:
+            continue
         url = valid_url(row.get("url"))
         if len(title) < 8 or not url or url in seen:
             continue
