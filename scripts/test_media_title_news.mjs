@@ -33,6 +33,45 @@ test('Moana live-action and Curry Barker Obsession have identity-safe Chinese an
   assert.equal(await load.forInfo({...fixture,kind:'tv'}),null,'series must not receive movie metadata');
  }
 });
+test('automatic rotating coverage makes previously unindexed titles available without trusting mismatched IDs',async()=>{
+ let reads=0;
+ const saved={
+  schema:1,items:{'movie:550':{
+   year:1999,checkedAt:'2026-10-29T00:00:00+00:00',
+   articles:[
+    {title:'Fight Club film director interview retrospective',
+     url:'https://news.google.com/rss/articles/fightclub',source:'Publisher',
+     language:'en',date:'2026-10-28',titleMatchVerified:true},
+    {title:'Unverified arts editorial',url:'https://example.com/story',
+     source:'Unknown',language:'en',titleMatchVerified:false}],
+   videos:[
+    {kind:'movie',tmdbId:550,verifiedByTitleId:true,year:1999,
+      title:'Fight Club',platform:'bilibili',videoId:'BV1234567890',
+      name:'Fight Club behind the scenes',
+      verifiedSource:'https://www.bilibili.com/video/BV1234567890/'},
+    {kind:'movie',tmdbId:551,verifiedByTitleId:true,year:1999,
+      title:'Other film',platform:'bilibili',videoId:'BV1234567891',
+      name:'Wrong work',verifiedSource:'https://www.bilibili.com/video/BV1234567891/'}]
+  }}
+ };
+ const mock=async url=>{
+   if(String(url).includes('media-title-coverage.json')){
+     reads++;return new Response(JSON.stringify(saved),{status:200});
+   }
+   return new Response(JSON.stringify({schema:1,titles:{}}),{status:200});
+ };
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+   {},mock,AbortSignal);
+ const data=await helper.forInfo({kind:'movie',tmdbId:550,year:'1999-10-15'});
+ assert.equal(data.articles.length,1);
+ assert.equal(data.videos.length,1);
+ assert.equal(data.videos[0].tmdbId,550);
+ assert.equal((await helper.forInfo({kind:'movie',tmdbId:550,year:'1999-10-15'})).articles.length,1);
+ assert.equal(reads,1);
+ assert.equal(await helper.forInfo({kind:'movie',tmdbId:550,year:'2026-01-01'}),null);
+ assert.equal(await helper.forInfo({kind:'movie',tmdbId:551,year:'1999-10-15'}),null);
+ assert.equal(await helper.forInfo({kind:'tv',tmdbId:550,year:'1999-10-15'}),null);
+});
 test('optional remotely searched headlines are ID-bound and cannot erase local articles',async()=>{
  let calls=0;
  const runtime={};
