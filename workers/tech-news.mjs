@@ -1,7 +1,7 @@
 // Tech News for LiangYou Resource Hub, stored in the existing review queue repository.
 // Authentication reuses the existing Cloudflare Worker ADMIN_KEY and GITHUB_TOKEN.
 export const NEWS_PATH = 'news/tech-news.json';
-export const NEWS_CATEGORIES = Object.freeze(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广']);
+export const NEWS_CATEGORIES = Object.freeze(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const categories = new Set(NEWS_CATEGORIES);
 const json = (data,status,origin,cache='no-store') => new Response(JSON.stringify(data),{status,headers:{
   'Content-Type':'application/json; charset=utf-8','Access-Control-Allow-Origin':origin,
