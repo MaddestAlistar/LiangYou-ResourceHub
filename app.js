@@ -59,7 +59,10 @@
   // Only the three locally hosted channel portraits receive a live-style frame.
   function previewThumb(p, url, index) {
     const channels = p.previewType === "channels";
-    const img = `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"${channels ? ' data-clean-channel-badge="true"' : ""}>`;
+    // Fetch a couple of tiny local previews early. The remaining images stay lazy,
+    // so the 3D hero still retains network priority on a slow connection.
+    const early = (p.id === 'icons' || p.id === 'channels') && index < 2;
+    const img = `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="${early ? 'eager' : 'lazy'}" fetchpriority="low" width="120" height="120" decoding="async" referrerpolicy="no-referrer"${channels ? ' data-clean-channel-badge="true"' : ""}>`;
     return channels ? `<span class="channel-avatar-shell">${img}</span>` : img;
   }
 
