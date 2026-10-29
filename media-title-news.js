@@ -33,7 +33,7 @@
     const item=cache?.items?.[kind+':'+id];
     if(!item||!Array.isArray(item.articles)||!Array.isArray(item.videos))return null;
     const storedYear=Number(item.year);
-    if(Number.isInteger(storedYear)&&storedYear>1900&&Math.abs(year-storedYear)>1)return null;
+    if(Number.isInteger(storedYear)&&storedYear>1900&&Number.isInteger(year)&&year>=1850&&Math.abs(year-storedYear)>1)return null;
     const articles=item.articles.filter(x=>x?.titleMatchVerified===true&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=180&&
       typeof x.source==='string'&&safeUrl(x.url)&&
@@ -50,13 +50,15 @@
   }
   async function forInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId),year=Number(String(info?.year||'').slice(0,4));
-    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1||!Number.isSafeInteger(year))return null;
+    // Exact TMDB kind + numeric ID is authoritative even when a search card
+    // has not supplied a release year. Compare edition years only when known.
+    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1)return null;
     // Start the scheduled catalog lookup alongside the small manual index.
     // Previously, every other movie waited for both files sequentially.
     const catalogLookup=cachedForInfo(kind,id,year);
     const d=await read();
     const item=d?.titles?.[kind+':'+id];
-    if(!item||item.kind!==kind||item.tmdbId!==id||item.year!==year)
+    if(!item||item.kind!==kind||item.tmdbId!==id||(year>=1850&&item.year!==year))
       return catalogLookup;
     const articles=(Array.isArray(item.articles)?item.articles:[]).filter(x=>x&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=200&&
