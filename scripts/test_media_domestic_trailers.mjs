@@ -94,6 +94,17 @@ test('Tencent needs exact verified VID and original URL before it becomes a play
   assert.doesNotMatch(gallery({},selected,[wrong]),/data-mi-play-cn="tencent"/);
  }
 });
+test('every movie can display server-verified Bilibili videos by TMDB ID rather than manually listed names',()=>{
+ const info={...selected,tmdbId:550};
+ const record={kind:'movie',tmdbId:550,verifiedByTitleId:true,title:'不同地区的电影译名',
+  year:2025,platform:'bilibili',videoId:'BV0000000000',
+  name:'正式预告',verifiedSource:'https://www.bilibili.com/video/BV0000000000/'};
+ assert.equal(verified(info,[record]).length,1);
+ assert.match(gallery({},info,[record]),/data-mi-cn-id="BV0000000000"/);
+ assert.equal(verified(info,[{...record,tmdbId:551}]).length,0);
+ assert.equal(verified(info,[{...record,verifiedByTitleId:false}]).length,0);
+ assert.equal(verified(info,[{...record,verifiedSource:'https://untrusted.example/watch'}]).length,0);
+});
 test('mainland and YouTube playback share the same in-page modal; switching remains YouTube-only',()=>{
  assert.match(source,/https:\/\/player\.bilibili\.com\/player\.html\?bvid=/);
  assert.match(source,/https:\/\/v\.qq\.com\/txp\/iframe\/player\.html\?vid=/);
