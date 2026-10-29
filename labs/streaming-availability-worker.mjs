@@ -1032,7 +1032,7 @@ export default {
     const linkedVideo=v=>v?.site==="YouTube"&&
       /^[A-Za-z0-9_-]{11}$/.test(String(v.key||""))&&
       ["Trailer","Teaser","Clip","Featurette","Behind the Scenes","Bloopers"].includes(v.type)&&
-      !/full\\s*(?:movie|film|episode)|完整版|全集|watch.*online/i.test(v.name||"");
+      !/full\s*(?:movie|film|episode)|完整版|全集|watch.*online|网盘|磁力|资源下载/i.test(v.name||"");
     let movieVideoRows=(x.videos?.results||[]).filter(linkedVideo);
     if(movieVideoRows.length<6){
       try{
