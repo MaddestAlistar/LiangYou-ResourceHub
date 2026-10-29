@@ -358,7 +358,9 @@
           '<strong>'+a(x.url,x.title)+'</strong>'+(x.summary?'<p>'+esc(x.summary)+'</p>':'')+
           (x.byline?'<small>'+esc(x.byline)+'</small>':'')+'</div></article>';
       }).join('')+'</div>':
-        '<p class="mi-caption">'+t('暂未找到与本片明确关联的国际报道。','No verifiable international headlines for this title.')+'</p>')+'</section>';
+        '<p class="mi-caption">'+(d.newsSearchPending?
+          t('正在继续查找与本片相关的国际报道…','Searching additional international coverage…'):
+          t('暂未找到与本片明确关联的国际报道。','No verifiable international headlines for this title.'))+'</p>')+'</section>';
     const similar='<section class="mi-insight-block mi-similar-themes"><div class="mi-insight-head"><h3>'+t('相似主题探索','Similar themes')+'</h3><span class="mi-tech-tag">TasteDive</span></div>'+
       '<p class="mi-caption">'+t('以下仅是名称级推荐，不代表本站已确认作品 ID，暂不与电影档案自动合并。','Name-only suggestions; identities have not been matched to site titles.')+'</p>'+
       (suggestions.length?'<div class="mi-suggestion-list">'+suggestions.slice(0,5).map(x=>'<span>'+esc(x.title)+'</span>').join('')+'</div>':
@@ -535,13 +537,13 @@
     };
     // Keep editorial, global RSS and optional title-scoped results independent:
     // a slow external index cannot wipe a fast human-verified title match.
-    let worldArticles=[],indexedNews=[],remoteNews=[];
+    let worldArticles=[],indexedNews=[],remoteNews=[],remoteDone=false;
     let intlContext={title:info.title,localTitle:info.title,
       originalTitle:info.originalTitle,aliases:info.aliases,news:[],suggestions:[]};
     function paintInternational(){
       if(!pane.isConnected||!discoverSlots?.international?.isConnected)return;
       const news=[...(Array.isArray(intlContext.news)?intlContext.news:[]),...indexedNews,...remoteNews];
-      discoverSlots.international.innerHTML=discoverySections({...intlContext,news},worldArticles).international;
+      discoverSlots.international.innerHTML=discoverySections({...intlContext,news,newsSearchPending:!remoteDone},worldArticles).international;
     }
     if(info.section==='discover'&&discoverSlots?.international){
       worldNewsSnapshot().then(rows=>{worldArticles=rows;paintInternational();}).catch(()=>{});
@@ -549,10 +551,14 @@
         indexedNews=(index?.articles||[]).filter(x=>x.language!=='zh');
         paintInternational();
       }).catch(()=>{});
-      window.LiangYouTitleNews?.remoteForInfo?.(info)?.then(index=>{
-        remoteNews=(index?.articles||[]).filter(x=>x.language!=='zh');
-        paintInternational();
-      }).catch(()=>{});
+      const remoteLookup=window.LiangYouTitleNews?.remoteForInfo?.(info);
+      if(remoteLookup&&typeof remoteLookup.then==='function'){
+        remoteLookup.then(index=>{
+          remoteNews=(index?.articles||[]).filter(x=>x.language!=='zh');
+        }).catch(()=>{}).finally(()=>{
+          remoteDone=true;paintInternational();
+        });
+      }else{remoteDone=true;paintInternational();}
     }
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
