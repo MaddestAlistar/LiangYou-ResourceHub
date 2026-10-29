@@ -1,0 +1,25 @@
+/* 良友科技圈新闻：紧贴收藏本站下方，保持首页深蓝 + 淡金视觉。 */
+.ly-news{position:relative;isolation:isolate;padding-top:clamp(14px,2.8vw,30px);padding-bottom:clamp(8px,2vw,20px);scroll-margin-top:112px}
+.ly-news-panel{position:relative;overflow:hidden;border:1px solid rgba(171,190,226,.28);border-radius:22px;padding:23px 25px 25px;background:radial-gradient(ellipse at 96% 0%,rgba(91,102,164,.16),transparent 46%),linear-gradient(140deg,#182233 0%,#11192a 55%,#151a2b 100%);box-shadow:0 14px 36px #0003}
+.ly-news-panel::before{content:"";position:absolute;inset:0 22% auto;height:1px;background:linear-gradient(90deg,transparent,rgba(223,194,142,.7),transparent);pointer-events:none}
+.ly-news-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.ly-news-eyebrow{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:.15em;color:#dbc18e}
+.ly-news-head h2{margin:0;font-size:clamp(21px,2.8vw,29px);line-height:1.3;letter-spacing:.01em;color:#f4eee2}
+.ly-news-count{white-space:nowrap;flex:none;color:#ccba97;font-size:11px;padding:5px 10px;background:rgba(218,190,143,.075);border:1px solid rgba(218,190,143,.25);border-radius:100px}
+.ly-news-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ly-news-item{position:relative;min-width:0;padding:16px 17px 15px;border:1px solid rgba(151,172,214,.20);border-radius:15px;background:linear-gradient(160deg,rgba(39,46,66,.6),rgba(17,26,42,.75))}
+.ly-news-kind{display:inline-block;margin:0 0 9px;color:#dec79e;font-size:11px;font-weight:700;letter-spacing:.025em}
+.ly-news-item h3{margin:0 0 7px;font-size:15px;line-height:1.6;font-weight:720;color:#f2f4fc;overflow-wrap:anywhere}
+.ly-news-item p{margin:0;font-size:12px;line-height:1.7;color:#afbdd2;overflow-wrap:anywhere}
+@media(max-width:760px){
+.ly-news{padding-top:12px;padding-bottom:8px}
+.ly-news-panel{padding:17px 15px 16px;border-radius:18px}
+.ly-news-head{margin-bottom:12px}
+.ly-news-head h2{font-size:21px}
+.ly-news-list{grid-template-columns:1fr;gap:8px}
+.ly-news-item{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;padding:11px 12px;border-radius:12px}
+.ly-news-kind{font-size:10px;margin:0}
+.ly-news-item h3{font-size:13px;line-height:1.5;margin:0}
+.ly-news-item p{font-size:11px;line-height:1.55}
+}
+@media(prefers-reduced-motion:reduce){.ly-news *{scroll-behavior:auto}}
