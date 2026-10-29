@@ -185,7 +185,7 @@ def clean_youtube_trailers(doc, kind, ident):
         seen.add(video_id)
         out.append({
             "kind": kind, "tmdbId": ident, "year": year,
-            "id": video_id, "official": True, "verifiedByTitleId": True,
+            "id": video_id, "official": row.get("official") is True, "verifiedByTitleId": True,
             "type": "Trailer", "title": str(row.get("name") or "Official trailer")[:145],
             "url": f"https://www.youtube.com/watch?v={video_id}"
         })
