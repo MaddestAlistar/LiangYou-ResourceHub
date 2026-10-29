@@ -41,6 +41,19 @@
     "Sixfast 六个平台下载":"Sixfast downloads for six platforms",
     "Sixfast 六毫秒 App 图标":"Sixfast app icon"
   });
+  Object.assign(translations, {
+    "良友科技圈新闻":"LiangYou Tech News",
+    "最新 3 条":"3 latest updates",
+    "系统提醒":"System notice",
+    "联名上新":"New collaborations",
+    "应用动态":"App updates",
+    "CarPlay 行车播放用户，建议暂缓升级 iOS 27.2":"CarPlay video playback: hold off on iOS 27.2",
+    "经常使用 CarPlay 行车播放的朋友，建议先别升级 27.2，等待相关兼容性确认后再更新。":"If you rely on CarPlay video playback, consider delaying the iOS 27.2 update until compatibility is confirmed.",
+    "Noctra 与魂π的良友联名图标已上线":"LiangYou icons for Noctra and HunPi are here",
+    "两款良友联名图标现已推出，可以在良友联名软件板块查看。":"Both collaborative icons are now available in the LiangYou co-branded apps section.",
+    "APTV 正式版正在重新上架中":"APTV is working on its App Store return",
+    "正式版正在推进重新上架，测试版不受影响，并且仍在继续更新。":"The public release is being relisted; the beta remains available and continues receiving updates."
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
