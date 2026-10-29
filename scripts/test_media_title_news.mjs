@@ -210,6 +210,28 @@ test('optional remotely searched headlines are ID-bound and cannot erase local a
  assert.equal(calls,1);
  assert.deepEqual(await helper.forInfo({...fixture,tmdbId:999999}),null);
 });
+test('movie cards without a year may discover exact-ID videos; wrong editions remain excluded',async()=>{
+ let calls=0;
+ const mock=async url=>{
+  if(String(url).includes('/api/videos/title/movie/550')){
+   calls++;
+   return new Response(JSON.stringify({ok:true,kind:'movie',tmdbId:550,year:1999,
+    videos:[{kind:'movie',tmdbId:550,year:1999,platform:'bilibili',
+      verifiedByTitleId:true,title:'Fight Club',name:'Fight Club interview',
+      videoId:'BV1234567890',verifiedSource:'https://www.bilibili.com/video/BV1234567890/'}]}),{status:200});
+  }
+  return new Response(JSON.stringify({schema:1,titles:{}}),{status:200});
+ };
+ const helper=new Function('window','fetch','AbortSignal',lib+';return window.LiangYouTitleNews')(
+  {},mock,AbortSignal);
+ const noYear=await helper.videoForInfo({kind:'movie',tmdbId:550,title:'搏击俱乐部'});
+ assert.equal(noYear.videos.length,1);
+ const wrong=await helper.videoForInfo({kind:'movie',tmdbId:550,year:'2026-09-20'});
+ assert.equal(wrong,null);
+ const good=await helper.videoForInfo({kind:'movie',tmdbId:550,year:'1999-10-15'});
+ assert.equal(good.videos.length,1);
+ assert.equal(calls,3);
+});
 test('new automatic domestic video service only accepts verified same-ID publisher links',async()=>{
  let count=0;
  const runtime={};
