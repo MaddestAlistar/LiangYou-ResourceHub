@@ -202,7 +202,7 @@ def collect(key):
     for label, route in (
         ("articles", f"/api/news/title/{kind}/{ident}?v=11"),
         ("videos", f"/api/videos/title/{kind}/{ident}?v=6"),
-        ("youtube", f"/api/title/{kind}/{ident}?v=2"),
+        ("youtube", f"/api/title/{kind}/{ident}?v=3"),
     ):
         try:
             fetched[label] = fetch(route)
