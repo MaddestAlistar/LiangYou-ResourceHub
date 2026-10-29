@@ -121,3 +121,81 @@ test('Video upload rejects oversize before any GitHub write',async()=>{
  assert.equal(result.status,413);
  assert.match((await result.json()).error,/文件过大/);
 });
+
+
+test('Optional article image is persisted, edit replacement/removal works, and video retains its separate model',async()=>{
+ const store=db(),extra={origin,allowed:origin,fetcher:store.fetcher};
+ const root='https://raw.githubusercontent.com/MaddestAlistar/videos/main/news-images/';
+ const first=root+'12345678-abcd-4567-aaaa-123456789abc.jpg';
+ const second=root+'22345678-abcd-4567-aaaa-123456789abc.jpg';
+ const create=await serveTechNews(call('/news-admin','POST',{
+  action:'create',category:'系统提醒',title:'客户端通知',content:'公告信息',newsImageUrl:first
+ }),env,extra);
+ assert.equal(create.status,200);
+ const created=(await create.json()).items[0];
+ assert.equal(created.newsImageUrl,first);
+ const feed=await serveTechNews(call('/news-feed','GET',null,false),env,extra);
+ assert.equal((await feed.json()).items[0].newsImageUrl,first);
+ const updated=await serveTechNews(call('/news-admin','POST',{
+  action:'update',id:created.id,category:'热点播报',title:'后续更新',content:'新内容',newsImageUrl:second
+ }),env,extra);
+ assert.equal(updated.status,200);
+ assert.equal((await updated.json()).items[0].newsImageUrl,second);
+ const cleared=await serveTechNews(call('/news-admin','POST',{
+  action:'update',id:created.id,category:'应用动态',title:'移除配图',content:'无图版本'
+ }),env,extra);
+ assert.equal(cleared.status,200);
+ assert.equal((await cleared.json()).items[0].newsImageUrl,undefined);
+ const evil=await serveTechNews(call('/news-admin','POST',{
+  action:'create',category:'图标动态',title:'测试',content:'非法网址',newsImageUrl:'https://example.com/photo.jpg'
+ }),env,extra);
+ assert.equal(evil.status,400);
+ const malformed=await serveTechNews(call('/news-admin','POST',{
+  action:'create',category:'图标动态',title:'测试',content:'非法路径',newsImageUrl:root+'../bad.jpg'
+ }),env,extra);
+ assert.equal(malformed.status,400);
+ const video=await serveTechNews(call('/news-admin','POST',{
+  action:'create',category:'视频精选',title:'原有视频',content:'内容',
+  sourceUrl:'https://t.me/example/100',
+  videoUrl:'https://raw.githubusercontent.com/MaddestAlistar/videos/main/clips/12345678-abcd-4567-aaaa-123456789abc.mp4',
+  newsImageUrl:first
+ }),env,extra);
+ assert.equal(video.status,200);
+ assert.equal((await video.json()).items[0].newsImageUrl,undefined);
+});
+
+test('Photo uploads require admin secret, valid JPEG content and dedicated GitHub token',async()=>{
+ const blob=new Uint8Array(180);blob[0]=0xff;blob[1]=0xd8;blob[178]=0xff;blob[179]=0xd9;
+ const form=new FormData();form.append('image',new Blob([blob],{type:'image/jpeg'}),'news.jpg');
+ const request=(auth=true,formData=form)=>new Request('https://example.com/news-image-upload',{
+  method:'POST',headers:{Origin:origin,...(auth?{'X-Admin-Key':env.ADMIN_KEY}:{})},body:formData
+ });
+ const extra={origin,allowed:origin,fetcher:async()=>{throw Error('No GitHub writes permitted')}};
+ const denied=await serveTechNews(request(false),env,extra);
+ assert.equal(denied.status,401);
+ const noToken=await serveTechNews(request(),env,extra);
+ assert.equal(noToken.status,503);
+ const hits=[];
+ const uploaded=await serveTechNews(request(),{...env,VIDEOS_GITHUB_TOKEN:'test-token'},
+  {origin,allowed:origin,fetcher:async(url,opts)=>{hits.push({url,opts});return Response.json({content:{sha:'sample'}},{status:201})}});
+ assert.equal(uploaded.status,200);
+ const data=await uploaded.json();
+ assert.match(data.newsImageUrl,/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/videos\/main\/news-images\/[a-f0-9-]{36}\.jpg$/);
+ assert.equal(hits.length,1);
+ assert.equal(hits[0].opts.headers.Authorization,'Bearer test-token');
+ const sent=JSON.parse(hits[0].opts.body);
+ assert.equal(Buffer.from(sent.content,'base64').length,180);
+ const notImage=new FormData();notImage.append('image',new Blob([new Uint8Array(180)],{type:'image/jpeg'}),'news.jpg');
+ const invalid=await serveTechNews(request(true,notImage),{...env,VIDEOS_GITHUB_TOKEN:'test-token'},extra);
+ assert.equal(invalid.status,400);
+});
+test('News photo upload rejects oversized requests before repository writes',async()=>{
+ const fd=new FormData();fd.append('image',new Blob([new Uint8Array(180)],{type:'image/jpeg'}),'photo.jpg');
+ const request=new Request('https://example.com/news-image-upload',{method:'POST',headers:{
+  Origin:origin,'X-Admin-Key':env.ADMIN_KEY,'Content-Length':'1500000'
+ },body:fd});
+ const result=await serveTechNews(request,{...env,VIDEOS_GITHUB_TOKEN:'test-key'},{
+  origin,allowed:origin,fetcher:async()=>{throw Error('Should not upload')}
+ });
+ assert.equal(result.status,413);
+});
