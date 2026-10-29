@@ -431,7 +431,10 @@ test('Moana remake and Obsession movie headlines are separated from unrelated sh
    bad:['Moana 2016 animated soundtrack','Moana fan obsession with jewelry','《海洋奇缘》动画原版口碑讨论']},
   {original:'Obsession',local:'痴迷',genre:'Horror',director:'Curry Barker',
    good:['Obsession 2026 horror film makes box office history','Curry Barker Obsession movie wins fans'],
-   bad:['The internet obsession with movies','Obsession with gaming grows']}
+   bad:['The internet obsession with movies','Obsession with gaming grows']},
+  {original:'The Grand Return',local:'归来之旅',genre:'Drama',director:'Sample Director',
+   good:['The Grand Return 2026 movie premieres','《归来之旅》2026 电影首映'],
+   bad:['The Grand Return 2012 movie retrospective','The Grand Return 2014 trailer re-release']}
  ]){
   globalThis.fetch=async input=>{
    const u=new URL(String(input));
