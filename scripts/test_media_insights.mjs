@@ -530,6 +530,33 @@ test('regional TMDB translations discover genuine news for non-indexed catalog m
   assert.ok(body.articles.every(x=>x.titleMatchVerified));
  }finally{globalThis.fetch=old;}
 });
+test('catalog movies without a Chinese title still receive checked English-title Bilibili clips',async()=>{
+ const before=globalThis.fetch,search=[];
+ const bvid="BV1F3aF6mEQn";
+ globalThis.fetch=async input=>{
+  const u=new URL(String(input));
+  if(u.hostname==="api.themoviedb.org")return json({
+   id:550,adult:false,title:"Northern Lights",original_title:"Northern Lights",
+   release_date:"2024-03-01",alternative_titles:{titles:[]},translations:{translations:[]}
+  });
+  if(u.hostname==="api.bilibili.com"&&u.pathname.endsWith("/search/type")){
+   search.push(u.searchParams.get("keyword"));
+   return json({code:0,data:{result:[{bvid,title:"Northern Lights 电影幕后花絮"}]}});
+  }
+  if(u.hostname==="api.bilibili.com"&&u.pathname.endsWith("/view"))
+   return json({code:0,data:{bvid,title:"Northern Lights 电影幕后花絮",state:0,
+    owner:{name:"Film community"},stat:{like:52,view:2500}}});
+  if(u.hostname==="www.bing.com")return new Response("<rss><channel></channel></rss>",{status:200});
+  throw Error("Unexpected "+u.href);
+ };
+ try{
+  const {status,body}=await invoke("/api/videos/title/movie/550",{TMDB_API_KEY:"test"});
+  assert.equal(status,200);
+  assert.equal(body.status,"ok");
+  assert.equal(body.videos[0].videoId,bvid);
+  assert.ok(search.some(x=>x.includes("Northern Lights")));
+ }finally{globalThis.fetch=before;}
+});
 test('blocked Bilibili public search fails closed and does not invent video cards',async()=>{
  const previous=globalThis.fetch;
  globalThis.fetch=async input=>{
