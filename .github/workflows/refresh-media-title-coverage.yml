@@ -51,19 +51,40 @@ jobs:
                   assert video['verifiedByTitleId'] is True
                   assert video['tmdbId']==ident and video['kind']==kind
           PY
-      - name: Publish accumulated exact-title coverage
+      - name: Merge and publish coverage without losing concurrent updates
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/media-title-coverage.json
-          if ! git diff --cached --quiet; then
+          cp data/media-title-coverage.json /tmp/liangyou-coverage-candidate.json
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          candidate=json.loads(Path('/tmp/liangyou-coverage-candidate.json').read_text())
+          dest=Path('data/media-title-coverage.json')
+          try: old=json.loads(dest.read_text())
+          except (OSError,ValueError): old={}
+          items=dict(old.get('items') or {})
+          for ident,row in (candidate.get('items') or {}).items():
+              prev=items.get(ident)
+              if prev is None or str(row.get('checkedAt') or '') >= str(prev.get('checkedAt') or ''):
+                  items[ident]=row
+          if len(items)>650:
+              items=dict(sorted(items.items(),
+                  key=lambda pair:str(pair[1].get('checkedAt') or ''),reverse=True)[:650])
+          updated=max(str(old.get('updatedAt') or ''),str(candidate.get('updatedAt') or ''))
+          dest.write_text(json.dumps({'schema':1,'updatedAt':updated,'items':items},
+              ensure_ascii=False,separators=(',',':'))+'\n')
+          print('COVERAGE_MERGED',len(items))
+          PY
+            git add data/media-title-coverage.json
+            if git diff --cached --quiet; then break; fi
             git commit -m 'Refresh all-film title coverage cache [skip ci]'
-            for attempt in 1 2 3; do
-              git pull --rebase origin main
-              if git push origin HEAD:main; then break; fi
-              if [ "$attempt" = "3" ]; then exit 1; fi
-            done
-          fi
+            if git push origin HEAD:main; then break; fi
+            if [ "$attempt" = "4" ]; then exit 1; fi
+          done
       - name: Update published snapshots
         env:
           GH_TOKEN: ${{ github.token }}
