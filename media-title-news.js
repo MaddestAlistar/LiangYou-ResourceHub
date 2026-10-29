@@ -59,7 +59,7 @@
         safeUrl(x.url)==='https://www.youtube.com/watch?v='+x.id)
       .slice(0,3).map(x=>({
         id:x.id,title:String(x.title||'Trailer').slice(0,145),type:'Trailer',
-        verifiedBy:'TMDB',official:true,embeddable:null,
+        verifiedBy:'TMDB',official:x.official===true,embeddable:null,
         url:'https://www.youtube.com/watch?v='+x.id
       }));
     const videos=item.videos.filter(x=>x?.verifiedByTitleId===true&&
