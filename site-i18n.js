@@ -103,6 +103,14 @@
     "网页内播放":"Play video",
     "查看原帖 ↗":"Original ↗"
   });
+  // Live Photo JPEG submission: keep the new format option bilingual.
+  Object.assign(translations, {
+    "动态图标（GIF / 内嵌视频 Live Photo JPG）": "Animated icon (GIF / Live Photo JPG with embedded video)",
+    "Live Photo 投稿": "Live Photo submission",
+    "已检测到内嵌视频。提交后自动生成循环 GIF；审核后台将在转换成功后显示最终 GIF。": "Embedded video found. A looping GIF will be generated automatically after submission; the final GIF appears in the review dashboard when ready.",
+    "静态投稿": "Static submissions",
+    "动态投稿": "Animated submissions"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
