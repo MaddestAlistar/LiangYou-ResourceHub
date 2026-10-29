@@ -16,12 +16,46 @@
       .catch(()=>null);
     return pending;
   }
+  // Scheduled coverage for the full catalog, independently of the three
+  // hand-checked editorial records. Read once per open tab and fail quietly
+  // when the first scheduled refresh has not published yet.
+  let coveragePromise;
+  async function readCoverage(){
+    if(!coveragePromise)coveragePromise=fetch('./data/media-title-coverage.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(7500)
+    }).then(r=>r.ok?r.json():null)
+      .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
+      .catch(()=>null);
+    return coveragePromise;
+  }
+  async function cachedForInfo(kind,id,year){
+    const cache=await readCoverage();
+    const item=cache?.items?.[kind+':'+id];
+    if(!item||!Array.isArray(item.articles)||!Array.isArray(item.videos))return null;
+    const storedYear=Number(item.year);
+    if(Number.isInteger(storedYear)&&storedYear>1900&&Math.abs(year-storedYear)>1)return null;
+    const articles=item.articles.filter(x=>x?.titleMatchVerified===true&&
+      typeof x.title==='string'&&x.title.length>=8&&x.title.length<=180&&
+      typeof x.source==='string'&&safeUrl(x.url)&&
+      (x.date==null||Number.isFinite(Date.parse(x.date)))&&
+      ['zh','en','ja','ko'].includes(x.language)).slice(0,24)
+      .map(x=>({...x,url:safeUrl(x.url)}));
+    const videos=item.videos.filter(x=>x?.verifiedByTitleId===true&&
+      x.kind===kind&&Number(x.tmdbId)===id&&
+      x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
+      safeUrl(x.verifiedSource)==='https://www.bilibili.com/video/'+x.videoId+'/'&&
+      Number.isInteger(Number(x.year))&&Math.abs(Number(x.year)-year)<=1)
+      .slice(0,10).map(x=>({...x,verifiedSource:safeUrl(x.verifiedSource)}));
+    return articles.length||videos.length?{articles,videos,aliases:[]}:null;
+  }
   async function forInfo(info){
     const kind=info?.kind,id=Number(info?.tmdbId),year=Number(String(info?.year||'').slice(0,4));
     if(!validKind(kind)||!Number.isSafeInteger(id)||id<1||!Number.isSafeInteger(year))return null;
     const d=await read();
     const item=d?.titles?.[kind+':'+id];
-    if(!item||item.kind!==kind||item.tmdbId!==id||item.year!==year)return null;
+    // Do not penalize films absent from the tiny manually curated index.
+    if(!item||item.kind!==kind||item.tmdbId!==id||item.year!==year)
+      return cachedForInfo(kind,id,year);
     const articles=(Array.isArray(item.articles)?item.articles:[]).filter(x=>x&&
       typeof x.title==='string'&&x.title.length>=8&&x.title.length<=200&&
       typeof x.source==='string'&&safeUrl(x.url)&&Number.isFinite(Date.parse(x.date||'')))
