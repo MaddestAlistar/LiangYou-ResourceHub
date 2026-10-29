@@ -644,6 +644,36 @@ async function titleNews(kind,id,env){
    status:finalArticles.length?"ok":"no_data",articles:finalArticles,source:"Film title search",sourceDiagnostics:stats};
 }
 
+// Video titles need their own relevance check. News headlines rarely contain
+// words such as "幕后剪辑" or "高能混剪", but those are valid related videos.
+function filmVideoTitleMatches(heading,titles,year,kind="movie"){
+ const line=String(heading||"").normalize("NFKC").trim();
+ if(!line||line.length>240||/完整版|全集|全片|免费观看|网盘|磁力|资源下载|破解|在线观看/i.test(line))return false;
+ const compact=normalizedHeadline(line).replace(/ /g,"");
+ const contextual=/预告|影评|解说|剪辑|混剪|花絮|幕后|采访|特辑|票房|剧情|演员|电影|剧集|电视剧|导演|片段|高能|reaction|trailer|teaser|review|interview|scene|movie|film|drama|episode|behind/i.test(line);
+ const edition=/真人版|真人电影|真人化|翻拍|重启|重制|live[\s-]?action|remake|reboot/i.test(line);
+ const quoted=x=>['《'+x+'》','【'+x+'】','「'+x+'」','"'+x+'"'].some(q=>line.toLowerCase().includes(q.toLowerCase()));
+ const yearString=String(year||"");
+ const statedYears=[...line.matchAll(/\b(?:19|20)\d{2}\b/g)].map(v=>v[0]);
+ if(statedYears.length&&yearString.length===4&&!statedYears.includes(yearString)&&!edition)return false;
+ return (Array.isArray(titles)?titles:[]).some(entry=>{
+  const candidate=typeof entry==="string"?entry:entry?.name;
+  if(!candidate)return false;
+  const key=normalizedHeadline(candidate),plain=key.replace(/ /g,"");
+  if(plain.length<2)return false;
+  const asian=/[\u3400-\u9fff\uac00-\ud7af]/.test(key);
+  const found=asian?compact.includes(plain):(" "+normalizedHeadline(line)+" ").includes(" "+key+" ");
+  if(!found)return false;
+  if(typeof entry==="object"&&entry.requireEdition===true&&!edition&&!line.includes(yearString))return false;
+  if(asian&&plain.length<4)return quoted(candidate)&&contextual;
+  if(!asian&&plain.length<7)return false;
+  if(!contextual&&!line.includes(yearString)&&!quoted(candidate))return false;
+  // Single common English nouns (e.g. Obsession) still need a movie context
+  // or the correct release year, never merely the coincidental word.
+  return true;
+ });
+}
+
 // Best-effort domestic video discovery for EVERY TMDB title. This source is
 // uncredentialed and may reject automated requests; do not bypass its controls.
 // Search results alone are NOT sufficient: each BVID is checked against the
@@ -667,56 +697,61 @@ async function titleBilibiliVideos(kind,id,env){
  const asian=[...new Set(names)].find(x=>/[\u3400-\u9fff]/.test(x));
  const empty=(status)=>({ok:true,kind,tmdbId:Number(id),year,status,source:"Bilibili public search",videos:[]});
  if(!asian||!Number.isSafeInteger(year)||year<1900)return empty("no_usable_title");
- const kw=asian+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear;
- let results=[],source="Bilibili public search";
- try{
+ // Two independent searches per work: year-specific trailers and unyeared
+ // reviews/clips. Both still need a verified title and Bilibili video ID.
+ const titleChoices=[...new Set(names)].filter(x=>/[\u3400-\u9fff]/.test(x)&&x.length>=2);
+ const variants=[{name:asian,query:asian+" "+(kind==="movie"?"电影":"电视剧")+" "+rawYear+" 预告"},
+   {name:asian,query:asian+" "+(kind==="movie"?"电影 影评 花絮":"剧集 剧评 花絮")}];
+ const secondary=titleChoices.find(v=>v!==asian&&v.length>=4);
+ if(secondary)variants[1]={name:secondary,query:secondary+" "+(kind==="movie"?"电影 预告 解析":"电视剧 预告 花絮")};
+ const results=(await Promise.all(variants.map(async item=>{
+  try{
    const uri=new URL("https://api.bilibili.com/x/web-interface/search/type");
-   uri.searchParams.set("search_type","video");uri.searchParams.set("keyword",kw);
+   uri.searchParams.set("search_type","video");
+   uri.searchParams.set("keyword",item.query);
    uri.searchParams.set("order","totalrank");uri.searchParams.set("page","1");
    const payload=await jsonRemote(uri.toString(),{
-      headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
-       "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
-   if(payload?.code===0&&Array.isArray(payload.data?.result))results=payload.data.result;
- }catch{/* Public search can refuse anonymous requests; do not evade controls. */}
- // Public search indexes can still discover a Bilibili URL when Bilibili
- // restricts its own anonymous search API. This is a separate, best-effort
- // search. Every candidate must pass Bilibili's public /view identity check.
- if(!results.length){
+    headers:{Accept:"application/json",Referer:"https://www.bilibili.com/",
+      "User-Agent":"Mozilla/5.0 (compatible; LiangYouResourceHub/1.0)"}},6500);
+   return payload?.code===0&&Array.isArray(payload.data?.result)?payload.data.result:[];
+  }catch{return [];}
+ }))).flat();
+ const unique=new Set();
+ let source="Bilibili public search";
+ let shortlist=results.map(v=>({
+  bvid:String(v.bvid||"").trim(),heading:rssDecoded(v.title||"")
+ })).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
+   !unique.has(v.bvid)&&unique.add(v.bvid)&&
+   filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind)).slice(0,14);
+ // When the native search is blocked or returned only unrelated titles,
+ // try a public index without scraping inaccessible player pages.
+ if(shortlist.length<3){
   try{
    const uri=new URL("https://www.bing.com/search");
    uri.searchParams.set("q",'site:bilibili.com/video/ "'+asian+'" '+rawYear+' 预告 OR 影评 OR 花絮');
    uri.searchParams.set("format","rss");uri.searchParams.set("setmkt","zh-CN");
    const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),5500);
    try{
-    const response=await fetch(uri.toString(),{signal:ac.signal,
-      headers:{Accept:"application/rss+xml, application/xml"}});
+    const response=await fetch(uri.toString(),{signal:ac.signal,headers:{Accept:"application/rss+xml, application/xml"}});
     if(response.ok){
      const xml=(await response.text()).slice(0,220000);
      if(/<rss[\s>]/i.test(xml)){
-      results=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,24).map(m=>{
+      const extra=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0,24).map(m=>{
        const title=rssField(m[1],"title"),link=rssField(m[1],"link");
        let u;try{u=new URL(link);}catch{return null;}
-       // Do not follow search redirects or trust arbitrary external video URLs.
        if(u.protocol!=="https:"||!["www.bilibili.com","bilibili.com"].includes(u.hostname))return null;
        const match=/^\/video\/(BV[A-Za-z0-9]{10})\/?$/.exec(u.pathname);
-       return match?{bvid:match[1],title}:null;
-      }).filter(Boolean);
-      if(results.length)source="Bing public index + Bilibili verified metadata";
+       return match?{bvid:match[1],heading:title}:null;
+      }).filter(v=>v&&!unique.has(v.bvid)&&unique.add(v.bvid)&&
+        filmVideoTitleMatches(v.heading,titleChoices,rawYear,kind));
+      if(extra.length){shortlist=[...shortlist,...extra].slice(0,14);source="Bilibili + Bing public index"; }
      }
     }
    }finally{clearTimeout(timer);}
-  }catch{/* No indexed results is acceptable; never create guessed BV IDs. */}
+  }catch{/* No third-party indexed result must never become a fake video. */}
  }
- if(!results.length)return empty("unavailable");
- const shortlist=results.map(v=>{
-   const bvid=String(v.bvid||"").trim();
-   const heading=rssDecoded(v.title||"");
-   return {bvid,heading};
- }).filter(v=>/^BV[A-Za-z0-9]{10}$/.test(v.bvid)&&
-    rssArticleMatches(v.heading,asian,{year:rawYear})&&
-    !/完整版|全集|全片|在线观看|免费观看|资源下载|网盘|磁力/i.test(v.heading))
-   .slice(0,6);
- if(!shortlist.length)return empty("no_match");
+ if(!shortlist.length)return {ok:true,kind,tmdbId:Number(id),year,status:"no_match",
+   source:"Bilibili public search",videos:[]};
  const checked=await Promise.all(shortlist.map(async v=>{
    try{
     const uri=new URL("https://api.bilibili.com/x/web-interface/view");
@@ -727,8 +762,7 @@ async function titleBilibiliVideos(kind,id,env){
     const d=resp?.data;
     if(resp.code!==0||d?.bvid!==v.bvid||d?.state!==0)return null;
     const title=String(d.title||"").normalize("NFKC").trim();
-    if(!rssArticleMatches(title,asian,{year:rawYear})||
-       /完整版|全集|全片|在线观看|免费观看|资源下载|网盘|磁力/i.test(title))return null;
+    if(!filmVideoTitleMatches(title,titleChoices,rawYear,kind))return null;
     const likes=Number(d.stat?.like),views=Number(d.stat?.view);
     return {kind,tmdbId:Number(id),verifiedByTitleId:true,title:canonical,year,
       platform:"bilibili",videoId:v.bvid,name:title.slice(0,145),
