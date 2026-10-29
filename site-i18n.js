@@ -68,6 +68,13 @@
     "途播 CarPlay · 良友视频播放器":"Tubo CarPlay · LiangYou video player",
     "良哥看未来 · 途播 CarPlay 视频封面":"LiangGe's Tubo CarPlay video cover"
   });
+  Object.assign(translations, {
+    "小米澎程 N90 在 CarPlay 上的部分 APP 实际演示":"Xiaomi N90: CarPlay app demonstrations",
+    "小米澎程 N90 · CarPlay 应用演示":"Xiaomi N90 · CarPlay app demos",
+    "体验小米澎程 N90 的 CarPlay 应用：音乐、有声书、影视及投屏。":"See music, audiobooks, video players and casting apps on Xiaomi N90 CarPlay.",
+    "在网页内播放：小米澎程 N90 CarPlay APP 实际演示":"Play Xiaomi N90 CarPlay video on this page",
+    "小米澎程 N90 CarPlay 视频封面":"Xiaomi N90 CarPlay video cover"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
