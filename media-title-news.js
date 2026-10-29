@@ -57,8 +57,9 @@
         Number.isInteger(Number(x.year))&&(!(year>=1850)||Math.abs(Number(x.year)-year)<=1)&&
         /^[A-Za-z0-9_-]{11}$/.test(String(x.id||''))&&
         safeUrl(x.url)==='https://www.youtube.com/watch?v='+x.id)
-      .slice(0,3).map(x=>({
-        id:x.id,title:String(x.title||'Trailer').slice(0,145),type:'Trailer',
+      .slice(0,6).map(x=>({
+        id:x.id,title:String(x.title||'Video').slice(0,145),
+        type:['Trailer','Teaser','Clip','Featurette','Behind the Scenes','Bloopers'].includes(x.type)?x.type:'Trailer',
         verifiedBy:'TMDB',official:x.official===true,embeddable:null,
         url:'https://www.youtube.com/watch?v='+x.id
       }));
@@ -99,7 +100,7 @@
       row=>safeUrl(row.url),30);
     const mergedVideos=dedupe([...videos,...(catalog?.videos||[])],
       row=>row.platform+':'+row.videoId,16);
-    const youtubeTrailers=dedupe(catalog?.youtubeTrailers||[],row=>row.id,3);
+    const youtubeTrailers=dedupe(catalog?.youtubeTrailers||[],row=>row.id,6);
     return mergedArticles.length||mergedVideos.length||youtubeTrailers.length||aliases.length?
       {articles:mergedArticles,videos:mergedVideos,youtubeTrailers,aliases}:null;
   }
