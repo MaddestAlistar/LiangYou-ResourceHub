@@ -242,16 +242,29 @@ async function mediaInsights(kind,id,env,withMedia=false,withWiki=false){
    const uniqueNames=[...new Set(matchingNames)];
    const banned=/full\s*(?:movie|film|episode)|entire\s*(?:movie|film)|watch\s*(?:movie|film)\s*online|完整版|全集|免费观影/i;
    const already=new Set(result.trailers.map(v=>v.id));
+   const people=[...(title.credits?.crew||[]).filter(v=>v.job==="Director").slice(0,2),
+     ...(title.credits?.cast||[]).slice(0,3)].map(v=>norm(v.name||"").trim())
+     .filter(v=>v.length>=5);
+   const isFilmContext=/\b(film|movie|trailer|review|scene|interview|director|cinema|behind|actor|cast|teaser|drama|series|episode)\b|电影|电视剧|影评|预告|演员|幕后|剧情|花絮|剧集|影视|片段|映画|予告|영화|드라마/i;
    const verifyCandidates=rows=>rows.filter(v=>{
     const id=String(v.id||""),heading=String(v.snippet?.title||""),label=norm(heading);
     if(already.has(id)||v.status?.privacyStatus!=="public"||v.status?.embeddable!==true||
        v.contentDetails?.contentRating?.ytRating==="ytAgeRestricted"||banned.test(heading))return false;
     const matchedName=uniqueNames.find(name=>label.includes(" "+name+" "));
     if(!matchedName)return false;
-    // A short alias is only safe with context corroboration (year or film topic).
+    // A correct title is not enough for remakes or one-word names: the video
+    // might belong to a different edition, a song, or an unrelated hobby.
     const compact=matchedName.replace(/ /g,"");
-    if(compact.length<=6&&!/\b(movie|film|review|interview|scene|series|trailer|behind|analysis|episode|cast|teaser)\b/i.test(heading)&&
-       !heading.includes(releaseYear)&&!/电影|电视剧|影评|预告|演员|幕后|剧情|花絮|剧集|影视|片段|캐스트|드라마/.test(heading))return false;
+    const release=Number(releaseYear),stated=[...heading.matchAll(/\b(?:19|20)\d{2}\b/g)].map(v=>Number(v[0]));
+    const edition=/live[\s-]?action|remake|reboot|真人版|真人电影|重启|翻拍/i.test(heading);
+    const person=people.some(name=>label.includes(" "+name+" "));
+    const promotional=/\b(teaser|trailer|first look|coming soon)\b|预告|先导|首曝|定档|予告/i.test(heading);
+    const earlierPromo=promotional&&stated.length>0&&stated.every(y=>y>=release-2&&y<release);
+    if(stated.length&&stated.some(y=>Math.abs(y-release)>1)&&!edition&&!person&&!earlierPromo)return false;
+    const ambiguous=compact.length<=11&&!matchedName.includes(" ");
+    if(ambiguous&&!(heading.includes(releaseYear)||edition&&isFilmContext.test(heading)||
+       person&&isFilmContext.test(heading)||earlierPromo))return false;
+    if(compact.length<=6&&!isFilmContext.test(heading)&&!heading.includes(releaseYear))return false;
     // Hide unknown engagement instead of dropping a valid, playable film video.
     return !v.statistics?.likeCount||Number.isSafeInteger(Number(v.statistics.likeCount))&&Number(v.statistics.likeCount)>=0;
    }).map(v=>({
