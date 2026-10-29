@@ -1,5 +1,5 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>良友图标审核后台</title><style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b101a;color:#f5f1e8}main{max-width:1100px;margin:auto;padding:24px 16px 80px}h1{font-size:28px;margin:20px 0 6px}.muted{color:#a6afbd;line-height:1.7}.panel,.item{background:#151e2c;border:1px solid #354153;border-radius:20px;padding:20px;margin:16px 0}input,select{background:#0c1420;border:1px solid #596578;color:white;border-radius:12px;padding:14px;font-size:16px;max-width:100%;width:100%}button{background:#e5c98e;border:0;color:#211b13;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer}button:disabled{opacity:.45}.secondary{background:#344257;color:white}.danger{background:#a95058;color:white}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}#items{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}.item{margin:0}.item img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#080d15;border-radius:15px}.item h2{font-size:21px;overflow-wrap:anywhere}.item p{overflow-wrap:anywhere}.tag{font-size:12px;color:#ebd39b}.hidden{display:none}a{color:#ebd39b}.item{display:flex;flex-direction:column;gap:8px}.item p{margin:3px 0;font-size:13px;line-height:1.7}.item h2{margin:8px 0}.item img{max-height:240px}.card-tools,.review-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card-tools{padding-top:12px;margin-top:auto;border-top:1px solid #354153}.review-actions{padding-top:8px}.review-actions button:first-child{grid-column:1/-1}.card-tools button,.review-actions button{min-height:44px;padding:10px;font-size:14px}.rename-editor{padding:12px;border:1px solid #596578;border-radius:12px;margin:8px 0}.rename-editor .row{margin-top:10px}.rename-editor[hidden]{display:none}.tag{align-self:flex-start;background:#e5c98e15;border:1px solid #e5c98e40;padding:4px 10px;border-radius:99px}button:disabled{cursor:not-allowed}@media(max-width:420px){main{padding:16px 12px}.panel,.item{padding:16px}.panel .row{display:grid;grid-template-columns:1fr}}
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b101a;color:#f5f1e8}main{max-width:1100px;margin:auto;padding:24px 16px 80px}h1{font-size:28px;margin:20px 0 6px}.muted{color:#a6afbd;line-height:1.7}.panel,.item{background:#151e2c;border:1px solid #354153;border-radius:20px;padding:20px;margin:16px 0}input,select{background:#0c1420;border:1px solid #596578;color:white;border-radius:12px;padding:14px;font-size:16px;max-width:100%;width:100%}button{background:#e5c98e;border:0;color:#211b13;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer}button:disabled{opacity:.45}.secondary{background:#344257;color:white}.danger{background:#a95058;color:white}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}#items{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}.item{margin:0}.item img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:#080d15;border-radius:15px}.item h2{font-size:21px;overflow-wrap:anywhere}.item p{overflow-wrap:anywhere}.tag{font-size:12px;color:#ebd39b}.hidden{display:none}a{color:#ebd39b}.item{display:flex;flex-direction:column;gap:8px}.item p{margin:3px 0;font-size:13px;line-height:1.7}.item h2{margin:8px 0}.item img{max-height:240px}.item video{display:block;width:100%;max-height:240px;aspect-ratio:1;object-fit:contain;background:#080d15;border-radius:15px}.card-tools,.review-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card-tools{padding-top:12px;margin-top:auto;border-top:1px solid #354153}.review-actions{padding-top:8px}.review-actions button:first-child{grid-column:1/-1}.card-tools button,.review-actions button{min-height:44px;padding:10px;font-size:14px}.rename-editor{padding:12px;border:1px solid #596578;border-radius:12px;margin:8px 0}.rename-editor .row{margin-top:10px}.rename-editor[hidden]{display:none}.tag{align-self:flex-start;background:#e5c98e15;border:1px solid #e5c98e40;padding:4px 10px;border-radius:99px}button:disabled{cursor:not-allowed}@media(max-width:420px){main{padding:16px 12px}.panel,.item{padding:16px}.panel .row{display:grid;grid-template-columns:1fr}}
 </style><style>
 #tech-news-admin{scroll-margin-top:20px}
 .news-admin-header,.news-admin-published-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -75,18 +75,23 @@ function render(){
  const list=entries.filter(x=>(filter==="all"||x.status===filter)&&((x.name||"").toLowerCase().includes(search)||(x.author||"").toLowerCase().includes(search)||(x.batchId||"").toLowerCase().includes(search)));
  $("count").textContent="共 "+list.length+" 条记录";const wrap=$("items");wrap.replaceChildren();
  for(const x of list){
-  const card=el("article",undefined,"item"),img=el("img");img.src=x.imageUrl;img.alt=x.name||"投稿图标";img.loading="lazy";
+  const card=el("article",undefined,"item");
+  const isVideo=["mov","mp4"].some(ext=>String(x.filename||"").toLowerCase().endsWith("."+ext));
+  const img=el(isVideo?"video":"img");img.src=x.imageUrl;
+  if(isVideo){img.controls=true;img.muted=true;img.playsInline=true;img.preload="metadata"}
+  else{img.alt=x.name||"投稿图标";img.loading="lazy"}
   card.append(img,el("h2",x.name),el("p","作者："+(x.author||"未知")),el("p","类型："+(x.kind||"未知")+" · "+(x.width||"?")+"×"+(x.height||"?")),el("p","说明："+(x.notes||"无")),el("p","状态："+(statusName[x.status]||x.status),"tag"),el("p","编号："+x.id));
   if(x.batchId)card.append(el("p","批次："+x.batchId,"muted"));
-  if(x.motionSource==="embedded-video"){
-   const desc={processing:"Live Photo JPG · 正在自动生成循环 GIF",ready:"Live Photo JPG · 已生成 GIF，可审核发布",failed:"Live Photo JPG · GIF 转换失败"};
+  if(["embedded-video","uploaded-video"].includes(x.motionSource)){
+   const label=x.motionSource==="uploaded-video"?"Live Photo 视频":"Live Photo JPG";
+   const desc={processing:label+" · 正在自动生成循环 GIF",ready:label+" · 已生成 GIF，可审核发布",failed:label+" · GIF 转换失败"};
    const state=String(x.conversionStatus||"processing");
    card.append(el("p","转换状态："+(desc[state]||"状态待核对"),"tag"));
    if(state==="failed")card.append(el("p","失败原因："+(x.conversionError||"请检查原始动态视频格式"),"field-error"));
-   if(typeof x.sourceFilename==="string"&&/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.jpe?g$/i.test(x.sourceFilename)){
-    const link=el("a","查看原始 Live Photo JPG ↗");link.href="https://raw.githubusercontent.com/MaddestAlistar/Icon-Review-Queue/main/"+x.sourceFilename.split("/").map(encodeURIComponent).join("/");link.target="_blank";link.rel="noopener noreferrer";card.append(link);
+   if(typeof x.sourceFilename==="string"&&/^pending\/[a-zA-Z0-9_\u4e00-\u9fa5-]+\.(?:jpe?g|mov|mp4)$/i.test(x.sourceFilename)){
+    const link=el("a","查看原始 "+(x.motionSource==="uploaded-video"?"视频":"Live Photo JPG")+" ↗");link.href="https://raw.githubusercontent.com/MaddestAlistar/Icon-Review-Queue/main/"+x.sourceFilename.split("/").map(encodeURIComponent).join("/");link.target="_blank";link.rel="noopener noreferrer";card.append(link);
    }
-   if(state==="ready")card.append(el("p","上方预览为自动生成的循环 GIF；原始 JPG 保留用于核对。","muted"));
+   if(state==="ready")card.append(el("p","上方预览为自动生成的循环 GIF；原始投稿文件保留用于核对。","muted"));
   }
   const utility=el("div",undefined,"card-tools");
   const email=typeof x.email==="string"?x.email.trim():"";
@@ -124,7 +129,7 @@ function render(){
   const actions=el("div",undefined,"review-actions");
   const choices=x.status==="withdrawn"?[["withdrawn","核对下架","secondary"]]:x.status==="approved"||x.publishedUrl?[["approved","核对发布",""],["withdrawn","下架","danger"]]:[["approved","通过并发布",""],...(x.status==="rejected"?[["pending","恢复待审核","secondary"]]:[["rejected","拒绝","danger"]])];
   for(const [state,label,cls] of choices){
-   const btn=el("button",label,cls);btn.disabled=busy||(state==="approved"&&x.motionSource==="embedded-video"&&x.conversionStatus!=="ready")||(!["approved","withdrawn"].includes(state)&&(x.status===state||x.status==="approved"||!!x.publishedUrl));
+   const btn=el("button",label,cls);btn.disabled=busy||(state==="approved"&&["embedded-video","uploaded-video"].includes(x.motionSource)&&x.conversionStatus!=="ready")||(!["approved","withdrawn"].includes(state)&&(x.status===state||x.status==="approved"||!!x.publishedUrl));
    btn.onclick=async()=>{
     if(busy)return;
     if(state==="approved"&&x.status!=="approved"&&!confirm("确认通过并发布「"+x.name+"」到正式图标库？"))return;
