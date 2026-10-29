@@ -66,5 +66,40 @@
     remoteCache.set(key,entry);
     return entry.promise;
   }
-  window.LiangYouTitleNews=Object.freeze({forInfo,remoteForInfo});
+  // Optional per-title video discovery uses only server-validated TMDB IDs and
+  // public video-detail metadata. Blocked search platforms return an empty list.
+  const videoCache=new Map();
+  function videoForInfo(info){
+    const kind=info?.kind,id=Number(info?.tmdbId);
+    const year=Number(String(info?.year||'').slice(0,4));
+    if(!validKind(kind)||!Number.isSafeInteger(id)||id<1||!Number.isSafeInteger(year))
+      return Promise.resolve(null);
+    const key=kind+':'+id,prior=videoCache.get(key);
+    if(prior&&Date.now()-prior.at<prior.ttl)return prior.promise;
+    const entry={at:Date.now(),ttl:120000,promise:null};
+    entry.promise=(async()=>{
+      try{
+        const r=await fetch('https://liangyou-streaming-availability.maddestalistar.workers.dev/api/videos/title/'+kind+'/'+id+'?v=1',{
+          signal:AbortSignal.timeout(17500)});
+        if(!r.ok)return null;
+        const d=await r.json();
+        if(d?.ok!==true||d.kind!==kind||d.tmdbId!==id||
+           !Number.isSafeInteger(d.year)||Math.abs(d.year-year)>1||
+           !Array.isArray(d.videos))return null;
+        const videos=d.videos.filter(v=>v?.verifiedByTitleId===true&&
+          v.kind===kind&&v.tmdbId===id&&v.platform==='bilibili'&&
+          /^BV[A-Za-z0-9]{10}$/.test(String(v.videoId||''))&&
+          Number(v.year)===d.year&&
+          safeUrl(v.verifiedSource)==='https://www.bilibili.com/video/'+v.videoId+'/'&&
+          typeof v.name==='string'&&v.name.length>=4&&v.name.length<=145)
+          .slice(0,8).map(v=>({...v,verifiedSource:safeUrl(v.verifiedSource)}));
+        return {videos};
+      }catch{return null;}
+    })().then(result=>{
+      entry.ttl=result?.videos?.length?3600000:120000;
+      return result;
+    });
+    videoCache.set(key,entry);return entry.promise;
+  }
+  window.LiangYouTitleNews=Object.freeze({forInfo,remoteForInfo,videoForInfo});
 })();
