@@ -47,9 +47,15 @@ jobs:
               ident=int(ident)
               assert kind in ('movie','tv') and ident>0
               assert len(entry['articles'])<=24 and len(entry['videos'])<=10
+              assert len(entry.get('youtubeTrailers',[]))<=3
               for video in entry['videos']:
                   assert video['verifiedByTitleId'] is True
                   assert video['tmdbId']==ident and video['kind']==kind
+              for clip in entry.get('youtubeTrailers',[]):
+                  assert clip['verifiedByTitleId'] is True
+                  assert clip['tmdbId']==ident and clip['kind']==kind
+                  assert clip['url']=='https://www.youtube.com/watch?v='+clip['id']
+                  assert len(clip['id'])==11
           PY
       - name: Merge and publish coverage without losing concurrent updates
         run: |
