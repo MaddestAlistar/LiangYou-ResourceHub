@@ -7,6 +7,7 @@
   let data=null,cat={works:{},aliases:{}},tab='movies',source='all',day='',query='',page=0;
   let activeId='',detailTab='ratings',activeEpisode=null,loadFailed=false,list=[],listFilter='all',storageError=false;
   let language=document.documentElement.lang.startsWith('en')?'en':'zh';
+  let usingCachedSnapshot=false;
   const store=core.createStore({getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)});
   const text=(zh,en)=>language==='en'?en:zh;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -91,7 +92,9 @@
     $('#media-library-note').textContent=text('仅保存在当前浏览器。导出 JSON 可备份，导入会合并片单并保留较新的状态。','Saved only in this browser. Export JSON for backup; imports merge lists and retain the newer status.');
     $('#media-export').textContent=text('导出片单','Export list');$('#media-import').textContent=text('导入片单','Import list');
     $('#media-export').disabled=!list.length;
-    $('#media-updated').textContent=data?text('定时更新 · 北京时间','Scheduled updates · UTC+8'):text('正在读取影视情报…','Loading intelligence…');
+    $('#media-updated').textContent=usingCachedSnapshot
+      ?text('本地快照 · 正在核对最新数据','Local snapshot · Checking current data')
+      :(data?text('定时更新 · 北京时间','Scheduled updates · UTC+8'):text('正在读取影视情报…','Loading intelligence…'));
     const s=data?.sources?.[source]||{};
     $('#media-source-status').textContent=tab==='library'?text('按片单更新时间排序','Recently updated first'):source==='all'?(data?text('快照更新：','Snapshot: ')+format(data.checked_at):''):s.status==='unavailable'?text('该来源暂不可用，可切换其他来源。','Source unavailable. Try another source.'):(data?(stale(s)?text('旧快照 · ','Cached snapshot · '):'')+text('数据核对：','Verified: ')+format(s.updated_at):'');
     $('#media-source-status').classList.toggle('mi-stale',source!=='all'&&tab!=='library'&&!!data&&stale(s));
@@ -291,10 +294,64 @@
   $('#media-search').addEventListener('input',e=>{query=e.target.value;page=0;render();});
   window.addEventListener('storage',e=>{if(e.key===core.KEY||e.key===null){loadList();render();if($('#media-dialog').open)renderDetail();}});
   new MutationObserver(()=>{const next=document.documentElement.lang.startsWith('en')?'en':'zh';if(next!==language){language=next;render();if($('#media-dialog').open)renderDetail();}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+  const PUBLIC_CACHE_KEY='liangyou.media.public.snapshot.v1';
+  const validSnapshot=d=>d?.schema===1&&d.sources&&typeof d.sources==='object'&&
+    d.works&&typeof d.works==='object'&&d.aliases&&typeof d.aliases==='object';
+  function acceptSnapshot(snapshot,cached=false){
+    if(!validSnapshot(snapshot))throw Error('invalid_media_snapshot');
+    data=snapshot;cat=core.catalog(snapshot);usingCachedSnapshot=cached;loadList();render();
+    const id=new URL(location.href).searchParams.get('film');
+    if(id&&!$('#media-dialog').open){
+      if(core.validId(id)&&(cat.works[id]||cat.aliases[id]||saved(id)||/^tmdb-(?:movie|tv)-[1-9]\\d{0,9}$/.test(id)))openDetails(id);
+      else if(!cached)notify(text('此分享作品已不在当前快照中，可在片单中查看已保存的资料。','This shared title is no longer in the current snapshot. Saved details remain in your list.'));
+    }else if(id&&$('#media-dialog').open&&activeWork())renderDetail();
+  }
+  function restoreCachedSnapshot(){
+    try{
+      const item=JSON.parse(localStorage.getItem(PUBLIC_CACHE_KEY)||'null');
+      const age=Date.now()-Number(item?.savedAt);
+      const checked=Date.now()-Date.parse(item?.data?.checked_at||'');
+      if(!validSnapshot(item?.data)||!Number.isFinite(age)||age<0||age>12*3600000||
+         !Number.isFinite(checked)||checked<0||checked>36*3600000)return false;
+      acceptSnapshot(item.data,true);
+      return true;
+    }catch{return false;}
+  }
+  function rememberSnapshot(snapshot){
+    const save=()=>{
+      try{
+        const content=JSON.stringify({savedAt:Date.now(),data:snapshot});
+        if(content.length<1200000)localStorage.setItem(PUBLIC_CACHE_KEY,content);
+      }catch{} // Storage may be disabled or full. Browsing must still work.
+    };
+    if('requestIdleCallback' in window)requestIdleCallback(save,{timeout:10000});
+    else setTimeout(save,1000);
+  }
   async function load(){
     loadFailed=false;
-    try{const r=await fetch('./data/media-intel.json',{cache:'no-cache'});if(!r.ok)throw Error();const d=await r.json();if(d.schema!==1||!d.sources)throw Error();data=d;cat=core.catalog(d);loadList();render();const id=new URL(location.href).searchParams.get('film');if(id){if(core.validId(id)&&(cat.works[id]||cat.aliases[id]||saved(id)||/^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(id)))openDetails(id);else notify(text('此分享作品已不在当前快照中，可在片单中查看已保存的资料。','This shared title is no longer in the current snapshot. Saved details remain in your list.'));}}
-    catch{loadFailed=true;render();$('#media-updated').textContent=text('影视情报加载失败，可重试；本地片单仍可查看。','Could not load intelligence. Retry or open your local list.');}
+    const cached=!!data||restoreCachedSnapshot();
+    try{
+      let snapshot=window.LiangYouMediaSnapshotPrefetch
+        ?await window.LiangYouMediaSnapshotPrefetch:null;
+      // If the prefetched request failed, allow one normal network retry.
+      if(!snapshot){
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),16000);
+        try{
+          const response=await fetch('./data/media-intel.json',{cache:'no-cache',signal:controller.signal});
+          if(!response.ok)throw Error('media_snapshot_unavailable');
+          snapshot=await response.json();
+        }finally{clearTimeout(timer);}
+      }
+      acceptSnapshot(snapshot,false);
+      rememberSnapshot(snapshot);
+    }catch{
+      loadFailed=!cached;
+      if(!cached)render();
+      $('#media-updated').textContent=cached
+        ?text('当前网络暂不可用 · 显示已保存的影视快照','Network unavailable · Showing a saved film snapshot')
+        :text('影视情报加载失败，可重试；本地片单仍可查看。','Could not load intelligence. Retry or open your local list.');
+    }
   }
   matchMedia('(max-width:760px)').addEventListener('change',()=>{page=0;render();});
   window.LiangYouWatchlist={entries:()=>list.slice()};
