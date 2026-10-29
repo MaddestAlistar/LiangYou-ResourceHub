@@ -237,11 +237,31 @@
   dialog.addEventListener("click", event => { if (event.target === dialog && backdropDown && outside(event)) closeDialog(); backdropDown = false; });
   $("selectCopyValue").addEventListener("click", () => { const field = $("manualCopyValue"); field.focus(); field.select(); field.setSelectionRange(0, field.value.length); $("manualCopyStatus").textContent = "已全选，请使用系统的复制操作。"; });
 
-  fetch("./data/projects.json", { cache: "no-cache" })
+  // A bounded, dated local fallback keeps the core resource directory usable
+  // on intermittent connections. It never overwrites current news or score feeds.
+  const catalogCacheKey = "liangyou-project-directory-v1";
+  const validCatalog = data => Array.isArray(data?.projects) && Array.isArray(data?.future) && !!data.metrics;
+  fetch("./data/projects.json", { cache: "no-cache", signal: AbortSignal.timeout(9000) })
     .then(response => { if (!response.ok) throw new Error("catalog unavailable"); return response.json(); })
-    .then(data => { if (!Array.isArray(data.projects) || !Array.isArray(data.future) || !data.metrics) throw new Error("invalid catalog"); renderCatalog(data); })
+    .then(data => {
+      if (!validCatalog(data)) throw new Error("invalid catalog");
+      renderCatalog(data);
+      try {
+        const content = JSON.stringify({savedAt:Date.now(),data});
+        if (content.length < 450000) localStorage.setItem(catalogCacheKey,content);
+      } catch { /* private browsing or quota limits must not block the site */ }
+    })
     .catch(error => {
       console.warn("Resource catalog could not be loaded", error);
+      try {
+        const cached = JSON.parse(localStorage.getItem(catalogCacheKey) || 'null');
+        if (cached && validCatalog(cached.data) && Number.isFinite(cached.savedAt) &&
+            cached.savedAt <= Date.now() && Date.now() - cached.savedAt < 7 * 86400000) {
+          renderCatalog(cached.data);
+          $("dataNote").textContent = "当前网络不稳定，显示最近一次已保存的资源目录（并非实时更新）。";
+          return;
+        }
+      } catch { /* Local storage unavailable: show the existing safe fallback */ }
       grid.setAttribute("aria-busy", "false");
       grid.innerHTML = `<div class="notice"><p>资源目录暂时无法加载。刷新页面，或直接打开原仓库：</p><ul><li>${link("https://github.com/MaddestAlistar/liangyou-appletv-badges", "媒体徽章库")}</li><li>${link("https://github.com/MaddestAlistar/LiangYou-IconLibrary", "媒体图标库")}</li><li>${link("https://github.com/MaddestAlistar/LiangyouChannels", "频道库")}</li></ul></div>`;
       $("libraryCount").textContent = "目录加载失败";
