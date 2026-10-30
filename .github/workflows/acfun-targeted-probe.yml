@@ -1,0 +1,25 @@
+name: Diagnose AcFun film search matches (isolated)
+on:
+  push:
+    branches: [probe/acfun-targeted-recall-20261030]
+    paths: [.github/workflows/acfun-targeted-probe.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Six low-rate AcFun search requests
+        run: python3 experiments/acfun_targeted_recall_probe.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acfun-targeted-response
+          path: acfun-targeted-report.json
+          if-no-files-found: ignore
+          retention-days: 3
