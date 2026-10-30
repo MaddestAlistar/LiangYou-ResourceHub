@@ -6,6 +6,10 @@ on:
       - feature/media-five-video-providers-20261030
     paths:
       - '.github/workflows/test-media-extra-videos.yml'
+      - 'media-insights.js'
+      - 'scripts/test_media_domestic_trailers.mjs'
+      - 'scripts/update_media_extra_videos.py'
+      - 'scripts/test_media_extra_videos.py'
   workflow_dispatch:
 
 permissions:
@@ -33,7 +37,27 @@ jobs:
           python scripts/test_media_extra_videos.py
       - name: Verify video display regressions and modal
         run: |
-          node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs
+          node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_matching.mjs scripts/test_media_layout_slots.mjs scripts/test_media_news_sources.mjs
+      - name: Refresh two real catalog entries without updating main
+        env:
+          EXTRA_VIDEO_BATCH: '2'
+          EXTRA_VIDEO_INTERVAL: '2'
+        run: |
+          python scripts/update_media_extra_videos.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path('data/media-extra-videos.json').read_text())
+          assert doc['schema']==1
+          assert len(doc['items'])==2
+          print('LIVE_EXTRA_VIDEO_CHECK',[(k,len(v['videos'])) for k,v in doc['items'].items()])
+          PY
+      - name: Upload safe probe report
+        uses: actions/upload-artifact@v4
+        with:
+          name: extra-video-preview
+          path: data/media-extra-videos.json
+          retention-days: 2
       - name: Verify snapshots and cached update contract
         run: |
           python - <<'PY'
