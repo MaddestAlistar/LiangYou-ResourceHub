@@ -353,6 +353,7 @@
   let animeIndex=null,malIndex=null,animeClassIndex=null,animeMetadataRequest=null;
   // Curated same-season identity: original Japanese title, 2026 premiere and MAL ID checked.
   // Never infer other adaptation identities from fuzzy translations.
+  const verifiedAnimePeers=Object.freeze({'bangumi-637802':'mal-63801','mal-63801':'bangumi-637802'});
   const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(v=>
     typeof v==='string'&&v.length>=2&&v.length<=48&&!/[<>\x00-\x1f]/.test(v)))].slice(0,6):[];
   function applyAnimeMetadata(){
@@ -366,8 +367,9 @@
         (!Number.isInteger(year)||year<1900||x.year===year);
       const v=valid(video)?video:null;
       const c=valid(extra)?extra:null;
-      if(!v&&!c)continue;
-      const malId=Number(c?.malId||v?.malId||w.mal_id||0);
+      const peer=cat.works[verifiedAnimePeers[w.id]];
+      if(!v&&!c&&!peer)continue;
+      const malId=Number(c?.malId||v?.malId||w.mal_id||peer?.mal_id||0);
       if(!Number.isSafeInteger(malId)||malId<0||malId>=10**10)continue;
       if(w.mal_id&&malId&&Number(w.mal_id)!==malId)continue;
       if(malId&&!w.mal_id)w.mal_id=malId;
@@ -392,6 +394,9 @@
       let didChange=false;
       if(JSON.stringify(old)!==JSON.stringify(next)){w.profile=next;didChange=true;}
       const additions=[];
+      if(peer)for(const r of peer.ratings||[]){
+        if(['Bangumi','AniList'].includes(r.source))additions.push({...r});
+      }
       if(malValid&&Number.isFinite(record.score)&&record.score>0&&record.score<=10){
         additions.push({source:'MyAnimeList',value:record.score,scale:10,
           votes:Number.isSafeInteger(record.ratingCount)?record.ratingCount:null,
