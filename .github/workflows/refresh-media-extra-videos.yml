@@ -9,6 +9,10 @@ on:
       - feature/media-videos-20-sources-20261030
     paths:
       - '.github/workflows/refresh-media-extra-videos.yml'
+      - 'scripts/refresh_media_extra_videos.py'
+      - 'scripts/test_media_extra_videos.py'
+      - 'scripts/test_media_domestic_trailers.mjs'
+      - 'media-insights.js'
 
 permissions:
   contents: write
@@ -35,6 +39,10 @@ jobs:
         run: |
           python -m py_compile scripts/refresh_media_extra_videos.py
           cd scripts && python -m unittest -v test_media_extra_videos
+      - name: Verify gallery UI syntax and 20-video contract
+        run: |
+          node --check media-insights.js
+          node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs
       - name: Refresh cached metadata for a rotating title batch
         env:
           EXTRA_VIDEOS_BATCH: '10'
