@@ -25,7 +25,7 @@
   const stale=s=>s.status!=='ok'||!s.updated_at||Date.now()-Date.parse(s.updated_at)>(s.interval_hours||6)*7200000;
   const poster=i=>`<div class="mi-poster">${i.poster?`<img src="${url(i.poster)}" alt="${esc(title(i))}" loading="lazy" decoding="async" width="342" height="513">`:'<span aria-hidden="true">✦</span>'}</div>`;
   const scoreValue=r=>Number.isFinite(r.value)&&r.scale ? `${r.source==='MyAnimeList'?r.value.toFixed(2):r.scale<=10?r.value.toFixed(1):r.value}${['Rotten Tomatoes','RT Audience'].includes(r.source)?'%':'/'+r.scale}` : r.display||'—';
-  const scores=(i,limit=3)=>(i.ratings||[]).slice(0,limit).map(r=>`<span class="mi-rating"><b>${esc(r.source==='Internet Movie Database'?'IMDb':r.source)}</b> ${esc(scoreValue(r))}</span>`).join('');
+  const scores=(i,limit=i?.kind==='anime'?4:3)=>(i.ratings||[]).slice().sort((a,b)=>i.kind==='anime'?(['Bangumi','MyAnimeList','AniList','Simkl'].indexOf(a.source)+4)%4-(['Bangumi','MyAnimeList','AniList','Simkl'].indexOf(b.source)+4)%4:0).slice(0,limit).map(r=>`<span class="mi-rating"><b>${esc(r.source==='Internet Movie Database'?'IMDb':r.source)}</b> ${esc(scoreValue(r))}</span>`).join('');
   // Films use regional TMDB classifications; anime uses exact-ID
   // AniList/Bangumi/MAL metadata. MAL is advisory, NOT a legal age certificate.
   function classificationData(work){
