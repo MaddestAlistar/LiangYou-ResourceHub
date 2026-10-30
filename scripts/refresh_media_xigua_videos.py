@@ -198,7 +198,7 @@ def row_for(work, item, embed):
         base.update(tmdbId=work["tmdb_id"], matchedByTitle=True)
     return base
 
-def discover(work, key, budget=None):
+def discover(work, key, budget=None, verify_embed=True):
     candidates = {}
     for query in work_queries(work):
         for result in search(query, key, budget):
@@ -209,14 +209,21 @@ def discover(work, key, budget=None):
             break
         time.sleep(.35)
     videos = []
-    for item in list(candidates.values())[:MAX_VIDEOS * 3]:
-        embed = approved_embed(item["videoId"])
-        if embed:
-            videos.append(row_for(work, item, embed))
-        if len(videos) >= MAX_VIDEOS:
-            break
-        time.sleep(.3)
-    return videos
+    if verify_embed:
+        for item in list(candidates.values())[:MAX_VIDEOS * 3]:
+            try:
+                embed = approved_embed(item["videoId"])
+            except Exception:
+                # The official JSON endpoint may return an HTML SPA page.
+                # Search metadata alone must never authorize an iframe.
+                embed = None
+            if embed:
+                videos.append(row_for(work, item, embed))
+            if len(videos) >= MAX_VIDEOS:
+                break
+            time.sleep(.3)
+    # Search matches are diagnostic-only, not cards in the public gallery.
+    return videos, len(candidates)
 
 def official_iframe_api_responds():
     """Fail closed before any potentially billed discovery if the official API serves HTML."""
@@ -239,12 +246,7 @@ def main():
     if not key:
         print("XIGUA_DISABLED: configure SANDBASE_API_KEY GitHub Actions secret for automatic discovery")
         return
-    if not official_iframe_api_responds():
-        print("XIGUA_EMBED_API_UNAVAILABLE: official endpoint is not returning JSON; skipping paid searches")
-        return
-    if not official_api_ready():
-        print("XIGUA_OFFICIAL_API_UNAVAILABLE: JSON iframe approval not accessible; skip paid search")
-        return
+
     # The free quota is shared across every SandBase API in this organization.
     # A one-call/day local limit alone is NOT a no-charge guarantee.
     # Account API may return 403 to restricted keys. As a separate explicit
@@ -267,6 +269,11 @@ def main():
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
         return
+    # Search one title daily even when the official iframe endpoint is broken;
+    # unverified matches are counted only, never rendered as playable videos.
+    can_embed = official_iframe_api_responds() and official_api_ready()
+    if not can_embed:
+        print("XIGUA_EMBED_API_UNAVAILABLE: metadata search only; iframe publication disabled")
     works = {**film_catalog(), **anime_catalog()}
     try:
         old = json.loads(OUT.read_text(encoding="utf8"))
@@ -281,12 +288,14 @@ def main():
             break
         work = works[key_id]
         try:
-            videos = discover(work, key, budget)
+            videos, candidate_count = discover(work, key, budget, verify_embed=can_embed)
             items[key_id] = {"title": work["title"], "kind": work["kind"],
                              "year": work["year"], "tmdbId": work.get("tmdb_id", 0),
                              "workId": work.get("id", ""),
-                             "checkedAt": now(), "videos": videos}
-            print("XIGUA_CHECKED", key_id, len(videos), flush=True)
+                             "checkedAt": now(), "videos": videos,
+                             "matchingCandidates": candidate_count}
+            print("XIGUA_CHECKED", key_id, "matched",candidate_count,
+                  "embedded",len(videos), flush=True)
         except FreeQuotaStop as error:
             print("XIGUA_ZERO_SPEND_STOP",str(error),flush=True)
             break
