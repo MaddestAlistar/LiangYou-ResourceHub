@@ -40,6 +40,13 @@ class AnimeVideoMatching(unittest.TestCase):
         self.assertTrue(safe_anime_video(sequel, {"name":"Cyberpunk: Edgerunners 2 Official Trailer"}))
         self.assertFalse(safe_anime_video(sequel, {"name":"《赛博朋克：边缘行者》第一季预告"}))
 
+    def test_2026_remake_does_not_use_1994_or_2016_pv(self):
+        remake = {"id":"bangumi-502123", "title":"魔法骑士雷阿斯 (2026)",
+                  "original":"魔法騎士レイアース", "year":2026,
+                  "aliases":["魔法骑士雷阿斯 (2026)", "魔法騎士レイアース"]}
+        self.assertFalse(safe_anime_video(remake, {"name":"【1994年】魔法騎士レイアース PV"}))
+        self.assertTrue(safe_anime_video(remake, {"name":"【2026年10月】魔法騎士レイアース TVアニメPV"}))
+
     def test_all_cached_video_rows_are_pruned_without_rescanning(self):
         w = {"id":"bangumi-541538","title":"幻想水浒传","original":"幻想水滸伝",
              "aliases":["幻想水浒传","幻想水滸伝"],"year":2026}
