@@ -1,0 +1,33 @@
+name: Probe four movie-video platforms (isolated)
+
+on:
+  push:
+    branches:
+      - probe/film-video-four-sources-20261030
+    paths:
+      - .github/workflows/probe-four-video-sources.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/probe/film-video-four-sources-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout isolated testing branch without stored credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run low-frequency public API probes
+        run: python3 experiments/probe_four_video_sources.py
+      - name: Upload sanitized JSON report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-video-sources-probe
+          path: video-four-sources-report.json
+          if-no-files-found: ignore
+          retention-days: 5
