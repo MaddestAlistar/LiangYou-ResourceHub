@@ -38,17 +38,21 @@ with sync_playwright() as pw:
     try:
         p.goto(SITE,wait_until="domcontentloaded",timeout=30000)
         print("DOUYIN_WEBKIT_ORIGIN",p.url,flush=True)
-        for mode,height in [("landscape",219),("portrait",650),("medium",470)]:
-            p.evaluate("""({vid,height})=>{
+        for mode,height in [("landscape",219),("portrait",650),("medium",470),("wide-desktop-scaled",181)]:
+            p.evaluate("""({vid,height,wide})=>{
               let stage=document.getElementById('stage');
               stage.style.cssText='width:100%;height:'+height+'px;aspect-ratio:auto;background:#000';
               const f=document.createElement('iframe');
               f.src='https://open.douyin.com/player/video?vid='+vid+'&autoplay=0';
               f.setAttribute('referrerpolicy','unsafe-url');
               f.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';
-              f.allowFullscreen=true; f.style.cssText='width:100%;height:100%;border:0';
+              f.allowFullscreen=true;
+              if(wide){
+                const factor=stage.clientWidth/760;
+                f.style.cssText='width:760px;height:428px;border:0;transform-origin:0 0;transform:scale('+factor+');';
+              }else f.style.cssText='width:100%;height:100%;border:0';
               stage.replaceChildren(f);
-            }""",{"vid":VIDEO,"height":height})
+            }""",{"vid":VIDEO,"height":height,"wide":mode==="wide-desktop-scaled"})
             p.wait_for_timeout(7000)
             frames=[f for f in p.frames if "open.douyin.com/player/video" in f.url]
             before=[inspect(f) for f in frames]
