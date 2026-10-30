@@ -187,8 +187,19 @@ def main():
     priority=["tv:220542","movie:277834","movie:299534"]
     chosen=[k for k in priority if k in works and k not in items]
     chosen=chosen[:limit]
-    # Oldest first; does not starve works with empty results. Cycle all titles.
-    other=sorted((k for k in works if k not in chosen),key=lambda k:(str(items.get(k,{}).get("checkedAt") or ""),k))
+    # Re-check already-cached ambiguous English movie titles first, so that
+    # stricter matching rules promptly clear old false positives (e.g. Runner
+    # vs Runner Runner) instead of leaving them in the gallery for days.
+    def ambiguous_cached(k):
+        w=works[k]
+        if w["kind"]!="movie":return False
+        tokens=re.findall(r"[A-Za-z]+",w.get("original") or "")
+        generic=len(tokens)==1 or len(tokens)==2 and tokens[0].casefold()=="the"
+        return generic and any(v.get("platform")=="dailymotion"
+            for v in items.get(k,{}).get("videos",[]) if isinstance(v,dict))
+    # Then oldest first; works with empty matches still get their turn.
+    other=sorted((k for k in works if k not in chosen),
+        key=lambda k:(0 if ambiguous_cached(k) else 1,str(items.get(k,{}).get("checkedAt") or ""),k))
     chosen.extend(other[:max(0,limit-len(chosen))])
     for key in chosen:
         work=works[key];prev=items.get(key,{})
