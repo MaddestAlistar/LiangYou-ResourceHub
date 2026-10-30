@@ -1,0 +1,49 @@
+name: One-time check signed-out Douyin guest search (research only)
+on:
+  push:
+    branches: [research-douyin-guest-search-20261031]
+    paths:
+      - '.github/workflows/research-douyin-guest-search.yml'
+permissions:
+  contents: read
+jobs:
+  guest-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read public search page without login or publishing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re, json
+          from urllib.parse import quote
+          from urllib.request import urlopen, Request
+          from urllib.error import URLError, HTTPError
+          names=['航海王 预告片','名侦探柯南 预告片','青之箱 第二季 预告片']
+          urls=[
+            ('guest','https://so.douyin.com/s?keyword='),
+            ('www-root','https://www.douyin.com/root/search/'),
+          ]
+          for name in names:
+            for label,base in urls:
+              try:
+                req=Request(base+quote(name),headers={
+                  'User-Agent':'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36',
+                  'Accept-Language':'zh-CN,zh;q=0.9',
+                  'Accept':'text/html,application/xhtml+xml',
+                })
+                with urlopen(req,timeout=12) as r:
+                  payload=r.read(1800000).decode('utf-8',errors='replace')
+                  status=r.status
+                  final_url=r.url
+                ids=set(re.findall(r'(?:/video/|aweme_id["\\s:=]+|awemeId["\\s:=]+)([1-9]\\d{14,20})',payload))
+                print('GUEST_RESULT '+json.dumps({'name':name,'mode':label,
+                     'status':status,'bytes':len(payload),'title_present':name.split()[0] in payload,
+                     'video_ids':len(ids),'sample_ids':sorted(ids)[:3],
+                     'page_title':(re.search(r'<title[^>]*>(.*?)</title>',payload,re.S|re.I) or ['', ''])[1][:90],
+                     'end_host':final_url.split('/')[2],
+                   },ensure_ascii=False),flush=True)
+              except (HTTPError,URLError,TimeoutError,ValueError) as e:
+                print('GUEST_RESULT '+json.dumps({'name':name,'mode':label,
+                  'error':type(e).__name__,'status':getattr(e,'code',None)},ensure_ascii=False),flush=True)
+          PY
