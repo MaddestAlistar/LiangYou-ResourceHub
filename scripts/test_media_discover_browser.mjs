@@ -102,10 +102,8 @@ try{
    /youtube\.com\/embed\//);
  assert.equal(await page.locator('#media-trailer-switch').isVisible(),true);
  await page.locator('#media-trailer-close').click();
- for(const fragment of ['search.bilibili.com/all?keyword=','v.qq.com/x/search/?q=','so.youku.com/search/q_','so.iq.com/so/?q=','1905.com/news/yg/']){
-   assert.equal(await page.locator('#media-dialog .mi-trailer-search a[href*="'+fragment+'"]').count(),1,
-       'Mainland source link must be available without a provider API: '+fragment);
- }
+ assert.equal(await page.locator('#media-dialog .mi-trailer-search').count(),0,
+   'Obsolete manual source-search panel must remain removed');
  // Text in the DOM is not enough: CSS must leave all three cards actually visible.
  for(const selector of [
    '#media-dialog [data-mi-discover-slot="trailers"] .mi-trailer-card',
@@ -169,8 +167,8 @@ try{
    assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-grid').count(),1);
    if(worldName.length>=5)assert.ok(offline.internationalCount>=1,'Offline Worker preserves verified international coverage');
    assert.ok(offline.domesticCount>=1,'Offline Worker must preserve title-matched Chinese news');
-   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-search a').count(),5,
-     'Mainland trailer source searches must survive Worker outages');
+   assert.equal(await offlinePage.locator('#media-dialog .mi-trailer-search').count(),0,
+     'Obsolete source-search panel must not return during Worker outages');
    assert.ok(!offlineErrors.some(x=>/ReferenceError|suggestions is not defined/.test(x)),
      'Offline news fallback has no unhandled renderer error');
    console.log('DISCOVER_WORKER_FAILURE_FALLBACK_OK',JSON.stringify(offline).slice(0,650));
