@@ -2,8 +2,8 @@
 """Fail-closed SandBase guard for workflows with a strict zero-billing policy.
 
 SandBase's 100 free data-API calls are shared across the entire organization.
-Overage is chargeable if the org has funded balance or a credit line. This
-guard deliberately disables data-API requests for funded organizations.
+Overage is chargeable. This helper enforces the website's local 50/day cap;
+separate upstream key-level spending limits are needed to limit billing.
 """
 import json
 import urllib.request
@@ -31,7 +31,7 @@ def funded_capacity_is_zero(key, opener=urllib.request.urlopen):
     return balance == 0 and limit == 0
 
 class LocalFreeBudget:
-    def __init__(self,path,day=None,daily_cap=24,run_cap=12):
+    def __init__(self,path,day=None,daily_cap=50,run_cap=10):
         self.path=Path(path)
         self.day=day or datetime.now(timezone.utc).strftime("%Y-%m-%d")
         self.daily_cap=max(0,min(100,int(daily_cap)))
