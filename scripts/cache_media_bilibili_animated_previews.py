@@ -58,6 +58,7 @@ def make_preview(bvid):
     w=int(doc.get("img_x_size") or 0);h=int(doc.get("img_y_size") or 0)
     cols=int(doc.get("img_x_len") or 0);rows=int(doc.get("img_y_len") or 0)
     if not images or not (80<=w<=400 and 40<=h<=240 and 1<=cols<=20 and 1<=rows<=20):
+        print("STORYBOARD_FIELDS",bvid,{"keys":sorted(doc.keys()),"images":len(images),"w":w,"h":h,"cols":cols,"rows":rows})
         raise ValueError("Incomplete storyboard")
     frames=[];sheet=Image.open(io.BytesIO(get(images[0],MAX_SOURCE_SIZE))).convert("RGB")
     if sheet.width<w*cols or sheet.height<h*rows:raise ValueError("Invalid sheet grid")
