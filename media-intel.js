@@ -347,9 +347,80 @@
   const PUBLIC_CACHE_KEY='liangyou.media.public.snapshot.v1';
   const validSnapshot=d=>d?.schema===1&&d.sources&&typeof d.sources==='object'&&
     d.works&&typeof d.works==='object'&&d.aliases&&typeof d.aliases==='object';
+  // Reuse the exact-ID anime video index and the official MAL v2 snapshot
+  // already produced by GitHub Actions. No visitor-side AniList/MAL API calls.
+  let animeIndex=null,malIndex=null,animeMetadataRequest=null;
+  const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(x=>
+    typeof x==='string'&&x.length>=2&&x.length<=28&&!/[<>{}\\x00-\\x1f]/.test(x)))].slice(0,6):[];
+  function applyAnimeMetadata(){
+    if(!animeIndex?.items||!cat?.works)return false;
+    let changed=false;
+    const malCodes={g:'G',pg:'PG',pg_13:'PG-13',r:'R','r+':'R+',rx:'Rx'};
+    for(const w of Object.values(cat.works)){
+      if(w?.kind!=='anime')continue;
+      const item=animeIndex.items[w.id];
+      if(!item||item.workId!==w.id||item.kind!=='anime')continue;
+      const year=Number(String(w.date||'').slice(0,4));
+      if(year>=1900&&Number.isSafeInteger(Number(item.year))&&Math.abs(Number(item.year)-year)>1)continue;
+      const malId=Number(item.malId||0);
+      if(malId>0&&Number.isSafeInteger(malId)&&malId<=9999999999){
+        if(w.mal_id&&Number(w.mal_id)!==malId)continue;
+        if(!w.mal_id)w.mal_id=malId;
+      }
+      const cls=item.classification||{};
+      const old=w.profile||{};
+      const genres=safeTags(cls.genres).length?safeTags(cls.genres):safeTags(old.genres);
+      const keywords=safeTags(cls.keywords).length?safeTags(cls.keywords):safeTags(old.keywords);
+      let parental_rating=null;
+      const record=malId&&malIndex?.items?.[String(malId)];
+      const rating=record?.malId===malId&&record?.ok===true&&record?.status==='ok'
+        ?malCodes[record.contentRating]:null;
+      if(rating)parental_rating={source:'MyAnimeList v2',rating,malId};
+      else if(cls.parental_rating?.source==='MyAnimeList v2'&&
+        cls.parental_rating.malId===malId&&
+        ['G','PG','PG-13','R','R+','Rx'].includes(cls.parental_rating.rating)){
+        parental_rating=cls.parental_rating;
+      }
+      if(!genres.length&&record?.malId===malId)genres.push(...safeTags(record.genres));
+      const next={...old,genres,keywords,parental_rating};
+      if(JSON.stringify(old)!==JSON.stringify(next)){
+        w.profile=next;changed=true;
+      }
+    }
+    return changed;
+  }
+  function refreshAnimeTags(){
+    if(!applyAnimeMetadata())return;
+    // Refresh visible cards while keeping the open dialog, scroll position,
+    // selected section and any already playing trailer untouched.
+    render();
+    const dialog=$('#media-dialog');
+    if(!dialog?.open||!activeWork()||activeWork().kind!=='anime')return;
+    const content=classificationDetail(activeWork());
+    const old=dialog.querySelector('.mi-classification-detail');
+    if(old)old.outerHTML=content;
+    else if(content)dialog.querySelector('.mi-detail-head')?.insertAdjacentHTML('afterend',content);
+  }
+  function loadAnimeMetadata(){
+    if(animeMetadataRequest)return animeMetadataRequest;
+    animeMetadataRequest=Promise.allSettled([
+      fetch('./data/media-anime-videos.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)})
+        .then(r=>r.ok?r.json():null),
+      fetch('./data/media-mal-v2.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)})
+        .then(r=>r.ok?r.json():null)
+    ]).then(results=>{
+      const a=results[0].status==='fulfilled'?results[0].value:null;
+      const m=results[1].status==='fulfilled'?results[1].value:null;
+      animeIndex=a?.schema===1&&a.items&&typeof a.items==='object'?a:null;
+      malIndex=m?.source==='MyAnimeList v2'&&m.items&&typeof m.items==='object'?m:null;
+      refreshAnimeTags();
+    }).catch(()=>{});
+    return animeMetadataRequest;
+  }
   function acceptSnapshot(snapshot,cached=false){
     if(!validSnapshot(snapshot))throw Error('invalid_media_snapshot');
-    data=snapshot;cat=core.catalog(snapshot);usingCachedSnapshot=cached;loadList();render();
+    data=snapshot;cat=core.catalog(snapshot);usingCachedSnapshot=cached;applyAnimeMetadata();loadList();render();
+    loadAnimeMetadata();
     const id=new URL(location.href).searchParams.get('film');
     if(id&&!$('#media-dialog').open){
       if(core.validId(id)&&(cat.works[id]||cat.aliases[id]||saved(id)||/^tmdb-(?:movie|tv)-[1-9]\\d{0,9}$/.test(id)))openDetails(id);
