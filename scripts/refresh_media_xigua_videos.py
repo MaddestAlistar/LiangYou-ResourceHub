@@ -210,7 +210,10 @@ def discover(work, key, budget=None, verify_embed=True):
             item = parse_result(result)
             if item and item["videoId"] not in candidates and accept(work, item):
                 candidates[item["videoId"]] = item
-        if len(candidates) >= MAX_VIDEOS * 3:
+        # A single-call probe should retain its first search results rather
+        # than failing when the second query would exceed the run cap.
+        if (len(candidates) >= MAX_VIDEOS * 3 or
+                (budget is not None and budget.this_run >= budget.run_cap)):
             break
         time.sleep(.35)
     videos = []
@@ -263,7 +266,15 @@ def main():
     provider_zero_spend_confirmed = os.getenv(
         "SANDBASE_HARD_ZERO_SPEND_CONFIRMED", ""
     ).strip().lower() == "true"
-    if provider_zero_spend_confirmed:
+    # Explicitly authorized ONE request while the user's SandBase key carries
+    # a provider-side cumulative $0.01 spending limit and $1 promo credit.
+    # This is NOT the previous $0 spending-cap confirmation.
+    one_time_paid_test = os.getenv(
+        "XIGUA_ONE_TIME_PAID_TEST", ""
+    ).strip().lower() == "true"
+    if one_time_paid_test:
+        print("XIGUA_PAID_TEST: one search request authorized, key limit $0.01")
+    elif provider_zero_spend_confirmed:
         print("XIGUA_ZERO_SPEND_GATE: owner confirmed hard $0 provider key limit")
     else:
         try:
@@ -273,8 +284,10 @@ def main():
         except Exception as error:
             print("XIGUA_ZERO_SPEND_STOP: cannot verify account balance",type(error).__name__)
             return
-    # Allow a one-call smoke test without changing the persisted 24/day ceiling.
-    per_run = max(1, min(12, int(os.getenv("XIGUA_SEARCH_PER_RUN", "12"))))
+    # One-time paid test may never execute more than one SandBase request.
+    per_run = 1 if one_time_paid_test else max(
+        1, min(12, int(os.getenv("XIGUA_SEARCH_PER_RUN", "12")))
+    )
     budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=24, run_cap=per_run)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
@@ -290,7 +303,9 @@ def main():
     except (OSError, ValueError):
         old = {}
     items = {k: v for k, v in (old.get("items") or {}).items() if k in works and isinstance(v, dict)}
-    batch = max(1, min(15, int(os.getenv("XIGUA_VIDEOS_BATCH", "8"))))
+    batch = 1 if one_time_paid_test else max(
+        1, min(15, int(os.getenv("XIGUA_VIDEOS_BATCH", "8")))
+    )
     chosen = sorted(works, key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k))[:batch]
     for key_id in chosen:
         if budget.used >= budget.daily_cap or budget.this_run >= budget.run_cap:
