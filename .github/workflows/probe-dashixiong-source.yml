@@ -2,6 +2,11 @@ name: Manually test Dashixiong video source
 
 # Manual only: does not run on push, schedules or site deployments.
 on:
+  # One-time probe on a narrow script-path change; reverted immediately after dispatch.
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe-dashixiong-source.mjs'
   workflow_dispatch:
     inputs:
       title:
