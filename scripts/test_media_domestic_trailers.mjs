@@ -17,6 +17,9 @@ const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','eng
  source.slice(start,end)+';return {gallery:trailerGallery,verified:verifiedDomesticTrailers};')(
   (zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase
 );
+const ownedCode=source.slice(start,end).replace("let dailymotionPlayerId='';","let dailymotionPlayerId='xOwned123';");
+const galleryOwned=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl','base',
+  ownedCode+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase);
 const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
 test('one section and one shared card grid contain YouTube and verified Bilibili entries',()=>{
@@ -101,12 +104,13 @@ test('AcFun Niconico and Dailymotion require canonical source links and exact ca
   const row={kind:'movie',tmdbId:550,verifiedByTitleId:false,matchedByTitle:true,
     title:selected.title,year:2025,platform:p.platform,videoId:p.videoId,name:'预告片',
     verifiedSource:p.url};
-  const ok=gallery({},info,[row]);
+  const render=p.platform==='dailymotion'?galleryOwned:gallery;
+   const ok=render({},info,[row]);
   assert.match(ok,/class="mi-trailer-card"/);
   assert.match(ok,new RegExp(p.platform==='dailymotion'?'mi-video-external':'data-mi-play-cn="'+p.platform+'"'));
   for(const broken of [{...row,verifiedSource:'https://attacker.example/video'},
       {...row,videoId:'javascript:evil'}, {...row,tmdbId:551}, {...row,year:2015}]){
-   assert.doesNotMatch(gallery({},info,[broken]),/class="mi-trailer-card"/);
+   assert.doesNotMatch(render({},info,[broken]),/class="mi-trailer-card"/);
   }
  }
  const blocked={kind:'movie',year:2025,title:selected.title,platform:'tencent',
@@ -133,7 +137,7 @@ test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own P
  assert.ok(source.includes("if(playerSwitch)playerSwitch.hidden=true"));
  assert.ok(source.includes("showAcfunHls(id)"));
  assert.ok(source.includes("/api/video/acfun/"));
- assert.ok(source.includes("openSource.href='https://www.acfun.cn/v/ac'+id"));
+ assert.ok(!source.includes("openSource.href='https://www.acfun.cn/v/ac'+id"));
  assert.ok(!source.includes('https://m.acfun.cn/v/?ac='));
  assert.ok(!source.includes('尝试 AcFun 官方嵌入播放器'));
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
@@ -160,7 +164,7 @@ test('a site-owned Dailymotion Player ID enables modal buttons; absent ID stays 
  const row={kind:'movie',title:info.title,tmdbId:550,year:2025,matchedByTitle:true,
    platform:'dailymotion',videoId:'x8mcq94',name:'Ne Zha 2 trailer',
    verifiedSource:'https://www.dailymotion.com/video/x8mcq94'};
- assert.match(gallery({},info,[row]),/mi-video-external/);
+ assert.doesNotMatch(gallery({},info,[row]),/data-mi-play-cn="dailymotion"/);
  const html=galleryOwned({},info,[row]);
  assert.match(html,/data-mi-play-cn="dailymotion"/);
  assert.match(html,/data-mi-cn-id="x8mcq94"/);
@@ -178,7 +182,7 @@ test('KinoCheck candidates remain visible even after 36 normal YouTube results',
  const dm={kind:'movie',tmdbId:550,title:'Fight Club',year:1999,matchedByTitle:true,
    platform:'dailymotion',videoId:'x8mcq94',name:'Fight Club (1999) Trailer',
    verifiedSource:'https://www.dailymotion.com/video/x8mcq94',type:'Trailer'};
- const html=gallery({trailers:[...entries,kc]},info,[dm]);
+ const html=galleryOwned({trailers:[...entries,kc]},info,[dm]);
  assert.equal((html.match(/class="mi-trailer-card"/g)||[]).length,20);
  assert.match(html,/KinoCheck · TMDB 精确匹配/);
  assert.match(html,/data-mi-play-video="K1234567890"/);
@@ -238,7 +242,7 @@ test('verified AcFun GIF thumbnail is animated without a misleading playback-tri
  const h=gallery({},info,[row]);
  assert.match(h,/anim\.gif\?imageslim/);
  assert.match(h,/data-mi-native-motion="gif"/);
- assert.match(h,/动态封面/);
+ assert.doesNotMatch(h,/动态封面|Motion cover|mi-trailer-motion-label/);
  assert.doesNotMatch(h,/站内播放|Play here|mi-trailer-source-hint/);
  assert.doesNotMatch(h,/尝试站内播放|Try in-page playback/);
  assert.match(source,/function playAcfunCover\(card\)/);
@@ -262,7 +266,7 @@ test('verified mainland-accessible Bilibili and AcFun lead the same 20-card gall
  const from={trailers:[{id:'AbCdEf12345',title:'Official trailer',
    type:'Trailer',official:true,embeddable:true,likes:10000000}]};
  const cards=html=>[...html.matchAll(/<article class="mi-trailer-card">([\s\S]*?)<\/article>/g)].map(m=>m[1]);
- const all=cards(gallery(from,info,rows));
+ const all=cards(galleryOwned(from,info,rows));
  assert.equal(all.length,5);
  assert.match(all[0],/data-mi-play-cn="bilibili"/);
  assert.match(all[1],/data-mi-play-cn="acfun"/);
@@ -272,12 +276,12 @@ test('verified mainland-accessible Bilibili and AcFun lead the same 20-card gall
  assert.doesNotMatch(all.join(''),/站内播放|Play here/);
  assert.doesNotMatch(all[0]+all[1],/mi-trailer-source-hint/);
  // Source-only videos still have a clear fallback label.
- assert.match(all.find(c=>c.includes('Dailymotion')),/原站观看/);
- assert.match(cards(gallery(from,info,rows.filter(r=>r.platform!=='bilibili')))[0],
+ assert.doesNotMatch(all.find(c=>c.includes('Dailymotion')),/原站观看|mi-video-external/);
+ assert.match(cards(galleryOwned(from,info,rows.filter(r=>r.platform!=='bilibili')))[0],
    /data-mi-play-cn="acfun"/);
- assert.match(cards(gallery(from,info,rows.filter(r=>r.platform!=='acfun')))[0],
+ assert.match(cards(galleryOwned(from,info,rows.filter(r=>r.platform!=='acfun')))[0],
    /data-mi-play-cn="bilibili"/);
- assert.match(cards(gallery(from,info,rows.filter(r=>!['acfun','bilibili'].includes(r.platform))))[0],
+ assert.match(cards(galleryOwned(from,info,rows.filter(r=>!['acfun','bilibili'].includes(r.platform))))[0],
    /data-mi-play-video="AbCdEf12345"/);
 });
 test('Bilibili motion cover accepts only the matching verified BV ID and WebP path',()=>{
