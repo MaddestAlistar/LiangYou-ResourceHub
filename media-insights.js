@@ -704,7 +704,7 @@
     if(['ratings','profile'].includes(info.section)&&Number.isSafeInteger(Number(info.malId))&&Number(info.malId)>0)displayMAL(info,target);
     if(info.section==='boxoffice')displayBoxOfficeArchive(info,target);
     if(info.section==='ratings'){hydrateClassification(info);return;}
-    if(info.kind==='anime')return;
+    // Anime uses its own ID-scoped video source below, independent of TMDB.
     if(info.kind==='anime'){
       if(info.section!=='discover')return;
       const slot=target.querySelector('[data-mi-discover-slot="trailers"]');
