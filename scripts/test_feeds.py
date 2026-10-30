@@ -10,7 +10,7 @@ import update_game_free as games
 import update_sports as sports
 import update_predict_sports as predict
 import update_kalshi_sports as kalshi
-from refresh_data import is_due, verified_time
+from refresh_data import is_due, verified_time, status_needs_write
 
 NOW = datetime(2026, 10, 24, 11, 30, tzinfo=timezone.utc)
 
@@ -703,5 +703,26 @@ class NewSportsIntegrations(unittest.TestCase):
         with patch.object(players,'get_json',return_value={**profile,'name':'Different Name'}):
             with self.assertRaises(ValueError):
                 players.fetch_player('Nakamura, Hikaru','hikaru','Hikaru Nakamura')
+
+class WatchdogReliabilityTests(unittest.TestCase):
+    def test_due_checks_keep_source_limits(self):
+        stamp = datetime(2026, 10, 31, 3, tzinfo=timezone.utc)
+        self.assertFalse(is_due(stamp - timedelta(minutes=30), stamp, 2))
+        self.assertTrue(is_due(stamp - timedelta(hours=2), stamp, 2))
+        self.assertFalse(is_due(stamp - timedelta(hours=2), stamp, 3))
+        self.assertTrue(is_due(stamp - timedelta(hours=3), stamp, 3))
+
+    def test_idle_heartbeat_never_rewrites_status(self):
+        jobs = {
+            'sports': {'status': 'ok', 'interval_hours': 2,
+                       'last_success_at': '2026-10-30T15:45:23Z'}
+        }
+        current = {'schema': 1, 'watchdog_minutes': 15, 'jobs': jobs}
+        self.assertFalse(status_needs_write(current, dict(jobs)))
+        self.assertTrue(status_needs_write({**current, 'watchdog_minutes': 30}, jobs))
+        self.assertTrue(status_needs_write(current, {
+            **jobs, 'sports': {**jobs['sports'], 'status': 'failed'}}))
+        self.assertTrue(status_needs_write({**current, 'schema': 2}, jobs))
+
 
 if __name__ == '__main__': unittest.main()
