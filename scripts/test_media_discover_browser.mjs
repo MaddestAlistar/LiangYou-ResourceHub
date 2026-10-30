@@ -117,6 +117,14 @@ try{
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
  await page.evaluate(()=>{
+   // The mocked HLS manifest intentionally is not a real media stream.
+   // Capture creation before the browser's decoder can reject and remove it.
+   const stage=document.getElementById('media-trailer-stage');
+   window.__acfunCapturedSrc='';
+   new MutationObserver(()=>{
+     const video=stage?.querySelector('video.mi-acfun-native');
+     if(video?.src)window.__acfunCapturedSrc=video.src;
+   }).observe(stage,{childList:true,subtree:true});
    const network=window.fetch.bind(window);
    window.__acfunFetches=[];
    window.fetch=(input,opts)=>{
@@ -130,7 +138,7 @@ try{
  });
  await page.locator('#media-dialog [data-mi-play-cn="acfun"]').first().click();
  try{
-   await page.locator('#media-trailer-stage video.mi-acfun-native').waitFor({state:'attached',timeout:6500});
+   await page.waitForFunction(()=>Boolean(window.__acfunCapturedSrc),{timeout:6500});
  }catch(error){
    console.log('ACFUN_BROWSER_DEBUG',JSON.stringify({acfunMockCalls,
      stage:await page.locator('#media-trailer-stage').innerText().catch(()=>'(missing)'),
@@ -139,7 +147,7 @@ try{
      errors:pageErrors.slice(-4)}));
    throw error;
  }
- assert.match(await page.locator('#media-trailer-stage video').getAttribute('src'),
+ assert.match(await page.evaluate(()=>window.__acfunCapturedSrc),
    /tx-safety-video\.acfun\.cn\/testing\/sample\.m3u8/);
  await page.locator('#media-trailer-close').click();
  assert.equal(await page.locator('#media-trailer-stage video').count(),0,
