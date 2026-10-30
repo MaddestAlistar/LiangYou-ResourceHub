@@ -169,6 +169,56 @@ def safe_anime_video(work, row):
         return False
     return True
 
+def canonical_cached_clip(work, row):
+    """Re-check older snapshots even when this anime is not in today's batch."""
+    if not isinstance(row, dict) or row.get("workId") != work["id"] or row.get("kind") != "anime":
+        return False
+    if row.get("verifiedByCatalogTitle") is not True:
+        return False
+    if row.get("year") != work["year"]:
+        return False
+    platform, ident = row.get("platform"), str(row.get("videoId") or "")
+    canonical = {
+        "acfun": ("https://www.acfun.cn/v/ac" + ident, r"[1-9]\\d{3,11}"),
+        "niconico": ("https://www.nicovideo.jp/watch/" + ident, r"(?:sm|so)\\d{6,12}"),
+        "dailymotion": ("https://www.dailymotion.com/video/" + ident, r"x[a-z0-9]{4,12}")
+    }
+    if platform not in canonical:
+        return False
+    url, pattern = canonical[platform]
+    if re.fullmatch(pattern, ident, re.I) is None or row.get("verifiedSource") != url:
+        return False
+    return safe_anime_video(work, row)
+
+def recheck_published(items, works):
+    """Remove old-season and game clips from every entry, not only the refreshed batch."""
+    removed = 0
+    for ident, item in items.items():
+        work = works.get(ident)
+        if not work or not isinstance(item, dict):
+            continue
+        aliases = list(dict.fromkeys([
+            *work["aliases"], *(item.get("aliases") or [])
+        ]))[:24]
+        check = {**work, "aliases": aliases}
+        existing = item.get("videos") or []
+        clean = [row for row in existing if canonical_cached_clip(check, row)]
+        removed += len(existing) - len(clean)
+        item["videos"] = clean
+        trailers = []
+        for video in item.get("youtubeTrailers") or []:
+            if not isinstance(video, dict):
+                continue
+            vid = str(video.get("id") or "")
+            if not VIDEO_ID.fullmatch(vid) or video.get("url") != "https://www.youtube.com/watch?v=" + vid:
+                continue
+            if video.get("verifiedBy") not in ("AniList", "Toei Animation"):
+                continue
+            if vid not in [previous["id"] for previous in trailers]:
+                trailers.append(video)
+        item["youtubeTrailers"] = trailers[:12]
+    return removed
+
 def discover(work, previous):
     status = {}
     rows = []
@@ -206,9 +256,12 @@ def discover(work, previous):
 def refresh(work, previous):
     ani = lookup_anilist(work)
     aliases = list(work["aliases"])
+    # Preserve previously ID-linked official/AniList clips during transient API
+    # errors; an empty upstream response must not erase a verified prior result.
     trailers = [v for v in previous.get("youtubeTrailers", [])
-                if isinstance(v, dict) and v.get("verifiedBy") == "Toei Animation"
-                and VIDEO_ID.fullmatch(str(v.get("id") or ""))]
+                if isinstance(v, dict) and v.get("verifiedBy") in ("Toei Animation", "AniList")
+                and VIDEO_ID.fullmatch(str(v.get("id") or ""))
+                and v.get("url") == "https://www.youtube.com/watch?v=" + v["id"]]
     if ani:
         for value in [*(ani.get("synonyms") or []),
                       *((ani.get("title") or {}).values())]:
@@ -244,6 +297,8 @@ def main():
         old = {}
     items = {key: row for key, row in old.items()
              if key in works and isinstance(row, dict)}
+    dropped = recheck_published(items, works)
+    print("ANIME_STALE_VIDEO_PRUNED", dropped, flush=True)
     batch = max(1, min(40, int(os.getenv("ANIME_VIDEOS_BATCH", "22"))))
     # Missing works first, then the oldest inspected entries. All catalog anime
     # take turns, not just hand-picked popular examples.
