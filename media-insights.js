@@ -12,6 +12,10 @@
   function safe(href){
     try{const u=new URL(href);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}
   }
+  // Catalog artwork is served from this same GitHub Pages project. Keep the
+  // relative path; URL parsing for external sources must not reject it.
+  const localPoster=x=>/^\.\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(String(x||''))?String(x):null;
+  const mediaCoverUrl=x=>safe(x)||localPoster(x);
   const a=(url,label)=>safe(url)?'<a href="'+esc(safe(url))+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'';
   const format=v=>v&&Number.isFinite(Date.parse(v))?new Intl.DateTimeFormat(english()?'en-GB':'zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(v)):'';
   async function json(path){
@@ -270,7 +274,7 @@
       // its official embed or mobile H5 page in our own dialog on all devices.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const thumbOriginal=safe(x.thumbnail);
-      const posterFallback=x.platform==='bilibili'?(safe(info.poster)||(/^\.\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(String(info.poster||''))?info.poster:null)):null;
+      const posterFallback=x.platform==='bilibili'?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
       const thumb=(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
@@ -808,7 +812,7 @@
   root.addEventListener('error',ev=>{
     const img=ev.target;
     if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb')){
-      const backup=safe(img.dataset.thumbFallback);
+      const backup=mediaCoverUrl(img.dataset.thumbFallback);
       if(backup&&img.src!==backup){
         img.removeAttribute('data-thumb-fallback');
         if(img.dataset.thumbPosterFallback==='true'){
