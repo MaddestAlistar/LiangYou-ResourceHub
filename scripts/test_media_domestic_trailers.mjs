@@ -45,32 +45,26 @@ test('ID-linked clips render for catalog entries missing a release year without 
  const unverified={...row,verifiedByTitleId:false};
  assert.equal(verified(noYear,[unverified]).length,0);
 });
-test('all platforms share one six-video limit, with at most four additional Chinese clips',()=>{
- const ytRows=Array.from({length:15},(_,i)=>({
-  id:'Video'+String(i).padStart(6,'0'),title:'Ne Zha 2 cast and filming',
+test('gallery shows at most twenty total clips from any supported sources',()=>{
+ const ytRows=Array.from({length:27},(_,i)=>({
+  id:'Video'+String(i).padStart(6,'0'),title:'Film trailer '+i,
   likes:(i+1)*500,embeddable:true,official:false,type:'Related'
  }));
- const domestic=Array.from({length:13},(_,i)=>({
+ const domestic=Array.from({length:25},(_,i)=>({
   title:selected.title,kind:'movie',year:2025,platform:'bilibili',
   videoId:'BV'+String(i).padStart(10,'0'),name:'Ne Zha 2 cast clip '+i,
   likes:(i+1)*900,type:'Related',verifiedSource:'https://www.bilibili.com/video/BV'+String(i).padStart(10,'0')+'/'
  }));
- const content=gallery({trailers:ytRows.slice(0,4),relatedVideos:ytRows},selected,domestic);
+ const content=gallery({trailers:ytRows.slice(0,15),relatedVideos:ytRows},selected,domestic);
  assert.equal((content.match(/class="mi-trailer-grid"/g)||[]).length,1);
- assert.equal((content.match(/class="mi-trailer-card"/g)||[]).length,10);
- assert.ok((content.match(/data-mi-play-cn="bilibili"/g)||[]).length>=4);
+ assert.equal((content.match(/class="mi-trailer-card"/g)||[]).length,20);
+ assert.match(content,/data-mi-play-cn="bilibili"/);
  assert.match(content,/data-mi-play-video/);
- assert.doesNotMatch(content,/\/6<\/h4>|\/10<\/h4>/);
- const onlyYouTube=gallery({relatedVideos:ytRows},selected,[]);
- assert.equal((onlyYouTube.match(/class="mi-trailer-card"/g)||[]).length,6);
- const onlyDomestic=gallery({},selected,domestic);
- assert.equal((onlyDomestic.match(/class="mi-trailer-card"/g)||[]).length,10);
- const exactlySix=gallery({},selected,domestic.slice(0,6));
- assert.equal((exactlySix.match(/class="mi-trailer-card"/g)||[]).length,6);
- const seven=gallery({},selected,domestic.slice(0,7));
- assert.equal((seven.match(/class="mi-trailer-card"/g)||[]).length,7);
- const wrong=gallery({relatedVideos:[{id:'BadVideo123',likes:999999,embeddable:false}]},selected,[]);
- assert.doesNotMatch(wrong,/data-mi-play-video="BadVideo123"/);
+ const onlyYT=gallery({relatedVideos:ytRows},selected,[]);
+ assert.equal((onlyYT.match(/class="mi-trailer-card"/g)||[]).length,20);
+ const onlyB=gallery({},selected,domestic);
+ assert.equal((onlyB.match(/class="mi-trailer-card"/g)||[]).length,20);
+ assert.equal((gallery({},selected,domestic.slice(0,7)).match(/class="mi-trailer-card"/g)||[]).length,7);
 });
 test('missing YouTube data still shows verified mainland videos in exactly the same grid',()=>{
  const h=gallery({},selected,catalog.items,'error');
@@ -79,17 +73,11 @@ test('missing YouTube data still shows verified mainland videos in exactly the s
  assert.match(h,/data-mi-play-cn="bilibili"/);
  assert.doesNotMatch(h,/暂不可用/);
 });
-test('1905 is a collapsible search/source link and not a fake playable video',()=>{
+test('removed providers and search fallback are not rendered in video gallery',()=>{
  const h=gallery({},selected,catalog.items,'ready');
- assert.match(h,/1905\.com\/mdb\/film\/2255731\//);
- assert.match(h,/1905 · 当前作品资料/);
- assert.match(h,/search\.bilibili\.com\/all\?keyword=/);
- assert.match(h,/v\.qq\.com\/x\/search\/\?q=/);
  assert.doesNotMatch(h,/data-mi-play-cn="1905"/);
- assert.doesNotMatch(h,/mi-domestic-video-grid|国内预告片/);
- const unmatched=gallery({}, {...selected,year:'2026'},catalog.items);
- assert.match(unmatched,/1905\.com\/news\/yg\//);
- assert.doesNotMatch(unmatched,/mdb\/film\/2255731/);
+ assert.doesNotMatch(h,/1905.com|v.qq.com|so.youku.com|iqiyi.com/);
+ assert.doesNotMatch(h,/其他平台查找预告片|mi-trailer-search/);
 });
 test('unmatched title/year never attaches another movie trailer',()=>{
  for(const incorrect of [
@@ -100,16 +88,28 @@ test('unmatched title/year never attaches another movie trailer',()=>{
   assert.doesNotMatch(gallery({},incorrect,catalog.items),/data-mi-play-cn=/);
  }
 });
-test('Tencent needs exact verified VID and original URL before it becomes a playable card',()=>{
- const right={title:'哪吒之魔童闹海',kind:'movie',year:2025,platform:'tencent',
-   videoId:'c3278hj65i6',verifiedSource:'https://v.qq.com/x/page/c3278hj65i6.html',name:'Verified trailer'};
- const ok=gallery({},selected,[right]);
- assert.match(ok,/data-mi-play-cn="tencent"/);
- assert.match(ok,/class="mi-trailer-card"/);
- for(const wrong of [{...right,verifiedSource:'https://attacker.example/video'},
-  {...right,videoId:'javascript:evil'}, {...right,year:2024}]){
-  assert.doesNotMatch(gallery({},selected,[wrong]),/data-mi-play-cn="tencent"/);
+test('AcFun Niconico and Dailymotion require canonical source links and exact catalog identity',()=>{
+ const info={...selected,tmdbId:550};
+ const providers=[
+  {platform:'acfun',videoId:'30636253',url:'https://www.acfun.cn/v/ac30636253'},
+  {platform:'niconico',videoId:'sm43190555',url:'https://www.nicovideo.jp/watch/sm43190555'},
+  {platform:'dailymotion',videoId:'x8mcq94',url:'https://www.dailymotion.com/video/x8mcq94'},
+ ];
+ for(const p of providers){
+  const row={kind:'movie',tmdbId:550,verifiedByTitleId:false,matchedByTitle:true,
+    title:selected.title,year:2025,platform:p.platform,videoId:p.videoId,name:'预告片',
+    verifiedSource:p.url};
+  const ok=gallery({},info,[row]);
+  assert.match(ok,/class="mi-trailer-card"/);
+  assert.match(ok,new RegExp(p.platform==='dailymotion'?'mi-video-external':'data-mi-play-cn="'+p.platform+'"'));
+  for(const broken of [{...row,verifiedSource:'https://attacker.example/video'},
+      {...row,videoId:'javascript:evil'}, {...row,tmdbId:551}, {...row,year:2015}]){
+   assert.doesNotMatch(gallery({},info,[broken]),/class="mi-trailer-card"/);
+  }
  }
+ const blocked={kind:'movie',year:2025,title:selected.title,platform:'tencent',
+   videoId:'c3278hj65i6',verifiedSource:'https://v.qq.com/x/page/c3278hj65i6.html'};
+ assert.doesNotMatch(gallery({},selected,[blocked]),/class="mi-trailer-card"/);
 });
 test('every movie can display server-verified Bilibili videos by TMDB ID rather than manually listed names',()=>{
  const info={...selected,tmdbId:550};
@@ -122,12 +122,14 @@ test('every movie can display server-verified Bilibili videos by TMDB ID rather 
  assert.equal(verified(info,[{...record,verifiedByTitleId:false}]).length,0);
  assert.equal(verified(info,[{...record,verifiedSource:'https://untrusted.example/watch'}]).length,0);
 });
-test('mainland and YouTube playback share the same in-page modal; switching remains YouTube-only',()=>{
+test('YouTube Bilibili AcFun Niconico use one modal; Dailymotion links externally',()=>{
  assert.match(source,/https:\/\/player\.bilibili\.com\/player\.html\?bvid=/);
- assert.match(source,/https:\/\/v\.qq\.com\/txp\/iframe\/player\.html\?vid=/);
+ assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
+ assert.match(source,/https:\/\/embed\.nicovideo\.jp\/watch\//);
  assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
- assert.match(source,/playerSwitch\)playerSwitch\.hidden=true/);
+ assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=true/);
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
+
