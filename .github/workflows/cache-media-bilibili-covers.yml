@@ -1,0 +1,57 @@
+name: Cache verified Bilibili trailer cover images on Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cache_media_bilibili_images.py'
+      - '.github/workflows/cache-media-bilibili-covers.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cache-bilibili-film-covers-main
+  cancel-in-progress: false
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check syntax and cache verified cover images
+        run: |
+          python -m py_compile scripts/cache_media_bilibili_images.py
+          python scripts/cache_media_bilibili_images.py
+      - name: Validate cached images
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          d=json.loads(Path('data/media-domestic-trailers.json').read_text())
+          for item in d['items']:
+              local=item.get('thumbnailLocal')
+              if local:
+                  assert re.fullmatch(r'\./assets/media-video-covers/BV[A-Za-z0-9]{10}\.(?:jpg|png|webp)',local)
+                  path=Path(local)
+                  assert path.exists() and 500<path.stat().st_size<1500000
+          PY
+      - name: Commit validated static cover metadata and images
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/media-domestic-trailers.json assets/media-video-covers/
+          if git diff --cached --quiet; then
+            echo 'All known Bilibili covers already cached'
+            exit 0
+          fi
+          git commit -m "Cache verified Bilibili video covers locally [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
