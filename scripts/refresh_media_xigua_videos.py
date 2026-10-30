@@ -44,9 +44,14 @@ def search(keyword, key, budget=None):
         budget.authorize()
     try:
         response = json_request(API, {"keyword": keyword}, key=key)
-    except Exception:
-        # The provider may have consumed quota before returning an error.
-        # Do not retry or send further requests in the same scheduled run.
+    except Exception as error:
+        # Only status/type, never response body or credentials.
+        http_status = getattr(error, "code", None)
+        if isinstance(http_status, int):
+            print("XIGUA_SANDBASE_SEARCH_HTTP", http_status, flush=True)
+        else:
+            print("XIGUA_SANDBASE_SEARCH_EXCEPTION", type(error).__name__, flush=True)
+        # Do not retry; a rejected request could still count against free quota.
         raise FreeQuotaStop("sandbase_search_failed") from None
     if response.get("status") != "completed":
         raise RuntimeError("search_unavailable")
