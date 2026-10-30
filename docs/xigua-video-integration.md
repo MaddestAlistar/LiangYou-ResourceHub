@@ -1,5 +1,19 @@
 # 西瓜视频：谨慎免费调用与站内播放接入
 
+## 2026-10-30 已验证的 $0 消费上限结果
+
+用户明确表示已将此 SandBase 专用 API Key 的 Spending Limit 从默认 **unlimited** 改成 **$0**；GitHub Secret 可用。已在 GitHub Actions 用正式 `POST /v1/api/xigua/app-v2/search-video` 实际发起测试，SandBase 返回 **HTTP 402**（资金或 API Key 消费上限阻止请求），说明这把 $0 上限的密钥当前**不能通过该接口完成免费搜索**。
+
+- 请求共尝试 2 次（GitHub 配额账本记录 `2026-10-30 2`），没有搜索结果，也没有 Xigua 视频新入库；这两次是调用尝试，不代表免费额度已扣减 2 次，更不代表产生账单。
+- 正式 Xigua API 目录显示：**每个组织 UTC 每日前 100 次符合条件的数据 API 调用免费，之后收费；当前搜索接口单次价从 $0.0015 起**。文档同时说明 $0 组织余额也能使用免费额度，但 **$0 API Key 消费上限下的实测仍返回 402**，两者不可混为一谈。
+- 自动工作流已设置 `XIGUA_AUTO_SEARCH_ENABLED=false`，防止每天重复向 SandBase 发出已知被拒绝的请求。将来若恢复，必须先确认依然不会产生任何费用，确认接口可用，然后再将这个变量改成 `true`。24/天、12/运行的本地预算配置保留，但不是免计费保证。
+- 原有 B 站、YouTube、Dailymotion、AcFun、Niconico 等视频来源完全不受影响。西瓜官方 iframe API 仍返回 HTML，未验证的西瓜搜索结果绝不展示成可播放卡片。
+- **不要为了解除 402 而直接把 $0 限额改成 unlimited 或充值。** 官方说明组织零余额可用免费额，只有在能够独立确认账户既无余额又无任何授信/付费能力、SandBase 的免费 API 可用时才考虑采用另一个安全配置。
+
+参考：[SandBase Xigua API（免费额度及单次报价）](https://www.sandbase.ai/apis/xigua)、[SandBase API Key 文档](https://www.sandbase.ai/docs/getting-started/api-keys)、[SandBase AI API Guide](https://www.sandbase.ai/docs/for-agents/full)
+
+
+
 ## 状态（2026-10-30）
 
 已接入影视情报中心的作品 ID 核对、站内播放器和静态视频快照。**但尚无可实际播放的西瓜视频通过审核上架。** GitHub Actions 实测：
