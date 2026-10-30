@@ -375,7 +375,8 @@
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
       const needBiliCoverLookup=x.platform==='bilibili'&&!bvidCover&&!trustedBiliThumb;
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'"'+
-        (needBiliCoverLookup?' data-mi-bili-cover-id="'+esc(x.videoId)+'"':'')+'>'+
+        (needBiliCoverLookup?' data-mi-bili-cover-id="'+esc(x.videoId)+'"':'')+
+        (isNativeAnimatedGif?' data-mi-native-motion="gif"':'')+'>'+
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
           (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
           ((bvidCover||thumbOriginal)&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
@@ -890,6 +891,7 @@
   let useStandardHost=false;
   let acfunSerial=0,acfunHlsInstance=null,acfunScriptPromise=null,acfunReadyTimer=null;
   function stopTrailer(){
+    stopAcfunCover();
     acfunSerial++;
     if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
     if(acfunHlsInstance){acfunHlsInstance.destroy();acfunHlsInstance=null;}
@@ -1062,7 +1064,6 @@
   }
   // Load Bilibili's verified, precomputed animated WEBP only when
   // requested by a visitor interaction; static cover remains the default.
-  const activeMotionCovers=new WeakMap();
   function setMotionCover(card,on){
     const img=card?.querySelector('img.mi-trailer-motion-thumb');
     if(!img||window.matchMedia('(prefers-reduced-motion: reduce)').matches||navigator.connection?.saveData)return;
@@ -1071,14 +1072,79 @@
       img.classList.add('is-active');
     }else img.classList.remove('is-active');
   }
+  // AcFun's own public HLS stream is available to the native film player.
+  // On a desktop hover, preview one muted source video for at most four seconds.
+  // Mobile scrolling never auto-fetches video segments.
+  let activeAcfunCover=null;
+  function stopAcfunCover(){
+    const active=activeAcfunCover;
+    if(!active)return;
+    activeAcfunCover=null;
+    active.closed=true;
+    if(active.timer)clearTimeout(active.timer);
+    try{active.hls?.destroy();}catch{}
+    if(active.video){
+      active.video.pause();
+      active.video.removeAttribute('src');
+      active.video.load();
+      active.video.remove();
+    }
+  }
+  async function playAcfunCover(card){
+    if(activeAcfunCover?.card===card)return;
+    stopAcfunCover();
+    if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches||
+       window.matchMedia('(prefers-reduced-motion: reduce)').matches||
+       navigator.connection?.saveData)return;
+    const button=card?.querySelector('button[data-mi-play-cn="acfun"]');
+    const cover=button?.querySelector('.mi-trailer-source-cover');
+    if(!cover||cover.dataset.miNativeMotion==='gif')return;
+    const id=button.dataset.miCnId;
+    if(!/^[1-9][0-9]{3,11}$/.test(id)||button.dataset.miCnUrl!=='https://www.acfun.cn/v/ac'+id)return;
+    const active={card,closed:false,hls:null,video:null,timer:null};
+    activeAcfunCover=active;
+    try{
+      const response=await fetch(base+'/api/video/acfun/'+id,{cache:'no-store',signal:AbortSignal.timeout(10000)});
+      if(!response.ok)throw Error('stream_unavailable');
+      const payload=await response.json();
+      const url=payload.ok===true&&String(payload.videoId)===id?acfunSafeHls(payload.url):null;
+      if(active.closed||!url)return;
+      const video=document.createElement('video');
+      video.className='mi-trailer-video-preview';
+      video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;
+      video.setAttribute('muted','');video.setAttribute('playsinline','');video.preload='metadata';
+      active.video=video;
+      cover.appendChild(video);
+      active.timer=setTimeout(()=>{if(activeAcfunCover===active)stopAcfunCover();},4800);
+      if(video.canPlayType('application/vnd.apple.mpegurl')){
+        video.src=url;video.play().catch(()=>{});
+      }else{
+        const Hls=await loadHlsLibrary();
+        if(active.closed)return;
+        if(!Hls.isSupported())throw Error('hls_unsupported');
+        const hls=new Hls({enableWorker:true});
+        active.hls=hls;
+        hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(!active.closed)video.play().catch(()=>{});});
+        hls.on(Hls.Events.ERROR,(_event,data)=>{if(data?.fatal&&activeAcfunCover===active)stopAcfunCover();});
+        hls.loadSource(url);hls.attachMedia(video);
+      }
+    }catch{if(activeAcfunCover===active)stopAcfunCover();}
+  }
   root.addEventListener('pointerover',e=>{
     const card=e.target.closest?.('.mi-trailer-card');
-    if(card&&!card.contains(e.relatedTarget))setMotionCover(card,true);
+    if(card&&!card.contains(e.relatedTarget)){
+      setMotionCover(card,true);
+      playAcfunCover(card);
+    }
   });
   root.addEventListener('pointerout',e=>{
     const card=e.target.closest?.('.mi-trailer-card');
-    if(card&&!card.contains(e.relatedTarget))setMotionCover(card,false);
+    if(card&&!card.contains(e.relatedTarget)){
+      setMotionCover(card,false);
+      if(activeAcfunCover?.card===card)stopAcfunCover();
+    }
   });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAcfunCover();});
   // If an upstream CDN refuses cross-site thumbnail use, show the original
   // gradient card instead of a broken-image symbol.
   root.addEventListener('error',ev=>{
