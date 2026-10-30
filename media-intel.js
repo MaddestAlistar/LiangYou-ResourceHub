@@ -374,7 +374,7 @@
       const record=malId?malIndex?.items?.[String(malId)]:null;
       const malValid=record?.ok===true&&record?.status==='ok'&&record?.malId===malId;
       const old=w.profile||{};
-      const provider=x=>['AniList','Bangumi','MAL'].includes(x)?x:'';
+      const provider=x=>['AniList','Bangumi','MAL','Bangumi · AniList'].includes(x)?x:'';
       const rawGenres=safeTags(c?.genres);
       const rawKeywords=safeTags(c?.keywords);
       const genres=rawGenres.length?rawGenres:malValid?safeTags(record.genres):safeTags(old.genres);
