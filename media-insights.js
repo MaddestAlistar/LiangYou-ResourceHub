@@ -1139,8 +1139,22 @@
   let activeAcfunId='';
   let useAcfunMobile=false;
   let useStandardHost=false;
+  let douyinFitObserver=null;
+  function sizeDouyinWideFrame(){
+    if(!trailerStage?.classList.contains('mi-douyin-stage'))return;
+    const available=trailerStage.clientWidth;
+    if(available>0){
+      trailerStage.style.setProperty('--mi-douyin-scale',
+        String(Math.min(1,available/760)));
+    }
+  }
   let acfunSerial=0,acfunHlsInstance=null,acfunScriptPromise=null,acfunReadyTimer=null;
   function stopTrailer(){
+    if(douyinFitObserver){douyinFitObserver.disconnect();douyinFitObserver=null;}
+    if(trailerStage){
+      trailerStage.classList.remove('mi-douyin-stage');
+      trailerStage.style.removeProperty('--mi-douyin-scale');
+    }
     stopAcfunCover();
     acfunSerial++;
     if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
@@ -1479,7 +1493,29 @@
       // unsafe-url for the embed referrer. Keep other platforms' policy as-is.
       frame.referrerPolicy=['xigua','douyin'].includes(platform)?'unsafe-url':'strict-origin-when-cross-origin';
       frame.allowFullscreen=true;
+      // iPhone Safari: narrow Douyin iframes switch to a 324x624
+      // portrait page even for native 1920x1080 landscape source clips.
+      // This makes the play controls fall outside the 16:9 viewport.
+      // Render at a genuine 760px *iframe viewport* then shrink visually;
+      // CSS-only resizing after load cannot reliably trigger this breakpoint.
+      const douyinWide=platform==='douyin'&&
+        window.matchMedia('(max-width:760px)').matches;
+      if(douyinWide){
+        trailerStage.classList.add('mi-douyin-stage');
+        frame.classList.add('mi-douyin-wide');
+        frame.setAttribute('width','760');
+        frame.setAttribute('height','428');
+        frame.style.width='760px';
+        frame.style.height='428px';
+      }
       trailerStage.appendChild(frame);
+      if(douyinWide){
+        sizeDouyinWideFrame();
+        if(typeof ResizeObserver==='function'){
+          douyinFitObserver=new ResizeObserver(sizeDouyinWideFrame);
+          douyinFitObserver.observe(trailerStage);
+        }
+      }
     }
     document.getElementById('media-trailer-title').textContent=name;
     document.getElementById('media-trailer-kicker').textContent=provider+' · '+t('相关视频','Related video');
@@ -1487,6 +1523,11 @@
       t('视频由原平台直接播放；如果暂时无法播放，请尝试其他视频。','Video playback is provided by the source platform. If it is unavailable, try another video.');
     if(playerSwitch)playerSwitch.hidden=true;
     if(!trailerDialog.open)trailerDialog.showModal();
+    if(platform==='douyin'&&trailerStage.classList.contains('mi-douyin-stage')){
+      // Dialog dimensions become stable after showModal; support rotation too.
+      sizeDouyinWideFrame();
+      requestAnimationFrame(sizeDouyinWideFrame);
+    }
   });
 
   root.addEventListener('click',ev=>{
