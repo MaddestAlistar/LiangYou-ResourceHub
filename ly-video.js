@@ -37,7 +37,7 @@ function openVideo(button){
   const poster=asset(button.dataset.lyVideoPoster,'jpg');if(poster)video.poster=poster;
   const backup=asset(button.dataset.lyVideoBackup,'mp4');
   if(backup&&backup!==media)video.addEventListener('error',()=>{
-    if(video.src.endsWith(media)){video.src=backup;video.load();video.play().catch(()=>{});}
+    video.src=backup;video.load();video.play().catch(()=>{});
   },{once:true});
   video.src=media;video.setAttribute('aria-label',heading?.textContent?.trim()||'视频精选');
   stage.append(video);video.play().catch(()=>{});
