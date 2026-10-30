@@ -234,18 +234,27 @@
     };
     const ranked=unique.slice().sort((a,b)=>merit(b)-merit(a)||a.key.localeCompare(b.key));
     const picked=[],used=new Set(),platforms=new Set();
+    const include=v=>{
+      if(!v||used.has(v.key)||picked.length>=20)return;
+      picked.push(v);used.add(v.key);
+      if(v.platform)platforms.add(v.platform);
+    };
+    // Prefer sources that can play on mainland Chinese networks: put one
+    // verified, in-page Bilibili and AcFun video first when both exist.
+    // Do not create placeholder slots or promote source-only links.
+    for(const provider of ['bilibili','acfun']){
+      include(ranked.find(v=>v.platform===provider&&v.playable===true));
+    }
+    // Every other available platform still receives one early representative.
     for(const v of ranked){
-      if(v.platform&&!platforms.has(v.platform)){
-        picked.push(v);used.add(v.key);platforms.add(v.platform);
-      }
+      if(v.platform&&!platforms.has(v.platform))include(v);
       if(picked.length>=20)break;
     }
+    // Preserve the 20-video limit; rank additional clips by content quality.
     for(const v of ranked){
       if(picked.length>=20)break;
-      if(!used.has(v.key)){picked.push(v);used.add(v.key);}
+      include(v);
     }
-    // Keep a visible first-row representative of every available platform.
-    // Resort by popularity only within the remainder, not across the whole list.
     return picked;
   }
   // Dynamic public Bilibili results sometimes have no cover when its search
@@ -402,8 +411,9 @@
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
-        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'站内播放':'原站观看',
-          supportedPlayer?'Play here':'Open video')+'</span></span>';
+        // The play icon already conveys in-page playback; keep a label only
+        // for genuinely source-only cards, not for playable Bilibili/AcFun/etc.
+        (supportedPlayer?'':'<span class="mi-trailer-source-hint">'+t('原站观看','Open video')+'</span>')+'</span>';
       const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
         '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
