@@ -2,7 +2,12 @@ name: Verify and backfill film video thumbnails (isolated)
 on:
   push:
     branches: [fix/mobile-acfun-video-thumbnails-20261030]
-    paths: [.github/workflows/test-film-video-covers.yml]
+    paths:
+      - .github/workflows/test-film-video-covers.yml
+      - scripts/test_media_domestic_trailers.mjs
+      - scripts/test_media_extra_videos.py
+      - media-insights.js
+      - scripts/refresh_media_extra_videos.py
   workflow_dispatch:
 permissions:
   contents: write
