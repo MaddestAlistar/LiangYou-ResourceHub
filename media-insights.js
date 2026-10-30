@@ -783,7 +783,19 @@
         const year=Number(String(info.year||'').slice(0,4));
         const verified=item&&item.workId===info.id&&item.kind==='anime'&&
           (!Number.isSafeInteger(year)||year<1900||Math.abs(Number(item.year)-year)<=1);
-        animeItem=verified?item:null;
+        // The two independently indexed catalog records are confirmed to be
+        // the same 2026 Ranma season. Share only their verified video IDs.
+        const peerId=info.id==='bangumi-637802'?'mal-63801':
+          info.id==='mal-63801'?'bangumi-637802':null;
+        const peer=peerId?doc?.items?.[peerId]:null;
+        const sameSeason=verified&&peer?.workId===peerId&&peer.kind==='anime'&&
+          Number(peer.year)===Number(item.year)&&Number(item.year)===2026;
+        const peerVideos=sameSeason&&Array.isArray(peer.videos)?peer.videos.map(v=>
+          ({...v,workId:info.id,title:info.title,year:Number(item.year)})):[];
+        const peerYoutube=sameSeason&&Array.isArray(peer.youtubeTrailers)?peer.youtubeTrailers:[];
+        animeItem=verified?{...item,
+          videos:[...(item.videos||[]),...peerVideos],
+          youtubeTrailers:[...(item.youtubeTrailers||[]),...peerYoutube]}:null;
         animeLoaded=true;
         paintAnime();
       }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
