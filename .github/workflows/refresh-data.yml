@@ -80,11 +80,10 @@ jobs:
           fi
       - name: Accumulate history from existing verified public markets
         run: python scripts/update_market_history.py
-      - name: Validate complete snapshots and web references
+      - name: Validate snapshot integrity before publication
         run: |
           python scripts/test_market_history.py
           node scripts/validate.mjs
-          node scripts/test_sports_i18n.mjs
       - name: Commit snapshots and icons with concurrent-edit protection
         run: |
           git config user.name "github-actions[bot]"
@@ -102,6 +101,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/publish_pages.py
+      # Translation presentation checks must never block publishing independently
+      # verified Apple prices, Android offers, games or other live feeds.
+      # Run after commit+Pages publication so localization failures are still
+      # reported in Actions without leaving every data feed stale.
+      - name: Check independent sports translation presentation
+        continue-on-error: true
+        run: node scripts/test_sports_i18n.mjs
       - name: Report collector failure after publishing status
         if: steps.collect.outcome == 'failure'
         run: exit 1
