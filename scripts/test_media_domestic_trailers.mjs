@@ -182,6 +182,20 @@ test('KinoCheck candidates remain visible even after 36 normal YouTube results',
  assert.ok(cards.slice(0,4).some(c=>c.includes('KinoCheck')),'KinoCheck should not be buried below 20 other trailers');
  assert.ok(cards.slice(0,4).some(c=>c.includes('Dailymotion')),'Dailymotion should get an early representative slot');
 });
+test('Bilibili cards use labeled work posters only while verified video covers are unavailable',()=>{
+ const info={...selected,tmdbId:550,poster:'https://image.tmdb.org/t/p/w500/poster123.jpg'};
+ const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+   platform:'bilibili',videoId:'BV1234567890',name:'电影正式预告',
+   verifiedSource:'https://www.bilibili.com/video/BV1234567890/'};
+ const backup=gallery({},info,[row]);
+ assert.match(backup,/poster123\.jpg/);
+ assert.match(backup,/mi-trailer-fallback-label/);
+ assert.match(backup,/作品海报/);
+ const original=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/realcover.jpg'}]);
+ assert.match(original,/realcover\.jpg/);
+ assert.doesNotMatch(original,/<span class="mi-trailer-fallback-label">/);
+ assert.match(original,/data-thumb-poster-fallback="true"/);
+});
 test('platform-specific real cover images render without untrusted sources',()=>{
  const info={...selected,tmdbId:550};
  const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
