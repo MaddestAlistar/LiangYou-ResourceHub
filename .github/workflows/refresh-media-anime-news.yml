@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/refresh_media_anime_news.py'
+      - 'scripts/test_media_anime_news.py'
       - '.github/workflows/refresh-media-anime-news.yml'
 permissions:
   contents: write
@@ -28,7 +29,9 @@ jobs:
           python-version: '3.12'
       - name: Verify exact-season matching and metadata source
         run: |
-          python -m py_compile scripts/refresh_media_anime_news.py
+          python -m py_compile scripts/refresh_media_anime_news.py scripts/test_media_anime_news.py
+          python -m unittest scripts.test_media_anime_news -v
+          node --test scripts/test_media_anime_identity.mjs
           python - <<'PY'
           from scripts.refresh_media_anime_news import verified_headline, catalog
           alias=['乱马1/2 第三季','らんま1/2 第3期']
