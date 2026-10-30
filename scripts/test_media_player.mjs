@@ -7,7 +7,17 @@ import {runInNewContext} from 'node:vm';
 const script=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
 
 function setup(){
- const create=()=>({listeners:Object.create(null),addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(name,value){this[name]=value;}});
+ const create=()=>({
+  listeners:Object.create(null),
+  classList:{
+    values:new Set(),
+    add(name){this.values.add(name);},
+    remove(name){this.values.delete(name);},
+    contains(name){return this.values.has(name);}
+  },
+  addEventListener(type,fn){this.listeners[type]=fn;},
+  setAttribute(name,value){this[name]=value;}
+ });
  const root=create(),dialog=create(),stage=create(),switchButton=create(),closeButton=create(),mediaDialog=create();
  dialog.open=false;
  dialog.showModal=function(){this.open=true;};
