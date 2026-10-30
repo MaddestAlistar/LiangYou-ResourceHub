@@ -128,9 +128,9 @@ test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own P
  assert.match(source,/https:\/\/embed\.nicovideo\.jp\/watch\//);
  assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
- assert.match(source,/if\\(playerSwitch&&platform!=='acfun'\\)playerSwitch\\.hidden=true/);
- assert.match(source,/showAcfunFrame\\(id,isiOS\\)/);
- assert.match(source,/https:\\/\\/m\\.acfun\\.cn\\/v\\/\\?ac=/);
+ assert.ok(source.includes("if(playerSwitch&&platform!=='acfun')playerSwitch.hidden=true"));
+ assert.ok(source.includes('showAcfunFrame(id,isiOS)'));
+ assert.ok(source.includes('https://m.acfun.cn/v/?ac='));
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
