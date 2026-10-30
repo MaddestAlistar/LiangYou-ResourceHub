@@ -1,0 +1,57 @@
+name: Check Dailymotion Player on published site
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/check-dailymotion-player.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check published Player ID and official embed response
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          const root='https://maddestalistar.github.io/LiangYou-ResourceHub/';
+          const controller=()=>AbortSignal.timeout(20000);
+          let config;
+          for(let n=0;n<4;n++){
+            const result=await fetch(root+'data/media-video-player-config.json?verify='+Date.now(),{
+              cache:'no-store',signal:controller()
+            });
+            if(result.ok){
+              const obj=await result.json();
+              if(/^x[A-Za-z0-9]{3,15}$/.test(obj.dailymotionPlayerId||'')){
+                config=obj;break;
+              }
+            }
+            await new Promise(resolve=>setTimeout(resolve,5000));
+          }
+          assert.ok(config,'Published Pages site has no valid own Dailymotion Player ID');
+          const id=config.dailymotionPlayerId;
+          console.log('PAGES_PLAYER_ID_OK',id);
+          const videoIds=['x7tgad0','x9m8d0w'];
+          let found=false;
+          for(const video of videoIds){
+            try{
+              const embed='https://geo.dailymotion.com/player/'+id+'.html?video='+video;
+              const response=await fetch(embed,{signal:controller(),headers:{
+                'User-Agent':'Mozilla/5.0 (compatible; LiangYouVideoEmbedCheck/1.0)',
+                'Referer':root
+              }});
+              console.log('DAILYMOTION_PLAYER_HTTP',video,response.status,
+                response.headers.get('content-type')||'unknown');
+              if(response.status===200 && String(response.headers.get('content-type')).includes('html')){
+                found=true;break;
+              }
+            }catch(error){
+              console.log('DAILYMOTION_PLAYER_FETCH_FAILED',video,error.name);
+            }
+          }
+          assert.ok(found,'Official Dailymotion embed did not return an HTTP 200 HTML player');
+          console.log('DAILYMOTION_EMBED_ENDPOINT_OK');
+          NODE
