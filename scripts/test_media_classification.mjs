@@ -51,6 +51,41 @@ test('HTML special characters are escaped and excessive keywords are capped',()=
  assert.ok((detail.match(/mi-keyword-pill/g)||[]).length<=6);
 });
 
+test('anime genres, verified theme tags and MAL guidance render with clear source labels',()=>{
+ const work={kind:'anime',profile:{genres:['Action','Adventure','Fantasy','Shounen'],
+   keywords:['Pirates','Found Family'],anime_genre_source:'AniList',anime_theme_source:'Bangumi',
+   parental_rating:{source:'MAL',rating:'PG-13'}}};
+ const card=classificationCard(work),detail=classificationDetail(work);
+ assert.match(card,/动作/);
+ assert.match(card,/冒险/);
+ assert.match(card,/家长指南 · MAL PG-13/);
+ assert.match(detail,/作品类型/);
+ assert.match(detail,/主题标签/);
+ assert.match(detail,/海盗/);
+ assert.match(detail,/伙伴羁绊/);
+ assert.match(detail,/来源：AniList/);
+ assert.match(detail,/来源：Bangumi/);
+ assert.match(detail,/MAL · PG-13/);
+ assert.match(detail,/并非国家或地区官方年龄分级/);
+});
+test('anime with no verified parental metadata never invents an age or hides guidance',()=>{
+ const title={kind:'anime',profile:{genres:['Comedy'],keywords:[],parental_rating:null}};
+ const html=classificationDetail(title);
+ assert.match(html,/家长指南/);
+ assert.match(html,/尚无可核验的内容分级/);
+ assert.doesNotMatch(html,/PG-13|18岁以上|适合儿童/);
+ assert.doesNotMatch(classificationCard(title),/mi-age-pill/);
+ const fake={kind:'anime',profile:{parental_rating:{source:'guessed',rating:'PG-13'}}};
+ assert.doesNotMatch(classificationDetail(fake),/MAL · PG-13/);
+ assert.match(classificationDetail(fake),/尚无可核验的内容分级/);
+});
+test('anime enrichment is exact-ID and cannot reset the film video player',()=>{
+ assert.match(src,/media-anime-classification\.json/);
+ assert.match(src,/x\?\.workId===w\.id/);
+ assert.match(src,/x\?\.kind==='anime'/);
+ assert.match(src,/patchAnimeTags\(applyAnimeMetadata\(\)\)/);
+ assert.match(src,/querySelector\('\.mi-classification-detail'\)/);
+});
 test('visible-card metadata requests are bounded and do not block the film grid',()=>{
  const insights=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
  assert.match(src,/liangyou:media-visible/);
