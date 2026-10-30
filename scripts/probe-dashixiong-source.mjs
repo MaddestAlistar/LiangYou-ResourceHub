@@ -166,11 +166,34 @@ function playData(value,depth=0){
   }
   return null;
 }
+function staticMediaFromHTML(html){
+  const normalized=String(html||"").replace(/&amp;/gi,"&").replace(/\\\//g,"/")
+    .replace(/\\u0026/gi,"&").replace(/&#38;/gi,"&");
+  const values=[];
+  const tags=normalized.match(/<(?:video|source)\b[^>]{0,2000}>/gi)||[];
+  for(const tag of tags){
+    const m=tag.match(/\bsrc\s*=\s*["'](https?:\/\/[^"']+)["']/i);
+    if(m)values.push(m[1]);
+  }
+  const common=normalized.match(/https?:\/\/[^\s"'<>\\]{5,1600}?\.(?:m3u8|mp4|mov)(?:[?#][^\s"'<>\\]*)?/gi)||[];
+  values.push(...common);
+  for(let u of values.slice(0,15)){
+    try{
+      u=u.replace(/&quot;.*$/i,"").replace(/\\n.*$/i,"").trim();
+      const parsed=new URL(u);
+      if(!["http:","https:"].includes(parsed.protocol)||parsed.username||parsed.password)continue;
+      if(!/\.(?:m3u8|mp4|mov)(?:[?#]|$)/i.test(parsed.href))continue;
+      return {url:parsed.href};
+    }catch{}
+  }
+  return null;
+}
+
 async function parserResponse(url){
   const r=await checkedFetch(url,{headers:{"User-Agent":"Dart/3.13 (dart:io)","Accept":"application/json,text/plain,*/*"}},9000);
   const status=r.status,contentType=r.headers.get("content-type")||"";
   if(status<200||status>=300){await r.body?.cancel();return {http:status,format:"non_2xx"};}
-  if(/text\/html/i.test(contentType)){await r.body?.cancel();return {http:status,format:"html_not_parsed"};}
+  const isHtml=/text\/html/i.test(contentType);
   const len=Number(r.headers.get("content-length")||"0");
   if(len>150000){await r.body?.cancel();return {http:status,format:"too_large"};}
   const reader=r.body?.getReader();let total=0,parts=[];
@@ -183,8 +206,9 @@ async function parserResponse(url){
     }
   }
   const text=new TextDecoder().decode(Buffer.concat(parts.map(x=>Buffer.from(x)))).trim();
-  const result=playData(text);
-  return {http:status,format:result?"url":text.startsWith("{")||text.startsWith("[")?"json_without_url":"unsupported_or_encoded",play:result};
+  const result=isHtml?staticMediaFromHTML(text):playData(text);
+  return {http:status,format:result?(isHtml?"html_public_media":"url"):isHtml?"html_no_public_media":
+    text.startsWith("{")||text.startsWith("[")?"json_without_url":"unsupported_or_encoded",play:result};
 }
 async function probeLine(item,index){
   const source=item.source,original=item.part.url;
