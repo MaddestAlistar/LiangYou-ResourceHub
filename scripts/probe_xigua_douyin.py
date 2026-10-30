@@ -10,6 +10,8 @@ samples={
  "detective":"7123957398770811429",
  "terminal-list":"7116171226090996238",
  "official-xigua-example":"6803260807372079623",
+ "verified-douyin-jingxuan-video":"7140302841666686239",
+ "verified-douyin-2026":"7696680395005250856",
 }
 for label,ident in samples.items():
     url="https://open.douyin.com/api/douyin/v1/video/get_iframe_by_video?video_id="+ident
