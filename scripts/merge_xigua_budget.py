@@ -21,6 +21,9 @@ def merge_budgets(current, incoming):
     if a == b:
         chosen=dict(incoming)
         chosen["calls"]=max(current["calls"],incoming["calls"])
+        # Preserve a provider-denial stop across concurrent/stale runs.
+        chosen["blockedReason"] = (str(current.get("blockedReason") or "") or
+                                   str(incoming.get("blockedReason") or ""))[:64]
     else:
         chosen=dict(current if a > b else incoming)
     chosen["schema"]=1
