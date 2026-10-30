@@ -119,6 +119,15 @@ def parse_dailymotion(work):
         ident=str(x.get("id") or "");name=str(x.get("title") or "")
         if not DM_ID.fullmatch(ident) or not matches_title(name,aliases,work["year"],work["kind"]):continue
         if not VIDEO_WORDS.search(name):continue
+        # Short movie titles are highly ambiguous across films, games and TV.
+        # Without a release year, "Runner Runner" or older "Obsession" trailers
+        # cannot be safely attached to the 2026 film solely by a word match.
+        if work["kind"]=="movie":
+            english=work.get("original") or ""
+            tokens=re.findall(r"[A-Za-z]+",english)
+            generic=(len(tokens)==1 or len(tokens)==2 and tokens[0].casefold()=="the")
+            explicit_years=[int(y) for y in re.findall(r"(?<!\\d)(?:19|20)\\d{2}(?!\\d)",name)]
+            if generic and not any(abs(y-work["year"])<=1 for y in explicit_years):continue
         results.append(video_record(work,"dailymotion",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
           verifiedSource="https://www.dailymotion.com/video/"+ident,
           publisher="Dailymotion",views=x.get("views_total") if isinstance(x.get("views_total"),int) else None))
