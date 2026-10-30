@@ -3,6 +3,8 @@
 const list=document.getElementById('ly-news-list'),videos=document.getElementById('liangyou-video');
 if(!list)return;
 const endpoint='https://liangyou-icon-review.maddestalistar.workers.dev/news-feed';
+const localEndpoint='./data/tech-news-feed.json';
+const localImageUrl=value=>typeof value==='string'&&/^\.\/assets\/tech-news\/(?:clip-)?[a-f0-9-]{36}\.jpg$/.test(value)?value:'';
 const categories=new Set(['系统提醒','联名上新','应用动态','图标动态','热点播报','联合抽奖','宣传推广','视频精选']);
 const VIDEO_ROOT='https://raw.githubusercontent.com/MaddestAlistar/videos/main/clips/';
 const NEWS_IMAGE_ROOT='https://raw.githubusercontent.com/MaddestAlistar/videos/main/news-images/';
@@ -23,7 +25,7 @@ function mediaUrl(value,extension){
  return new RegExp('^[a-f0-9-]{36}\\.'+extension+'$').test(filename)?value:'';
 }
 function buildVideoCard(item){
- const platform=sourcePlatform(item.sourceUrl),src=mediaUrl(item.videoUrl,'mp4'),poster=mediaUrl(item.posterUrl,'jpg');
+ const platform=sourcePlatform(item.sourceUrl),src=mediaUrl(item.videoUrl,'mp4'),poster=mediaUrl(item.posterUrl,'jpg'),localPoster=localImageUrl(item.localPosterUrl);
  if(!platform||!src||typeof item.title!=='string'||typeof item.content!=='string')return null;
  if(FIXED_SOURCE_URLS.has(item.sourceUrl))return null;
  const isTG=platform==='tg';
@@ -33,7 +35,11 @@ function buildVideoCard(item){
  cover.setAttribute('aria-label','在网页内播放：'+item.title);
  cover.dataset.lyVideoOpen='uploaded';cover.dataset.lyVideoSrc=src;
  cover.dataset.lyVideoPoster=poster;
- if(poster){const img=element('img');img.src=poster;img.loading='lazy';img.decoding='async';img.alt=item.title+' 视频封面';img.referrerPolicy='no-referrer';cover.append(img)}
+ if(localPoster||poster){
+  const img=element('img');img.src=localPoster||poster;
+  if(localPoster&&poster)img.addEventListener('error',()=>{if(img.src.endsWith(localPoster))img.src=poster;},{once:true});
+  img.loading='lazy';img.decoding='async';img.alt=item.title+' 视频封面';img.referrerPolicy='no-referrer';cover.append(img);
+ }
  else cover.append(element('span',isTG?'✈':'▶','ly-news-video-fallback'));
  cover.append(element('span','▶','ly-news-video-play-icon'),element('span',isTG?'频道视频':'视频笔记','ly-news-video-cover-label'));
  const main=element('div',undefined,'ly-news-video-content');
@@ -67,7 +73,10 @@ function hydrate(items){
     &&/^[a-f0-9-]{36}\.jpg$/.test(item.newsImageUrl.slice(NEWS_IMAGE_ROOT.length))?item.newsImageUrl:'';
   if(image){
    const img=element('img',undefined,'ly-news-photo');
-   img.src=image;img.alt=item.title;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+   const local=localImageUrl(item.localNewsImageUrl);
+   img.src=local||image;
+   if(local)img.addEventListener('error',()=>{if(img.src.endsWith(local))img.src=image;},{once:true});
+   img.alt=item.title;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
    article.append(img);
   }
   fragment.append(article);added++;
@@ -79,17 +88,55 @@ function hydrate(items){
   videos.prepend(dynamicVideo);
  }
 }
-async function refresh(){
+// Homepage HTML is an offline fallback. A first-party JSON mirror restores
+// current news in China even when Cloudflare Workers or GitHub raw is blocked.
+let lastTimestamp=-1,lastPriority=-1,lastChecked=0;
+let mirroredMedia=new Map();
+function applyFeed(data,priority){
+ if(!data?.ok&&priority===1)return;
+ if(data?.schema!==1||!Array.isArray(data.items)||data.items.length>300)return;
+ const timestamp=Number.isFinite(Date.parse(data.updatedAt))?Date.parse(data.updatedAt):0;
+ if(priority===2){
+  mirroredMedia=new Map(data.items.filter(item=>item&&typeof item.id==='string')
+   .map(item=>[item.id,item]));
+ }
+ if(timestamp<lastTimestamp||(timestamp===lastTimestamp&&priority<lastPriority))return;
+ lastTimestamp=timestamp;lastPriority=priority;
+ // The live feed omits first-party mirror URLs. Retain those for the same
+ // asset only; a later edited article must never inherit an obsolete picture.
+ hydrate(data.items.map(item=>{
+  const mirror=mirroredMedia.get(item?.id);
+  return mirror?{...item,
+   ...(item.newsImageUrl&&item.newsImageUrl===mirror.newsImageUrl?{localNewsImageUrl:mirror.localNewsImageUrl}:{}),
+   ...(item.posterUrl&&item.posterUrl===mirror.posterUrl?{localPosterUrl:mirror.localPosterUrl}:{})
+  }:item;
+ }));
+}
+async function loadFeed(url,priority,timeout){
  try{
-  const response=await fetch(endpoint,{cache:'no-store',signal:AbortSignal.timeout(9000)});
+  const response=await fetch(url,{cache:priority===1?'no-store':'no-cache',
+   signal:AbortSignal.timeout(timeout)});
   if(!response.ok)throw new Error('news_http_'+response.status);
   const data=await response.json();
-  if(!data?.ok||data.schema!==1||!Array.isArray(data.items))throw new Error('news_invalid');
-  hydrate(data.items);
- }catch(error){
-  // Leave the initial cards and playable videos in place when the API is blocked.
-  console.info('Tech News feed unavailable; using homepage snapshot.');
+  if(!data||data.schema!==1||!Array.isArray(data.items)||priority===1&&data.ok!==true)
+   throw new Error('news_invalid');
+  applyFeed(data,priority);
+ }catch{
+  // Preserve the newest successfully rendered news, not older HTML.
+  if(priority===1)console.info('Live tech news unavailable; using first-party news snapshot.');
+  else console.info('First-party tech news unavailable; retaining homepage fallback.');
  }
 }
+function refresh(){
+ lastChecked=Date.now();
+ // Start both in parallel: same-origin snapshot usually arrives first for
+ // mainland visitors; the live API can still override a genuinely newer feed.
+ void loadFeed(localEndpoint,2,7000);
+ void loadFeed(endpoint,1,5000);
+}
 refresh();
+addEventListener('pageshow',event=>{if(event.persisted)refresh();});
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden&&Date.now()-lastChecked>5*60*1000)refresh();
+});
 })();
