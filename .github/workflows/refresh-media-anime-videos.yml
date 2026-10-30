@@ -32,7 +32,7 @@ jobs:
           python scripts/test_media_anime_videos.py
       - name: Update rotating anime source snapshots
         env:
-          ANIME_VIDEOS_BATCH: '22'
+          ANIME_VIDEOS_BATCH: '30'
         run: python scripts/refresh_media_anime_videos.py
       - name: Verify identity, URLs and payload limits
         run: |
