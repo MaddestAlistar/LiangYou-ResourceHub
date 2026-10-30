@@ -50,7 +50,7 @@ jobs:
               try:
                   print('XIGUA_ZERO_FUNDS_VERIFIED',funded_capacity_is_zero(key))
               except Exception as error:
-                  print('XIGUA_ZERO_FUNDS_UNKNOWN',type(error).__name__)
+                  print('XIGUA_ZERO_FUNDS_UNKNOWN',type(error).__name__,getattr(error,'code','no_http_code'))
           PY
       - name: Probe official public iframe API without scraping media
         run: |
