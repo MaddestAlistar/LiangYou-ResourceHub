@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-LIMIT = 24
+LIMIT = 50
 
 def merge_budgets(current, incoming):
     for record in (current, incoming):
