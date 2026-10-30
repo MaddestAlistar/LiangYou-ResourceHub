@@ -22,6 +22,36 @@ const galleryOwned=new Function('t','esc','safe','a','formatDuration','english',
   ownedCode+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase);
 const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
+test('Xigua requires a catalog match AND an officially approved iframe ID before displaying a card',()=>{
+ const film={kind:'movie',tmdbId:123,title:'海洋奇缘',originalTitle:'Moana',year:'2016-01-01'};
+ const valid={kind:'movie',tmdbId:123,year:2016,matchedByTitle:true,title:'海洋奇缘',
+  platform:'xigua',videoId:'7444746393916277283',embedId:'7444746393916277283',
+  embedVerified:true,name:'《海洋奇缘》电影正式预告',
+  verifiedSource:'https://www.ixigua.com/7444746393916277283'};
+ const html=gallery({},film,[valid]);
+ assert.match(html,/data-mi-play-cn="xigua"/);
+ assert.match(html,/data-mi-cn-embed-id="7444746393916277283"/);
+ assert.match(html,/西瓜视频/);
+ for(const rejected of [
+  {...valid,embedVerified:false},
+  {...valid,embedId:'javascript:alert(1)'},
+  {...valid,verifiedSource:'https://evil.example/7444746393916277283'},
+  {...valid,tmdbId:456},
+  {...valid,year:2022}
+ ])assert.doesNotMatch(gallery({},film,[rejected]),/data-mi-play-cn="xigua"/);
+ assert.match(source,/www\.ixigua\.com\/iframe\//);
+ assert.match(source,/data-mi-cn-embed-id/);
+});
+test('Xigua anime clip is restricted to the exact season catalog identity',()=>{
+ const anime={id:'bangumi-123',kind:'anime',title:'海洋奇缘动画',year:2026};
+ const x={kind:'anime',workId:'bangumi-123',year:2026,verifiedByCatalogTitle:true,
+  title:anime.title,platform:'xigua',videoId:'7444746393916277283',
+  embedId:'7444746393916277283',embedVerified:true,
+  name:'海洋奇缘动画 PV',verifiedSource:'https://www.ixigua.com/7444746393916277283'};
+ assert.match(gallery({},anime,[x]),/data-mi-play-cn="xigua"/);
+ assert.doesNotMatch(gallery({}, {...anime,id:'bangumi-456'},[x]),/data-mi-play-cn="xigua"/);
+ assert.doesNotMatch(gallery({}, {...anime,year:2024},[x]),/data-mi-play-cn="xigua"/);
+});
 test('one section and one shared card grid contain YouTube and verified Bilibili entries',()=>{
  const h=gallery(yt,selected,catalog.items,'ready');
  assert.equal((h.match(/<h3>预告片\/相关视频<\/h3>/g)||[]).length,1);
