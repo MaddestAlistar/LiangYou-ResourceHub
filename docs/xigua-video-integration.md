@@ -1,5 +1,12 @@
 # 西瓜视频：影视中心接入
 
+## 2026-10-30 实测状态
+
+**接入代码已部署，但西瓜视频数据源尚未启用。** 2026-10-30 GitHub Actions 从官方 `get_iframe_info` 请求公开视频时，HTTP 状态为 200，但返回 `text/html` 而不是文档描述的 JSON。即使配置 SandBase 搜索密钥，此时仍无法完成官方嵌入许可验证；自动刷新会在 API 预检异常时提前结束，不消耗第三方搜索额度。静态数据 `data/media-xigua-videos.json` 目前为空，页面不会显示未经验证的西瓜卡片。
+
+不要因为 GitHub Action 显示 success，就误以为已经拿到公开视频或完成中国大陆播放验证。需进一步找到可用的官方分享嵌入代码/正式接口，并实测中国大陆 iPhone Safari 播放后才能正式启用。
+
+
 接入分两步：SandBase 的公开视频搜索（第三方；需要密钥），以及西瓜视频官方 `get_iframe_info` 对每个搜索命中的 iframe 授权校验。只有官方返回可用的 iframe，才会进入影视中心站内播放列表。
 
 1. 在 GitHub 仓库 Settings → Secrets and variables → Actions 中新建 `SANDBASE_API_KEY`，值为你自己的 SandBase API Key。密钥只由 Actions 使用，不会进入网站前端。
