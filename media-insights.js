@@ -274,12 +274,16 @@
       // its official embed or mobile H5 page in our own dialog on all devices.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const thumbOriginal=safe(x.thumbnail);
+      // The first-party cover filename must exactly match the verified BV ID.
+      const bvidCover=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
+        ['jpg','png','webp'].some(ext=>x.thumbnailLocal==='./assets/media-video-covers/'+x.videoId+'.'+ext)?
+        x.thumbnailLocal:null;
       const posterFallback=x.platform==='bilibili'?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
-      const thumb=(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
-      const isWorkPoster=!thumbOriginal&&Boolean(posterFallback);
-      const thumbBackup=nicoMedium?thumbOriginal:(thumbOriginal?posterFallback:null);
+      const thumb=bvidCover||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
+      const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
+      const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
           (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
