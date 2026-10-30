@@ -7,7 +7,7 @@
     {
       id: 'media',
       // The essential catalogue is usable after these two scripts and one CSS.
-      styles: ['./media-intel.css?v=20261030-motion-covers-1'],
+      styles: ['./media-intel.css?v=20261031-douyin-ioswide'],
       urls: [
         './media-core.js?v=20261030.anime-unify2',
         './media-intel.js?v=20261030.anime-unify2'
@@ -21,7 +21,7 @@
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-multiplatform9',
-        './media-insights.js?v=20261030.douyin1',
+        './media-insights.js?v=20261031.douyin-ioswide',
         './media-cn-enhance.js?v=20261030.anime-unify2',
         './media-exact-scores.js?v=20261029.newsroom1',
         './media-boxoffice-rankings.js?v=20261029.noarchive1'
