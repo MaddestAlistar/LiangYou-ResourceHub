@@ -1273,6 +1273,49 @@ export default {
     return reply(video?{ok:true,platform:"acfun",videoId:acfun[1],...video}:
       {ok:false,platform:"acfun",status:"upstream_unavailable"},video?200:502,0);
   }
+  // Image-only relay for verified Bilibili CDN cover URLs. Prevents cross-site
+  // hotlink failures for dynamically discovered videos; never proxies video.
+  if(u.pathname==="/api/media-cover/bilibili"){
+    const source=u.searchParams.get("src")||"";
+    let target=null;
+    try{
+      const parsed=new URL(source);
+      const host=parsed.hostname.toLowerCase();
+      if(parsed.protocol==="https:"&&!parsed.username&&!parsed.password&&
+        ["hdslb.com","biliimg.com"].some(domain=>host===domain||host.endsWith("."+domain))&&
+        /^\/bfs\/archive\/[a-f0-9]{32,80}\.(?:jpg|jpeg|png|webp)(?:@[\w!.-]{1,80})?$/i.test(parsed.pathname)&&
+        source.length<500)target=parsed.href;
+    }catch{}
+    if(!target)return reply({ok:false,error:"invalid_image"},400,0);
+    const cacheKey=new Request(u.href);
+    const cached=await caches.default.match(cacheKey);
+    if(cached)return cached;
+    const ac=new AbortController(),timeout=setTimeout(()=>ac.abort(),7000);
+    try{
+      const upstream=await fetch(target,{signal:ac.signal,redirect:"error",headers:{
+        "Referer":"https://www.bilibili.com/",
+        "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125.0 Safari/537.36",
+        "Accept":"image/jpeg,image/png,image/webp"
+      }});
+      const mime=(upstream.headers.get("content-type")||"").split(";")[0].toLowerCase();
+      if(!upstream.ok||!["image/jpeg","image/png","image/webp"].includes(mime)||
+        Number(upstream.headers.get("content-length")||0)>1500000)throw Error("image_unavailable");
+      const bytes=await upstream.arrayBuffer();
+      const magic=new Uint8Array(bytes.slice(0,12));
+      if(bytes.byteLength<500||bytes.byteLength>1500000||
+        !(mime==="image/jpeg"&&magic[0]===255&&magic[1]===216&&magic[2]===255)&&
+        !(mime==="image/png"&&magic[0]===137&&magic[1]===80&&magic[2]===78&&magic[3]===71)&&
+        !(mime==="image/webp"&&String.fromCharCode(...magic.slice(0,4))==="RIFF"))
+        throw Error("invalid_image");
+      const result=new Response(bytes,{status:200,headers:{
+        "content-type":mime,"cache-control":"public,max-age=86400",
+        "access-control-allow-origin":cors,"x-content-type-options":"nosniff"
+      }});
+      ctx.waitUntil(caches.default.put(cacheKey,result.clone()));
+      return result;
+    }catch{return reply({ok:false,error:"cover_unavailable"},502,0);}
+    finally{clearTimeout(timeout);}
+  }
   // Bilibili public video statistics; counts are never inferred from view totals.
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
   if(bili){
