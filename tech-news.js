@@ -28,7 +28,7 @@ function mediaUrl(value,extension){
 }
 function buildVideoCard(item){
  const platform=sourcePlatform(item.sourceUrl),rawSrc=mediaUrl(item.videoUrl,'mp4'),poster=mediaUrl(item.posterUrl,'jpg'),
- localPoster=localImageUrl(item.localPosterUrl),localSrc=localVideoUrl(item.localVideoUrl),src=localSrc||rawSrc;
+ localPoster=localImageUrl(item.localPosterUrl),localSrc=localVideoUrl(item.localVideoUrl),src=localSrc?assetWithVersion(localSrc):rawSrc;
  if(!platform||!src||typeof item.title!=='string'||typeof item.content!=='string')return null;
  if(FIXED_SOURCE_URLS.has(item.sourceUrl))return null;
  const isTG=platform==='tg';
@@ -130,7 +130,8 @@ function applyFeed(data,priority){
 }
 async function loadFeed(url,priority,timeout){
  try{
-  const response=await fetch(url,{cache:priority===1?'no-store':'no-cache',
+  const requestUrl=priority===2?url+'?refresh='+Math.floor(Date.now()/300000):url;
+  const response=await fetch(requestUrl,{cache:priority===1?'no-store':'no-cache',
    signal:AbortSignal.timeout(timeout)});
   if(!response.ok)throw new Error('news_http_'+response.status);
   const data=await response.json();
