@@ -107,7 +107,7 @@ try{
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
  await page.route('**/api/video/acfun/41787132',route=>route.fulfill({status:200,contentType:'application/json',
-   headers:{'access-control-allow-origin':'https://maddestalistar.github.io'},
+   headers:{'access-control-allow-origin':'*'},
    body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
      url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})}));
  await page.evaluate(()=>{
