@@ -1,5 +1,17 @@
 # 西瓜视频：谨慎免费调用与站内播放接入
 
+## 2026-10-31 最新状态：$0.01 消费上限单次测试成功
+
+用户把专用 SandBase 密钥消费上限由 $0 调整至累计 $0.01（余额中有赠送的 $1），明确授权一次 API 测试。使用当前官方示例的 `POST /v1/api/xigua/app-v2/search-video`、`{"keyword":"..."}`，GitHub Actions 运行号 `41089826853` 在 2026-10-30T16:26 UTC **成功发起唯一一次搜索**，返回符合程序预期的已完成响应；未出现 402。测试目录 `bangumi-390200` 未找到符合作品匹配规则的视频，西瓜可播放视频仍为 0。
+
+- GitHub 本地预算账本当天从 2 次**已尝试**增加至 3 次，本轮只增加了 1 次。
+- 真实是否使用了 SandBase 每天 100 次免费额度以及实际费用需要到 **Developer → Activities → Usage / Request History** 检查。GitHub 账户余额读取 API 依然不通，`SPENT $0` 可能受到前端金额精度影响，不能单凭四舍五入的数值断言完全免费。
+- 授权的单次测试结束后，工作流已恢复 `XIGUA_AUTO_SEARCH_ENABLED=false`、`XIGUA_ONE_TIME_PAID_TEST=false`。**没有授权执行更多请求，自动搜索继续暂停**。
+- 24/UTC 日、12/次运行是以后可选的技术配额，不是本次操作实际发起的搜索数量。以后若要启用每日自动搜索，需要确认真实免费额度或再次由用户明确授权付费预算。
+- 西瓜官方 iframe 核验接口仍返回 HTML，搜索 API 通畅不等于能站内播放；所有其他视频平台保持正常。
+
+[本轮 GitHub Actions 测试](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/41089826853)
+
 ## 2026-10-30 已验证的 $0 消费上限结果
 
 用户明确表示已将此 SandBase 专用 API Key 的 Spending Limit 从默认 **unlimited** 改成 **$0**；GitHub Secret 可用。已在 GitHub Actions 用正式 `POST /v1/api/xigua/app-v2/search-video` 实际发起测试，SandBase 返回 **HTTP 402**（资金或 API Key 消费上限阻止请求），说明这把 $0 上限的密钥当前**不能通过该接口完成免费搜索**。
