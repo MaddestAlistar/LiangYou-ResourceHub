@@ -133,3 +133,11 @@ test('YouTube Bilibili AcFun Niconico use one modal; Dailymotion links externall
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
 
+
+test('Dailymotion inline player is gated by a site-owned Player ID',()=>{
+  assert.match(source,/data\/media-video-player-config\\.json/);
+  assert.match(source,/geo\\.dailymotion\\.com\\/player\\//);
+  assert.match(source,/dailymotionPlayerId/);
+  assert.match(source,/const supportedPlayer=x\\.platform!==\'dailymotion\'\\|\\|Boolean\\(dailymotionPlayerId\\)/);
+  assert.doesNotMatch(source,/\/player\/x8lr5\\.html/);
+});
