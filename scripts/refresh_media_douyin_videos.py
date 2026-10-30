@@ -171,7 +171,8 @@ def choose(works, items, cursor):
         choices = [(key, work) for key, work in works.items() if work["kind"] == kind]
         if choices:
             return min(choices, key=lambda kv: (
-                str(items.get(kv[0], {}).get("checkedAt") or ""), kv[0]))
+                str(items.get(kv[0], {}).get("checkedAt") or
+                    items.get(kv[0], {}).get("lastIndexAttemptAt") or ""), kv[0]))
     return None
 
 def main():
@@ -197,9 +198,18 @@ def main():
     print("DOUYIN_SEARCH_WORK", key, work["title"], "pass", variant + 1, flush=True)
     ids = indexed_ids(query)
     if ids is None:
-        # Keep all published videos unchanged. Rotate index selection anyway to
-        # prevent a rate-limited work from starving the full media catalogue.
-        print("DOUYIN_INDEX_UNAVAILABLE_NO_CHANGES", flush=True)
+        # A throttled public index must NEVER delete approved clips, nor block
+        # every later work by retrying the same title on every scheduled run.
+        items[key] = {**old, "title": work["title"], "kind": work["kind"],
+                      "year": work["year"], "tmdbId": work.get("tmdb_id") or 0,
+                      "workId": work["id"], "videos": old_videos[:MAX_PER_WORK],
+                      "lastIndexAttemptAt": now()}
+        OUTPUT.write_text(json.dumps({
+            "schema": 1, "updatedAt": now(), "provider": "douyin",
+            "discovery": "public_search_index_and_official_iframe",
+            "discoveryCursor": cursor + 1, "items": items},
+            ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf8")
+        print("DOUYIN_INDEX_UNAVAILABLE_PRESERVED", key, flush=True)
         return
     videos = list(old_videos[:MAX_PER_WORK])
     checked = 0
