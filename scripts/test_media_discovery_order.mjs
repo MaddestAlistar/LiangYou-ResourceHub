@@ -19,6 +19,15 @@ function panel(work){
   const fn=factory({aliases:{},works:{}},(zh)=>zh,(_,label)=>'<a>'+label+'</a>',s=>String(s??''));
   return fn(work);
 }
+test('film cards provide a separate Discover entry backed by the existing detail renderer',()=>{
+  assert.match(core,/class="mi-card-discover" data-mi-card-discover="/);
+  assert.match(core,/if\(b\.dataset\.miCardDiscover\)openDetails\(b\.dataset\.miCardDiscover,b\.dataset\.miEpisode,'discover'\)/);
+  assert.match(core,/detailTab=section==='discover'\?'discover':'ratings'/);
+  assert.match(core,/detailTab==='discover'\?discoverPanel\(w\)/);
+  assert.match(core,/data-mi-detail=\\?"\$\{id\}\\?"/);
+  assert.match(core,/if\(b\.dataset\.miOpen\)openDetails\(b\.dataset\.miOpen,b\.dataset\.miEpisode\)/);
+});
+
 test('visible discovery sections always occupy trailer, world news, mainland news, related, similar order',()=>{
   const html=panel({profile:{videos:[{url:'https://www.youtube.com/watch?v=AbCdEf12345',name:'Trailer'}],related:[{id:'tmdb-movie-550',title:'Related work'}]}});
   assert.deepEqual([...html.matchAll(/data-mi-discover-slot="([^"]+)"/g)].map(m=>m[1]),expected);
