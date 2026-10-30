@@ -254,7 +254,7 @@ def main():
     except Exception as error:
         print("XIGUA_ZERO_SPEND_STOP: could not inspect public account balance",type(error).__name__)
         return
-    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=20, run_cap=8)
+    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=1, run_cap=1)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
         return
