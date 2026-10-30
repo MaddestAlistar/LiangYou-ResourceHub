@@ -189,8 +189,10 @@
     for(const x of Array.isArray(records)?records:[]){
       if(!x||x.kind!==kind)continue;
       const animeBound=kind==='anime'&&x.workId===info.id&&x.verifiedByCatalogTitle===true&&
-        Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
-        (!yearKnown||Math.abs(Number(x.year)-year)<=1);
+        // Some IMDb/Simkl anime records have no verified premiere year; the
+        // exact catalog work ID still binds those videos to the right entry.
+        (!yearKnown||(Number.isSafeInteger(Number(x.year))&&
+          Number(x.year)>=1900&&Math.abs(Number(x.year)-year)<=1));
       const idBound=(x.verifiedByTitleId===true||x.matchedByTitle===true)&&Number.isSafeInteger(Number(info?.tmdbId))&&
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
