@@ -1,0 +1,94 @@
+name: Refresh verified anime trailers and related videos
+on:
+  schedule:
+    - cron: '37 */4 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_media_anime_videos.py'
+      - 'scripts/test_media_anime_videos.py'
+      - '.github/workflows/refresh-media-anime-videos.yml'
+permissions:
+  contents: write
+concurrency:
+  group: refresh-media-anime-videos
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate catalog-linked anime matches
+        run: |
+          python -m py_compile scripts/refresh_media_anime_videos.py scripts/refresh_media_extra_videos.py
+          python scripts/test_media_anime_videos.py
+      - name: Update rotating anime source snapshots
+        env:
+          ANIME_VIDEOS_BATCH: '22'
+        run: python scripts/refresh_media_anime_videos.py
+      - name: Verify identity, URLs and payload limits
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          p=Path('data/media-anime-videos.json')
+          d=json.loads(p.read_text())
+          assert d['schema']==1 and isinstance(d['items'],dict)
+          assert p.stat().st_size<1500000
+          for key,row in d['items'].items():
+              assert re.fullmatch(r'(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*',key)
+              assert row['workId']==key and row['kind']=='anime'
+              assert len(row.get('youtubeTrailers',[]))<=12 and len(row.get('videos',[]))<=12
+              for video in row.get('youtubeTrailers',[]):
+                  assert re.fullmatch(r'[A-Za-z0-9_-]{11}',video['id'])
+                  assert video['url']=='https://www.youtube.com/watch?v='+video['id']
+              for video in row.get('videos',[]):
+                  assert video['workId']==key and video['kind']=='anime'
+                  assert video['verifiedByCatalogTitle'] is True
+                  platform=video['platform']; ident=video['videoId']
+                  templates={
+                      'acfun': 'https://www.acfun.cn/v/ac'+ident,
+                      'niconico':'https://www.nicovideo.jp/watch/'+ident,
+                      'dailymotion':'https://www.dailymotion.com/video/'+ident,
+                  }
+                  assert platform in templates and video['verifiedSource']==templates[platform]
+          print('ANIME_VIDEO_VALIDATE_OK',len(d['items']))
+          PY
+      - name: Merge onto current main and publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-anime-videos.json /tmp/liangyou-anime-candidate.json
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          dst=Path('data/media-anime-videos.json')
+          new=json.loads(Path('/tmp/liangyou-anime-candidate.json').read_text())
+          try: old=json.loads(dst.read_text())
+          except (ValueError,OSError): old={}
+          merged=dict(old.get('items') or {})
+          for key,row in new['items'].items():
+              prev=merged.get(key)
+              if prev is None or str(row.get('checkedAt') or '')>=str(prev.get('checkedAt') or ''):
+                  merged[key]=row
+          dst.write_text(json.dumps({'schema':1,'updatedAt':new['updatedAt'],'items':merged},
+              ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf8')
+          PY
+            git add data/media-anime-videos.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Refresh catalog-linked anime clips"
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'Unable to merge anime snapshot after retry' >&2
+          exit 1
