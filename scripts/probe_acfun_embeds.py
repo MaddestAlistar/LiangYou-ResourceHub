@@ -25,7 +25,13 @@ HEADERS={"User-Agent":"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Ap
 
 
 def fetch(name,url):
-    request=urllib.request.Request(url,headers=HEADERS)
+    custom_headers=dict(HEADERS)
+    if name=="ajax_video_info":
+        custom_headers["User-Agent"]="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        custom_headers["Accept"]="*/*"
+        custom_headers["X-Requested-With"]="XMLHttpRequest"
+        custom_headers["Referer"]=f"https://www.acfun.cn/v/ac{VIDEO}"
+    request=urllib.request.Request(url,headers=custom_headers)
     try:
         with urllib.request.urlopen(request,timeout=14) as response:
             body=response.read(1500000).decode("utf-8","replace")
