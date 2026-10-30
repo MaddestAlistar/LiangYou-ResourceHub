@@ -192,3 +192,15 @@ test('platform-specific real cover images render without untrusted sources',()=>
  assert.match(source,/mi-trailer-platform-thumb/);
  assert.match(source,/m.acfun.cn\/v\/\?ac=/);
 });
+
+test('Niconico uses verified medium cover and falls back to original on CDN failure',()=>{
+  const info={...selected,tmdbId:550};
+  const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+    platform:'niconico',videoId:'sm43190555',name:'Previews',
+    verifiedSource:'https://www.nicovideo.jp/watch/sm43190555',
+    thumbnail:'https://nicovideo.cdn.nimg.jp/thumbnails/43190555/43190555.5693593'};
+  const html=gallery({},info,[row]);
+  assert.match(html,/43190555\.5693593\.M/);
+  assert.match(html,/data-thumb-fallback="https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/43190555\/43190555\.5693593"/);
+  assert.match(source,/img\.dataset\.thumbFallback/);
+});
