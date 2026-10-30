@@ -126,6 +126,7 @@ def bangumi_detail(w):
            if isinstance(x.get("name"),str)
            and x["name"].strip() not in META_TAGS
            and normalized_title(x["name"]) not in excluded_titles
+           and not re.fullmatch(r"(?:19|20)\d{2}|OP|ED|PV|S\d+",x["name"].strip(),re.I)
            and int(x.get("count") or 0)>=5
            and SAFE_TAG.fullmatch(x["name"].strip())]
     themes=clean(valid,8)
