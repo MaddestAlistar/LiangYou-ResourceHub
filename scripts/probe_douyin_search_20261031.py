@@ -64,10 +64,16 @@ def probe(tool, config, keyword, title):
             data = json.loads(payload)
             result["json_ok"] = True
             result["upstream_code"] = data.get("status_code")
-            rows = data.get("data") or []
+            rows = data.get("data") or data.get("aweme_list") or []
             if not isinstance(rows, list):
                 rows = []
             result["items"] = len(rows)
+            result["list_field"] = "data" if isinstance(data.get("data"), list) else (
+                "aweme_list" if isinstance(data.get("aweme_list"), list) else "none")
+            nil = data.get("search_nil_info")
+            if isinstance(nil, dict):
+                result["empty_reason_fields"] = {k: str(v)[:100] for k,v in nil.items()
+                                                 if k in ("search_nil_type", "search_nil_text", "text")}
             ids = set()
             for row in rows[:30]:
                 if not isinstance(row, dict):
