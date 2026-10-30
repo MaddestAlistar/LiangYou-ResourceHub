@@ -27,32 +27,82 @@
   const scoreValue=r=>Number.isFinite(r.value)&&r.scale ? `${r.scale<=10?r.value.toFixed(1):r.value}${['Rotten Tomatoes','RT Audience'].includes(r.source)?'%':'/'+r.scale}` : r.display||'—';
   const scores=(i,limit=3)=>(i.ratings||[]).slice(0,limit).map(r=>`<span class="mi-rating"><b>${esc(r.source==='Internet Movie Database'?'IMDb':r.source)}</b> ${esc(scoreValue(r))}</span>`).join('');
   // TMDB metadata only: no guessed suitability or generated tags.
+  // Only source-backed classification is displayed. AniList themes are not
+  // inferred age guidance; MAL ratings are not regional statutory ratings.
+  const animeTagZh={
+    Action:'动作',Adventure:'冒险',Comedy:'喜剧',Drama:'剧情',Fantasy:'奇幻',
+    'Sci-Fi':'科幻',Mystery:'悬疑',Romance:'恋爱',Horror:'恐怖',Thriller:'惊悚',
+    Sports:'运动',Psychological:'心理','Slice of Life':'日常',Supernatural:'超自然',
+    Mecha:'机甲',Music:'音乐',Ecchi:'卖肉',Harem:'后宫',Isekai:'异世界',
+    Reincarnation:'转生',Shounen:'少年向',Shoujo:'少女向',Seinen:'青年向',
+    Josei:'女性向',Historical:'历史','Martial Arts':'武术',School:'校园',
+    Military:'军事',War:'战争',Space:'太空','Super Power':'超能力',
+    Pirates:'海盗',Friendship:'友情','Coming of Age':'成长',
+    'Male Protagonist':'男性主角','Female Protagonist':'女性主角',
+    'Ensemble Cast':'群像','Found Family':'拟亲情',Travel:'旅行',
+    Survival:'生存',Swordplay:'剑术',Magic:'魔法','Time Travel':'时间旅行',
+    'Time Skip':'时间跨度',Robots:'机器人',Tragedy:'悲剧',Crime:'犯罪',
+    Detective:'侦探','Urban Fantasy':'都市奇幻',Animals:'动物',
+    Aliens:'外星人',Kids:'儿童','Family Life':'家庭生活',
+    Superhero:'超级英雄',Politics:'政治',Conspiracy:'阴谋',
+    Ninja:'忍者',Samurai:'武士',Vampire:'吸血鬼',Ocean:'海洋',
+    'Mahou Shoujo':'魔法少女',Parody:'恶搞',Workplace:'职场'
+  };
+  const classificationLabel=(work,value)=>work?.kind==='anime'&&language!=='en'
+    ?(animeTagZh[value]||value):value;
   function classificationData(work){
     const p=work?.profile||{};
-    const cleanList=values=>Array.isArray(values)?[...new Set(values.filter(v=>typeof v==='string').map(v=>v.trim()).filter(v=>v.length>=2&&v.length<=28))]:[];
+    const cleanList=values=>Array.isArray(values)?[...new Set(values.filter(v=>typeof v==='string')
+      .map(v=>v.trim()).filter(v=>v.length>=2&&v.length<=28))]:[];
     const genres=cleanList(p.genres).slice(0,6);
     const keywords=cleanList(p.keywords).filter(v=>!genres.some(g=>g.toLowerCase()===v.toLowerCase())).slice(0,6);
-    const age=p.parental_rating;
-    const ageValid=age&&age.source==='TMDB'&&['CN','HK','TW','US','GB','AU','SG','JP','KR'].includes(age.country)&&
+    const age=p.parental_rating||null;
+    const tmdbRating=age?.source==='TMDB'&&['CN','HK','TW','US','GB','AU','SG','JP','KR'].includes(age.country)&&
       typeof age.rating==='string'&&/^[A-Za-z0-9+ /-]{1,14}$/.test(age.rating)&&
       !['NR','N/R','UNRATED','NOT RATED','NONE','NA','N/A'].includes(age.rating.toUpperCase());
-    return {genres,keywords,age:ageValid?{country:age.country,rating:age.rating}:null};
+    const animeRating=work?.kind==='anime'&&age?.source==='MyAnimeList v2'&&
+      ['G','PG','PG-13','R','R+','Rx'].includes(age.rating)&&
+      Number.isSafeInteger(Number(age.malId))&&Number(age.malId)>0&&Number(age.malId)===Number(work.mal_id);
+    const grade=tmdbRating?{country:age.country,rating:age.rating,source:'TMDB'}:
+      animeRating?{country:'MAL',rating:age.rating,source:'MyAnimeList v2'}:null;
+    return {genres,keywords,age:grade};
   }
   function classificationCard(work){
     const d=classificationData(work);
     const labels=[...d.genres.slice(0,2),...d.keywords.slice(0,d.genres.length?1:2)];
     if(!labels.length&&!d.age)return '';
     return '<div class="mi-card-classification">'+labels.map((tag,i)=>
-      '<span class="mi-tag-pill'+(i>=Math.min(2,d.genres.length)?' mi-keyword-pill':'')+'">'+esc(tag)+'</span>').join('')+
+      '<span class="mi-tag-pill'+(i>=Math.min(2,d.genres.length)?' mi-keyword-pill':'')+'">'+esc(classificationLabel(work,tag))+'</span>').join('')+
       (d.age?'<span class="mi-age-pill">'+esc(text('家长指南','Parental guide'))+' · '+esc(d.age.country)+' '+esc(d.age.rating)+'</span>':'')+'</div>';
   }
   function classificationDetail(work){
     const d=classificationData(work);
-    if(!d.genres.length&&!d.keywords.length&&!d.age)return '';
-    const genres=d.genres.length?'<div class="mi-classification-group"><small>'+text('影片类型','Genres')+'</small><div class="mi-classification-pills">'+d.genres.map(v=>'<span class="mi-tag-pill">'+esc(v)+'</span>').join('')+'</div></div>':'';
-    const keywords=d.keywords.length?'<div class="mi-classification-group"><small>'+text('主题标签','Theme tags')+'</small><div class="mi-classification-pills">'+d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+esc(v)+'</span>').join('')+'</div></div>':'';
-    const age=d.age?'<div class="mi-classification-group mi-parental-guide"><small>'+text('家长指南 · 地区分级','Parental guide · Regional classification')+'</small><div class="mi-classification-pills"><span class="mi-age-pill">'+esc(d.age.country)+' · '+esc(d.age.rating)+'</span></div><p class="mi-caption">'+text('来源：TMDB 收录的地区分级，仅供参考；不同国家标准不同，不代表完整内容警示。','TMDB-recorded regional rating for reference only; not a full content advisory. Classifications vary by country.')+'</p></div>':'';
-    return '<section class="mi-classification-detail" aria-label="'+text('影片标签与家长指南','Film tags and parental guidance')+'">'+genres+keywords+age+'</section>';
+    if(work?.kind!=='anime'&&!d.genres.length&&!d.keywords.length&&!d.age)return '';
+    const genres=d.genres.length?'<div class="mi-classification-group"><small>'+
+      (work?.kind==='anime'?text('动漫类型','Anime genres'):text('影片类型','Genres'))+
+      '</small><div class="mi-classification-pills">'+d.genres.map(v=>'<span class="mi-tag-pill">'+
+      esc(classificationLabel(work,v))+'</span>').join('')+'</div></div>':'';
+    const keywords=d.keywords.length?'<div class="mi-classification-group"><small>'+text('主题标签','Theme tags')+
+      '</small><div class="mi-classification-pills">'+d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+
+      esc(classificationLabel(work,v))+'</span>').join('')+'</div></div>':'';
+    const age=d.age?'<div class="mi-classification-group mi-parental-guide"><small>'+
+      (work?.kind==='anime'?text('家长指南 · MAL 年龄标识','Parental guide · MAL rating'):
+        text('家长指南 · 地区分级','Parental guide · Regional classification'))+
+      '</small><div class="mi-classification-pills"><span class="mi-age-pill">'+
+      esc(d.age.country)+' · '+esc(d.age.rating)+'</span></div><p class="mi-caption">'+
+      (work?.kind==='anime'?text('来源：MyAnimeList v2 年龄标识，仅供参考；不等于法定分级，也不是完整的内容警示。',
+        'Source: MyAnimeList v2 content rating. Not a statutory rating or complete content advisory.'):
+        text('来源：TMDB 收录的地区分级，仅供参考；不同国家标准不同，不代表完整内容警示。',
+        'TMDB-recorded regional rating for reference only; not a full content advisory. Classifications vary by country.'))+
+      '</p></div>':work?.kind==='anime'?'<div class="mi-classification-group mi-parental-guide"><small>'+
+      text('家长指南','Parental guide')+'</small><p class="mi-caption">'+
+      text('暂未收录可核验的年龄标识；主题标签不等于适龄建议。',
+      'No verified age rating yet. Theme tags do not indicate age suitability.')+'</p></div>':'';
+    const missing=work?.kind==='anime'&&!d.genres.length&&!d.keywords.length?
+      '<p class="mi-caption">'+text('动漫类型和主题标签尚未匹配到可信作品资料。',
+      'Anime genres and themes have not yet been verified for this title.')+'</p>':'';
+    return '<section class="mi-classification-detail" aria-label="'+
+      text('作品标签与家长指南','Title tags and parental guidance')+'">'+genres+keywords+missing+age+'</section>';
   }
   function notify(message,error=false){const n=$('#media-notice');n.hidden=!message;n.textContent=message;n.classList.toggle('mi-error',error);const dn=$('#media-dialog-notice');if(dn){dn.textContent=message;dn.classList.toggle('mi-error',error);}}
   function loadList(){try{list=core.merge(store.read(),[],cat);if(!localStorage.getItem('liangyou.media.migrated.toolkit.v1')){const old=localStorage.getItem('liangyou:media-watchlist:v1');if(old){list=core.merge(list,core.legacy(old),cat);store.write(list);localStorage.setItem('liangyou.media.migrated.toolkit.v1','1');}}storageError=false;}catch{storageError=true;notify(text('无法读取本地片单。请检查浏览器存储设置；已有数据不会被覆盖。','Cannot read your local list. Check browser storage; existing data will not be overwritten.'),true);}}
