@@ -11,7 +11,7 @@ class AnimeNewsMatchingTests(unittest.TestCase):
         for name in ("第二季", "第2期", "Season２", "Season 2", "2nd Season"):
             self.assertEqual(season(name), 2, name)
         self.assertEqual(season("第三季"), 3)
-        self.assertEqual(season("第一季"), 0)
+        self.assertEqual(season("第一季"), 1)
 
     def test_second_season_accepts_its_news_and_rejects_other_editions(self):
         aliases = ["青之箱 第二季", "アオのハコ Season２",
