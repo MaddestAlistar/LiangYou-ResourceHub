@@ -39,6 +39,22 @@
     }).catch(()=>({}));
     return bilibiliCoverIndexPromise;
   }
+  // Indexed WebP files contain genuine video snapshots, never synthetic motion.
+  let bilibiliMotionIndexPromise=null;
+  function bilibiliMotionIndex(){
+    if(!bilibiliMotionIndexPromise)bilibiliMotionIndexPromise=fetch('./data/media-bilibili-motion-map.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(7000)
+    }).then(r=>r.ok?r.json():null).then(doc=>{
+      const found={};
+      if(doc?.schema!==1||!doc.items||typeof doc.items!=='object')return found;
+      for(const [id,url] of Object.entries(doc.items)){
+        if(/^BV[A-Za-z0-9]{10}$/.test(id)&&
+          url==='./assets/media-video-previews/'+id+'.webp')found[id]=url;
+      }
+      return found;
+    }).catch(()=>({}));
+    return bilibiliMotionIndexPromise;
+  }
   let sourceSnapshotPromise=null;
   async function sourceSnapshot(){
     if(!sourceSnapshotPromise)sourceSnapshotPromise=(async()=>{
@@ -345,8 +361,8 @@
       const provider=names[x.platform];
       if(!provider)continue;
       const name=String(x.name||t('影视预告片','Trailer'));
-      // Dailymotion requires a Player ID belonging to this site. AcFun uses
-      // its official embed or mobile H5 page in our own dialog on all devices.
+      // Dailymotion requires this site's own Player ID. AcFun plays through
+      // the verified public HTML5 stream in the site's video dialog.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const sourceThumb=safe(x.thumbnail)||(x.platform==='bilibili'?biliVerifiedThumbCache.get(x.videoId)||null:null);
       const trustedBiliThumb=x.platform==='bilibili'&&sourceThumb&&(()=>{
@@ -369,7 +385,8 @@
       const verifiedBiliMotion=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
         x.animatedThumbnailLocal==='./assets/media-video-previews/'+x.videoId+'.webp'?
         x.animatedThumbnailLocal:null;
-      const isNativeAnimatedGif=x.platform==='acfun'&&/^https:\/\/[^\s"'<>]+\.gif(?:\?|$)/i.test(sourceThumb||'');
+      // Only a genuine source GIF counts as native motion, for any provider.
+      const isNativeAnimatedGif=/^https:\/\/[^\s"'<>]+\.gif(?:\?|$)/i.test(sourceThumb||'');
       const thumb=bvidCover||directBiliThumb||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
       const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
@@ -680,7 +697,7 @@
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
     let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],extraYoutubeRows=[];
-    let localBilibiliCovers={};
+    let localBilibiliCovers={},localBilibiliMotion={};
     function setDomesticRows(){
       // Sources can return the same verified BV ID at different times. Keep
       // metadata and a real cover from any matching record, not whichever
@@ -689,7 +706,9 @@
       for(const sourceItem of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows]){
         if(!sourceItem||typeof sourceItem.platform!=='string'||!sourceItem.videoId)continue;
         const local=sourceItem.platform==='bilibili'?localBilibiliCovers[sourceItem.videoId]:null;
-        const item=local?{...sourceItem,thumbnailLocal:local}:sourceItem;
+        const motion=sourceItem.platform==='bilibili'?localBilibiliMotion[sourceItem.videoId]:null;
+        const item=(local||motion)?{...sourceItem,
+          ...(local?{thumbnailLocal:local}:{}),...(motion?{animatedThumbnailLocal:motion}:{})}:sourceItem;
         const key=item.platform+':'+item.videoId;
         const prior=merged.get(key);
         merged.set(key,prior?{...prior,
@@ -705,10 +724,16 @@
     }
     // The cover map is separate from the frequently refreshed film snapshots.
     // Once loaded, rerender without blocking title/news/video discovery.
-    if(discoverSlots)bilibiliCoverIndex().then(map=>{
-      localBilibiliCovers=map;
-      if(pane.isConnected)setDomesticRows();
-    });
+    if(discoverSlots){
+      bilibiliCoverIndex().then(map=>{
+        localBilibiliCovers=map;
+        if(pane.isConnected)setDomesticRows();
+      });
+      bilibiliMotionIndex().then(map=>{
+        localBilibiliMotion=map;
+        if(pane.isConnected)setDomesticRows();
+      });
+    }
     function paintTrailers(){
       if(!discoverSlots?.trailers||!pane.isConnected)return;
       const enrichedInfo={...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]};
@@ -923,22 +948,8 @@
     useStandardHost=standard;
     if(playerSwitch)playerSwitch.textContent=standard?t('切换隐私播放器','Try privacy-enhanced player'):t('切换普通播放器','Try standard player');
   }
-  // AcFun mobile and desktop pages send X-Frame-Options: SAMEORIGIN and
-  // cannot be displayed by a GitHub Pages iframe. The official /player/
-  // endpoint is the only tested cross-origin embed entry point. On devices
-  // where that player demands an engine upgrade, use the original-site link.
-  function showAcfunFrame(id){
-    if(!trailerStage||!/^[1-9][0-9]{3,11}$/.test(id))return;
-    const frame=document.createElement('iframe');
-    frame.title='AcFun · '+t('视频播放器','video player');
-    frame.src='https://www.acfun.cn/player/ac'+id;
-    frame.loading='eager';
-    frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
-    frame.referrerPolicy='strict-origin-when-cross-origin';
-    frame.allowFullscreen=true;
-    trailerStage.replaceChildren(frame);
-    if(playerSwitch)playerSwitch.hidden=true;
-  }
+  // AcFun uses the HTML5 stream instead of its legacy iframe that may
+  // demand an obsolete playback engine.
   function acfunSafeHls(src){
     try{
       const u=new URL(src),host=u.hostname.toLowerCase();
@@ -996,11 +1007,12 @@
       retry.type='button';
       retry.textContent=t('重新获取播放地址','Refresh the video stream');
       retry.addEventListener('click',()=>showAcfunHls(id),{once:true});
-      const tryOfficial=document.createElement('button');
-      tryOfficial.type='button';
-      tryOfficial.textContent=t('尝试 AcFun 官方嵌入播放器','Try AcFun official embed');
-      tryOfficial.addEventListener('click',()=>showAcfunFrame(id),{once:true});
-      pane.append(note,retry,tryOfficial);
+      const openSource=document.createElement('a');
+      openSource.href='https://www.acfun.cn/v/ac'+id;
+      openSource.target='_blank';
+      openSource.rel='noopener noreferrer';
+      openSource.textContent=t('原站观看','Watch on AcFun');
+      pane.append(note,retry,openSource);
       trailerStage.appendChild(pane);
     };
     const loading=document.createElement('p');
@@ -1045,8 +1057,8 @@
         trailerStage.replaceChildren(video);
         hls.on(Hls.Events.ERROR,(_event,data)=>{
           if(data?.fatal){hls.destroy();if(acfunHlsInstance===hls)acfunHlsInstance=null;
-            fallback(t('AcFun 视频流播放失败，可尝试官方播放器或原站观看。',
-              'AcFun stream failed. Try the official player or open the source.'));}
+            fallback(t('AcFun 视频流播放失败，请重试或从原站观看。',
+              'AcFun stream failed. Retry or open the original page.'));}
         });
         hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
         hls.loadSource(url);
@@ -1059,8 +1071,8 @@
         '正在使用本站 HTML5 播放器读取 AcFun 公开视频。按播放键开始；临时视频地址过期时重新打开即可。',
         'Using our HTML5 player for this public AcFun stream. Tap play if needed; reopen to refresh expired links.');
     }catch{
-      fallback(t('此视频的公开 HLS 地址暂不可用。可尝试官方嵌入播放器，或通过原站观看。',
-        'Public HLS stream unavailable. Try the official embed or original page.'));
+      fallback(t('此视频的公开 HLS 地址暂不可用，请重新获取或从原站观看。',
+        'Public HLS stream unavailable. Refresh or open the original page.'));
     }
   }
   // Load Bilibili's verified, precomputed animated WEBP only when
