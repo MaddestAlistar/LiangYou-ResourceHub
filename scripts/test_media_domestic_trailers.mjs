@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 
 const source=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../data/media-domestic-trailers.json',import.meta.url),'utf8'));
+const douyinCatalog=JSON.parse(readFileSync(new URL('../data/media-douyin-verified.json',import.meta.url),'utf8'));
 const start=source.indexOf('  function verifiedDomesticTrailers(info,records=[]){');
 const end=source.indexOf('  let worldNewsPromise=null;',start);
 assert.ok(start>=0&&end>start,'Merged trailer gallery and domestic matching must exist');
@@ -22,6 +23,26 @@ const galleryOwned=new Function('t','esc','safe','a','formatDuration','english',
   ownedCode+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase);
 const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
+test('Douyin Jingxuan official embed is in-page playable and requires exact identity',()=>{
+ const info={kind:'tv',tmdbId:105248,title:'赛博朋克：边缘行者',
+   originalTitle:'Cyberpunk: Edgerunners',year:2022};
+ const clips=douyinCatalog.items['tv:105248'].videos;
+ assert.equal(clips.length,2);
+ const cards=gallery({},info,clips);
+ assert.equal((cards.match(/data-mi-play-cn="douyin"/g)||[]).length,2);
+ assert.match(cards,/抖音精选/);
+ assert.doesNotMatch(cards,/原站观看|mi-video-external/);
+ assert.match(source,/open\\.douyin\\.com\\/player\\/video\\?vid=/);
+ for(const row of [
+  {...clips[0],verifiedByOfficialDouyin:false},
+  {...clips[0],embedVerified:false},
+  {...clips[0],verifiedSource:'https://evil.example/video'},
+  {...clips[0],tmdbId:55555},
+  {...clips[0],videoId:'not-a-video'},
+ ]){
+   assert.doesNotMatch(gallery({},info,[row]),/data-mi-play-cn="douyin"/);
+ }
+});
 test('Xigua requires a catalog match AND an officially approved iframe ID before displaying a card',()=>{
  const film={kind:'movie',tmdbId:123,title:'海洋奇缘',originalTitle:'Moana',year:'2016-01-01'};
  const valid={kind:'movie',tmdbId:123,year:2016,matchedByTitle:true,title:'海洋奇缘',
