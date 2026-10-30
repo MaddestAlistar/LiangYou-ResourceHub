@@ -278,7 +278,8 @@
       const thumbBackup=nicoMedium?thumbOriginal:(thumbOriginal?posterFallback:null);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
-          (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+' alt="">':'')+
+          (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
+          (thumbOriginal&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
@@ -808,8 +809,20 @@
     const img=ev.target;
     if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb')){
       const backup=safe(img.dataset.thumbFallback);
-      if(backup&&img.src!==backup){img.removeAttribute('data-thumb-fallback');img.src=backup;}
-      else img.remove();
+      if(backup&&img.src!==backup){
+        img.removeAttribute('data-thumb-fallback');
+        if(img.dataset.thumbPosterFallback==='true'){
+          img.removeAttribute('data-thumb-poster-fallback');
+          const marker=document.createElement('span');
+          marker.className='mi-trailer-fallback-label';
+          marker.textContent=t('作品海报','Film poster');
+          img.parentElement?.appendChild(marker);
+        }
+        img.src=backup;
+      }else{
+        img.parentElement?.querySelector('.mi-trailer-fallback-label')?.remove();
+        img.remove();
+      }
     }
   },true);
   root.addEventListener('click',ev=>{
