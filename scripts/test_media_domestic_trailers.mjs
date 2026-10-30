@@ -11,9 +11,10 @@ assert.ok(start>=0&&end>start,'Merged trailer gallery and domestic matching must
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
 const link=(url,label)=>safe(url)?'<a href="'+escape(safe(url))+'">'+escape(label)+'</a>':'';
-const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','english',
+const coverUrl=x=>safe(x)||(/^\.\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(String(x||''))?x:null);
+const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl',
  source.slice(start,end)+';return {gallery:trailerGallery,verified:verifiedDomesticTrailers};')(
-  (zh)=>zh,escape,safe,link,()=>'',()=>false
+  (zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl
 );
 const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
@@ -149,8 +150,8 @@ test('a site-owned Dailymotion Player ID enables modal buttons; absent ID stays 
  const to=source.indexOf('  let worldNewsPromise=null;',from);
  const positive=source.slice(from,to).replace("let dailymotionPlayerId='';","let dailymotionPlayerId='xOwned123';");
  assert.notEqual(positive,source.slice(from,to),'test must set only the local configured Player ID');
- const galleryOwned=new Function('t','esc','safe','a','formatDuration','english',
-   positive+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false);
+ const galleryOwned=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl',
+   positive+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl);
  const info={...selected,tmdbId:550};
  const row={kind:'movie',title:info.title,tmdbId:550,year:2025,matchedByTitle:true,
    platform:'dailymotion',videoId:'x8mcq94',name:'Ne Zha 2 trailer',
