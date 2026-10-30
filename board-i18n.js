@@ -62,6 +62,7 @@ function league(value,sport,language='zh'){
     .replace(/\bChess Championship\b/gi,'国际象棋锦标赛')
     .replace(/\bChess Open\b/gi,'国际象棋公开赛')
     .replace(/\bChampionship\b/gi,'锦标赛')
+    .replace(/\bOpen\s+(20\d{2})\b/gi,'公开赛 $1')
     .replace(/\bChampions Showdown\b/gi,'冠军对决赛')
     .replace(/\bGroup ([A-Z])\b/gi,'$1组')
     .replace(/\bRound (\d+)\b/gi,'第$1轮')
