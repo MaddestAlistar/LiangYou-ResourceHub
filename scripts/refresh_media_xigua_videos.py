@@ -13,6 +13,7 @@ from refresh_media_extra_videos import (
     matches_title, normalize, VIDEO_WORDS, TRAILER_WORDS, BAN_WORDS
 )
 from refresh_media_anime_videos import catalog as anime_catalog, safe_anime_video
+from xigua_zero_spend import LocalFreeBudget, FreeQuotaStop, funded_capacity_is_zero
 
 ROOT = Path(__file__).resolve().parents[1]
 FILMS = ROOT / "data/media-intel.json"
@@ -38,8 +39,15 @@ def json_request(url, body=None, key=None, timeout=16):
             raise RuntimeError("http_" + str(response.status))
         return json.loads(response.read(1300000))
 
-def search(keyword, key):
-    response = json_request(API, {"keyword": keyword}, key=key)
+def search(keyword, key, budget=None):
+    if budget is not None:
+        budget.authorize()
+    try:
+        response = json_request(API, {"keyword": keyword}, key=key)
+    except Exception:
+        # The provider may have consumed quota before returning an error.
+        # Do not retry or send further requests in the same scheduled run.
+        raise FreeQuotaStop("sandbase_search_failed") from None
     if response.get("status") != "completed":
         raise RuntimeError("search_unavailable")
     outputs = response.get("outputs")
@@ -190,10 +198,10 @@ def row_for(work, item, embed):
         base.update(tmdbId=work["tmdb_id"], matchedByTitle=True)
     return base
 
-def discover(work, key):
+def discover(work, key, budget=None):
     candidates = {}
     for query in work_queries(work):
-        for result in search(query, key):
+        for result in search(query, key, budget):
             item = parse_result(result)
             if item and item["videoId"] not in candidates and accept(work, item):
                 candidates[item["videoId"]] = item
@@ -237,6 +245,19 @@ def main():
     if not official_api_ready():
         print("XIGUA_OFFICIAL_API_UNAVAILABLE: JSON iframe approval not accessible; skip paid search")
         return
+    # The free allocation is SHARED across SandBase organization APIs. If
+    # there is any funded capacity, SandBase may bill overage. Fail closed.
+    try:
+        if not funded_capacity_is_zero(key):
+            print("XIGUA_ZERO_SPEND_STOP: balance or credit line is nonzero / unknown")
+            return
+    except Exception as error:
+        print("XIGUA_ZERO_SPEND_STOP: could not inspect public account balance",type(error).__name__)
+        return
+    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=20, run_cap=8)
+    if budget.used >= budget.daily_cap:
+        print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
+        return
     works = {**film_catalog(), **anime_catalog()}
     try:
         old = json.loads(OUT.read_text(encoding="utf8"))
@@ -246,16 +267,22 @@ def main():
     batch = max(1, min(15, int(os.getenv("XIGUA_VIDEOS_BATCH", "8"))))
     chosen = sorted(works, key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k))[:batch]
     for key_id in chosen:
+        if budget.used >= budget.daily_cap or budget.this_run >= budget.run_cap:
+            print("XIGUA_ZERO_SPEND_STOP: local run/daily cap reached")
+            break
         work = works[key_id]
         try:
-            videos = discover(work, key)
+            videos = discover(work, key, budget)
             items[key_id] = {"title": work["title"], "kind": work["kind"],
                              "year": work["year"], "tmdbId": work.get("tmdb_id", 0),
                              "workId": work.get("id", ""),
                              "checkedAt": now(), "videos": videos}
             print("XIGUA_CHECKED", key_id, len(videos), flush=True)
+        except FreeQuotaStop as error:
+            print("XIGUA_ZERO_SPEND_STOP",str(error),flush=True)
+            break
         except Exception as error:
-            print("XIGUA_UNAVAILABLE", key_id, type(error).__name__, flush=True)
+            print("XIGUA_UNAVAILABLE",key_id,type(error).__name__,flush=True)
             # Preserve previously approved records during provider outages.
         time.sleep(.5)
     if len(items) > MAX_ITEMS:
@@ -263,7 +290,8 @@ def main():
             key=lambda item: str(item[1].get("checkedAt") or ""), reverse=True)[:MAX_ITEMS])
     OUT.write_text(json.dumps({"schema": 1, "updatedAt": now(), "items": items},
                              ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf8")
-    print("XIGUA_SUMMARY", len(chosen), len(items), flush=True)
+    print("XIGUA_SUMMARY",len(chosen),len(items),
+          "search_calls_today",budget.used,"search_calls_this_run",budget.this_run,flush=True)
 
 if __name__ == "__main__":
     main()
