@@ -1,0 +1,79 @@
+name: Refresh Xigua verified in-page trailers
+
+on:
+  schedule:
+    - cron: '17 7,19 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-media-xigua-videos.yml'
+      - 'scripts/refresh_media_xigua_videos.py'
+      - 'scripts/test_media_xigua_videos.py'
+      - 'media-insights.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: xigua-video-metadata-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run matching and iframe authorization tests
+        run: |
+          python -m py_compile scripts/refresh_media_xigua_videos.py
+          cd scripts && python -m unittest -v test_media_xigua_videos
+          cd .. && node --check media-insights.js
+      - name: Discover Xigua videos with optional private SandBase key
+        env:
+          SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
+          XIGUA_VIDEOS_BATCH: '8'
+        run: python scripts/refresh_media_xigua_videos.py
+      - name: Validate output, when metadata exists
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          path=Path('data/media-xigua-videos.json')
+          doc=json.loads(path.read_text())
+          assert doc['schema']==1 and isinstance(doc['items'],dict)
+          assert len(doc['items'])<=450
+          assert path.stat().st_size<1500000
+          for key,work in doc['items'].items():
+              assert len(work['videos'])<=4
+              for v in work['videos']:
+                  assert v['platform']=='xigua' and v['embedVerified'] is True
+                  assert re.fullmatch(r'[1-9]\d{14,20}',v['videoId'])
+                  assert re.fullmatch(r'[1-9]\d{14,20}',v['embedId'])
+                  assert v['verifiedSource']=='https://www.ixigua.com/'+v['videoId']
+          print('XIGUA_METADATA_VALIDATED',len(doc['items']))
+          PY
+      - name: Commit only changed Xigua snapshot, preserving other workflows
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-xigua-videos.json /tmp/liangyou-xigua.json
+          BRANCH="$GITHUB_REF_NAME"
+          for attempt in 1 2 3; do
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            cp /tmp/liangyou-xigua.json data/media-xigua-videos.json
+            git add data/media-xigua-videos.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Refresh approved Xigua film and anime videos [skip ci]"
+            if git push origin "HEAD:$BRANCH"; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
