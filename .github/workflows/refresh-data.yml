@@ -5,7 +5,19 @@ on:
     # Heartbeat, not repeated full collection: scripts decide what is due.
     # GitHub may delay/drop cron events; check due work every 15 minutes.
     - cron: '7,22,37,52 * * * *'
+  # Independent hourly fallback: a successful or failed Apple rescue run
+  # wakes the main due-aware collector even if GitHub drops the main cron.
+  workflow_run:
+    workflows: ['Rescue independent Apple paid-to-free verification']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Bypass normal feed intervals (more API requests)'
+        type: boolean
+        required: false
+        default: false
   push:
     branches: [main]
     paths:
@@ -29,6 +41,12 @@ concurrency:
 
 jobs:
   refresh:
+    # workflow_run executes with elevated permissions; trust only this repo's
+    # main-branch workflow and always check out the current main tip.
+    if: >-
+      ${{ github.event_name != 'workflow_run' ||
+          (github.event.workflow_run.head_repository.full_name == github.repository &&
+           github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -53,7 +71,7 @@ jobs:
         id: collect
         continue-on-error: true
         env:
-          FORCE_REFRESH: ${{ github.event_name == 'workflow_dispatch' }}
+          FORCE_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true }}
           PREDICT_FUN_API_TOKEN: ${{ secrets.PREDICT_FUN_API_TOKEN }}
           API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
           DUNKAPI_API_KEY: ${{ secrets.DUNKAPI_API_KEY }}
@@ -85,19 +103,29 @@ jobs:
           python scripts/test_market_history.py
           node scripts/validate.mjs
       - name: Commit snapshots and icons with concurrent-edit protection
+        id: save
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A data/media-intel.json data/media-cache.json assets/media-posters data/daily-free.json data/android-free.json data/game-free.json data/sports.json data/predict-sports.json data/kalshi-sports.json data/real-sports.json data/extra-sports.json data/board-games.json data/nba-games.json data/sports-odds.json data/chess-players.json data/market-history.json data/update-status.json assets/daily-free assets/android-free assets/game-free
-          if ! git diff --cached --quiet; then
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "FEED_SNAPSHOTS_UNCHANGED: no Pages publication required"
+          else
             git commit -m "Refresh verified feeds and check health [skip ci]"
             for attempt in 1 2 3; do
               git pull --rebase origin main
-              if git push origin HEAD:main; then break; fi
+              if git push origin HEAD:main; then
+                echo "changed=true" >> "$GITHUB_OUTPUT"
+                echo "FEED_SNAPSHOTS_PUBLISHED"
+                break
+              fi
               if [ "$attempt" = 3 ]; then exit 1; fi
             done
           fi
       - name: Publish bot updates to the existing Pages site
+        if: steps.save.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/publish_pages.py
