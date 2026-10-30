@@ -2,7 +2,7 @@ name: Refresh matched film videos from public platforms
 
 on:
   schedule:
-    - cron: '37 */6 * * *'
+    - cron: '37 */3 * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -44,7 +44,7 @@ jobs:
           node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs
       - name: Refresh cached metadata for a rotating title batch
         env:
-          EXTRA_VIDEOS_BATCH: '10'
+          EXTRA_VIDEOS_BATCH: '12'
         run: python scripts/refresh_media_extra_videos.py
       - name: Validate snapshot
         run: |
