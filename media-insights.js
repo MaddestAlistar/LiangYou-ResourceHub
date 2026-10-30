@@ -714,17 +714,32 @@
       slot.prepend(pane);
       pane.innerHTML=trailerGallery({},info,[],'loading');
       slot.querySelector('.mi-official-trailer-fallback')?.remove();
+      let animeItem=null,animeLoaded=false;
+      function paintAnime(){
+        if(!pane.isConnected)return;
+        const videos=Array.isArray(animeItem?.videos)?animeItem.videos:[];
+        const youtube=Array.isArray(animeItem?.youtubeTrailers)?animeItem.youtubeTrailers:[];
+        pane.innerHTML=trailerGallery({trailers:youtube},info,videos,animeLoaded?'ready':'loading');
+        discoverMissingBiliCovers(pane);
+        setupMobileMotionCovers(pane);
+      }
+      // Anime must initialize the same site-owned Dailymotion player as films;
+      // otherwise its verified Dailymotion clips are hidden on a fresh visit.
+      mediaVideoPlayerConfig().then(playerId=>{
+        if(!pane.isConnected)return;
+        const changed=dailymotionPlayerId!==playerId;
+        dailymotionPlayerId=playerId;
+        if(changed&&animeLoaded)paintAnime();
+      }).catch(()=>{});
       animeVideoSnapshot().then(doc=>{
         if(!pane.isConnected)return;
         const item=doc?.items?.[info.id];
         const year=Number(String(info.year||'').slice(0,4));
         const verified=item&&item.workId===info.id&&item.kind==='anime'&&
           (!Number.isSafeInteger(year)||year<1900||Math.abs(Number(item.year)-year)<=1);
-        const videos=verified&&Array.isArray(item.videos)?item.videos:[];
-        const youtube=verified&&Array.isArray(item.youtubeTrailers)?item.youtubeTrailers:[];
-        pane.innerHTML=trailerGallery({trailers:youtube},info,videos,'ready');
-        discoverMissingBiliCovers(pane);
-        setupMobileMotionCovers(pane);
+        animeItem=verified?item:null;
+        animeLoaded=true;
+        paintAnime();
       }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
       for(const name of ['international','domestic']){
         const news=target.querySelector('[data-mi-discover-slot="'+name+'"] .mi-caption');
