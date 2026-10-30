@@ -135,7 +135,17 @@ def safe_anime_video(work, row):
         or (work.get("id") == "bangumi-975" and alias in
             ("航海王", "海贼王", "ONE PIECE", "ワンピース"))
     ]
-    if not matches_title(label, trusted_aliases, work["year"], "anime"):
+    generic_names = {"anime", "tv anime", "the animation", "the movie",
+                     "season 2", "season 3", "2nd season", "3rd season",
+                     "shorts", "trailer", "preview", "official", "ova", "ona"}
+    trusted_aliases = [a for a in trusted_aliases if a.casefold().strip() not in generic_names]
+    if not trusted_aliases or not matches_title(label, trusted_aliases, work["year"], "anime"):
+        return False
+    # A new anime or sequel must not inherit a clearly dated trailer for
+    # the old adaptation (e.g. a 1994 video for the 2026 remake).
+    first_year = int(work.get("year") or 0)
+    explicit_years = [int(x) for x in re.findall(r"(?<!\\d)(?:19|20)\\d{2}(?!\\d)", label)]
+    if first_year >= 2019 and explicit_years and max(explicit_years) < first_year - 3:
         return False
     # Exclude unrelated gameplay, story recaps and crossover fan edits that
     # happen to contain a recognizable franchise name.
