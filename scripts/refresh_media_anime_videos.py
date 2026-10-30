@@ -124,17 +124,46 @@ def season_marker(text):
 
 def safe_anime_video(work, row):
     label = str(row.get("name") or "")
-    if EXCLUDE.search(label) or not matches_title(label, work["aliases"], work["year"], "anime"):
+    if EXCLUDE.search(label):
         return False
-    # Avoid attaching season-one or franchise-wide clips to an identified later season.
-    edition = next((season_marker(x) for x in [work["title"], work["original"]]
-                    if season_marker(x)), "")
+    # A four-character fandom nickname can point at a previous season or a
+    # fan edit. Require a primary title or a sufficiently distinctive synonym.
+    primary = {str(work.get("title") or ""), str(work.get("original") or "")}
+    trusted_aliases = [
+        alias for alias in work["aliases"] if alias in primary
+        or len(normalize(alias)) >= 6
+        or (work.get("id") == "bangumi-975" and alias in
+            ("航海王", "海贼王", "ONE PIECE", "ワンピース"))
+    ]
+    if not matches_title(label, trusted_aliases, work["year"], "anime"):
+        return False
+    # Exclude unrelated gameplay, story recaps and crossover fan edits that
+    # happen to contain a recognizable franchise name.
+    if re.search(r"剧情解说|剪辑版|游戏实况|gameplay|walkthrough|playthrough|通关攻略", label, re.I):
+        return False
+    if re.search(r"×|\bx\b", label, re.I) and not re.search(r"TVアニメ|动画|anime|アニメ", label, re.I):
+        return False
+    # "restart" and later seasons are distinct series identities, not synonyms
+    # of the original 2016 anime or its generic franchise PVs.
+    if any("restart" in str(name).casefold() for name in primary) and "restart" not in label.casefold():
+        return False
+    edition = next((season_marker(x) for x in primary if season_marker(x)), "")
+    if not edition:
+        for name in primary:
+            m = re.search(r"(?:\s|[：:])([2-9]|II|III)\s*$", name, re.I)
+            if m:
+                edition = {"II": "2", "III": "3"}.get(m[1].upper(), m[1])
+                break
     clip_edition = season_marker(label)
+    if not clip_edition and edition:
+        match = re.search(r"(?:\s|[：:])([2-9]|II|III)(?=\s*(?:PV|预告|trailer|teaser|$))", label, re.I)
+        if match:
+            clip_edition = {"II": "2", "III": "3"}.get(match[1].upper(), match[1])
     if edition and clip_edition != edition:
         return False
     if not edition and clip_edition:
         return False
-    # "ONE PIECE" is also used for live action, films, games and remakes.
+    # "ONE PIECE" also describes film, live-action, games and a separate remake.
     if work["id"] == "bangumi-975" and re.search(
         r"THE ONE PIECE|film|电影|真人|剧场|重制|游戏|手游|航海王热血航线", label, re.I):
         return False
