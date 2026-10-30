@@ -985,7 +985,7 @@
         const row=items?.[info.kind+':'+Number(info.tmdbId)];
         const year=Number(String(info.year||'').slice(0,4));
         if(!row||row.kind!==info.kind||Number(row.tmdbId)!==Number(info.tmdbId)||
-           (Number.isInteger(year)&&year>=1900&&Math.abs(Number(row.year)-year)>1))return;
+           (Number.isInteger(year)&&year>=1900&&Number(row.year)>=1900&&Math.abs(Number(row.year)-year)>1))return;
         douyinDomesticRows=(Array.isArray(row.videos)?row.videos:[]).filter(v=>
           v?.platform==='douyin'&&v.kind===info.kind&&
           Number(v.tmdbId)===Number(info.tmdbId)&&v.embedVerified===true);
