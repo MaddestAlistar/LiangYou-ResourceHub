@@ -56,8 +56,8 @@ def report_streams(markup):
         outer=json.loads(markup)
         print("ajax_json_keys",sorted(outer.keys())[:10])
         markup=outer.get("html") or markup
-    except (ValueError,AttributeError):
-        pass
+    except (ValueError,AttributeError) as exc:
+        print("ajax_json_parse",str(exc)[:160])
     print("page_info_pattern_present",bool(re.search(r"window\.pageInfo\s*=",markup)))
     print("ksplay_embedded",bool(re.search("ksPlayJson",markup)))
     marker=re.search(r"window\.pageInfo\s*=\s*(?:window\.videoInfo\s*=\s*)?",markup)
