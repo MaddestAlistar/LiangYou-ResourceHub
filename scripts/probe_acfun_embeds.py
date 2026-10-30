@@ -73,7 +73,8 @@ def report_streams(markup):
                     return
         except Exception as e:
             print("page_info_parse",type(e).__name__)
-    print("ksplay_embedded",bool(re.search("ksPlayJson",markup)))\n    print("video_info_script",bool(re.search("window.videoInfo",markup)))
+    print("ksplay_embedded",bool(re.search("ksPlayJson",markup)))
+    print("video_info_script",bool(re.search("window.videoInfo",markup)))
 if __name__=="__main__":
     pages={name:fetch(name,url) for name,url in URLS.items()}
     for name,body in pages.items():
