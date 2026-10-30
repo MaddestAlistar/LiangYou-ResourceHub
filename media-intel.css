@@ -316,3 +316,21 @@
 @media(max-width:760px){#media .mi-insight-news.mi-editorial-grid .mi-editorial-card:not(:has(>img)) .mi-editorial-body{padding:12px}#media .mi-trailer-grid{align-items:stretch}}
 
 #media .mi-acfun-fallback a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+
+/* Independent Discover shortcut on every title card. Keep it outside the
+   primary card button, so both actions are keyboard/touch accessible. */
+#media .mi-card-discover{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  flex:none;width:100%;min-height:38px;padding:8px 10px;
+  border:0;border-top:1px solid rgba(215,185,132,.25);
+  border-radius:0;background:linear-gradient(105deg,rgba(215,171,106,.10),rgba(87,122,187,.09));
+  color:#e8cfaa;font-size:11px;font-weight:650;line-height:1.4;
+  transition:background .2s,color .2s;
+}
+#media .mi-card-discover:hover{background:rgba(202,165,102,.18);color:#ffe3af}
+#media .mi-card-discover:focus-visible{outline:2px solid #e6ca90;outline-offset:-3px}
+#media .mi-card-discover>span:last-child{font-size:12px;opacity:.8}
+@media(max-width:760px){
+  #media .mi-card-discover{min-height:36px;font-size:10px;padding:8px 6px;gap:6px}
+}
+@media(prefers-reduced-motion:reduce){#media .mi-card-discover{transition:none}}
