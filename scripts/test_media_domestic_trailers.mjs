@@ -130,8 +130,9 @@ test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own P
  assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
  assert.ok(source.includes("if(playerSwitch&&platform!=='acfun')playerSwitch.hidden=true"));
- assert.ok(source.includes('showAcfunFrame(id,isiOS)'));
- assert.ok(source.includes('https://m.acfun.cn/v/?ac='));
+ assert.ok(source.includes('showAcfunFrame(id)'));
+ assert.ok(!source.includes('https://m.acfun.cn/v/?ac='));
+ assert.match(source,/X-Frame-Options: SAMEORIGIN/);
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
@@ -221,7 +222,7 @@ test('platform-specific real cover images render without untrusted sources',()=>
  assert.match(html,/class="mi-trailer-platform-thumb"/);
  assert.match(html,/tx-free-imgs.acfun.cn\/newUpload\/valid-cover.jpeg/);
  assert.match(source,/mi-trailer-platform-thumb/);
- assert.match(source,/m.acfun.cn\/v\/\?ac=/);
+ assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
 });
 
 test('Niconico uses verified medium cover and falls back to original on CDN failure',()=>{
