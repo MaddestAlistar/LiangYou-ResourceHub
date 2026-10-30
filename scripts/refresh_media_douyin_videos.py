@@ -32,6 +32,16 @@ EMBED_ID = re.compile(r"open\.douyin\.com/player/video\?vid=([1-9]\d{14,20})(?!\
 INDEX_URL = re.compile(r"https?://(?:jingxuan\.douyin\.com|www\.douyin\.com)/(?:m/)?video/([1-9]\d{14,20})(?!\d)")
 MAX_PER_WORK = 4
 MAX_API_CHECKS = 8
+# Publicly indexed Douyin Jingxuan pages located during a one-time manual
+# discovery on 2026-10-31. These are candidates, NOT approved embed videos.
+# Each must pass the official iframe API and exact title gate before publishing.
+PUBLIC_INDEX_BACKFILL = {
+    "movie:1003596": ("7587236318845897993",),  # Avengers: Doomsday
+    "movie:969681": ("7618559596789009704", "7618587626945170688"),
+    "movie:1170608": ("7660478440054754594",),  # Dune: Part Three
+    "tv:223911": ("7630716277657790897", "7635819781244931362"),
+    "tv:79481": ("7627385690829892992", "7633014553484590949"),
+}
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
            "Accept": "text/html,application/json;q=0.9,*/*;q=0.8"}
 
@@ -56,7 +66,7 @@ def film_catalog():
         original = str(work.get("original_title") or "").strip()
         date = str(work.get("date") or "")
         year = int(date[:4]) if re.match(r"^\d{4}", date) else 0
-        if mid <= 0 or len(title) < 2 or year < 1900:
+        if mid <= 0 or len(title) < 2 or (work["kind"] == "movie" and year < 1900):
             continue
         key = work["kind"] + ":" + str(mid)
         result[key] = {"kind": work["kind"], "id": key, "tmdb_id": mid,
@@ -175,6 +185,37 @@ def choose(works, items, cursor):
                     items.get(kv[0], {}).get("lastIndexAttemptAt") or ""), kv[0]))
     return None
 
+def verify_public_index_backfill(works, items):
+    """Review indexed candidate IDs once and store only official playable clips."""
+    for key, candidate_ids in PUBLIC_INDEX_BACKFILL.items():
+        work = works.get(key)
+        if not work:
+            print("DOUYIN_BACKFILL_CATALOG_MISSING", key, flush=True)
+            continue
+        old = items.get(key, {})
+        if old.get("publicIndexBackfillCheckedAt"):
+            continue
+        videos = [v for v in old.get("videos", []) if isinstance(v, dict)
+                  and v.get("platform") == "douyin" and v.get("embedVerified") is True]
+        added = 0
+        for video_id in candidate_ids:
+            if len(videos) >= MAX_PER_WORK:
+                break
+            if any(v.get("videoId") == video_id for v in videos):
+                continue
+            approved = verify_official(video_id)
+            if approved and match_work(work, approved):
+                videos.append(create_row(work, approved))
+                added += 1
+                print("DOUYIN_BACKFILL_APPROVED", key, video_id, flush=True)
+            else:
+                print("DOUYIN_BACKFILL_REJECTED", key, video_id, flush=True)
+        items[key] = {**old, "title": work["title"], "kind": work["kind"],
+                      "year": work["year"], "tmdbId": work.get("tmdb_id") or 0,
+                      "workId": work["id"], "videos": videos[:MAX_PER_WORK],
+                      "publicIndexBackfillCheckedAt": now()}
+        print("DOUYIN_BACKFILL_SUMMARY", key, "added", added, flush=True)
+
 def main():
     works = {**film_catalog(), **anime_catalog()}
     try:
@@ -184,6 +225,7 @@ def main():
     items = {k: v for k, v in (prior.get("items") or {}).items()
              if k in works and isinstance(v, dict)}
     cursor = max(0, int(prior.get("discoveryCursor") or 0))
+    verify_public_index_backfill(works, items)
     selected = choose(works, items, cursor)
     if selected is None:
         print("DOUYIN_NO_CATALOG_WORKS", flush=True)
