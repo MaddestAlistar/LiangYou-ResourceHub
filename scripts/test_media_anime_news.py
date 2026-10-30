@@ -36,8 +36,15 @@ class AnimeNewsMatchingTests(unittest.TestCase):
         self.assertIn("蓝箱 第二季", blue["aliases"])
         self.assertIn("Blue Box Season 2", blue["aliases"])
         self.assertIn("蓝箱", search_names(blue, "zh"))
-        self.assertEqual(works["mal-61323"]["season"], 2)
-        self.assertIn("蓝箱 第二季", works["mal-61323"]["aliases"])
+        # The latest catalog may merge the MAL edition into the Bangumi
+        # canonical record. Its ID must remain a valid alias, not a
+        # fabricated standalone news-search work.
+        from scripts.refresh_media_anime_news import read, CATALOG
+        source = read(CATALOG)
+        self.assertEqual(source["aliases"].get("mal-61323"), "bangumi-548156")
+        if "mal-61323" in works:
+            self.assertEqual(works["mal-61323"]["season"], 2)
+            self.assertIn("蓝箱 第二季", works["mal-61323"]["aliases"])
 
     def test_stale_unverified_rows_cannot_survive_refresh(self):
         work = {"season": 2, "aliases": ["蓝箱 第二季"]}
