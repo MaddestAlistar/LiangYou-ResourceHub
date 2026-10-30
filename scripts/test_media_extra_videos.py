@@ -18,8 +18,8 @@ class VideoSources(unittest.TestCase):
         self.assertFalse(matches_title("Moana (2026) live action trailer",self.moana["aliases"],2016))
     def test_acfun_only_related_original(self):
         doc={"videoList":[
-            {"title":"【旧资讯】《海洋奇缘》中国大陆独家版预告片一则","dougaId":30636253},
-            {"title":"《海洋奇缘2》预告片","dougaId":47951240},
+            {"title":"【旧资讯】《海洋奇缘》中国大陆独家版预告片一则","contentId":"30636253","videoId":"25783315"},
+            {"title":"《海洋奇缘2》预告片","id":"47951240","videoId":"39751240"},
             {"title":"《寻龙传说》由《海洋奇缘》团队打造 预告片","dougaId":12345678},
             {"title":"莫阿娜（2026）预告片","dougaId":11111111}]}
         with patch("refresh_media_extra_videos.get_json",return_value=doc):
