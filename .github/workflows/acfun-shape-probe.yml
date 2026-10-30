@@ -1,0 +1,17 @@
+name: Inspect AcFun public search ID field shape
+on:
+  push:
+    branches: [probe/acfun-targeted-recall-20261030]
+    paths: [.github/workflows/acfun-shape-probe.yml, experiments/acfun_payload_shape.py]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 experiments/acfun_payload_shape.py
