@@ -781,7 +781,7 @@
   // to update the player engine; mobile H5 is tried first on iOS. Both stay in
   // our modal; upstream frame restrictions remain outside our control.
   function showAcfunFrame(id,mobile){
-    if(!trailerStage||!/^[1-9]\\d{3,11}$/.test(id))return;
+    if(!trailerStage||!/^[1-9][0-9]{3,11}$/.test(id))return;
     const frame=document.createElement('iframe');
     frame.title='AcFun · '+t('视频播放器','video player');
     frame.src=mobile?'https://m.acfun.cn/v/?ac='+id:'https://www.acfun.cn/player/ac'+id;
