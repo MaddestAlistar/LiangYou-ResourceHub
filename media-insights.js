@@ -784,7 +784,10 @@
   let activeAcfunId='';
   let useAcfunMobile=false;
   let useStandardHost=false;
+  let acfunSerial=0,acfunHlsInstance=null,acfunScriptPromise=null;
   function stopTrailer(){
+    acfunSerial++;
+    if(acfunHlsInstance){acfunHlsInstance.destroy();acfunHlsInstance=null;}
     if(trailerStage)trailerStage.replaceChildren();
     activeVideoId='';
     activeAcfunId='';
@@ -827,6 +830,89 @@
     frame.allowFullscreen=true;
     trailerStage.replaceChildren(frame);
     if(playerSwitch)playerSwitch.hidden=true;
+  }
+  function acfunSafeHls(src){
+    try{
+      const u=new URL(src),host=u.hostname.toLowerCase();
+      return u.protocol==='https:'&&!u.username&&!u.password&&u.pathname.endsWith('.m3u8')&&
+        ['acfun.cn','acfunchina.com','kuaishou.com','gifshow.com','yximgs.com','kwaicdn.com'].some(
+          x=>host===x||host.endsWith('.'+x))?u.href:null;
+    }catch{return null;}
+  }
+  function loadHlsLibrary(){
+    if(window.Hls?.isSupported)return Promise.resolve(window.Hls);
+    if(!acfunScriptPromise)acfunScriptPromise=new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js';
+      script.async=true;
+      script.onload=()=>window.Hls?.isSupported?resolve(window.Hls):reject(Error('hls_unavailable'));
+      script.onerror=()=>reject(Error('hls_unavailable'));
+      document.head.appendChild(script);
+    }).catch(error=>{acfunScriptPromise=null;throw error;});
+    return acfunScriptPromise;
+  }
+  async function showAcfunHls(id){
+    if(!trailerStage||!/^[1-9][0-9]{3,11}$/.test(id))return;
+    const serial=++acfunSerial;
+    const fallback=message=>{
+      if(serial!==acfunSerial||!trailerDialog?.open)return;
+      trailerStage.replaceChildren();
+      const pane=document.createElement('div');
+      pane.className='mi-acfun-fallback';
+      const note=document.createElement('p');
+      note.textContent=message;
+      const tryOfficial=document.createElement('button');
+      tryOfficial.type='button';
+      tryOfficial.textContent=t('尝试 AcFun 官方嵌入播放器','Try AcFun official embed');
+      tryOfficial.addEventListener('click',()=>showAcfunFrame(id),{once:true});
+      pane.append(note,tryOfficial);
+      trailerStage.appendChild(pane);
+    };
+    const loading=document.createElement('p');
+    loading.className='mi-acfun-loading';
+    loading.textContent=t('正在获取 AcFun 网页播放地址…','Loading AcFun HTML5 video…');
+    trailerStage.replaceChildren(loading);
+    try{
+      const res=await fetch(base+'/api/video/acfun/'+id,{cache:'no-store',signal:AbortSignal.timeout(16000)});
+      if(!res.ok)throw Error('upstream_unavailable');
+      const body=await res.json();
+      const url=body.ok===true&&String(body.videoId)===id?acfunSafeHls(body.url):null;
+      if(!url)throw Error('invalid_stream');
+      if(serial!==acfunSerial||!trailerDialog?.open)return;
+      const video=document.createElement('video');
+      video.className='mi-acfun-native';
+      video.controls=true;
+      video.playsInline=true;
+      video.preload='metadata';
+      video.setAttribute('playsinline','');
+      video.setAttribute('webkit-playsinline','');
+      if(video.canPlayType('application/vnd.apple.mpegurl')){
+        video.src=url;
+        trailerStage.replaceChildren(video);
+        video.play().catch(()=>{});
+      }else{
+        const Hls=await loadHlsLibrary();
+        if(serial!==acfunSerial||!trailerDialog?.open)return;
+        if(!Hls.isSupported())throw Error('no_hls_support');
+        const hls=new Hls({enableWorker:true});
+        acfunHlsInstance=hls;
+        trailerStage.replaceChildren(video);
+        hls.on(Hls.Events.ERROR,(_event,data)=>{
+          if(data?.fatal){hls.destroy();if(acfunHlsInstance===hls)acfunHlsInstance=null;
+            fallback(t('AcFun 视频流播放失败，可尝试官方播放器或原站观看。',
+              'AcFun stream failed. Try the official player or open the source.'));}
+        });
+        hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
+        hls.loadSource(url);
+        hls.attachMedia(video);
+      }
+      document.getElementById('media-trailer-help').textContent=t(
+        '正在使用本站 HTML5 播放器读取 AcFun 公开视频。按播放键开始；临时视频地址过期时重新打开即可。',
+        'Using our HTML5 player for this public AcFun stream. Tap play if needed; reopen to refresh expired links.');
+    }catch{
+      fallback(t('此视频的公开 HLS 地址暂不可用。可尝试官方嵌入播放器，或通过原站观看。',
+        'Public HLS stream unavailable. Try the official embed or original page.'));
+    }
   }
   // If an upstream CDN refuses cross-site thumbnail use, show the original
   // gradient card instead of a broken-image symbol.
@@ -872,7 +958,9 @@
     const provider={bilibili:'Bilibili',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'}[platform];
     stopTrailer();
     if(platform==='acfun'){
-      showAcfunFrame(id);
+      // Show the modal immediately; fetch the short-lived stream only on click.
+      if(!trailerDialog.open)trailerDialog.showModal();
+      showAcfunHls(id);
     }else{
       const frame=document.createElement('iframe');
       frame.title=provider+' · '+name;
@@ -885,9 +973,7 @@
     }
     document.getElementById('media-trailer-title').textContent=name;
     document.getElementById('media-trailer-kicker').textContent=provider+' · '+t('相关视频','Related video');
-    document.getElementById('media-trailer-help').textContent=platform==='acfun'?
-      t('正在尝试 AcFun 官方嵌入播放器。部分 iPhone 会提示升级播放内核，这属于 AcFun 播放器限制；如果无法播放，请使用下方原站链接。',
-        'Trying the official AcFun embed. Some iPhones may report an unsupported player engine; use the original link if playback fails.'):
+    if(platform!=='acfun')document.getElementById('media-trailer-help').textContent=
       t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
     const external=document.getElementById('media-trailer-external');
     external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
