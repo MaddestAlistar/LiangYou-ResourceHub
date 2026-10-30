@@ -32,6 +32,17 @@ EMBED_ID = re.compile(r"open\.douyin\.com/player/video\?vid=([1-9]\d{14,20})(?!\
 INDEX_URL = re.compile(r"https?://(?:jingxuan\.douyin\.com|www\.douyin\.com)/(?:m/)?video/([1-9]\d{14,20})(?!\d)")
 MAX_PER_WORK = 4
 MAX_API_CHECKS = 8
+# Publicly indexed Douyin Jingxuan pages discovered in a one-off coverage audit.
+# These are ONLY discovery candidates, not approved videos. Every candidate
+# must pass the existing official iframe API and exact-work title validation.
+PUBLIC_SEARCH_CANDIDATES = {
+    "bangumi-548156": ("7622255094280637715",),  # 青之箱 第二季
+    "bangumi-975": ("7622675548849884468",),     # 航海王
+    "bangumi-899": ("7627460026483301056", "7624854045870126735"),  # 柯南
+    "tv:79481": ("7627385690829892992",),       # 斗破苍穹
+    "movie:969681": ("7618559596789009704", "7618611805778185518"),
+    "movie:1170608": ("7660478440054754594",), # 沙丘3
+}
 # Publicly indexed Douyin Jingxuan pages located during a one-time manual
 # discovery on 2026-10-31. These are candidates, NOT approved embed videos.
 # Each must pass the official iframe API and exact title gate before publishing.
@@ -172,6 +183,35 @@ def create_row(work, result):
         row.update(tmdbId=work["tmdb_id"], matchedByTitle=True)
     return row
 
+def verify_public_index_candidates(works, items, prior):
+    """One-off audit of public index hits, subject to the SAME official gates."""
+    attempted = set(str(v) for v in (prior.get("seedAttempts") or []))
+    for work_id, ids in PUBLIC_SEARCH_CANDIDATES.items():
+        work = works.get(work_id)
+        if not work:
+            continue
+        old = items.get(work_id) or {}
+        videos = [v for v in old.get("videos", []) if isinstance(v, dict)
+                  and v.get("platform") == "douyin" and v.get("embedVerified") is True]
+        for video_id in ids:
+            if video_id in attempted or len(videos) >= MAX_PER_WORK:
+                continue
+            attempted.add(video_id)
+            if any(str(v.get("videoId")) == video_id for v in videos):
+                continue
+            verified = verify_official(video_id)
+            if verified and match_work(work, verified):
+                videos.append(create_row(work, verified))
+                print("DOUYIN_INDEX_AUDIT_APPROVED", work_id, video_id, flush=True)
+            else:
+                print("DOUYIN_INDEX_AUDIT_NOT_APPROVED", work_id, video_id, flush=True)
+            time.sleep(.18)
+        if videos != old.get("videos", []):
+            items[work_id] = {**old, "title": work["title"], "kind": work["kind"],
+                "year": work["year"], "tmdbId": work.get("tmdb_id") or 0,
+                "workId": work["id"], "videos": videos[:MAX_PER_WORK]}
+    return sorted(attempted)
+
 def choose(works, items, cursor):
     # A single search per run to avoid throttling on public search indexes.
     # Rotate by media type so films, television and anime all progress.
@@ -225,6 +265,7 @@ def main():
     items = {k: v for k, v in (prior.get("items") or {}).items()
              if k in works and isinstance(v, dict)}
     cursor = max(0, int(prior.get("discoveryCursor") or 0))
+    seed_attempts = verify_public_index_candidates(works, items, prior)
     verify_public_index_backfill(works, items)
     selected = choose(works, items, cursor)
     if selected is None:
@@ -249,7 +290,7 @@ def main():
         OUTPUT.write_text(json.dumps({
             "schema": 1, "updatedAt": now(), "provider": "douyin",
             "discovery": "public_search_index_and_official_iframe",
-            "discoveryCursor": cursor + 1, "items": items},
+            "discoveryCursor": cursor + 1, "seedAttempts": seed_attempts, "items": items},
             ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf8")
         print("DOUYIN_INDEX_UNAVAILABLE_PRESERVED", key, flush=True)
         return
@@ -273,7 +314,7 @@ def main():
     result = {"schema": 1, "updatedAt": now(), "provider": "douyin",
               "discovery": "public_search_index_and_official_iframe",
               "discoveryCursor": cursor + 1,
-              "items": items}
+              "seedAttempts": seed_attempts, "items": items}
     OUTPUT.write_text(json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n",
                       encoding="utf8")
     print("DOUYIN_DISCOVERY_SUMMARY", "checked", key, "index_ids", len(ids),
