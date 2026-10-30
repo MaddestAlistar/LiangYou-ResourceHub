@@ -1,0 +1,27 @@
+name: Live iPhone movie thumbnails and AcFun fallback probe
+on:
+  push:
+    branches: [probe/film-thumbnails-iphone-live-20261030]
+    paths: [.github/workflows/probe-film-thumbnails-iphone.yml]
+permissions:
+  contents: read
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix /tmp/film-cover-probe --no-audit --no-fund --no-save playwright-core@1.56.1
+      - run: node experiments/iphone_film_thumbnail_smoke.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-film-cover-report
+          path: mobile-film-cover-report.json
+          if-no-files-found: ignore
+          retention-days: 3
