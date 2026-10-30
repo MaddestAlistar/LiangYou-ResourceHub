@@ -258,7 +258,7 @@
       const name=String(x.name||t('影视预告片','Trailer'));
       // Dailymotion inline embeds require an owned Player ID; external playback
       // is used until configured, never a third-party sample Player ID.
-      const supportedPlayer=x.platform!=='dailymotion';
+      const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
@@ -302,6 +302,20 @@
       }catch{return [];}
     })();
     return domesticVideoPromise;
+  }
+
+  // Only a Player ID created in this site's own Dailymotion Studio account
+  // enables inline playback. Never borrow the documentation demo Player ID.
+  let dailymotionPlayerId='';
+  let mediaPlayerConfigPromise=null;
+  function mediaVideoPlayerConfig(){
+    if(!mediaPlayerConfigPromise)mediaPlayerConfigPromise=fetch('./data/media-video-player-config.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(5500)
+    }).then(r=>r.ok?r.json():null).then(doc=>{
+      const id=String(doc?.dailymotionPlayerId||'').trim();
+      return doc?.schema===1&&/^x[A-Za-z0-9]{3,15}$/.test(id)?id:'';
+    }).catch(()=>'');
+    return mediaPlayerConfigPromise;
   }
 
   // Offline metadata snapshot: no visitor-triggered platform requests.
@@ -593,6 +607,11 @@
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
       paintTrailers();
+      mediaVideoPlayerConfig().then(playerId=>{
+        if(!pane.isConnected)return;
+        dailymotionPlayerId=playerId;
+        paintTrailers();
+      }).catch(()=>{});
       extraVideoSnapshot().then(items=>{
         if(!pane.isConnected)return;
         const row=items?.[info.kind+':'+Number(info.tmdbId)];
@@ -751,10 +770,14 @@
       frameUrl='https://www.acfun.cn/player/ac'+id;
     if(platform==='niconico'&&/^(sm|so)\d{6,12}$/.test(id)&&url==='https://www.nicovideo.jp/watch/'+id)
       frameUrl='https://embed.nicovideo.jp/watch/'+id;
+    if(platform==='dailymotion'&&/^x[a-z0-9]{4,12}$/i.test(id)&&
+       url==='https://www.dailymotion.com/video/'+id&&
+       /^x[A-Za-z0-9]{3,15}$/.test(dailymotionPlayerId))
+      frameUrl='https://geo.dailymotion.com/player/'+dailymotionPlayerId+'.html?video='+id;
     if(!frameUrl)return;
     const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
     const frame=document.createElement('iframe');
-    const provider=platform==='bilibili'?'Bilibili':platform==='acfun'?'AcFun':'Niconico';
+    const provider={bilibili:'Bilibili',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'}[platform];
     frame.title=provider+' · '+name;
     frame.src=frameUrl;
     frame.loading='eager';
