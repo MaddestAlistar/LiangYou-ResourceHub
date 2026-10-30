@@ -4,8 +4,11 @@ on:
     branches: [main]
     paths:
       - 'scripts/cache_media_bilibili_images.py'
+      - 'data/media-title-coverage.json'
       - '.github/workflows/cache-media-bilibili-covers.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '18 */6 * * *'
 permissions:
   contents: write
 concurrency:
@@ -14,7 +17,7 @@ concurrency:
 jobs:
   cache:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,13 +41,20 @@ jobs:
                   assert re.fullmatch(r'\./assets/media-video-covers/BV[A-Za-z0-9]{10}\.(?:jpg|png|webp)',local)
                   path=Path(local)
                   assert path.exists() and 500<path.stat().st_size<1500000
+          cover_map=json.loads(Path('data/media-bilibili-cover-map.json').read_text())
+          assert cover_map['schema']==1
+          for bvid,path in cover_map['items'].items():
+              assert re.fullmatch(r'BV[A-Za-z0-9]{10}',bvid)
+              assert re.fullmatch(r'\./assets/media-video-covers/'+bvid+r'\.(?:jpg|png|webp)',path)
+              asset=Path(path)
+              assert asset.exists() and 500<asset.stat().st_size<1500000
           PY
       - name: Commit validated static cover metadata and images
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/media-domestic-trailers.json assets/media-video-covers/
+          git add data/media-domestic-trailers.json data/media-bilibili-cover-map.json assets/media-video-covers/
           if git diff --cached --quiet; then
             echo 'All known Bilibili covers already cached'
             exit 0
