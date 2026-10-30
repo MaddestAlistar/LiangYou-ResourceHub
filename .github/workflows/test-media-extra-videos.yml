@@ -2,8 +2,7 @@ name: Verify 20-video film gallery integration
 
 on:
   push:
-    branches:
-      - feature/media-five-video-providers-20261030
+    branches: [main]
     paths:
       - '.github/workflows/test-media-extra-videos.yml'
       - 'media-insights.js'
@@ -38,7 +37,8 @@ jobs:
       - name: Verify video display regressions and modal
         run: |
           node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs scripts/test_media_insights.mjs scripts/test_media_matching.mjs scripts/test_media_layout_slots.mjs scripts/test_media_news_sources.mjs
-      - name: Refresh two real catalog entries without updating main
+      - name: Optional manual live probe of two film entries (no commit)
+        if: github.event_name == 'workflow_dispatch'
         env:
           EXTRA_VIDEO_BATCH: '2'
           EXTRA_VIDEO_INTERVAL: '2'
@@ -53,6 +53,7 @@ jobs:
           print('LIVE_EXTRA_VIDEO_CHECK',[(k,len(v['videos'])) for k,v in doc['items'].items()])
           PY
       - name: Upload safe probe report
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: extra-video-preview
