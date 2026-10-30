@@ -1,0 +1,28 @@
+name: Probe live media video cards in browser
+on:
+  push:
+    branches: [probe/live-media-cards-dm-20261030]
+    paths: [.github/workflows/probe-live-media-cards.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix /tmp/media-probe --no-save --no-audit --no-fund playwright-core@1.56.1
+      - run: node experiments/live_media_cards_probe.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-live-ui-probe
+          path: media-live-ui-probe.json
+          if-no-files-found: ignore
+          retention-days: 3
