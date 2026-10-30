@@ -138,7 +138,7 @@ test('Dailymotion inline player is gated by a site-owned Player ID',()=>{
   assert.ok(source.includes('data/media-video-player-config.json'));
   assert.ok(source.includes('geo.dailymotion.com/player/'));
   assert.ok(source.includes('dailymotionPlayerId'));
-  assert.ok(source.includes("const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId)"));
+  assert.ok(source.includes("x.platform!=='dailymotion'||Boolean(dailymotionPlayerId)"));
   assert.ok(!source.includes('/player/x8lr5.html'));
 });
 
@@ -179,4 +179,16 @@ test('KinoCheck candidates remain visible even after 36 normal YouTube results',
  const cards=[...html.matchAll(/<article class="mi-trailer-card">([\s\S]*?)<\/article>/g)].map(m=>m[1]);
  assert.ok(cards.slice(0,4).some(c=>c.includes('KinoCheck')),'KinoCheck should not be buried below 20 other trailers');
  assert.ok(cards.slice(0,4).some(c=>c.includes('Dailymotion')),'Dailymotion should get an early representative slot');
+});
+test('platform-specific real cover images render without untrusted sources',()=>{
+ const info={...selected,tmdbId:550};
+ const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+    platform:'acfun',videoId:'30636253',name:'《哪吒之魔童闹海》预告',
+    verifiedSource:'https://www.acfun.cn/v/ac30636253',
+    thumbnail:'https://tx-free-imgs.acfun.cn/newUpload/valid-cover.jpeg'};
+ const html=gallery({},info,[row]);
+ assert.match(html,/class="mi-trailer-platform-thumb"/);
+ assert.match(html,/tx-free-imgs.acfun.cn\/newUpload\/valid-cover.jpeg/);
+ assert.match(source,/mi-trailer-platform-thumb/);
+ assert.match(source,/m.acfun.cn\/v\/\?ac=/);
 });
