@@ -71,6 +71,44 @@ with sync_playwright() as pw:
                 "mode":mode,"parentStage":p.evaluate("""()=>{const r=document.getElementById('stage').getBoundingClientRect();return{width:r.width,height:r.height}}"""),
                 "frames":len(frames),"before":before[:2],"after":after[:2],
             },ensure_ascii=False),flush=True)
+        # Check the actual published modal markup/CSS, not just test-lab
+        # dimensions. This catches the precise 16:9 viewport clipping the
+        # user reported on iPhone.
+        page=context.new_page()
+        page.goto("https://maddestalistar.github.io/LiangYou-ResourceHub/#media",
+                  wait_until="domcontentloaded",timeout=30000)
+        page.wait_for_timeout(5000)
+        page.evaluate("""vid=>{
+          const dlg=document.querySelector('#media-trailer-dialog');
+          if(!dlg.open)dlg.showModal();
+          const stage=document.querySelector('#media-trailer-stage');
+          stage.classList.add('mi-douyin-stage');
+          const frame=document.createElement('iframe');
+          frame.className='mi-douyin-mobile';
+          frame.width='324';frame.height='624';
+          frame.src='https://open.douyin.com/player/video?vid='+vid+'&autoplay=0';
+          frame.referrerPolicy='unsafe-url';
+          frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+          frame.allowFullscreen=true;
+          stage.replaceChildren(frame);
+        }""",VIDEO)
+        page.wait_for_timeout(7000)
+        metrics=page.evaluate("""()=>{
+          const stage=document.querySelector('#media-trailer-stage');
+          const iframe=stage?.querySelector('iframe');
+          const rect=x=>{const r=x?.getBoundingClientRect();return r?{width:r.width,height:r.height}:null};
+          return{stage:rect(stage),iframe:rect(iframe),cssLoaded:[...document.styleSheets]
+             .some(x=>(x.href||'').includes('media-intel.css')),
+             windowWidth:innerWidth}
+        }""")
+        frames=[x for x in page.frames if 'open.douyin.com/player/video' in x.url]
+        print("DOUYIN_WEBKIT_SITE_MODAL",json.dumps({
+            "metrics":metrics,"frames":[inspect(x) for x in frames][:1]
+        },ensure_ascii=False),flush=True)
+        if metrics["windowWidth"]<761 and (not metrics["stage"] or
+            metrics["stage"]["height"]<610 or not metrics["iframe"] or
+            metrics["iframe"]["height"]<610):
+            raise RuntimeError("published_iOS_dialog_still_clips_Douyin_controls")
     finally:
         context.close()
         browser.close()
