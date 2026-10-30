@@ -1,0 +1,17 @@
+name: Probe larger Niconico video thumbnails
+on:
+  push:
+    branches: [probe/bilibili-video-thumbnails-20261030]
+    paths: [.github/workflows/probe-nico-image-size.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 experiments/nico_size_probe.py
