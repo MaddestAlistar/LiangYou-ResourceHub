@@ -30,25 +30,13 @@
 3. 如果官方嵌入接口暂时失效，可以在**有零付费硬保障**的前提下搜索公开元数据并记录匹配数量，但绝不把未经官方批准的视频当作可播放卡片展示。
 4. 不影响 Bilibili、YouTube、Dailymotion、Niconico、AcFun 的视频抓取、20 条总上限与站内播放。
 
-## 关于 SandBase API Keys 的 SPENT $0 / LIMIT $0 显示
+## 已确认的密钥设置与暂停策略
 
-SandBase API Keys 列表中 `SPENT $0` 仅说明这把密钥目前没有产生消费；`LIMIT $0` **不能单凭列表断定已设置 $0 硬限制**。官方文档说明新建/编辑密钥时 **Spending limit 留空意味着 unlimited**，列表可能将未设置的值显示为 $0。需要进入该密钥的 **Edit** 界面核实输入框：如果为空，则不是零消费硬限制。即使明确填入 0，也需进一步确认平台是否支持这项设置、免费额度调用是否允许通过，以及超额是否会被拒绝。
-
-**不要只因为截图显示 `LIMIT $0` 就将 `SANDBASE_HARD_ZERO_SPEND_CONFIRMED=true` 写入 GitHub。** 余额读取因 403 不可用时，网站继续暂停 SandBase 自动搜索；这不会影响原有视频来源。
-
-官方依据：https://www.sandbase.ai/docs/getting-started/api-keys
-
-## 什么时候才允许搜索？
-
-两条路径满足任意一条才允许：
-
-- **路径 A（自动验证）**：`GET /v1/account/balance` 成功，且组织余额、授信都等于 0。当前密钥返回 403，因此此路径暂不可用。
-- **路径 B（账户明确设置）**：在 SandBase Developer → API Keys 把**本网站专用密钥**设置为平台强制执行的 **$0 付费上限**（如果平台支持），确认 SandBase 允许免费配额请求且对超额请求实行硬拒绝；然后才在 GitHub 仓库 Settings → Secrets and variables → Actions → **Variables** 添加：
-  `SANDBASE_HARD_ZERO_SPEND_CONFIRMED=true`
-
-> 此变量代表网站所有者已经亲自核实 SandBase 的硬限制；GitHub 无法从这个变量验证平台实际配置。**官方文档没有明确保证 $0 消费上限能否成功创建或是否允许免费请求。** 如果控制台不提供有效的零金额硬限制，**不要设置此变量**，程序继续安全暂停。仅靠“每天 1 次”不是零付费保证。
-
-这两个条件之外不会向 SandBase 发送可能收费的搜索请求。密钥只放在 Actions Secret 内，不得放在网站前端。
+- 密钥由用户本人在 SandBase **从 unlimited 改为 $0 消费上限**，保持 active；不再怀疑列表上的 $0 是没有设置。
+- GitHub Actions 现已依据这项用户确认启用 `SANDBASE_HARD_ZERO_SPEND_CONFIRMED=true`，实际尝试时 SandBase 对 Model API 西瓜搜索返回 **HTTP 402**，说明零付费硬限制生效，但当前不能借此使用免费额度。
+- 自动搜索已被 `XIGUA_AUTO_SEARCH_ENABLED=false` 暂停，定时任务仅运行本地测试及官方 iframe 可用性探测；不会继续发送第三方收费 API 请求。
+- 需要同时满足：①平台确实允许免费请求；②账户无可扣费余额/授信或有可靠平台级零扣费保障；③实测西瓜搜索接口返回有效数据，才能再开放自动搜索。**不可直接把密钥上限改回 unlimited 或充值来绕开 402**。
+- 限额计数是“已尝试请求数”，不是 SandBase 真实免费额度扣减记录。
 
 ## 核验
 
