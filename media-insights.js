@@ -695,6 +695,7 @@
         merged.set(key,prior?{...prior,
           thumbnail:prior.thumbnail||item.thumbnail||null,
           thumbnailLocal:prior.thumbnailLocal||item.thumbnailLocal||null,
+          animatedThumbnailLocal:prior.animatedThumbnailLocal||item.animatedThumbnailLocal||null,
           likes:Number.isSafeInteger(prior.likes)?prior.likes:item.likes,
           views:Number.isSafeInteger(prior.views)?prior.views:item.views
         }:item);
@@ -1149,6 +1150,9 @@
   // gradient card instead of a broken-image symbol.
   root.addEventListener('error',ev=>{
     const img=ev.target;
+    if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-motion-thumb')){
+      img.remove();return;
+    }
     if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb')){
       const backup=mediaCoverUrl(img.dataset.thumbFallback);
       if(backup&&img.src!==backup){
