@@ -9,7 +9,7 @@ class AnimeVideoMatching(unittest.TestCase):
         names = name_aliases(w)
         for title in ("航海王", "海贼王", "ONE PIECE", "ワンピース"):
             self.assertIn(title, names)
-        work = {"id": "bangumi-975", "aliases": names, "year": 1999}
+        work = {"id": "bangumi-975", "title": "航海王", "original": "ONE PIECE", "aliases": names, "year": 1999}
         ani = {"title": {"romaji": "ONE PIECE", "native": "ONE PIECE"}, "synonyms": [], "startDate": {"year": 1999}}
         self.assertTrue(year_match(work, ani))
         self.assertTrue(exact_title(work, ani))
