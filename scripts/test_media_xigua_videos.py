@@ -80,6 +80,34 @@ class XiguaVideoTest(unittest.TestCase):
         self.assertEqual(count, 1)
         self.assertEqual(videos, [])
 
+    def test_single_keyword_rotates_across_followup_passes(self):
+        work = self.movie
+        observed = []
+        rows = [{"data": {"group_id": "7444746393916277283",
+                          "title": "《海洋奇缘》正式预告片"}}]
+        def fake_search(query, key, budget):
+            observed.append(query)
+            return rows
+        first_candidates=[]
+        second_candidates=[]
+        with patch("refresh_media_xigua_videos.search",side_effect=fake_search):
+            first, first_count=discover(
+                work, "dummy", verify_embed=False,
+                query_variant=0, queries_per_work=1,
+                candidate_cache=first_candidates
+            )
+            second, second_count=discover(
+                work, "dummy", verify_embed=False,
+                query_variant=1, queries_per_work=1,
+                candidate_cache=second_candidates
+            )
+        self.assertEqual(len(observed),2)
+        self.assertNotEqual(observed[0],observed[1])
+        self.assertEqual((first,second),([],[]))
+        self.assertEqual((first_count,second_count),(1,1))
+        self.assertEqual(first_candidates[0]["videoId"],"7444746393916277283")
+        self.assertEqual(second_candidates[0]["videoId"],"7444746393916277283")
+
     def test_no_result_is_not_successfully_embeddable(self):
         with patch("refresh_media_xigua_videos.json_request", return_value={
             "status": "completed", "outputs": [{"data": {"err_code": 0, "results": []}}]
