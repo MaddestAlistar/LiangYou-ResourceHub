@@ -34,8 +34,8 @@ class LocalFreeBudget:
     def __init__(self,path,day=None,daily_cap=1,run_cap=1):
         self.path=Path(path)
         self.day=day or datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        self.daily_cap=max(0,min(1,int(daily_cap)))
-        self.run_cap=max(0,min(1,self.daily_cap,int(run_cap)))
+        self.daily_cap=max(0,min(100,int(daily_cap)))
+        self.run_cap=max(0,min(self.daily_cap,int(run_cap)))
         try: old=json.loads(self.path.read_text(encoding="utf8"))
         except (OSError,ValueError):old={}
         # Corrupt ledgers do not reset a same-day counter.
