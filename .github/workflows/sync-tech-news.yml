@@ -1,0 +1,56 @@
+name: Mirror public tech news for mainland visitors
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_tech_news_snapshot.py'
+      - '.github/workflows/sync-tech-news.yml'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: liangyou-tech-news-public-snapshot
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate mirror source
+        run: python -m py_compile scripts/sync_tech_news_snapshot.py
+      - name: Sync current public news and local image copies
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python scripts/sync_tech_news_snapshot.py
+            git add data/tech-news-feed.json assets/tech-news
+            if git diff --cached --quiet; then
+              echo 'Tech news already current'
+              exit 0
+            fi
+            git commit -m 'Sync public tech news and images [skip ci]'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'Unable to push refreshed tech news after retries' >&2
+          exit 1
+      - name: Publish the new snapshot to GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_pages.py
