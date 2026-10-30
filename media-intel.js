@@ -350,59 +350,67 @@
   const PUBLIC_CACHE_KEY='liangyou.media.public.snapshot.v1';
   const validSnapshot=d=>d?.schema===1&&d.sources&&typeof d.sources==='object'&&
     d.works&&typeof d.works==='object'&&d.aliases&&typeof d.aliases==='object';
-  // Reuse the exact-ID anime video index and the official MAL v2 snapshot
-  // already produced by GitHub Actions. No visitor-side AniList/MAL API calls.
-  let animeIndex=null,malIndex=null,animeMetadataRequest=null;
-  const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(x=>
-    typeof x==='string'&&x.length>=2&&x.length<=28&&!/[<>{}\\x00-\\x1f]/.test(x)))].slice(0,6):[];
+  // Reuse exact-ID public anime, MAL and classifications snapshots.
+  // Never query provider APIs directly from a visitor's browser.
+  let animeIndex=null,malIndex=null,animeClassIndex=null,animeMetadataRequest=null;
+  const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(v=>
+    typeof v==='string'&&v.length>=2&&v.length<=48&&!/[<>\x00-\x1f]/.test(v)))].slice(0,6):[];
   function applyAnimeMetadata(){
-    if(!animeIndex?.items||!cat?.works)return false;
-    let changed=false;
-    const malCodes={g:'G',pg:'PG',pg_13:'PG-13',r:'R','r+':'R+',rx:'Rx'};
+    if(!cat?.works)return [];
+    const changed=[],codes={g:'G',pg:'PG',pg_13:'PG-13',r:'R-17+','r+':'R+',rx:'Rx'};
     for(const w of Object.values(cat.works)){
       if(w?.kind!=='anime')continue;
-      const item=animeIndex.items[w.id];
-      if(!item||item.workId!==w.id||item.kind!=='anime')continue;
+      const video=animeIndex?.items?.[w.id],extra=animeClassIndex?.items?.[w.id];
       const year=Number(String(w.date||'').slice(0,4));
-      if(year>=1900&&Number.isSafeInteger(Number(item.year))&&Math.abs(Number(item.year)-year)>1)continue;
-      const malId=Number(item.malId||0);
-      if(malId>0&&Number.isSafeInteger(malId)&&malId<=9999999999){
-        if(w.mal_id&&Number(w.mal_id)!==malId)continue;
-        if(!w.mal_id)w.mal_id=malId;
-      }
-      const cls=item.classification||{};
+      const valid=x=>x?.workId===w.id&&x?.kind==='anime'&&
+        (!Number.isInteger(year)||year<1900||x.year===year);
+      const v=valid(video)?video:null;
+      const c=valid(extra)?extra:null;
+      if(!v&&!c)continue;
+      const malId=Number(c?.malId||v?.malId||w.mal_id||0);
+      if(!Number.isSafeInteger(malId)||malId<0||malId>=10**10)continue;
+      if(w.mal_id&&malId&&Number(w.mal_id)!==malId)continue;
+      if(malId&&!w.mal_id)w.mal_id=malId;
+      const record=malId?malIndex?.items?.[String(malId)]:null;
+      const malValid=record?.ok===true&&record?.status==='ok'&&record?.malId===malId;
       const old=w.profile||{};
-      const genres=safeTags(cls.genres).length?safeTags(cls.genres):safeTags(old.genres);
-      const keywords=safeTags(cls.keywords).length?safeTags(cls.keywords):safeTags(old.keywords);
-      let parental_rating=null;
-      const record=malId&&malIndex?.items?.[String(malId)];
-      const rating=record?.malId===malId&&record?.ok===true&&record?.status==='ok'
-        ?malCodes[record.contentRating]:null;
-      if(rating)parental_rating={source:'MyAnimeList v2',rating,malId};
-      else if(cls.parental_rating?.source==='MyAnimeList v2'&&
-        cls.parental_rating.malId===malId&&
-        ['G','PG','PG-13','R','R+','Rx'].includes(cls.parental_rating.rating)){
-        parental_rating=cls.parental_rating;
-      }
-      if(!genres.length&&record?.malId===malId)genres.push(...safeTags(record.genres));
-      const next={...old,genres,keywords,parental_rating};
+      const provider=x=>['AniList','Bangumi','MAL'].includes(x)?x:'';
+      const rawGenres=safeTags(c?.genres);
+      const rawKeywords=safeTags(c?.keywords);
+      const genres=rawGenres.length?rawGenres:malValid?safeTags(record.genres):safeTags(old.genres);
+      const keywords=rawKeywords.length?rawKeywords:safeTags(old.keywords);
+      const officialMalCode=malValid?codes[record.contentRating]:null;
+      const snapshotMalCode=c?.parental_rating?.source==='MAL'&&
+        ['G','PG','PG-13','R-17+','R+','Rx'].includes(c.parental_rating.rating)?
+        c.parental_rating.rating:null;
+      const parental_rating=officialMalCode||snapshotMalCode?
+        {source:'MAL',rating:officialMalCode||snapshotMalCode}:null;
+      const next={...old,genres,keywords,
+        anime_genre_source:provider(c?.genreSource)||(malValid&&genres.length?'MAL':''),
+        anime_theme_source:provider(c?.themeSource),
+        parental_rating};
       if(JSON.stringify(old)!==JSON.stringify(next)){
-        w.profile=next;changed=true;
+        w.profile=next;changed.push(w.id);
       }
     }
     return changed;
   }
-  function refreshAnimeTags(){
-    if(!applyAnimeMetadata())return;
-    // Refresh visible cards while keeping the open dialog, scroll position,
-    // selected section and any already playing trailer untouched.
-    render();
+  function patchAnimeTags(changed){
+    if(!changed.length)return;
+    const ids=new Set(changed);
+    for(const card of root.querySelectorAll('.mi-card-open')){
+      if(!ids.has(card.dataset.miOpen))continue;
+      const w=cat.works[card.dataset.miOpen];
+      const markup=classificationCard(w),old=card.querySelector('.mi-card-classification');
+      if(old){if(markup)old.outerHTML=markup;else old.remove();}
+      else if(markup)card.querySelector('.mi-meta')?.insertAdjacentHTML('afterend',markup);
+    }
     const dialog=$('#media-dialog');
-    if(!dialog?.open||!activeWork()||activeWork().kind!=='anime')return;
-    const content=classificationDetail(activeWork());
+    if(!dialog?.open||!ids.has(activeId))return;
+    const html=classificationDetail(activeWork());
     const old=dialog.querySelector('.mi-classification-detail');
-    if(old)old.outerHTML=content;
-    else if(content)dialog.querySelector('.mi-detail-head')?.insertAdjacentHTML('afterend',content);
+    if(old){if(html)old.outerHTML=html;else old.remove();}
+    else if(html)dialog.querySelector('.mi-detail-head')?.insertAdjacentHTML('afterend',html);
   }
   function loadAnimeMetadata(){
     if(animeMetadataRequest)return animeMetadataRequest;
@@ -410,13 +418,15 @@
       fetch('./data/media-anime-videos.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)})
         .then(r=>r.ok?r.json():null),
       fetch('./data/media-mal-v2.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)})
+        .then(r=>r.ok?r.json():null),
+      fetch('./data/media-anime-classification.json',{cache:'no-cache',signal:AbortSignal.timeout(12000)})
         .then(r=>r.ok?r.json():null)
     ]).then(results=>{
-      const a=results[0].status==='fulfilled'?results[0].value:null;
-      const m=results[1].status==='fulfilled'?results[1].value:null;
-      animeIndex=a?.schema===1&&a.items&&typeof a.items==='object'?a:null;
-      malIndex=m?.source==='MyAnimeList v2'&&m.items&&typeof m.items==='object'?m:null;
-      refreshAnimeTags();
+      const rows=results.map(r=>r.status==='fulfilled'?r.value:null);
+      animeIndex=rows[0]?.schema===1&&rows[0].items?rows[0]:null;
+      malIndex=rows[1]?.source==='MyAnimeList v2'&&rows[1].items?rows[1]:null;
+      animeClassIndex=rows[2]?.schema===1&&rows[2].items?rows[2]:null;
+      patchAnimeTags(applyAnimeMetadata());
     }).catch(()=>{});
     return animeMetadataRequest;
   }
