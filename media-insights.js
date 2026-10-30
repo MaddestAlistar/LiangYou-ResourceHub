@@ -597,6 +597,7 @@
         const prior=merged.get(key);
         merged.set(key,prior?{...prior,
           thumbnail:prior.thumbnail||item.thumbnail||null,
+          thumbnailLocal:prior.thumbnailLocal||item.thumbnailLocal||null,
           likes:Number.isSafeInteger(prior.likes)?prior.likes:item.likes,
           views:Number.isSafeInteger(prior.views)?prior.views:item.views
         }:item);
