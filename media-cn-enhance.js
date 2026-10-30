@@ -117,7 +117,8 @@ function headlineMatch(headline,info){
  return score;
 }
 function domesticNews(info){
- if(info.section!=='discover')return;
+ // Anime news uses exact-season archive, not film title matcher.
+  if(info.kind==='anime'||info.section!=='discover')return;
  const target=root.querySelector('#media-dialog .mi-detail-content');if(!target)return;
  const holder=target.querySelector('[data-mi-discover-slot="domestic"]');
  // Verified aliases can arrive after an article has already appeared. Reuse the
