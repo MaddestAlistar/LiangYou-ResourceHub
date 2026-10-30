@@ -469,6 +469,47 @@
     return mediaPlayerConfigPromise;
   }
 
+  // Separate, identity-scoped anime news archive. No TMDB ID is required, and
+  // an unverified headline must never inherit a different anime season.
+  let animeNewsPromise=null,animeNewsUntil=0;
+  function animeNewsSnapshot(){
+    if(!animeNewsPromise||Date.now()>animeNewsUntil){
+      animeNewsUntil=Date.now()+15*60000;
+      animeNewsPromise=fetch('./data/media-anime-news.json',{
+        cache:'no-cache',signal:AbortSignal.timeout(7000)
+      }).then(r=>r.ok?r.json():null)
+        .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
+        .catch(()=>null);
+    }
+    return animeNewsPromise;
+  }
+  function displayAnimeNews(info,doc){
+    const target=root.querySelector('#media-dialog .mi-detail-content');
+    if(!target||!target.querySelector('[data-mi-discover-slot="trailers"]'))return;
+    const item=doc?.items?.[info.id],year=Number(String(info.year||'').slice(0,4));
+    const articles=item?.workId===info.id&&item.kind==='anime'&&
+      (!Number.isInteger(year)||year<1900||Number(item.year)===year)&&
+      Array.isArray(item.articles)?item.articles.filter(x=>
+        x?.titleMatchVerified===true&&typeof x.title==='string'&&
+        x.title.length>=6&&x.title.length<=200&&
+        ['zh','en','ja','ko'].includes(x.language)&&safe(x.url)): [];
+    for(const [name,language,zh,en] of [
+      ['international',false,'国际新闻','International news'],
+      ['domestic',true,'国内新闻','Chinese news']
+    ]){
+      const slot=target.querySelector('[data-mi-discover-slot="'+name+'"]');
+      if(!slot)return;
+      const rows=articles.filter(x=>(x.language==='zh')===language).slice(0,6);
+      slot.innerHTML='<section class="mi-insight-block mi-'+name+'-news">'+
+        '<div class="mi-insight-head"><h3>'+t(zh,en)+'</h3></div>'+
+        (rows.length?'<div class="mi-insight-news mi-editorial-grid">'+rows.map(x=>
+          '<article class="mi-editorial-card"><div class="mi-editorial-body"><span>'+
+          esc(x.source||'')+' · '+esc(format(x.date))+'</span><strong>'+
+          a(x.url,x.title)+'</strong></div></article>').join('')+'</div>':
+          '<p class="mi-caption">'+t('暂无与本季明确对应的已核验报道。','No verified coverage for this season yet.')+'</p>')+
+        '</section>';
+    }
+  }
   // Independent anime video snapshot, keyed to stable catalog work IDs.
   let animeVideoPromise=null,animeVideoUntil=0;
   function animeVideoSnapshot(){
@@ -746,10 +787,9 @@
         animeLoaded=true;
         paintAnime();
       }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
-      for(const name of ['international','domestic']){
-        const news=target.querySelector('[data-mi-discover-slot="'+name+'"] .mi-caption');
-        if(news)news.textContent=t('暂无这部动漫的已核验报道。','No verified articles for this anime yet.');
-      }
+      animeNewsSnapshot().then(doc=>{
+        if(pane.isConnected)displayAnimeNews(info,doc);
+      }).catch(()=>{if(pane.isConnected)displayAnimeNews(info,null);});
       return;
     }
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
