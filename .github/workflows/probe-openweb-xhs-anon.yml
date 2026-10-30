@@ -1,4 +1,4 @@
-name: Probe OpenWeb XHS anonymous search (isolated)
+name: Probe OpenWeb XHS coffee control and fallback
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
     env:
       OPENWEB_HOME: /tmp/liangyou-openweb-xhs-anon-20261030
       OPENWEB_CLI: openweb/dist/cli.js
-      REPORT_PATH: openweb-xhs-anon-report.json
+      REPORT_PATH: openweb-xhs-generic-and-alternatives.json
     steps:
       - name: Checkout isolated probe branch (no push credentials)
         uses: actions/checkout@v4
@@ -55,11 +55,11 @@ jobs:
           cd openweb
           node dist/cli.js browser start --headless --profile /tmp/liangyou-openweb-empty-profile/Default
           node dist/cli.js browser status
-      - name: Run at most six low-frequency searches without login or retries
+      - name: Run coffee control then anonymous-browser and public-index alternatives if needed
         shell: bash
         run: |
           set -euo pipefail
-          python3 experiments/openweb_xhs_probe.py
+          python3 experiments/openweb_xhs_generic_probe.py
       - name: Stop browser
         if: always()
         shell: bash
@@ -71,7 +71,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: openweb-xhs-anon-report
-          path: openweb-xhs-anon-report.json
+          name: openweb-xhs-generic-control-report
+          path: openweb-xhs-generic-and-alternatives.json
           if-no-files-found: ignore
           retention-days: 3
