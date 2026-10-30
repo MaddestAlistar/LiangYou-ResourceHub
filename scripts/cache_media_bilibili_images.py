@@ -39,9 +39,9 @@ def fetch_jpeg(url):
         typ=response.headers.get("Content-Type","").split(";")[0].strip().lower()
         raw=response.read(MAX_BYTES+1)
     if len(raw)>MAX_BYTES or len(raw)<500:raise ValueError("Invalid image size")
-    if raw.startswith(b"\\xff\\xd8\\xff") and typ in ("image/jpeg","image/jpg","application/octet-stream"):
+    if raw.startswith(b"\xff\xd8\xff") and typ in ("image/jpeg","image/jpg","application/octet-stream"):
         return raw,"jpg"
-    if raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n") and typ=="image/png":
+    if raw.startswith(b"\x89PNG\r\n\x1a\n") and typ=="image/png":
         return raw,"png"
     if raw.startswith(b"RIFF") and raw[8:12]==b"WEBP" and typ=="image/webp":
         return raw,"webp"
@@ -58,7 +58,7 @@ def main():
         url=image_url(row.get("thumbnail"))
         if not url:failed+=1;continue
         existing=row.get("thumbnailLocal")
-        if isinstance(existing,str) and re.fullmatch(r"\\./assets/media-video-covers/BV[A-Za-z0-9]{10}\\.(?:jpg|png|webp)",existing) and (ROOT/existing.removeprefix("./")).is_file():
+        if isinstance(existing,str) and re.fullmatch(r"\./assets/media-video-covers/BV[A-Za-z0-9]{10}\.(?:jpg|png|webp)",existing) and (ROOT/existing.removeprefix("./")).is_file():
             ok+=1;continue
         try:
             image,ext=fetch_jpeg(url)
@@ -71,7 +71,7 @@ def main():
             failed+=1
             print(f"Cover {vid} unavailable: {type(error).__name__}")
     if changed:
-        CATALOG.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+        CATALOG.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(f"Bilibili static covers: cached={ok},new={changed},unavailable={failed}")
 
 if __name__=="__main__":main()
