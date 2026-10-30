@@ -24,7 +24,7 @@
   const choices=()=>tab==='calendar'?['tvmaze']:tab==='anime'?['all','bangumi','anilist','simkl']:tab==='upcoming'?['tmdb']:['all','tmdb','trakt','simkl'];
   const stale=s=>s.status!=='ok'||!s.updated_at||Date.now()-Date.parse(s.updated_at)>(s.interval_hours||6)*7200000;
   const poster=i=>`<div class="mi-poster">${i.poster?`<img src="${url(i.poster)}" alt="${esc(title(i))}" loading="lazy" decoding="async" width="342" height="513">`:'<span aria-hidden="true">✦</span>'}</div>`;
-  const scoreValue=r=>Number.isFinite(r.value)&&r.scale ? `${r.scale<=10?r.value.toFixed(1):r.value}${['Rotten Tomatoes','RT Audience'].includes(r.source)?'%':'/'+r.scale}` : r.display||'—';
+  const scoreValue=r=>Number.isFinite(r.value)&&r.scale ? `${r.source==='MyAnimeList'?r.value.toFixed(2):r.scale<=10?r.value.toFixed(1):r.value}${['Rotten Tomatoes','RT Audience'].includes(r.source)?'%':'/'+r.scale}` : r.display||'—';
   const scores=(i,limit=3)=>(i.ratings||[]).slice(0,limit).map(r=>`<span class="mi-rating"><b>${esc(r.source==='Internet Movie Database'?'IMDb':r.source)}</b> ${esc(scoreValue(r))}</span>`).join('');
   // Films use regional TMDB classifications; anime uses exact-ID
   // AniList/Bangumi/MAL metadata. MAL is advisory, NOT a legal age certificate.
@@ -80,14 +80,12 @@
     const genres=d.genres.length?'<div class="mi-classification-group"><small>'+
       (d.anime?text('作品类型','Genres'):text('影片类型','Genres'))+
       '</small><div class="mi-classification-pills">'+d.genres.map(v=>
-      '<span class="mi-tag-pill">'+esc(v)+'</span>').join('')+'</div>'+
-      (d.anime&&d.genreSource?'<p class="mi-caption">'+text('来源：','Source: ')+esc(d.genreSource)+'</p>':'')+'</div>':
+      '<span class="mi-tag-pill">'+esc(v)+'</span>').join('')+'</div>'++'</div>':
       (d.anime?'<div class="mi-classification-group"><small>'+text('作品类型','Genres')+
       '</small><p class="mi-caption">'+text('暂未收录可核验的作品类型。','No verified genres yet.')+'</p></div>':'');
     const keywords=d.keywords.length?'<div class="mi-classification-group"><small>'+
       text('主题标签','Theme tags')+'</small><div class="mi-classification-pills">'+
-      d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+esc(v)+'</span>').join('')+'</div>'+
-      (d.anime&&d.themeSource?'<p class="mi-caption">'+text('来源：','Source: ')+esc(d.themeSource)+'</p>':'')+'</div>':
+      d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+esc(v)+'</span>').join('')+'</div>'++'</div>':
       (d.anime?'<div class="mi-classification-group"><small>'+text('主题标签','Theme tags')+
       '</small><p class="mi-caption">'+text('暂未收录可核验的主题标签。','No verified theme tags yet.')+'</p></div>':'');
     const age=d.anime?'<div class="mi-classification-group mi-parental-guide"><small>'+
@@ -353,6 +351,10 @@
   // Reuse exact-ID public anime, MAL and classifications snapshots.
   // Never query provider APIs directly from a visitor's browser.
   let animeIndex=null,malIndex=null,animeClassIndex=null,animeMetadataRequest=null;
+  // Curated same-season identity: original Japanese title, 2026 premiere and MAL ID checked.
+  // Never infer other adaptation identities from fuzzy translations.
+  const verifiedAnimePeers=Object.freeze({'bangumi-637802':{peer:'mal-63801',malId:63801},
+    'mal-63801':{peer:'bangumi-637802',malId:63801}});
   const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(v=>
     typeof v==='string'&&v.length>=2&&v.length<=48&&!/[<>\x00-\x1f]/.test(v)))].slice(0,6):[];
   function applyAnimeMetadata(){
@@ -367,7 +369,11 @@
       const v=valid(video)?video:null;
       const c=valid(extra)?extra:null;
       if(!v&&!c)continue;
-      const malId=Number(c?.malId||v?.malId||w.mal_id||0);
+      const confirmedPeer=verifiedAnimePeers[w.id];
+      const peer=confirmedPeer&&cat.works[confirmedPeer.peer]?.kind==='anime'&&
+        String(cat.works[confirmedPeer.peer].date||'').slice(0,4)===String(w.date||'').slice(0,4)
+        ?cat.works[confirmedPeer.peer]:null;
+      const malId=Number(c?.malId||v?.malId||w.mal_id||(peer?confirmedPeer.malId:0));
       if(!Number.isSafeInteger(malId)||malId<0||malId>=10**10)continue;
       if(w.mal_id&&malId&&Number(w.mal_id)!==malId)continue;
       if(malId&&!w.mal_id)w.mal_id=malId;
@@ -389,9 +395,26 @@
         anime_genre_source:provider(c?.genreSource)||(malValid&&genres.length?'MAL':''),
         anime_theme_source:provider(c?.themeSource),
         parental_rating};
-      if(JSON.stringify(old)!==JSON.stringify(next)){
-        w.profile=next;changed.push(w.id);
+      let didChange=false;
+      if(JSON.stringify(old)!==JSON.stringify(next)){w.profile=next;didChange=true;}
+      const additions=[];
+      if(malValid&&Number.isFinite(record.score)&&record.score>0&&record.score<=10){
+        additions.push({source:'MyAnimeList',value:record.score,scale:10,
+          votes:Number.isSafeInteger(record.ratingCount)?record.ratingCount:null,
+          via:'MyAnimeList v2',checked_at:malIndex.checkedAt||null});
       }
+      // Only join scores from an independently verified same-season identity.
+      if(peer)for(const r of peer.ratings||[]){
+        if(['AniList','Bangumi','Simkl'].includes(r.source)&&Number.isFinite(r.value)&&
+          Number.isFinite(r.scale)&&r.scale>0)additions.push({...r});
+      }
+      if(additions.length){
+        const existing=Array.isArray(w.ratings)?w.ratings:[];
+        const merged=[...existing];
+        for(const r of additions)if(!merged.some(v=>v.source===r.source))merged.push(r);
+        if(JSON.stringify(existing)!==JSON.stringify(merged)){w.ratings=merged;didChange=true;}
+      }
+      if(didChange)changed.push(w.id);
     }
     return changed;
   }
@@ -404,6 +427,8 @@
       const markup=classificationCard(w),old=card.querySelector('.mi-card-classification');
       if(old){if(markup)old.outerHTML=markup;else old.remove();}
       else if(markup)card.querySelector('.mi-meta')?.insertAdjacentHTML('afterend',markup);
+      const ratingBox=card.querySelector('.mi-scores');
+      if(ratingBox)ratingBox.innerHTML=scores(w);
     }
     const dialog=$('#media-dialog');
     if(!dialog?.open||!ids.has(activeId))return;
@@ -411,6 +436,11 @@
     const old=dialog.querySelector('.mi-classification-detail');
     if(old){if(html)old.outerHTML=html;else old.remove();}
     else if(html)dialog.querySelector('.mi-detail-head')?.insertAdjacentHTML('afterend',html);
+    if(detailTab==='ratings'){
+      const current=dialog.querySelector('.mi-ratings-section .mi-score-grid');
+      if(current){const scratch=document.createElement('div');scratch.innerHTML=scorePanel(activeWork());
+        current.replaceWith(scratch.querySelector('.mi-score-grid'));}
+    }
   }
   function loadAnimeMetadata(){
     if(animeMetadataRequest)return animeMetadataRequest;
