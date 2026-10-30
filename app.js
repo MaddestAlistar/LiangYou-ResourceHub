@@ -63,6 +63,10 @@
     // so the 3D hero still retains network priority on a slow connection.
     const early = (p.id === 'icons' || p.id === 'channels') && index < 2;
     const img = `<img class="preview-image" src="${escapeHTML(safeURL(url, true))}" alt="${escapeHTML(p.imageLabels?.[index] || `${p.title}预览 ${index + 1}`)}" loading="${early ? 'eager' : 'lazy'}" fetchpriority="low" width="120" height="120" decoding="async" referrerpolicy="no-referrer"${channels ? ' data-clean-channel-badge="true"' : ""}>`;
+    // Komic's source WebP has a black square matte around its rounded artwork.
+    // Crop only this cover inside its own circular frame; never alter the file
+    // or zoom the three neighboring Icon Library previews.
+    if (p.id === 'icons' && index === 2) return `<span class="icon-preview-crop">${img}</span>`;
     return channels ? `<span class="channel-avatar-shell">${img}</span>` : img;
   }
 
