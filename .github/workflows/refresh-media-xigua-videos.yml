@@ -45,6 +45,21 @@ jobs:
               print('XIGUA_PUBLIC_IFRAME_PROBE',result or 'not_embeddable')
           except Exception as exc:
               print('XIGUA_PUBLIC_IFRAME_PROBE_UNAVAILABLE',type(exc).__name__)
+              # Log only HTTP metadata and a tiny sanitized content prefix.
+              # No cookies, authorization headers, or source video URLs.
+              import urllib.request, urllib.parse
+              u='https://www.ixigua.com/api/public/get_iframe_info?url='+urllib.parse.quote(
+                  'https://www.ixigua.com/7444746393916277283',safe='')
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u,headers={
+                      'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+                      'Accept':'application/json,text/plain,*/*'}),timeout=12) as response:
+                      prefix=response.read(160).decode('utf8','replace')
+                      print('XIGUA_IFRAME_RESPONSE',response.status,
+                          response.headers.get('Content-Type','?'),
+                          'html' if '<html' in prefix.lower() else 'json' if prefix.lstrip().startswith('{') else 'other')
+              except Exception as exc2:
+                  print('XIGUA_IFRAME_DIAGNOSTIC_UNAVAILABLE',type(exc2).__name__)
           PY
       - name: Discover Xigua videos with optional private SandBase key
         env:
