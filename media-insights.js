@@ -1144,7 +1144,7 @@
       if(activeAcfunCover?.card===card)stopAcfunCover();
     }
   });
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAcfunCover();});
+  document.addEventListener?.('visibilitychange',()=>{if(document.hidden)stopAcfunCover();});
   // If an upstream CDN refuses cross-site thumbnail use, show the original
   // gradient card instead of a broken-image symbol.
   root.addEventListener('error',ev=>{
