@@ -18,7 +18,7 @@
   const title=i=>language==='en'?(i.english_title||i.original_title||i.title):i.title;
   const saved=id=>list.find(e=>core.resolve(e.work,cat)===id);
   const statusName=s=>({want:text('想看','Want to watch'),watching:text('在看','Watching'),watched:text('看完','Watched')})[s]||'';
-  const workFor=i=>cat.works[i.work_id||cat.aliases[i.id]||i.id]||i;
+  const workFor=i=>cat.works[cat.aliases[i.work_id||i.id]||i.work_id||i.id]||i;
   const activeWork=()=>cat.works[activeId]||saved(activeId)?.work;
   const tabs=[['movies','热门电影','Movies'],['series','热门剧集','Series'],['calendar','追剧日历','Calendar'],['anime','动漫新番','Anime'],['upcoming','即将上映','Coming soon'],['library','我的片单','My list']];
   const choices=()=>tab==='calendar'?['tvmaze']:tab==='anime'?['all','bangumi','anilist','simkl']:tab==='upcoming'?['tmdb']:['all','tmdb','trakt','simkl'];
@@ -353,8 +353,6 @@
   let animeIndex=null,malIndex=null,animeClassIndex=null,animeMetadataRequest=null;
   // Curated same-season identity: original Japanese title, 2026 premiere and MAL ID checked.
   // Never infer other adaptation identities from fuzzy translations.
-  const verifiedAnimePeers=Object.freeze({'bangumi-637802':{peer:'mal-63801',malId:63801},
-    'mal-63801':{peer:'bangumi-637802',malId:63801}});
   const safeTags=values=>Array.isArray(values)?[...new Set(values.filter(v=>
     typeof v==='string'&&v.length>=2&&v.length<=48&&!/[<>\x00-\x1f]/.test(v)))].slice(0,6):[];
   function applyAnimeMetadata(){
@@ -369,11 +367,7 @@
       const v=valid(video)?video:null;
       const c=valid(extra)?extra:null;
       if(!v&&!c)continue;
-      const confirmedPeer=verifiedAnimePeers[w.id];
-      const peer=confirmedPeer&&cat.works[confirmedPeer.peer]?.kind==='anime'&&
-        String(cat.works[confirmedPeer.peer].date||'').slice(0,4)===String(w.date||'').slice(0,4)
-        ?cat.works[confirmedPeer.peer]:null;
-      const malId=Number(c?.malId||v?.malId||w.mal_id||(peer?confirmedPeer.malId:0));
+      const malId=Number(c?.malId||v?.malId||w.mal_id||0);
       if(!Number.isSafeInteger(malId)||malId<0||malId>=10**10)continue;
       if(w.mal_id&&malId&&Number(w.mal_id)!==malId)continue;
       if(malId&&!w.mal_id)w.mal_id=malId;
@@ -402,11 +396,6 @@
         additions.push({source:'MyAnimeList',value:record.score,scale:10,
           votes:Number.isSafeInteger(record.ratingCount)?record.ratingCount:null,
           via:'MyAnimeList v2',checked_at:malIndex.checkedAt||null});
-      }
-      // Only join scores from an independently verified same-season identity.
-      if(peer)for(const r of peer.ratings||[]){
-        if(['AniList','Bangumi','Simkl'].includes(r.source)&&Number.isFinite(r.value)&&
-          Number.isFinite(r.scale)&&r.scale>0)additions.push({...r});
       }
       if(additions.length){
         const existing=Array.isArray(w.ratings)?w.ratings:[];
@@ -462,7 +451,7 @@
   }
   function acceptSnapshot(snapshot,cached=false){
     if(!validSnapshot(snapshot))throw Error('invalid_media_snapshot');
-    data=snapshot;cat=core.catalog(snapshot);usingCachedSnapshot=cached;applyAnimeMetadata();loadList();render();
+    data=snapshot;cat=core.mergeAnimeCatalog(core.catalog(snapshot));usingCachedSnapshot=cached;applyAnimeMetadata();loadList();render();
     loadAnimeMetadata();
     const id=new URL(location.href).searchParams.get('film');
     if(id&&!$('#media-dialog').open){
