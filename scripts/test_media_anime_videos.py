@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 """No-network safeguards for anime title and edition matching."""
 import unittest
-from refresh_media_anime_videos import name_aliases, exact_title, year_match, safe_anime_video, season_marker, canonical_cached_clip, recheck_published
+from refresh_media_anime_videos import name_aliases, exact_title, year_match, safe_anime_video, season_marker, canonical_cached_clip, recheck_published, WORK_ID, catalog
 
 class AnimeVideoMatching(unittest.TestCase):
+    def test_imdb_canonical_anime_is_included_in_catalog(self):
+        self.assertTrue(WORK_ID.fullmatch("imdb-tt7441658"))
+        self.assertTrue(WORK_ID.fullmatch("imdb-tt38268282"))
+        self.assertFalse(WORK_ID.fullmatch("imdb-ttabc"))
+        items=catalog()
+        self.assertIn("imdb-tt7441658",items)
+        self.assertIn("imdb-tt38268282",items)
+        self.assertEqual(items["imdb-tt7441658"]["kind"],"anime")
+
     def test_one_piece_names_are_one_catalog_work(self):
         w = {"id": "bangumi-975", "title": "航海王", "original_title": "ONE PIECE", "english_title": ""}
         names = name_aliases(w)
