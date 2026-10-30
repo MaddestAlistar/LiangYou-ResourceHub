@@ -847,9 +847,10 @@
   let activeAcfunId='';
   let useAcfunMobile=false;
   let useStandardHost=false;
-  let acfunSerial=0,acfunHlsInstance=null,acfunScriptPromise=null;
+  let acfunSerial=0,acfunHlsInstance=null,acfunScriptPromise=null,acfunReadyTimer=null;
   function stopTrailer(){
     acfunSerial++;
+    if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
     if(acfunHlsInstance){acfunHlsInstance.destroy();acfunHlsInstance=null;}
     if(trailerStage)trailerStage.replaceChildren();
     activeVideoId='';
@@ -903,15 +904,34 @@
     }catch{return null;}
   }
   function loadHlsLibrary(){
-    if(window.Hls?.isSupported)return Promise.resolve(window.Hls);
-    if(!acfunScriptPromise)acfunScriptPromise=new Promise((resolve,reject)=>{
-      const script=document.createElement('script');
-      script.src='https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js';
-      script.async=true;
-      script.onload=()=>window.Hls?.isSupported?resolve(window.Hls):reject(Error('hls_unavailable'));
-      script.onerror=()=>reject(Error('hls_unavailable'));
-      document.head.appendChild(script);
-    }).catch(error=>{acfunScriptPromise=null;throw error;});
+    if(window.Hls?.isSupported?.())return Promise.resolve(window.Hls);
+    if(!acfunScriptPromise)acfunScriptPromise=(async()=>{
+      // A secondary CDN helps on mainland networks where jsDelivr fails.
+      // Both URLs pin the exact same hls.js version.
+      for(const url of [
+        'https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js',
+        'https://unpkg.com/hls.js@1.7.3/dist/hls.min.js'
+      ]){
+        try{
+          await new Promise((resolve,reject)=>{
+            const script=document.createElement('script');
+            script.src=url;script.async=true;
+            let done=false;
+            const finish=err=>{
+              if(done)return;done=true;clearTimeout(timer);
+              script.onload=null;script.onerror=null;
+              if(err){script.remove();reject(err);}else resolve();
+            };
+            const timer=setTimeout(()=>finish(Error('hls_load_timeout')),9000);
+            script.onload=()=>finish(null);
+            script.onerror=()=>finish(Error('hls_unavailable'));
+            document.head.appendChild(script);
+          });
+          if(window.Hls?.isSupported?.())return window.Hls;
+        }catch{/* Try the alternate pinned library URL. */}
+      }
+      throw Error('hls_unavailable');
+    })().catch(error=>{acfunScriptPromise=null;throw error;});
     return acfunScriptPromise;
   }
   async function showAcfunHls(id){
@@ -919,16 +939,21 @@
     const serial=++acfunSerial;
     const fallback=message=>{
       if(serial!==acfunSerial||!trailerDialog?.open)return;
+      if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
       trailerStage.replaceChildren();
       const pane=document.createElement('div');
       pane.className='mi-acfun-fallback';
       const note=document.createElement('p');
       note.textContent=message;
+      const retry=document.createElement('button');
+      retry.type='button';
+      retry.textContent=t('重新获取播放地址','Refresh the video stream');
+      retry.addEventListener('click',()=>showAcfunHls(id),{once:true});
       const tryOfficial=document.createElement('button');
       tryOfficial.type='button';
       tryOfficial.textContent=t('尝试 AcFun 官方嵌入播放器','Try AcFun official embed');
       tryOfficial.addEventListener('click',()=>showAcfunFrame(id),{once:true});
-      pane.append(note,tryOfficial);
+      pane.append(note,retry,tryOfficial);
       trailerStage.appendChild(pane);
     };
     const loading=document.createElement('p');
@@ -949,9 +974,20 @@
       video.preload='metadata';
       video.setAttribute('playsinline','');
       video.setAttribute('webkit-playsinline','');
+      // Native Safari HLS can fail even when the metadata endpoint succeeds.
+      // Do not leave a black video surface indefinitely on expired links.
+      video.addEventListener('error',()=>fallback(t(
+        'AcFun 视频加载失败，可能是地址已过期或当前网络无法访问。请重新获取播放地址。',
+        'AcFun video load failed. Refresh the stream or try the original site.')));
+      const ready=()=>{if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}};
+      video.addEventListener('loadedmetadata',ready,{once:true});
+      video.addEventListener('playing',ready,{once:true});
       if(video.canPlayType('application/vnd.apple.mpegurl')){
         video.src=url;
         trailerStage.replaceChildren(video);
+        acfunReadyTimer=setTimeout(()=>fallback(t(
+          'AcFun 视频加载超时，尝试重新获取地址或从原站观看。',
+          'AcFun playback timed out. Refresh or open the source.')),25000);
         video.play().catch(()=>{});
       }else{
         const Hls=await loadHlsLibrary();
@@ -968,6 +1004,9 @@
         hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
         hls.loadSource(url);
         hls.attachMedia(video);
+        acfunReadyTimer=setTimeout(()=>fallback(t(
+          'AcFun 视频加载超时，尝试重新获取地址或从原站观看。',
+          'AcFun playback timed out. Refresh or open the source.')),25000);
       }
       document.getElementById('media-trailer-help').textContent=t(
         '正在使用本站 HTML5 播放器读取 AcFun 公开视频。按播放键开始；临时视频地址过期时重新打开即可。',
@@ -1040,7 +1079,7 @@
       t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
     const external=document.getElementById('media-trailer-external');
     external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
-    if(playerSwitch&&platform!=='acfun')playerSwitch.hidden=true;
+    if(playerSwitch)playerSwitch.hidden=true;
     if(!trailerDialog.open)trailerDialog.showModal();
   });
 
