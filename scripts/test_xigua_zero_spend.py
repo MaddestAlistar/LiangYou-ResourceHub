@@ -74,6 +74,29 @@ class ZeroSpendSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             merge_budgets({"schema":1,"utcDay":"2026-10-30","calls":51},stale)
 
+    def test_provider_failure_halts_same_day_and_resets_tomorrow(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/"budget.json"
+            b=LocalFreeBudget(path,day="2026-10-30")
+            b.authorize()
+            b.halt_today("http_402")
+            retry=LocalFreeBudget(path,day="2026-10-30")
+            self.assertEqual(retry.blocked_reason,"http_402")
+            with self.assertRaises(FreeQuotaStop):
+                retry.authorize()
+            next_day=LocalFreeBudget(path,day="2026-10-31")
+            self.assertEqual(next_day.blocked_reason,"")
+            next_day.authorize()
+
+    def test_day_pause_survives_stale_workflow_merge(self):
+        saved={"schema":1,"utcDay":"2026-10-30","calls":4,
+               "blockedReason":"http_429","localDailyCap":50}
+        stale={"schema":1,"utcDay":"2026-10-30","calls":3,
+               "localDailyCap":50}
+        merged=merge_budgets(saved,stale)
+        self.assertEqual(merged["blockedReason"],"http_429")
+        self.assertEqual(merged["calls"],4)
+
     def test_invalid_same_day_ledger_fails_closed(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/"budget.json"
