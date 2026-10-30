@@ -122,13 +122,15 @@ test('every movie can display server-verified Bilibili videos by TMDB ID rather 
  assert.equal(verified(info,[{...record,verifiedByTitleId:false}]).length,0);
  assert.equal(verified(info,[{...record,verifiedSource:'https://untrusted.example/watch'}]).length,0);
 });
-test('YouTube Bilibili AcFun Niconico use one modal; Dailymotion links externally',()=>{
+test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own Player ID',()=>{
  assert.match(source,/https:\/\/player\.bilibili\.com\/player\.html\?bvid=/);
  assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
  assert.match(source,/https:\/\/embed\.nicovideo\.jp\/watch\//);
  assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
- assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=true/);
+ assert.match(source,/if\\(playerSwitch&&platform!=='acfun'\\)playerSwitch\\.hidden=true/);
+ assert.match(source,/showAcfunFrame\\(id,isiOS\\)/);
+ assert.match(source,/https:\\/\\/m\\.acfun\\.cn\\/v\\/\\?ac=/);
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
