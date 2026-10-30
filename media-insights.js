@@ -156,6 +156,11 @@
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
         (!yearKnown||Math.abs(Number(x.year)-year)<=1);
+      // A title-matched external row must never fall back to loose title/year
+      // matching after its TMDB identity check fails.
+      if((x.matchedByTitle===true||x.verifiedByTitleId===true)&&!idBound)continue;
+      if(x.tmdbId!=null&&Number.isSafeInteger(Number(x.tmdbId))&&
+         Number(x.tmdbId)!==Number(info?.tmdbId))continue;
       if(!idBound&&(!yearKnown||Number(x.year)!==year||
          !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())))continue;
       const u=safe(x.verifiedSource);
