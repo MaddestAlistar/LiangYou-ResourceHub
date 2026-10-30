@@ -1,5 +1,17 @@
 # 西瓜视频旧接口失效与抖音精选官方站内播放替代
 
+## iPhone Safari 站内弹窗适配修复（2026-10-31）
+
+用户真机截图显示：抖音 iframe 仅出现抖音 Logo、右侧白边、视频控件完全不可见。用 GitHub Actions 的 Playwright WebKit（iPhone UA、触屏、390px 视口）复现：浏览器窗口只有约 322×219px，但官方抖音嵌入页面实际生成宽 324、高 **624px** 的播放器。视频自身可加载、播放进度增加，问题主要是**站内弹窗把其竖版播放器裁成 16:9**。
+
+验证过“给 iframe 760px 后 CSS 缩放回横屏”的思路，但 iOS WebKit 的跨域 iframe 内页面仍按手机视口处理（innerWidth约322px），不能可靠修复，已弃用。
+
+**最终修复**：仅在手机宽度≤760px 时，`media-insights.js` 为抖音精选播放器添加 `mi-douyin-stage` / `mi-douyin-mobile` 类；`media-intel.css` 把 iframe 和播放器容器同时设为宽≤324px、高624px，居中，允许弹窗纵向滚动。其他视频服务仍用16:9。提供“重新加载播放器”按钮，播放失败不跳出原站。为 `china-perf.js`、`media-intel.css` 和 `media-insights.js` 更新版本参数，避免国内浏览器沿用旧缓存。测试页也适配同样的手机尺寸。
+
+WebKit 在正式网站 `#media-trailer-dialog` 实测外框 **324×624px**、iframe **324×624px**，内层视频元素同样 **324×624px**，`readyState=4`、`error=0`。这是 Safari 同源 WebKit 引擎模拟测试，不等于所有用户真实 iOS 网络与 ChatGPT 内置浏览器都必然可播放；若仍出现黑屏需继续检查当地网络/上游限制。
+
+验证日志：https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/41097619103
+
 ## 2026-10-30 实测结论与网站当前状态
 
 **旧西瓜站内播放器不可用**：在用户的 GitHub Pages 域名中，用 Chromium 桌面与手机尺寸分别测试官方文档旧 iframe ID、以及通过 SandBase 找到的真实《赛博朋克：边缘行者》《侦探已经死了》西瓜 ID，iframe 自动跳转到 `m.ixigua.com/fullVideo/<id>` 并显示“内容可能已删除”；旧移动 embed 路径同样没有视频元素。旧 `get_iframe_info` 返回 HTML 而非 JSON。测试报告：[GitHub Actions 实际浏览器日志](https://github.com/MaddestAlistar/LiangYou-ResourceHub/actions/runs/41092228014)。这是上游平台和资源状态限制，不能靠调整本站 iframe 样式修复，也不可提取加密视频直链绕过限制。
