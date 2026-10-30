@@ -8,6 +8,7 @@ const chessTournaments=new Map([
  ['Mongolian National Chess Championship 2026 | Open','2026 蒙古全国国际象棋锦标赛 · 公开组'],
  ['Baden Championship 2026 (BEM/BFEM) | BEM','2026 巴登国际象棋锦标赛 · BEM组'],
  ['Benidorm Chess Open 2026 | Group A','2026 贝尼多姆国际象棋公开赛 · A组'],
+ ['Magdeburg Open 2026','2026 马格德堡国际象棋公开赛'],
  ['KazChess Masters Almaty 2026','2026 阿拉木图 KazChess 大师赛'],
  ['Tsaghkadzor Open 2026','2026 察赫卡佐尔国际象棋公开赛'],
  ['2026 Clutch Chess: Champions Showdown','2026 Clutch Chess 冠军对决赛']
@@ -57,7 +58,7 @@ function league(value,sport,language='zh'){
  if(!raw||language!=='zh')return raw;
  if(sport==='chess'){
    if(chessTournaments.has(raw))return chessTournaments.get(raw);
-   return raw
+   const translated=raw
     .replace(/\bNational Chess Championship\b/gi,'全国国际象棋锦标赛')
     .replace(/\bChess Championship\b/gi,'国际象棋锦标赛')
     .replace(/\bChess Open\b/gi,'国际象棋公开赛')
@@ -68,6 +69,9 @@ function league(value,sport,language='zh'){
     .replace(/\bRound (\d+)\b/gi,'第$1轮')
     .replace(/\s*\|\s*Open\b/gi,' · 公开组')
     .replace(/\s*\|\s*/g,' · ');
+   // Preserve unknown organizer names; never leave a whole event title without
+   // a Chinese category and never invent an unverified place/person name.
+   return /[\u3400-\u9fff]/.test(translated)?translated:'国际象棋赛事 · '+translated;
  }
  if(sport==='go'){
    if(goTournaments.has(raw))return goTournaments.get(raw);
