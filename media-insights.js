@@ -486,13 +486,26 @@
   function displayAnimeNews(info,doc){
     const target=root.querySelector('#media-dialog .mi-detail-content');
     if(!target||!target.querySelector('[data-mi-discover-slot="trailers"]'))return;
-    const item=doc?.items?.[info.id],year=Number(String(info.year||'').slice(0,4));
-    const articles=item?.workId===info.id&&item.kind==='anime'&&
-      (!Number.isInteger(year)||year<1900||Number(item.year)===year)&&
-      Array.isArray(item.articles)?item.articles.filter(x=>
-        x?.titleMatchVerified===true&&typeof x.title==='string'&&
-        x.title.length>=6&&x.title.length<=200&&
-        ['zh','en','ja','ko'].includes(x.language)&&safe(x.url)): [];
+    const year=Number(String(info.year||'').slice(0,4));
+    // Alias IDs come from the catalog's strict full-title/season/year identity
+    // bridge. Never merge a different episode, edition or franchise by text.
+    const approvedIds=[...new Set([info.id,...(Array.isArray(info.aliases)?info.aliases:[])])]
+      .filter(id=>/^(?:bangumi|mal|anilist|simkl-anime|imdb-tt)-[a-z0-9]+$/i.test(id));
+    const articles=[],used=new Set();
+    for(const id of approvedIds){
+      const item=doc?.items?.[id];
+      if(!item||item.workId!==id||item.kind!=='anime'||
+         (Number.isInteger(year)&&year>=1900&&Number(item.year)!==year)||
+         !Array.isArray(item.articles))continue;
+      for(const x of item.articles){
+        const u=safe(x?.url);
+        if(x?.titleMatchVerified!==true||typeof x.title!=='string'||
+          x.title.length<6||x.title.length>200||
+          !['zh','en','ja','ko'].includes(x.language)||!u||used.has(u))continue;
+        used.add(u);articles.push(x);
+      }
+    }
+    articles.sort((a,b)=>Date.parse(b.date||0)-Date.parse(a.date||0));
     for(const [name,language,zh,en] of [
       ['international',false,'国际新闻','International news'],
       ['domestic',true,'国内新闻','Chinese news']
@@ -779,23 +792,26 @@
       }).catch(()=>{});
       animeVideoSnapshot().then(doc=>{
         if(!pane.isConnected)return;
-        const item=doc?.items?.[info.id];
         const year=Number(String(info.year||'').slice(0,4));
-        const verified=item&&item.workId===info.id&&item.kind==='anime'&&
-          (!Number.isSafeInteger(year)||year<1900||Math.abs(Number(item.year)-year)<=1);
-        // The two independently indexed catalog records are confirmed to be
-        // the same 2026 Ranma season. Share only their verified video IDs.
-        const peerId=info.id==='bangumi-637802'?'mal-63801':
-          info.id==='mal-63801'?'bangumi-637802':null;
-        const peer=peerId?doc?.items?.[peerId]:null;
-        const sameSeason=verified&&peer?.workId===peerId&&peer.kind==='anime'&&
-          Number(peer.year)===Number(item.year)&&Number(item.year)===2026;
-        const peerVideos=sameSeason&&Array.isArray(peer.videos)?peer.videos.map(v=>
-          ({...v,workId:info.id,title:info.title,year:Number(item.year)})):[];
-        const peerYoutube=sameSeason&&Array.isArray(peer.youtubeTrailers)?peer.youtubeTrailers:[];
-        animeItem=verified?{...item,
-          videos:[...(item.videos||[]),...peerVideos],
-          youtubeTrailers:[...(item.youtubeTrailers||[]),...peerYoutube]}:null;
+        const approvedIds=[...new Set([info.id,...(Array.isArray(info.aliases)?info.aliases:[])])]
+          .filter(id=>/^(?:bangumi|mal|anilist|simkl-anime|imdb-tt)-[a-z0-9]+$/i.test(id));
+        const videos=[],youtubeTrailers=[],seenVideos=new Set(),seenYoutube=new Set();
+        for(const id of approvedIds){
+          const item=doc?.items?.[id];
+          if(!item||item.workId!==id||item.kind!=='anime'||
+             (Number.isInteger(year)&&year>=1900&&Math.abs(Number(item.year)-year)>1))continue;
+          for(const x of Array.isArray(item.videos)?item.videos:[]){
+            if(x.workId!==id||x.kind!=='anime'||x.verifiedByCatalogTitle!==true)continue;
+            const key=x.platform+':'+x.videoId;if(seenVideos.has(key))continue;
+            seenVideos.add(key);videos.push({...x,workId:info.id,title:info.title});
+          }
+          for(const x of Array.isArray(item.youtubeTrailers)?item.youtubeTrailers:[]){
+            if(!/^[A-Za-z0-9_-]{11}$/.test(x.id||'')||
+               x.url!=='https://www.youtube.com/watch?v='+x.id||seenYoutube.has(x.id))continue;
+            seenYoutube.add(x.id);youtubeTrailers.push(x);
+          }
+        }
+        animeItem={videos,youtubeTrailers};
         animeLoaded=true;
         paintAnime();
       }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
