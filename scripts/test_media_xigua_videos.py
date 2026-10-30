@@ -46,9 +46,11 @@ class XiguaVideoTest(unittest.TestCase):
     def test_metadata_only_search_never_claims_public_embed(self):
         mock_search=[{"data":{"group_id":"7444746393916277283",
               "title":"《海洋奇缘》正式预告片"}}]
-        with patch("refresh_media_xigua_videos.search",return_value=mock_search), \\
-             patch("refresh_media_xigua_videos.approved_embed") as iframe, \\
-             patch("refresh_media_xigua_videos.time.sleep",return_value=None):
+        with (
+            patch("refresh_media_xigua_videos.search",return_value=mock_search),
+            patch("refresh_media_xigua_videos.approved_embed") as iframe,
+            patch("refresh_media_xigua_videos.time.sleep",return_value=None),
+        ):
             videos,count=discover(self.movie,"dummy",verify_embed=False)
         self.assertEqual((videos,count),([],1))
         iframe.assert_not_called()
