@@ -160,7 +160,21 @@ def safe_anime_video(work, row):
         if match:
             clip_edition = {"II": "2", "III": "3"}.get(match[1].upper(), match[1])
     if edition and clip_edition != edition:
-        return False
+        # In Chinese/Japanese promotional titles the correct sequel number is
+        # often glued to the title: 「边缘行者2官方预告」 or 「... II」.
+        def explicit_edition(primary_title):
+            normalized = normalize(primary_title)
+            return (normalized.endswith(edition) or
+                    (edition == "2" and normalized.endswith("ii")) or
+                    (edition == "3" and normalized.endswith("iii")))
+        has_exact_sequel_title = any(
+            name and explicit_edition(name) and normalize(name) in normalize(label)
+            for name in primary
+        )
+        if not has_exact_sequel_title:
+            return False
+        if clip_edition and clip_edition != edition:
+            return False
     if not edition and clip_edition:
         return False
     # "ONE PIECE" also describes film, live-action, games and a separate remake.
