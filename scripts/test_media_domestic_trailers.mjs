@@ -133,7 +133,7 @@ test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own P
  assert.ok(source.includes("if(playerSwitch)playerSwitch.hidden=true"));
  assert.ok(source.includes("showAcfunHls(id)"));
  assert.ok(source.includes("/api/video/acfun/"));
- assert.ok(source.includes('showAcfunFrame(id)'));
+ assert.ok(source.includes("openSource.href='https://www.acfun.cn/v/ac'+id"));
  assert.ok(!source.includes('https://m.acfun.cn/v/?ac='));
  assert.match(source,/X-Frame-Options: SAMEORIGIN/);
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
