@@ -23,6 +23,12 @@ VIDEOS = ROOT / "data/media-anime-videos.json"
 DEST = ROOT / "data/media-anime-news.json"
 ID = re.compile(r"^(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*$")
 PEERS = {"bangumi-637802": "mal-63801", "mal-63801": "bangumi-637802"}
+# Editor-verified names only. Keep edition-specific aliases; never map a
+# franchise title to a sequel without its season marker.
+ADDITIONAL_ALIASES = {
+    "bangumi-548156": ["蓝箱 第二季", "青春之箱 第二季", "青春盒子 第二季"],
+    "mal-61323": ["蓝箱 第二季", "青春之箱 第二季", "青春盒子 第二季"],
+}
 CONTEXT = re.compile(r"anime|animation|season|episode|trailer|preview|opening|ending|"
                      r"アニメ|第\d+期|第\d+話|放送|映像|予告|主題歌|周年|コラボ|"
                      r"动画|动漫|预告|新番|开播|联动|周年|主题曲|剧场版|"
@@ -96,6 +102,7 @@ def catalog() -> dict:
             continue
         aliases = [row.get("title"), row.get("original_title"), row.get("english_title")]
         aliases += (v.get(wid) or {}).get("aliases") or []
+        aliases += ADDITIONAL_ALIASES.get(wid, [])
         peer = c.get(PEERS.get(wid, ""))
         if peer and str(peer.get("date") or "")[:4] == year:
             aliases += [peer.get("title"), peer.get("original_title"), peer.get("english_title")]
@@ -176,7 +183,7 @@ def rss(wid: str, work: dict, lang: str) -> list[dict]:
     return results
 
 
-def merge(existing: list, incoming: list) -> list:
+def merge(existing: list, incoming: list, work: dict | None = None) -> list:
     seen, result = set(), []
     # Preserve manually reviewed production news, then select independent RSS
     # results by language without dropping an already verified source on timeout.
@@ -187,6 +194,8 @@ def merge(existing: list, incoming: list) -> list:
         if not isinstance(x, dict) or not x.get("titleMatchVerified") or not isinstance(x.get("url"), str):
             continue
         if not x["url"].startswith("https://") or x["language"] not in counts or x["url"] in seen:
+            continue
+        if work and not x.get("curated") and not verified_headline(x.get("title", ""), work["aliases"], work["season"]):
             continue
         if counts[x["language"]] >= 6:
             continue
@@ -215,7 +224,7 @@ def main():
     for key in keys:
         old = items.get(key) or {}
         items[key] = {"workId": key, "kind": "anime", "year": works[key]["year"],
-                      "articles": merge(old.get("articles") or [], found.get(key) or []),
+                      "articles": merge(old.get("articles") or [], found.get(key) or [], works[key]),
                       "checkedAt": stamp}
     DEST.write_text(json.dumps({"schema": 1, "updatedAt": stamp, "items": items},
                                ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
