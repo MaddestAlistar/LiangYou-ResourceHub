@@ -16,6 +16,7 @@ URLS={
  "official_player":f"https://www.acfun.cn/player/ac{VIDEO}",
  "mobile_page":f"https://m.acfun.cn/v/?ac={VIDEO}",
  "desktop_page":f"https://www.acfun.cn/v/ac{VIDEO}",
+ "quick_video_info":f"https://www.acfun.cn/v/ac{VIDEO}?quickViewId=videoInfo_new&ajaxpipe=1",
  "ajax_video_info":f"https://www.acfun.cn/v/ac{VIDEO}?quickViewId=videoInfo_new&ajaxpipe=1",
 }
 HEADERS={"User-Agent":"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
@@ -77,6 +78,12 @@ def report_streams(markup):
     print("video_info_script",bool(re.search("window.videoInfo",markup)))
 if __name__=="__main__":
     pages={name:fetch(name,url) for name,url in URLS.items()}
+    quick=pages.get("quick_video_info","")
+    print("quick_video_info markers",
+          {"pageInfo": "window.pageInfo" in quick,
+           "videoInfo": "window.videoInfo" in quick,
+           "ksPlayJson": "ksPlayJson" in quick,
+           "access_denied":any(term in quick.lower() for term in ("access denied","forbidden","access control"))})
     for name,body in pages.items():
         if name.endswith("page") or name=="ajax_video_info":
             print("checking",name)
