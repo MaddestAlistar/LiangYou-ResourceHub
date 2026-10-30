@@ -25,6 +25,13 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
 <div class="card">
 <label for="videoUrl">西瓜视频链接，或官方 iframe 数字 ID</label>
 <input id="videoUrl" inputmode="url" value="https://www.ixigua.com/iframe/6803260807372079623?autoplay=0" spellcheck="false" autocomplete="off">
+<label for="embedMode">官方嵌入路径对比</label>
+<select id="embedMode" style="display:block;width:100%;padding:11px;margin:6px 0 12px;border-radius:9px;background:#111a30;color:white;border:1px solid #43577e">
+<option value="iframe">标准 iframe 播放器（优先）</option>
+<option value="embed">移动端 embed 播放器（兼容性核验）</option>
+</select>
+<div id="candidateList" aria-label="已找到的西瓜视频候选" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0"></div>
+<small>下面提供真实搜索命中的视频，点击可以快速测试；并非全部已取得站外嵌入授权。</small>
 <button id="test" type="button">测试网页内播放</button>
 <p id="status" role="status"></p>
 <div class="stage" id="stage"><small>点击测试后加载官方播放器，播放器是否实际可播需手动确认</small></div>
@@ -40,6 +47,8 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
 <script>
 (() => {
   const input=document.querySelector('#videoUrl'),stage=document.querySelector('#stage'),status=document.querySelector('#status');
+  const candidateList=document.querySelector('#candidateList'),mode=document.querySelector('#embedMode');
+  const testButton=document.querySelector('#test');
   fetch('../data/media-xigua-videos.json',{cache:'no-cache',signal:AbortSignal.timeout(8500)})
     .then(r=>r.ok?r.json():null).then(d=>{
       const rows=d?.schema===1&&d.items&&typeof d.items==='object'?Object.values(d.items):null;
@@ -50,6 +59,23 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
       document.querySelector('#catalogStatus').textContent=rows===null
         ?'影视中心西瓜视频数据状态：暂时无法读取'
         :'已搜索 '+checked+' 部作品，发现 '+candidates+' 条候选视频；通过官方播放核验 '+count+' 部作品、'+videos+' 条视频。候选不等于可播放，未经核验不会在影视中心显示。';
+      if(rows) {
+        const seen=new Set();
+        for(const work of rows){
+          for(const item of (Array.isArray(work.candidateVideos)?work.candidateVideos:[])){
+            const id=String(item.videoId||'');
+            if(!/^[1-9]\\d{14,20}$/.test(id)||seen.has(id)||seen.size>=10)continue;
+            seen.add(id);
+            const choice=document.createElement('button');
+            choice.type='button';
+            choice.style.cssText='width:auto;padding:8px 10px;font-size:12px;background:#21345d;border:1px solid #5777bc;color:#eaf2ff;border-radius:8px';
+            choice.textContent=String(item.name||work.title||'相关视频').slice(0,32);
+            choice.title='测试官方视频 ID '+id;
+            choice.addEventListener('click',()=>{input.value=id;testButton.click()});
+            candidateList.appendChild(choice);
+          }
+        }
+      }
     }).catch(()=>{
       document.querySelector('#catalogStatus').textContent='影视中心西瓜视频数据状态：网络加载失败';
     });
@@ -69,8 +95,11 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
     if(!ident){status.textContent='请输入西瓜视频的有效数字 ID、原视频页或官方 iframe 链接。';return}
     const frame=document.createElement('iframe');
     frame.title='西瓜视频官方嵌入播放器';
-    frame.src='https://www.ixigua.com/iframe/'+ident+'?autoplay=0';
-    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.src=mode.value==='embed'
+      ?'https://www.ixigua.com/embed/?autoplay=0&group_id='+ident
+      :'https://www.ixigua.com/iframe/'+ident+'?autoplay=0&startTime=0';
+    // Official Xigua iframe docs explicitly use a referrer and unsafe-url.
+    frame.referrerPolicy='unsafe-url';
     frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
     frame.allowFullscreen=true;
     frame.loading='eager';
