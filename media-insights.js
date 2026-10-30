@@ -216,6 +216,59 @@
     // Resort by popularity only within the remainder, not across the whole list.
     return picked;
   }
+  // Dynamic public Bilibili results sometimes have no cover when its search
+  // API is rate-limited. Fetch each verified BV ID's own official metadata once
+  // without blocking the gallery or claiming a film poster is a video thumbnail.
+  const biliCoverRequests=new Map();
+  function discoverMissingBiliCovers(host){
+    for(const cover of host.querySelectorAll('[data-mi-bili-cover-id]')){
+      if(cover.dataset.miBiliCoverStarted==='true')continue;
+      cover.dataset.miBiliCoverStarted='true';
+      const id=cover.dataset.miBiliCoverId;
+      if(!/^BV[A-Za-z0-9]{10}$/.test(id))continue;
+      if(!biliCoverRequests.has(id)){
+        const job=(async()=>{
+          try{
+            const response=await fetch(base+'/api/video/bilibili/'+id,{
+              signal:AbortSignal.timeout(12000)});
+            if(!response.ok)return null;
+            const body=await response.json(),value=safe(body.thumbnail);
+            if(body.ok!==true||body.bvid!==id||!value)return null;
+            const url=new URL(value),host=url.hostname.toLowerCase();
+            if(!['hdslb.com','biliimg.com'].some(d=>host===d||host.endsWith('.'+d))||
+              !/^\/bfs\/archive\/[a-f0-9]{32,80}\.(?:jpg|jpeg|png|webp)(?:@[\w!.-]{1,80})?$/i.test(url.pathname))return null;
+            return base+'/api/media-cover/bilibili?src='+encodeURIComponent(value);
+          }catch{return null;}
+        })();
+        biliCoverRequests.set(id,job);
+        if(biliCoverRequests.size>100)biliCoverRequests.delete(biliCoverRequests.keys().next().value);
+      }
+      biliCoverRequests.get(id).then(src=>{
+        if(!src||!cover.isConnected)return;
+        const probe=new Image();
+        probe.decoding='async';
+        probe.referrerPolicy='no-referrer';
+        probe.onload=()=>{
+          if(!cover.isConnected)return;
+          let img=cover.querySelector('.mi-trailer-platform-thumb');
+          if(!img){
+            img=document.createElement('img');
+            img.className='mi-trailer-platform-thumb';
+            img.alt='';
+            img.loading='lazy';
+            img.decoding='async';
+            img.referrerPolicy='no-referrer';
+            cover.prepend(img);
+          }
+          img.src=src;
+          img.removeAttribute('data-thumb-fallback');
+          img.removeAttribute('data-thumb-poster-fallback');
+          cover.querySelector('.mi-trailer-fallback-label')?.remove();
+        };
+        probe.src=src;
+      });
+    }
+  }
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
     const allYoutube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')):[];
     // Cached TMDB/YouTube records can be numerous. Reserve candidate space
@@ -290,10 +343,12 @@
       const thumb=bvidCover||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
       const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
-      const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
+      const needBiliCoverLookup=x.platform==='bilibili'&&!bvidCover&&!trustedBiliThumb;
+      const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'"'+
+        (needBiliCoverLookup?' data-mi-bili-cover-id="'+esc(x.videoId)+'"':'')+'>'+
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
           (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
-          (thumbOriginal&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
+          ((bvidCover||thumbOriginal)&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
@@ -619,6 +674,7 @@
       const enrichedVideo={...(trailerResult||{}),
         trailers:[...((trailerResult||{}).trailers||[]),...indexedYoutubeRows,...extraYoutubeRows]};
       pane.innerHTML=trailerGallery(enrichedVideo,enrichedInfo,domesticRows,trailerStatus);
+      discoverMissingBiliCovers(pane);
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
