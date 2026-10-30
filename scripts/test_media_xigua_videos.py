@@ -63,6 +63,23 @@ class XiguaVideoTest(unittest.TestCase):
             main()
         provider_request.assert_not_called()
 
+    def test_one_search_cap_preserves_first_metadata_result(self):
+        class Budget:
+            run_cap = 1
+            this_run = 0
+        budget = Budget()
+        def once(query, key, b):
+            self.assertIs(b, budget)
+            budget.this_run += 1
+            self.assertEqual(budget.this_run, 1)
+            return [{"data": {"group_id":"7444746393916277283",
+                              "title":"《海洋奇缘》正式预告片"}}]
+        with patch("refresh_media_xigua_videos.search", side_effect=once) as api:
+            videos, count = discover(self.movie, "dummy", budget, verify_embed=False)
+        self.assertEqual(api.call_count, 1)
+        self.assertEqual(count, 1)
+        self.assertEqual(videos, [])
+
     def test_no_result_is_not_successfully_embeddable(self):
         with patch("refresh_media_xigua_videos.json_request", return_value={
             "status": "completed", "outputs": [{"data": {"err_code": 0, "results": []}}]
