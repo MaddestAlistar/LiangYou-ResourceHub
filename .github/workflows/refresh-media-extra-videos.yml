@@ -1,0 +1,86 @@
+name: Refresh matched film videos from public platforms
+
+on:
+  schedule:
+    - cron: '37 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/media-videos-20-sources-20261030
+    paths:
+      - '.github/workflows/refresh-media-extra-videos.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: media-extra-videos-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/media-videos-20-sources-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify film matching and provider URL contracts
+        run: |
+          python -m py_compile scripts/refresh_media_extra_videos.py
+          cd scripts && python -m unittest -v test_media_extra_videos
+      - name: Refresh cached metadata for a rotating title batch
+        env:
+          EXTRA_VIDEOS_BATCH: '10'
+        run: python scripts/refresh_media_extra_videos.py
+      - name: Validate snapshot
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('data/media-extra-videos.json')
+          d=json.loads(p.read_text())
+          assert d['schema']==1 and isinstance(d['items'],dict)
+          assert len(d['items'])<=450 and p.stat().st_size<600000
+          for key,row in d['items'].items():
+              kind,id=key.split(':')
+              assert kind in ('movie','tv') and int(id)>0
+              assert row['kind']==kind and row['tmdbId']==int(id)
+              assert len(row.get('videos',[]))<=15
+              assert len(row.get('youtubeTrailers',[]))<=10
+              assert all(v.get('platform') in ('acfun','niconico','dailymotion') and
+                         v.get('matchedByTitle') is True and
+                         v.get('tmdbId')==int(id) for v in row.get('videos',[]))
+          print('EXTRA_VIDEO_SNAPSHOT_OK',len(d['items']))
+          PY
+      - name: Commit cache safely to this branch (no Pages deployment step)
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-extra-videos.json /tmp/liangyou-media-extra-videos.json
+          BRANCH="${GITHUB_REF_NAME}"
+          for attempt in 1 2 3; do
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            cp /tmp/liangyou-media-extra-videos.json data/media-extra-videos.json
+            git add data/media-extra-videos.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Refresh multi-platform film video metadata [skip ci]"
+            if git push origin "HEAD:$BRANCH"; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+          done
+      - name: Upload independent metadata report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-extra-videos-snapshot
+          path: data/media-extra-videos.json
+          if-no-files-found: ignore
+          retention-days: 3
