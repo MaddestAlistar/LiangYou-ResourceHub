@@ -21,7 +21,7 @@
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-multiplatform9',
-        './media-insights.js?v=20261030-motion-covers-1',
+        './media-insights.js?v=20261030-cn-first2',
         './media-cn-enhance.js?v=20261030.stable-cn-news1',
         './media-exact-scores.js?v=20261029.newsroom1',
         './media-boxoffice-rankings.js?v=20261029.noarchive1'
