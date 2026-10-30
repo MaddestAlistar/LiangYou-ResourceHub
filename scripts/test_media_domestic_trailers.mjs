@@ -107,7 +107,7 @@ test('AcFun Niconico and Dailymotion require canonical source links and exact ca
   const render=p.platform==='dailymotion'?galleryOwned:gallery;
    const ok=render({},info,[row]);
   assert.match(ok,/class="mi-trailer-card"/);
-  assert.match(ok,new RegExp(p.platform==='dailymotion'?'mi-video-external':'data-mi-play-cn="'+p.platform+'"'));
+  assert.match(ok,new RegExp(p.platform==='dailymotion'?'data-mi-play-cn="dailymotion"':'data-mi-play-cn="'+p.platform+'"'));
   for(const broken of [{...row,verifiedSource:'https://attacker.example/video'},
       {...row,videoId:'javascript:evil'}, {...row,tmdbId:551}, {...row,year:2015}]){
    assert.doesNotMatch(render({},info,[broken]),/class="mi-trailer-card"/);
