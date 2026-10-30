@@ -869,6 +869,46 @@ test('blocked Bilibili public search fails closed and does not invent video card
   assert.deepEqual(body.videos,[]);
  }finally{globalThis.fetch=previous;}
 });
+test('public AcFun quick-view metadata supplies an on-demand trusted HLS URL without proxying media',async()=>{
+ const previous=globalThis.fetch;
+ const id='41787132';
+ const current={
+  dougaId:Number(id),
+  currentVideoInfo:{ksPlayJson:JSON.stringify({adaptationSet:[{representation:[
+    {qualityType:'1080p',url:'https://tx-safety-video.acfun.cn/sample/1080.m3u8?token=ok'},
+    {qualityType:'720p',url:'https://tx-safety-video.acfun.cn/sample/720.m3u8?token=ok'}
+  ]}]})}
+ };
+ globalThis.fetch=async url=>{
+  const u=new URL(String(url));
+  assert.equal(u.hostname,'www.acfun.cn');
+  assert.match(u.pathname,/\/v\/ac41787132/);
+  assert.equal(u.searchParams.get('quickViewId'),'videoInfo_new');
+  return new Response(JSON.stringify({html:'<script class="videoInfo">window.pageInfo = window.videoInfo ='+
+   JSON.stringify(current)+';</script>'})+'\n', {status:200});
+ };
+ try{
+  const {status,body}=await invoke('/api/video/acfun/'+id);
+  assert.equal(status,200);assert.equal(body.ok,true);
+  assert.equal(body.videoId,id);
+  assert.equal(body.url,'https://tx-safety-video.acfun.cn/sample/720.m3u8?token=ok');
+  assert.equal(body.quality,'720p');
+ }finally{globalThis.fetch=previous;}
+});
+test('AcFun public metadata rejects HLS links to untrusted domains',async()=>{
+ const previous=globalThis.fetch;
+ const id='41787132';
+ globalThis.fetch=async()=>new Response(JSON.stringify({html:
+  '<script class="videoInfo">window.pageInfo = window.videoInfo ='+JSON.stringify({
+   dougaId:Number(id),currentVideoInfo:{ksPlayJson:JSON.stringify({
+    adaptationSet:[{representation:[{qualityType:'720p',url:'https://evil.example/video.m3u8'}]}]
+   })}
+  })+';</script>'}),{status:200});
+ try{
+  const {status,body}=await invoke('/api/video/acfun/'+id);
+  assert.equal(status,502);assert.equal(body.ok,false);
+ }finally{globalThis.fetch=previous;}
+});
 test('Bilibili likes are returned only from matching public video metadata',async()=>{
  const origin=globalThis.fetch;
  const id='BV1spJR6yEci';
