@@ -237,6 +237,16 @@ def main():
         if key in works and key not in chosen and \
            str(items.get(key,{}).get("checkedAt") or "")<acfun_fix_cutoff:
             chosen.append(key)
+    # One-time thumbnail backfill for the exact film pages verified on
+    # mobile. This does not pin them for ongoing refresh or increase bulk rate.
+    cover_fix_cutoff="2026-10-30T06:36:00+00:00"
+    for key in ("tv:220542","movie:1003596","movie:1400940"):
+        old=items.get(key,{})
+        if key not in works or key in chosen or not old or            str(old.get("checkedAt") or "")>=cover_fix_cutoff:
+            continue
+        vids=old.get("videos") or []
+        if vids and not any(v.get("thumbnail") for v in vids if isinstance(v,dict)):
+            chosen.append(key)
     chosen=chosen[:limit]
     # Re-check already-cached ambiguous English movie titles first, so that
     # stricter matching rules promptly clear old false positives (e.g. Runner
