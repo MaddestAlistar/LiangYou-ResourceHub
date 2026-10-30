@@ -85,6 +85,31 @@ def image_local(url: str, directory: Path, prefix: str, local_prefix: str) -> st
         return ""
 
 
+def video_local(url: str, directory: Path) -> str:
+    """Store a bounded MP4 alongside the page so mainland visitors can play it."""
+    if not isinstance(url, str) or not url.startswith(POSTER_ROOT):
+        return ""
+    name = url[len(POSTER_ROOT):]
+    if not re.fullmatch(r"[a-f0-9-]{36}\.mp4", name):
+        return ""
+    target = directory / ("clip-" + name)
+    if target.is_file() and 12 < target.stat().st_size <= 20_000_000:
+        return "./assets/tech-news/" + target.name
+    try:
+        body = download(url, 20_000_000)
+        if len(body) < 12 or body[4:8] != b"ftyp":
+            raise ValueError("Not an MP4 container")
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=directory, delete=False) as tmp:
+            tmp.write(body)
+            temp_name = tmp.name
+        os.replace(temp_name, target)
+        return "./assets/tech-news/" + target.name
+    except (RuntimeError, ValueError) as exc:
+        print("NEWS_VIDEO_UNAVAILABLE", name, str(exc)[:120], flush=True)
+        return ""
+
+
 def snapshot(source: dict) -> dict:
     existing = set()
     rows = []
@@ -106,10 +131,13 @@ def snapshot(source: dict) -> dict:
                 local = image_local(item.get("newsImageUrl", ""), IMAGES, IMAGE_ROOT, "")
                 if local:
                     row["localNewsImageUrl"] = local
-        elif len(rows) < 80:
+        elif sum(x.get("category") == "视频精选" for x in rows) < 6:
             local = image_local(item.get("posterUrl", ""), IMAGES, POSTER_ROOT, "clip-")
             if local:
                 row["localPosterUrl"] = local
+            video = video_local(item.get("videoUrl", ""), IMAGES)
+            if video:
+                row["localVideoUrl"] = video
         rows.append(row)
     return {"schema": 1, "updatedAt": source.get("updatedAt"), "items": rows}
 
@@ -124,6 +152,7 @@ def main() -> None:
     OUTPUT.write_text(value, encoding="utf-8")
     print("TECH_NEWS_SNAPSHOT_UPDATED", len(result["items"]),
           sum(bool(x.get("localNewsImageUrl") or x.get("localPosterUrl")) for x in result["items"]),
+          sum(bool(x.get("localVideoUrl")) for x in result["items"]),
           result.get("updatedAt"), flush=True)
 
 
