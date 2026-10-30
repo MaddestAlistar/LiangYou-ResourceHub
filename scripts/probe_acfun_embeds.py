@@ -51,37 +51,55 @@ def fetch(name,url):
 
 def report_streams(markup):
     if not markup:return
+    try:
+        outer=json.loads(markup)
+        print("ajax_json_keys",sorted(outer.keys())[:10])
+        markup=outer.get("html") or markup
+    except (ValueError,AttributeError):
+        pass
     print("page_info_pattern_present",bool(re.search(r"window\.pageInfo\s*=",markup)))
-    patterns=[
-      r'window\\.pageInfo\\s*=\\s*window\\.videoInfo\\s*=\\s*(\\{[\\s\\S]{1,800000}?\\})\\s*</script>',
-      r'window\.pageInfo\s*=\s*(\{[\s\S]{1,800000}?\})\s*;',
-      r'<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)</script>'
-    ]
-    for pat in patterns:
-        m=re.search(pat,markup)
-        if not m:continue
-        try:
-            d=json.loads(m.group(1))
-            print("page_info_json_keys",sorted(d.keys())[:16])
-            candidates=[d,d.get("currentVideoInfo") or {}]
-            for candidate in candidates:
-                kp=candidate.get("ksPlayJson") if isinstance(candidate,dict) else None
-                if kp:
-                    obj=json.loads(kp) if isinstance(kp,str) else kp
-                    manifest=obj.get("adaptationSet") or obj.get("data",{}).get("adaptationSet") or []
-                    result=[(a.get("representation") or []) for a in manifest if isinstance(a,dict)]
-                    print("ksplay_present",True,"representation_count",sum(map(len,result)))
-                    for rep in result[:1]:
-                        for row in rep[:2]:
-                            uri=str(row.get("url",""))
-                            bits=urlsplit(uri)
-                            print("representation",{"host":bits.hostname,"path_ext":bits.path.rsplit(".",1)[-1] if "." in bits.path else "-",
-                                  "has_query":bool(bits.query),"quality":row.get("qualityType")})
-                    return
-        except Exception as e:
-            print("page_info_parse",type(e).__name__)
     print("ksplay_embedded",bool(re.search("ksPlayJson",markup)))
-    print("video_info_script",bool(re.search("window.videoInfo",markup)))
+    marker=re.search(r"window\.pageInfo\s*=\s*(?:window\.videoInfo\s*=\s*)?",markup)
+    if not marker:return
+    content=markup[marker.end():]
+    script_end=content.find("</script>")
+    if script_end>=0:content=content[:script_end]
+    content=content.strip().rstrip(";").strip()
+    try:
+        d=json.loads(content)
+        print("page_info_json_keys",sorted(d.keys())[:20])
+        current=d.get("currentVideoInfo") or {}
+        print("current_video_keys",sorted(current.keys())[:20])
+        kp=current.get("ksPlayJson")
+        print("ksplay_value",type(kp).__name__,len(kp) if isinstance(kp,str) else 0)
+        obj=json.loads(kp) if isinstance(kp,str) else kp
+        if not isinstance(obj,dict):return
+        data=obj.get("data") if isinstance(obj.get("data"),dict) else obj
+        arr=data.get("adaptationSet") or []
+        if isinstance(arr,dict):arr=[arr]
+        result=[(a.get("representation") or []) for a in arr if isinstance(a,dict)]
+        print("ksplay_present",True,"representation_count",sum(map(len,result)))
+        for rep in result[:1]:
+            for row in rep[:3]:
+                uri=str(row.get("url",""))
+                bits=urlsplit(uri)
+                print("representation",{"host":bits.hostname,
+                      "path_ext":bits.path.rsplit(".",1)[-1] if "." in bits.path else "-",
+                      "has_query":bool(bits.query),"quality":row.get("qualityType")})
+                if uri:
+                    request=urllib.request.Request(uri,headers={"User-Agent":HEADERS["User-Agent"],"Range":"bytes=0-128","Origin":"https://maddestalistar.github.io"})
+                    try:
+                        with urllib.request.urlopen(request,timeout=8) as response:
+                            print("media_probe",response.status,"content_type",response.headers.get("Content-Type"),
+                                  "cors",response.headers.get("Access-Control-Allow-Origin","-"),
+                                  "bytes",len(response.read(128)))
+                    except urllib.error.HTTPError as exc:
+                        print("media_probe_http",exc.code)
+                    except Exception as exc:
+                        print("media_probe_error",type(exc).__name__)
+                    return
+    except Exception as exc:
+        print("page_info_parse",type(exc).__name__,str(exc)[:100])
 if __name__=="__main__":
     pages={name:fetch(name,url) for name,url in URLS.items()}
     quick=pages.get("quick_video_info","")
