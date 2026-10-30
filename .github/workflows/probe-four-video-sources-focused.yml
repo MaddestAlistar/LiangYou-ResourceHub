@@ -1,0 +1,32 @@
+name: Focused movie videos and player documents (isolated)
+
+on:
+  push:
+    branches:
+      - probe/film-video-four-sources-20261030
+    paths:
+      - .github/workflows/probe-four-video-sources-focused.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-probe:
+    if: github.ref == 'refs/heads/probe/film-video-four-sources-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate search relevance and public embed documents
+        run: python3 experiments/probe_four_video_sources_focused.py
+      - name: Upload focused JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-video-focused-probe
+          path: video-four-sources-focused-report.json
+          if-no-files-found: ignore
+          retention-days: 5
