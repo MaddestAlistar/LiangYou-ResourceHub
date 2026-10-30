@@ -1,11 +1,19 @@
 /* Browser regression: prove real Discover DOM renders trailers and separate news slots. */
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import fs from 'node:fs/promises';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
 let acfunMockCalls=0;
-await context.route('**/*',route=>{
+await context.route('**/*',async route=>{
  const requested=new URL(route.request().url());
+ if(requested.pathname.endsWith('/data/media-intel.json')){
+   const fixture=JSON.parse(await fs.readFile(new URL('../data/media-intel.json',import.meta.url),'utf8'));
+   for(const work of Object.values(fixture.works||{})){
+     if(work.profile){delete work.profile.genres;delete work.profile.keywords;delete work.profile.parental_rating;}
+   }
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(fixture)});
+ }
  if(requested.pathname==='/api/video/bilibili/BV1111111111'){
    return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},
      body:JSON.stringify({ok:true,bvid:'BV1111111111',likes:null,views:null,
