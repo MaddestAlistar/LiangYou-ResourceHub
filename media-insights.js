@@ -208,10 +208,16 @@
       if(picked.length>=20)break;
       if(!used.has(v.key)){picked.push(v);used.add(v.key);}
     }
-    return picked.sort((a,b)=>merit(b)-merit(a)||a.key.localeCompare(b.key));
+    // Keep a visible first-row representative of every available platform.
+    // Resort by popularity only within the remainder, not across the whole list.
+    return picked;
   }
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
-    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,36):[];
+    const allYoutube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')):[];
+    // Cached TMDB/YouTube records can be numerous. Reserve candidate space
+    // for KinoCheck's exact-ID extras before the 20-card final ranking.
+    const kinoCandidates=allYoutube.filter(v=>v.verifiedBy==='KinoCheck').slice(0,12);
+    const youtube=[...allYoutube.filter(v=>v.verifiedBy!=='KinoCheck').slice(0,36),...kinoCandidates];
     const domestic=verifiedDomesticTrailers(info,domesticRows);
     const ytIds=new Set(youtube.map(x=>x.id));
     const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
@@ -226,8 +232,8 @@
       const likes=Number.isFinite(v.likes)&&v.likes>0?fmt(v.likes)+t(' 赞',' likes'):'';
       const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
-        v.official?t('TMDB 标注官方','TMDB official'):
         v.verifiedBy==='KinoCheck'?t('KinoCheck · TMDB 精确匹配','KinoCheck · TMDB exact match'):
+        v.official?t('TMDB 标注官方','TMDB official'):
         v.verifiedBy==='TMDB'?t('TMDB 已关联','TMDB linked'):
         t('搜索候选 · 待核对','Unverified search match');
       const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
@@ -239,7 +245,7 @@
         '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(v.title||'Video')+'">'+thumb+'</button>':
         '<a class="mi-trailer-trigger mi-video-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+thumb+'</a>';
       return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
-        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(related||v.official?'':'mi-warning-source')+'">'+label+'</span></div>'+
+        '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(related||v.official||v.verifiedBy==='KinoCheck'?'':'mi-warning-source')+'">'+label+'</span></div>'+
         '<strong>'+esc(v.title||'Video')+'</strong><small>'+esc(v.channel||'YouTube')+
         (likes?'<span class="mi-video-likes"> · '+esc(likes)+'</span>':'')+(views?' · '+esc(views):'')+'</small>'+
         '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
