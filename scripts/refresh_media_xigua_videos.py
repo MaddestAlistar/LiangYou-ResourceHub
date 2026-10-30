@@ -197,10 +197,29 @@ def discover(work, key):
         time.sleep(.3)
     return videos
 
+def official_iframe_api_responds():
+    """Fail closed before any potentially billed discovery if the official API serves HTML."""
+    probe = OFFICIAL + urllib.parse.quote("https://www.ixigua.com/7444746393916277283", safe="")
+    req = urllib.request.Request(probe, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; LiangYou-ResourceHub/1.0)",
+        "Accept": "application/json,text/plain,*/*"
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=13) as response:
+            if response.status != 200:
+                return False
+            ctype = response.headers.get("Content-Type", "").lower()
+            return "application/json" in ctype or "text/json" in ctype
+    except (OSError, ValueError):
+        return False
+
 def main():
     key = os.getenv("SANDBASE_API_KEY", "").strip()
     if not key:
         print("XIGUA_DISABLED: configure SANDBASE_API_KEY GitHub Actions secret for automatic discovery")
+        return
+    if not official_iframe_api_responds():
+        print("XIGUA_EMBED_API_UNAVAILABLE: official endpoint is not returning JSON; skipping paid searches")
         return
     works = {**film_catalog(), **anime_catalog()}
     try:
