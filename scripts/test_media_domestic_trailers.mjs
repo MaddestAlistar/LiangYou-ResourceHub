@@ -158,3 +158,25 @@ test('a site-owned Dailymotion Player ID enables modal buttons; absent ID stays 
  assert.match(html,/data-mi-play-cn="dailymotion"/);
  assert.match(html,/data-mi-cn-id="x8mcq94"/);
 });
+
+
+test('KinoCheck candidates remain visible even after 36 normal YouTube results',()=>{
+ const entries=Array.from({length:42},(_,i)=>({
+   id:'Y'+String(i).padStart(10,'0'),title:'Generic trailer '+i,
+   type:'Trailer',official:true,embeddable:true
+ }));
+ const kc={id:'K1234567890',title:'Verified trailer from KinoCheck',type:'Trailer',
+   official:true,verifiedBy:'KinoCheck',embeddable:true};
+ const info={kind:'movie',tmdbId:550,title:'Fight Club',year:'1999-10-15'};
+ const dm={kind:'movie',tmdbId:550,title:'Fight Club',year:1999,matchedByTitle:true,
+   platform:'dailymotion',videoId:'x8mcq94',name:'Fight Club (1999) Trailer',
+   verifiedSource:'https://www.dailymotion.com/video/x8mcq94',type:'Trailer'};
+ const html=gallery({trailers:[...entries,kc]},info,[dm]);
+ assert.equal((html.match(/class="mi-trailer-card"/g)||[]).length,20);
+ assert.match(html,/KinoCheck · TMDB 精确匹配/);
+ assert.match(html,/data-mi-play-video="K1234567890"/);
+ assert.match(html,/Dailymotion/);
+ const cards=[...html.matchAll(/<article class="mi-trailer-card">([\s\S]*?)<\/article>/g)].map(m=>m[1]);
+ assert.ok(cards.slice(0,4).some(c=>c.includes('KinoCheck')),'KinoCheck should not be buried below 20 other trailers');
+ assert.ok(cards.slice(0,4).some(c=>c.includes('Dailymotion')),'Dailymotion should get an early representative slot');
+});
