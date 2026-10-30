@@ -928,6 +928,17 @@ export async function titleDomesticVideos(kind,id,env){
 // External index results always require destination checks. Native Bilibili
 // metadata can survive a temporary details outage only when its independent
 // aid, BVID, original URL, title and publication date agree.
+function biliCoverUrl(raw){
+ if(typeof raw!=="string"||raw.length>650)return null;
+ const value=raw.startsWith("//")?"https:"+raw:raw.startsWith("http://")?"https://"+raw.slice(7):raw;
+ try{
+  const u=new URL(value),host=u.hostname.toLowerCase();
+  if(u.protocol!=="https:"||u.username||u.password||
+    !["hdslb.com","biliimg.com"].some(suffix=>host===suffix||host.endsWith("."+suffix))||
+    !u.pathname.startsWith("/bfs/"))return null;
+  return u.href;
+ }catch{return null;}
+}
 function nativeBilibiliRecord(row,names,year,kind,id,title){
  const bvid=String(row?.bvid||''),aid=Number(row?.aid),stamp=Number(row?.pubdate);
  if(row?.type!=="video"||!/^BV[A-Za-z0-9]{10}$/.test(bvid)||!Number.isSafeInteger(aid)||aid<=0||
@@ -943,6 +954,7 @@ function nativeBilibiliRecord(row,names,year,kind,id,title){
   platform:"bilibili",videoId:bvid,name:heading.slice(0,145),publisher:String(row.author||"Bilibili").slice(0,65),
   verifiedSource:"https://www.bilibili.com/video/"+bvid+"/",type:/预告|定档|teaser|trailer/i.test(heading)?"Trailer":"Related",
   verification:"provider_search_metadata",availability:"unconfirmed",
+  thumbnail:biliCoverUrl(row.pic),
   likes:Number.isSafeInteger(row.like)&&row.like>=0?row.like:null,
   views:Number.isSafeInteger(row.play)&&row.play>=0?row.play:null};
 }
@@ -1100,6 +1112,7 @@ async function titleBilibiliVideos(kind,id,env,identity){
       publisher:String(d.owner?.name||"Bilibili").slice(0,65),
       verifiedSource:"https://www.bilibili.com/video/"+v.bvid+"/",
       type:/预告|定档|teaser|trailer/i.test(title)?"Trailer":"Related",
+      thumbnail:biliCoverUrl(d.pic)||v.native?.thumbnail||null,
       likes:Number.isSafeInteger(likes)&&likes>=0?likes:null,
       views:Number.isSafeInteger(views)&&views>=0?views:null};
    }catch{
