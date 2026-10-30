@@ -51,6 +51,7 @@ def fetch(name,url):
 
 def report_streams(markup):
     if not markup:return
+    print("ajax_preview",repr(markup[:155]))
     try:
         outer=json.loads(markup)
         print("ajax_json_keys",sorted(outer.keys())[:10])
@@ -62,6 +63,7 @@ def report_streams(markup):
     marker=re.search(r"window\.pageInfo\s*=\s*(?:window\.videoInfo\s*=\s*)?",markup)
     if not marker:return
     content=markup[marker.end():]
+    print("page_info_preview",repr(content[:150]))
     script_end=content.find("</script>")
     if script_end>=0:content=content[:script_end]
     content=content.strip().rstrip(";").strip()
