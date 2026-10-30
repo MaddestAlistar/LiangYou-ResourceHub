@@ -80,12 +80,12 @@
     const genres=d.genres.length?'<div class="mi-classification-group"><small>'+
       (d.anime?text('作品类型','Genres'):text('影片类型','Genres'))+
       '</small><div class="mi-classification-pills">'+d.genres.map(v=>
-      '<span class="mi-tag-pill">'+esc(v)+'</span>').join('')+'</div>'++'</div>':
+      '<span class="mi-tag-pill">'+esc(v)+'</span>').join('')+'</div>'+'</div>':
       (d.anime?'<div class="mi-classification-group"><small>'+text('作品类型','Genres')+
       '</small><p class="mi-caption">'+text('暂未收录可核验的作品类型。','No verified genres yet.')+'</p></div>':'');
     const keywords=d.keywords.length?'<div class="mi-classification-group"><small>'+
       text('主题标签','Theme tags')+'</small><div class="mi-classification-pills">'+
-      d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+esc(v)+'</span>').join('')+'</div>'++'</div>':
+      d.keywords.map(v=>'<span class="mi-tag-pill mi-keyword-pill">'+esc(v)+'</span>').join('')+'</div>'+'</div>':
       (d.anime?'<div class="mi-classification-group"><small>'+text('主题标签','Theme tags')+
       '</small><p class="mi-caption">'+text('暂未收录可核验的主题标签。','No verified theme tags yet.')+'</p></div>':'');
     const age=d.anime?'<div class="mi-classification-group mi-parental-guide"><small>'+
