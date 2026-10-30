@@ -1,4 +1,5 @@
 import unittest
+import os
 from unittest.mock import patch
 from refresh_media_xigua_videos import parse_result, approved_embed, accept, row_for, trusted_cover, search, official_api_ready, discover
 
@@ -54,6 +55,13 @@ class XiguaVideoTest(unittest.TestCase):
             videos,count=discover(self.movie,"dummy",verify_embed=False)
         self.assertEqual((videos,count),([],1))
         iframe.assert_not_called()
+
+    def test_paused_quota_safety_prevents_provider_calls(self):
+        from refresh_media_xigua_videos import main
+        with patch.dict(os.environ, {"XIGUA_AUTO_SEARCH_ENABLED":"false", "SANDBASE_API_KEY":"test-only"}), \
+             patch("refresh_media_xigua_videos.json_request") as provider_request:
+            main()
+        provider_request.assert_not_called()
 
     def test_no_result_is_not_successfully_embeddable(self):
         with patch("refresh_media_xigua_videos.json_request", return_value={
