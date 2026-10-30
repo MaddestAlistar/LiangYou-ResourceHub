@@ -6,11 +6,12 @@ const context=await browser.newContext({viewport:{width:390,height:844},deviceSc
 let acfunMockCalls=0;
 await context.route('**/*',route=>{
  const requested=new URL(route.request().url());
- if(requested.pathname==='/api/video/acfun/41787132'){
+ const acfunRequest=/^\/api\/video\/acfun\/([1-9][0-9]{3,11})$/.exec(requested.pathname);
+ if(acfunRequest){
    acfunMockCalls++;
    return route.fulfill({status:200,contentType:'application/json',
      headers:{'access-control-allow-origin':'*'},
-     body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
+     body:JSON.stringify({ok:true,videoId:acfunRequest[1],quality:'720p',
        url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})});
  }
  const url=new URL(route.request().url());
