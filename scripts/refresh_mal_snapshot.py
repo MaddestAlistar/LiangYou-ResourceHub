@@ -66,11 +66,37 @@ def main():
     if not KEY or not SOURCE.exists():
         print("MAL_SNAPSHOT_NOT_CONFIGURED_OR_CATALOG_MISSING")
         return
-    ids=ids_from_catalog(json.loads(SOURCE.read_text(encoding="utf-8")))[:LIMIT]
-    results={}
+    ids=ids_from_catalog(json.loads(SOURCE.read_text(encoding="utf-8")))
+    # The identity-checked anime snapshot contains additional AniList -> MAL
+    # mappings that are not present in the original seasonal catalog.
+    try:
+        clips=json.loads((ROOT/"data/media-anime-videos.json").read_text(encoding="utf8"))
+        for row in (clips.get("items") or {}).values():
+            if not isinstance(row,dict):continue
+            ident=row.get("malId")
+            if isinstance(ident,int) and 0<ident<10**10 and ident not in ids:
+                ids.append(ident)
+    except (OSError,ValueError,TypeError):
+        pass
+    try:
+        previous=json.loads(OUT.read_text(encoding="utf8")).get("items",{})
+        if not isinstance(previous,dict):previous={}
+    except (OSError,ValueError,TypeError):
+        previous={}
+    # Prioritize records with no content rating, rotating older entries after
+    # that. A daily budget no longer fetches the same first 45 forever.
+    def priority(ident):
+        old=previous.get(str(ident)) or {}
+        rated=old.get("contentRating") in {"g","pg","pg_13","r","r+","rx"}
+        return (1 if rated else 0, ident)
+    ids=sorted(set(ids),key=priority)[:LIMIT]
+    results=dict(previous)
     failed=0
+    new_success=0
     for id in ids:
-        try: results[str(id)]=fetch(id)
+        try:
+            results[str(id)]=fetch(id)
+            new_success+=1
         except urllib.error.HTTPError as err:
             failed+=1
             if err.code==429:
@@ -79,8 +105,8 @@ def main():
         except (urllib.error.URLError,TimeoutError,ValueError,KeyError,TypeError,json.JSONDecodeError):
             failed+=1
         time.sleep(0.32)
-    if len(results)<min(3,len(ids)):
-        print("MAL_SNAPSHOT_NO_VERIFIED_RESULTS",len(results),"/",len(ids),"existing file unchanged")
+    if new_success<min(3,len(ids)):
+        print("MAL_SNAPSHOT_NO_VERIFIED_RESULTS",new_success,"/",len(ids),"existing file unchanged")
         return
     payload={"ok":True,"status":"ok","source":"MyAnimeList v2",
              "checkedAt":datetime.now(timezone.utc).isoformat(),"count":len(results),"items":results}
