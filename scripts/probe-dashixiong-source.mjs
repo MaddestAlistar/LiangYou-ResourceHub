@@ -108,8 +108,29 @@ async function mediaCheck(url){
     const response=await checkedFetch(url,{method:"HEAD",headers:{Origin:origin}});
     item.head=response.status;item.cors=cors(response);
     item.contentType=response.headers.get("content-type")||null;
+    const len=response.headers.get("content-length");
+    item.contentLengthBytes=len&&/^\d+$/.test(len)?Number(len):null;
+    item.acceptRanges=response.headers.get("accept-ranges")||null;
     await response.body?.cancel();
   }catch(e){item.headError=err(e);}
+  if(item.format==="file"&&item.head>=200&&item.head<300){
+    try{
+      const response=await checkedFetch(url,{method:"GET",headers:{Origin:origin,Range:"bytes=0-1023"}},8500);
+      item.get=response.status;item.getCors=cors(response);
+      item.rangeSupported=response.status===206;
+      const reader=response.body?.getReader();
+      if(reader){
+        const chunk=await reader.read();
+        const b=chunk.value||new Uint8Array();
+        const ascii=Buffer.from(b.subarray(0,16)).toString("latin1");
+        item.fileSignature=ascii.slice(4,8)==="ftyp"?"MP4":ascii.startsWith("#EXTM3U")?"HLS":
+          b[0]===26&&b[1]===69&&b[2]===223&&b[3]===163?"WEBM":"unrecognized";
+        await reader.cancel().catch(()=>{});
+      }
+    }catch(e){item.fileSampleError=err(e);}
+  }
+  if(item.format==="file"&&item.contentLengthBytes!=null&&item.contentLengthBytes<30000000)
+    item.warning="Small file (<30 MB): may be a preview, advertisement or a clip; identity not verified.";
   if(item.format==="HLS"){
     try{
       const response=await checkedFetch(url,{headers:{Origin:origin,Range:"bytes=0-4095"}});
@@ -240,7 +261,9 @@ async function probeLine(item,index){
       if(!["http:","https:"].includes(u.protocol))throw Error("not_http_url");
       const media=await mediaCheck(found.url);
       result.status=media.head>=200&&media.head<300&&
-        (media.format!=="HLS"||(media.get>=200&&media.get<300&&media.manifest))?"media_header_pass":"media_unverified";
+        (media.format==="HLS"?(media.get>=200&&media.get<300&&media.manifest):
+          (media.get>=200&&media.get<300&&["MP4","WEBM"].includes(media.fileSignature)))?
+        "media_header_pass":"media_unverified";
       result.mediaHost=media.host;result.media=media;
     }
   }catch(e){result.status="error";result.error=err(e);}
@@ -302,7 +325,9 @@ async function run(){
   if(report.lines.some(x=>x.status==="api_no_direct_url"||x.attempts?.some(a=>a.format==="unsupported_or_encoded")))
     report.notes.push("部分解析结果不含公开直链或需要额外解码；不会把模块自带的 RSA 私钥复制到公开仓库。");
   if(report.lines.some(x=>x.status==="media_header_pass"))
-    report.notes.push("部分线路通过了服务端媒体头检查，但浏览器端 CORS、分片和播放授权仍需独立确认。");
+    report.notes.push("部分线路通过了服务端文件头检查，但无法仅凭 MP4 与 HTTP 200 认定是指定作品正片；仍须确认视频身份、时长和播放授权。");
+  if(report.media.some(x=>x.warning))
+    report.notes.push("某些文件过小，可能是广告或预览，不能计为已找到正片。");
   if(report.media.some(x=>!x.httpsCompatible))report.notes.push("HTTP 直链可能被 HTTPS GitHub Pages 阻止（混合内容）。");
   if(report.media.some(x=>x.cors===false))report.notes.push("部分媒体服务器未对本站 Origin 放行跨域。");
   report.notes.push("仅检测公开接口、直链元数据、HLS 清单及响应头；不下载视频片段或密钥。不绕过额外解析或访问控制。连通性通过不代表浏览器实际可播放或获得播放授权。");
@@ -326,6 +351,12 @@ async function run(){
     "## 解析尝试明细（仅状态）","",
     ...report.lines.map(x=>"- 线路 "+x.number+"："+JSON.stringify({apiHttp:x.apiHttp,apiCode:x.apiCode,
       attempts:x.attempts,error:x.error})).filter(Boolean),"",
+    "## 视频文件元数据（不记录完整视频地址）","",
+    "| 媒体域名 | 大小（MB） | 文件签名 | GET | CORS GET | 是否可能是短片 |",
+    "|---|---:|---|---|---|---|",
+    ...report.media.map(x=>"| "+x.host+" | "+(x.contentLengthBytes!=null?(x.contentLengthBytes/1000000).toFixed(2):"未知")+
+      " | "+(x.fileSignature||"-")+" | "+(x.get??"-")+" | "+(x.getCors??"-")+
+      " | "+(x.warning?"需核对":"未知")+" |"),"",
     "## 视频地址状态（仅域名，不写入完整视频地址）","",
     "| 域名 | 协议 | 类型 | HTTP HEAD | HTTP GET | CORS | OPTIONS | HLS 清单 |",
     "|---|---|---|---|---|---|---|---|",
