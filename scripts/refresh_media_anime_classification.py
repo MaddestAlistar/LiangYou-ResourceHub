@@ -161,7 +161,11 @@ def combine(w,prior,bgm,ani,mal):
            "parental_rating":(mal or {}).get("suitability"),
            "bangumiId":w["bangumiId"],"anilistId":w["anilistId"],"malId":w["malId"],
            "checkedAt":now()}
-    if not bgm and not ani and not mal and isinstance(prior,dict):
+    if not bgm and not ani and not mal and isinstance(prior,dict) and (
+        prior.get("workId")==w["id"] and prior.get("year")==w["year"]
+        and isinstance(prior.get("genres"),list)
+        and isinstance(prior.get("keywords"),list)
+    ):
         return prior
     return fresh
 
