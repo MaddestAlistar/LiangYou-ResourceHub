@@ -27,6 +27,33 @@ class AnimeVideoMatching(unittest.TestCase):
         self.assertFalse(safe_anime_video(work, {"name": "《海贼王》真人版官方预告"}))
         self.assertFalse(safe_anime_video(work, {"name": "THE ONE PIECE 重制版最新特报"}))
 
+    def test_one_piece_never_links_movies_games_or_unrelated_dresses(self):
+        work = {"id": "bangumi-975", "title": "航海王", "original": "ONE PIECE",
+                "aliases": ["航海王", "海贼王", "ONE PIECE", "ワンピース"], "year": 1999}
+        wrong = [
+            "科幻动漫《航海王：强者天下》预告片定档版",
+            "航海王壮志雄心：桑尼来信半周年庆即将开启，新版本预告",
+            "《航海王：狂热行动》中文预告",
+            "【東方Vo】【C92新譜PV】スターライトワンピースター【渋谷系・JAZZ 】",
+            "PS3/PSVita ワンピース 海賊無双２ 第三弾PV",
+            "PS4Vita「ワンピース ONE PIECE BURNING BLOOD」第1弾PV",
+            "【DS】 ワンピース ギガントバトル！ PV＋TVCM",
+            "THE ONE PIECE Netflix remake teaser",
+            "ONE PIECE FILM RED official trailer",
+            "ワンピース 新作フローラルワンピース 予告"
+        ]
+        for name in wrong:
+            with self.subTest(name=name):
+                self.assertFalse(safe_anime_video(work, {"name": name}))
+        for name in [
+            "《海贼王》TV动画纪念PV发布",
+            "TVアニメ ONE PIECE 公式PV",
+            "《航海王》动画新篇章预告",
+            "海贼王 路飞 vs 山治 1小时SP预告"
+        ]:
+            with self.subTest(name=name):
+                self.assertTrue(safe_anime_video(work, {"name": name}))
+
     def test_old_franchise_clips_and_gameplay_are_rejected(self):
         restart = {"id": "bangumi-418229", "title": "魔法少女育成计划 restart",
                    "original": "魔法少女育成計画 restart",
