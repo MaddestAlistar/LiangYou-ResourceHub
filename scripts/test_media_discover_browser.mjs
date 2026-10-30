@@ -3,7 +3,16 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+let acfunMockCalls=0;
 await context.route('**/*',route=>{
+ const requested=new URL(route.request().url());
+ if(requested.pathname==='/api/video/acfun/41787132'){
+   acfunMockCalls++;
+   return route.fulfill({status:200,contentType:'application/json',
+     headers:{'access-control-allow-origin':'*'},
+     body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
+       url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})});
+ }
  const url=new URL(route.request().url());
  if(['127.0.0.1','localhost'].includes(url.hostname)||url.protocol==='data:')return route.continue();
  return route.abort('blockedbyclient');
@@ -106,11 +115,6 @@ try{
  await page.locator('#media-trailer-close').click();
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
- let acfunMockCalls=0;
- await page.route('**/api/video/acfun/41787132',route=>{acfunMockCalls++;return route.fulfill({status:200,contentType:'application/json',
-   headers:{'access-control-allow-origin':'*'},
-   body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
-     url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})});});
  await page.evaluate(()=>{
    const native=HTMLMediaElement.prototype.canPlayType;
    HTMLMediaElement.prototype.canPlayType=function(type){
