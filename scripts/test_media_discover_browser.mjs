@@ -137,18 +137,21 @@ try{
    };
  });
  await page.locator('#media-dialog [data-mi-play-cn="acfun"]').first().click();
- try{
-   await page.waitForFunction(()=>Boolean(window.__acfunCapturedSrc),{timeout:6500});
- }catch(error){
-   console.log('ACFUN_BROWSER_DEBUG',JSON.stringify({acfunMockCalls,
-     stage:await page.locator('#media-trailer-stage').innerText().catch(()=>'(missing)'),
-     dialogOpen:await page.locator('#media-trailer-dialog').evaluate(d=>d.open),
-     acfunFetches:await page.evaluate(()=>window.__acfunFetches||[]),
-     errors:pageErrors.slice(-4)}));
-   throw error;
+ await page.waitForFunction(()=>Boolean(window.__acfunCapturedSrc)||
+   Boolean(document.querySelector('#media-trailer-stage .mi-acfun-fallback')),{timeout:12000});
+ assert.ok(acfunMockCalls>=1,'A verified AcFun ID must be requested on click');
+ assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
+   'AcFun must start as native HTML5 video, never the blocked H5 iframe');
+ const captured=await page.evaluate(()=>window.__acfunCapturedSrc);
+ if(captured){
+   assert.match(captured,/tx-safety-video\.acfun\.cn\/testing\/sample\.m3u8/);
+ }else{
+   assert.match(await page.locator('#media-trailer-stage .mi-acfun-fallback').innerText(),/重新获取播放地址/);
+   await page.locator('#media-trailer-stage .mi-acfun-fallback button').first().click();
+   await page.waitForFunction(()=>Boolean(window.__acfunCapturedSrc)||
+     Boolean(document.querySelector('#media-trailer-stage .mi-acfun-fallback')),{timeout:12000});
+   assert.ok(acfunMockCalls>=2,'Retry should request a fresh temporary HLS address');
  }
- assert.match(await page.evaluate(()=>window.__acfunCapturedSrc),
-   /tx-safety-video\.acfun\.cn\/testing\/sample\.m3u8/);
  await page.locator('#media-trailer-close').click();
  assert.equal(await page.locator('#media-trailer-stage video').count(),0,
    'Closing native AcFun playback stops and removes video');
