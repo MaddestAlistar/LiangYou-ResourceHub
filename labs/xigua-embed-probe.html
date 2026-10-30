@@ -14,7 +14,12 @@ label{font-size:14px;color:#c6d5f4;display:block;margin:12px 0 9px}
 input{width:100%;padding:13px 11px;background:#0c1730;border:1px solid #405c8d;color:white;border-radius:10px;font-size:14px}
 button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:0;color:white;padding:12px 19px;border-radius:10px;font-weight:650}
 .stage{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:#050a15;border-radius:10px;overflow:hidden;margin-top:15px;position:relative}
-.stage iframe{width:100%;height:100%;border:0}small{color:#91a6cb;line-height:1.6}
+.stage iframe{width:100%;height:100%;border:0}
+@media(max-width:760px){
+.stage.douyin-player{width:min(100%,324px);height:624px;aspect-ratio:auto;margin-inline:auto}
+.stage.douyin-player iframe{height:624px}
+}
+small{color:#91a6cb;line-height:1.6}
 #status{min-height:22px;color:#bcd6ff}a{color:#90bdff}
 </style>
 </head>
@@ -124,6 +129,7 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
     frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
     frame.allowFullscreen=true;
     frame.loading='eager';
+    stage.classList.toggle('douyin-player',mode.value==='douyin');
     stage.replaceChildren(frame);
     status.textContent='已请求加载'+(mode.value==='douyin'?'抖音精选':'西瓜')+'官方 iframe。请实际点击播放，并确认画面与声音。';
   });
