@@ -939,9 +939,12 @@
   async function showAcfunHls(id){
     if(!trailerStage||!/^[1-9][0-9]{3,11}$/.test(id))return;
     const serial=++acfunSerial;
+    if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
+    if(acfunHlsInstance){acfunHlsInstance.destroy();acfunHlsInstance=null;}
     const fallback=message=>{
       if(serial!==acfunSerial||!trailerDialog?.open)return;
       if(acfunReadyTimer){clearTimeout(acfunReadyTimer);acfunReadyTimer=null;}
+      if(acfunHlsInstance){acfunHlsInstance.destroy();acfunHlsInstance=null;}
       trailerStage.replaceChildren();
       const pane=document.createElement('div');
       pane.className='mi-acfun-fallback';
