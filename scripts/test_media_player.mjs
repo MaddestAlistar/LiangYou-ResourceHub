@@ -47,7 +47,7 @@ test('public trailer opens without any user token, API key or sign-in prompt',()
  assert.equal(ui.stage.children[0].referrerPolicy,'strict-origin-when-cross-origin');
  assert.equal(ui.stage.children[0].allowFullscreen,true);
  assert.equal(ui.title.textContent,'公开电影预告片');
- assert.equal(ui.external.href,'https://www.youtube.com/watch?v=AbCdEf12345');
+  assert.equal(ui.external.href,undefined,'No outbound original-site viewing link');
 });
 test('visitor can manually switch between two official YouTube player hosts',()=>{
  const ui=setup();
