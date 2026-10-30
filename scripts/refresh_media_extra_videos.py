@@ -204,9 +204,16 @@ def main():
             except Exception as exc:
                 source_status[source]="unavailable:"+type(exc).__name__
             time.sleep(1)
-        # Only verified previous records survive temporary upstream failures.
-        if not youtube:youtube=prev.get("youtubeTrailers") or []
-        if not videos:videos=prev.get("videos") or []
+        # Preserve old entries only when that specific source is unavailable.
+        # A successful search returning no matching results must remove old
+        # false positives rather than resurrect them from the previous cache.
+        if source_status.get("KinoCheck","").startswith("unavailable"):
+            youtube=prev.get("youtubeTrailers") or []
+        providers={"AcFun":"acfun","Niconico":"niconico","Dailymotion":"dailymotion"}
+        for label,platform in providers.items():
+            if source_status.get(label,"").startswith("unavailable"):
+                videos.extend(v for v in (prev.get("videos") or [])
+                  if isinstance(v,dict) and v.get("platform")==platform)
         dedup={v["platform"]+":"+v["videoId"]:v for v in videos if isinstance(v,dict) and v.get("videoId")}
         items[key]={"title":work["title"],"kind":work["kind"],"tmdbId":work["tmdb_id"],
           "year":work["year"],"checkedAt":utc(),
