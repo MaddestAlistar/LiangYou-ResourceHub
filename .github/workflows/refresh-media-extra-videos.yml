@@ -9,6 +9,7 @@ on:
     paths:
       - '.github/workflows/refresh-media-extra-videos.yml'
       - 'scripts/refresh_media_extra_videos.py'
+      - 'scripts/refresh_media_bilibili_covers.py'
       - 'scripts/test_media_extra_videos.py'
       - 'scripts/test_media_domestic_trailers.mjs'
       - 'media-insights.js'
@@ -36,7 +37,7 @@ jobs:
           python-version: '3.12'
       - name: Verify film matching and provider URL contracts
         run: |
-          python -m py_compile scripts/refresh_media_extra_videos.py
+          python -m py_compile scripts/refresh_media_extra_videos.py scripts/refresh_media_bilibili_covers.py
           cd scripts && python -m unittest -v test_media_extra_videos
       - name: Verify gallery UI syntax and 20-video contract
         run: |
@@ -46,6 +47,8 @@ jobs:
         env:
           EXTRA_VIDEOS_BATCH: '12'
         run: python scripts/refresh_media_extra_videos.py
+      - name: Refresh hand-verified Bilibili cover URLs
+        run: python scripts/refresh_media_bilibili_covers.py
       - name: Validate snapshot
         run: |
           python - <<'PY'
@@ -72,12 +75,33 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           cp data/media-extra-videos.json /tmp/liangyou-media-extra-videos.json
+          cp data/media-domestic-trailers.json /tmp/liangyou-bilibili-covers.json
           BRANCH="${GITHUB_REF_NAME}"
           for attempt in 1 2 3; do
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
             cp /tmp/liangyou-media-extra-videos.json data/media-extra-videos.json
-            git add data/media-extra-videos.json
+            # Merge only verified cover fields into the fresh tip; do not restore
+            # an older catalog and overwrite unrelated hand-verified videos.
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          fresh=Path('data/media-domestic-trailers.json')
+          updated=Path('/tmp/liangyou-bilibili-covers.json')
+          base=json.loads(fresh.read_text())
+          covers=json.loads(updated.read_text())
+          index={x.get('videoId'): x.get('thumbnail') for x in covers.get('items',[])
+                 if x.get('platform')=='bilibili' and x.get('thumbnail')}
+          changed=False
+          for row in base.get('items',[]):
+              bvid=row.get('videoId')
+              if row.get('platform')=='bilibili' and bvid in index and row.get('thumbnail')!=index[bvid]:
+                  row['thumbnail']=index[bvid]
+                  changed=True
+          if changed:
+              fresh.write_text(json.dumps(base,ensure_ascii=False,indent=2)+'\\n')
+          PY
+            git add data/media-extra-videos.json data/media-domestic-trailers.json
             if git diff --cached --quiet; then exit 0; fi
             git commit -m "Refresh multi-platform film video metadata [skip ci]"
             if git push origin "HEAD:$BRANCH"; then exit 0; fi
