@@ -139,6 +139,8 @@ assert.equal(bt.league('49기 SG배 한국일보 명인전 패자결승','go','z
 assert.equal(bt.league('2026 Sh수협은행 여자바둑 최강전 결승 3국','go','zh'),'2026 Sh水协银行女子围棋最强战 · 决赛第3局');
 assert.equal(bt.league('名人 挑戦７','go','zh'),'日本名人战 · 挑战赛第7局');
 assert.equal(bt.league('Benidorm Chess Open 2026 | Group A','chess','zh'),'2026 贝尼多姆国际象棋公开赛 · A组');
+assert.equal(bt.league('Magdeburg Open 2026','chess','zh'),'2026 马格德堡国际象棋公开赛');
+assert.equal(bt.league('Unlisted Grandmaster Cup 2026','chess','zh'),'国际象棋赛事 · Unlisted Grandmaster Cup 2026');
 assert.equal(bt.stage('Round 6','chess','zh'),'第6轮');
 assert.equal(bt.chessResult('1-0','zh'),'白方胜');
 assert.equal(bt.chessResult('0-1','zh'),'黑方胜');
