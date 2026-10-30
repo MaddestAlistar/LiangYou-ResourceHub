@@ -2,7 +2,7 @@ name: Probe live media video cards in browser
 on:
   push:
     branches: [probe/live-media-cards-dm-20261030]
-    paths: [.github/workflows/probe-live-media-cards.yml]
+    paths: [.github/workflows/probe-live-media-cards.yml, experiments/live_media_cards_probe.cjs]
   workflow_dispatch:
 permissions:
   contents: read
