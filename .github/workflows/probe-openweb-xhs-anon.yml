@@ -1,0 +1,77 @@
+name: Probe OpenWeb XHS anonymous search (isolated)
+
+on:
+  push:
+    branches:
+      - probe/openweb-xhs-anon-20261030
+    paths:
+      - .github/workflows/probe-openweb-xhs-anon.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-openweb-xhs-anon-only
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/probe/openweb-xhs-anon-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      OPENWEB_HOME: /tmp/liangyou-openweb-xhs-anon-20261030
+      OPENWEB_CLI: openweb/dist/cli.js
+      REPORT_PATH: openweb-xhs-anon-report.json
+    steps:
+      - name: Checkout isolated probe branch (no push credentials)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare pinned OpenWeb from upstream (no account credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/imoonkey/openweb.git openweb
+          cd openweb
+          git fetch origin a387b50c829d871839a613732e1b97bfa1946124 --depth=1
+          git checkout --detach a387b50c829d871839a613732e1b97bfa1946124
+          npm install --global pnpm@10
+          pnpm install --frozen-lockfile
+          pnpm build
+          test -s dist/cli.js
+          node dist/cli.js xiaohongshu --json
+      - name: Start fresh anonymous Chrome (empty source profile)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/liangyou-openweb-empty-profile/Default
+          mkdir -p "$OPENWEB_HOME"
+          cd openweb
+          node dist/cli.js browser start --headless --profile /tmp/liangyou-openweb-empty-profile/Default
+          node dist/cli.js browser status
+      - name: Run at most six low-frequency searches without login or retries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 experiments/openweb_xhs_probe.py
+      - name: Stop browser
+        if: always()
+        shell: bash
+        run: |
+          if [ -f openweb/dist/cli.js ]; then
+            node openweb/dist/cli.js browser stop || true
+          fi
+      - name: Upload sanitized search summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openweb-xhs-anon-report
+          path: openweb-xhs-anon-report.json
+          if-no-files-found: ignore
+          retention-days: 3
