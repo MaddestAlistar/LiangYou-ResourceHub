@@ -115,6 +115,19 @@ def approved_embed(video_id):
     match = IFRAME.search(code.replace("&amp;", "&"))
     return match.group(1) if match else None
 
+def official_api_ready():
+    """Fail closed before any paid metadata search if the official JSON route is down.
+
+    The public sample URL is from Xigua's iframe documentation; a code != 0
+    response still proves the JSON route exists, but an HTML SPA fallback does not.
+    """
+    documented = "https://www.ixigua.com/6912360007799407118"
+    try:
+        response = json_request(OFFICIAL + urllib.parse.quote(documented, safe=""), timeout=12)
+        return isinstance(response, dict) and isinstance(response.get("code"), int)
+    except Exception:
+        return False
+
 def film_catalog():
     result = {}
     for work in json.loads(FILMS.read_text(encoding="utf8")).get("works", {}).values():
@@ -220,6 +233,9 @@ def main():
         return
     if not official_iframe_api_responds():
         print("XIGUA_EMBED_API_UNAVAILABLE: official endpoint is not returning JSON; skipping paid searches")
+        return
+    if not official_api_ready():
+        print("XIGUA_OFFICIAL_API_UNAVAILABLE: JSON iframe approval not accessible; skip paid search")
         return
     works = {**film_catalog(), **anime_catalog()}
     try:
