@@ -425,7 +425,7 @@
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-play" aria-hidden="true">▶</span></span>';
       const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
-        '" data-mi-cn-id="'+esc(x.videoId)+'"'++' data-mi-cn-url="'+esc(x.url)+
+        '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>';
       const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
