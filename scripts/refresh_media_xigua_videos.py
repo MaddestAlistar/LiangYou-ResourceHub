@@ -203,9 +203,15 @@ def row_for(work, item, embed):
         base.update(tmdbId=work["tmdb_id"], matchedByTitle=True)
     return base
 
-def discover(work, key, budget=None, verify_embed=True):
+def discover(work, key, budget=None, verify_embed=True, query_variant=0,
+             queries_per_work=2, candidate_cache=None):
     candidates = {}
-    for query in work_queries(work):
+    queries = work_queries(work)
+    # One keyword per title per pass = faster catalogue coverage.
+    # A later pass automatically rotates to the second wording.
+    selected = [queries[(query_variant + i) % len(queries)]
+                for i in range(min(queries_per_work, len(queries)))]
+    for query in selected:
         for result in search(query, key, budget):
             item = parse_result(result)
             if item and item["videoId"] not in candidates and accept(work, item):
@@ -216,6 +222,8 @@ def discover(work, key, budget=None, verify_embed=True):
                 (budget is not None and budget.this_run >= budget.run_cap)):
             break
         time.sleep(.35)
+    if candidate_cache is not None:
+        candidate_cache.extend(list(candidates.values())[:8])
     videos = []
     if verify_embed:
         for item in list(candidates.values())[:MAX_VIDEOS * 3]:
@@ -259,21 +267,27 @@ def main():
         return
 
     # The free quota is shared across every SandBase API in this organization.
-    # A one-call/day local limit alone is NOT a no-charge guarantee.
+    # A 50-call/day local limit alone is NOT a no-charge guarantee.
     # Account API may return 403 to restricted keys. As a separate explicit
     # safeguard, the owner can confirm a provider-enforced $0 key spend cap.
     # Never infer this from the GitHub secret being present.
     provider_zero_spend_confirmed = os.getenv(
         "SANDBASE_HARD_ZERO_SPEND_CONFIRMED", ""
     ).strip().lower() == "true"
-    # Explicitly authorized ONE request while the user's SandBase key carries
-    # a provider-side cumulative $0.01 spending limit and $1 promo credit.
-    # This is NOT the previous $0 spending-cap confirmation.
+    # This account is dedicated to Xigua, with an owner-confirmed cumulative
+    # $0.01 key-level spend cap (not $0). The key cap is platform-side;
+    # local quota counters are additional safeguards, not billing guarantees.
+    capped_key_confirmed = os.getenv(
+        "XIGUA_CAPPED_KEY_CONFIRMED", ""
+    ).strip().lower() == "true"
+    # Retain the original one-shot diagnostic path as a separate option.
     one_time_paid_test = os.getenv(
         "XIGUA_ONE_TIME_PAID_TEST", ""
     ).strip().lower() == "true"
     if one_time_paid_test:
         print("XIGUA_PAID_TEST: one search request authorized, key limit $0.01")
+    elif capped_key_confirmed:
+        print("XIGUA_CAPPED_KEY: owner confirmed cumulative $0.01 key spending cap")
     elif provider_zero_spend_confirmed:
         print("XIGUA_ZERO_SPEND_GATE: owner confirmed hard $0 provider key limit")
     else:
@@ -284,11 +298,13 @@ def main():
         except Exception as error:
             print("XIGUA_ZERO_SPEND_STOP: cannot verify account balance",type(error).__name__)
             return
-    # One-time paid test may never execute more than one SandBase request.
+    # Five scheduled batches x 10 = maximum 50 attempted requests per UTC day.
+    # One-time paid test cannot exceed one request.
     per_run = 1 if one_time_paid_test else max(
-        1, min(12, int(os.getenv("XIGUA_SEARCH_PER_RUN", "12")))
+        1, min(10, int(os.getenv("XIGUA_SEARCH_PER_RUN", "10")))
     )
-    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=24, run_cap=per_run)
+    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json",
+                             daily_cap=50, run_cap=per_run)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
         return
@@ -304,7 +320,7 @@ def main():
         old = {}
     items = {k: v for k, v in (old.get("items") or {}).items() if k in works and isinstance(v, dict)}
     batch = 1 if one_time_paid_test else max(
-        1, min(15, int(os.getenv("XIGUA_VIDEOS_BATCH", "8")))
+        1, min(10, int(os.getenv("XIGUA_VIDEOS_BATCH", "10")))
     )
     chosen = sorted(works, key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k))[:batch]
     for key_id in chosen:
@@ -313,14 +329,34 @@ def main():
             break
         work = works[key_id]
         try:
-            videos, candidate_count = discover(work, key, budget, verify_embed=can_embed)
+            previous = items.get(key_id, {})
+            pass_number = max(0, int(previous.get("searchPass") or 0))
+            candidates = []
+            videos, candidate_count = discover(
+                work, key, budget, verify_embed=can_embed,
+                query_variant=pass_number, queries_per_work=1,
+                candidate_cache=candidates
+            )
+            # Only approved embeds may be exposed as the playable "videos" list.
+            # Store safe, identity-matched public candidates separately so
+            # search effort is not discarded while official iframe API is down.
+            old_candidates = previous.get("candidateVideos") or []
+            by_id = {x["videoId"]: x for x in old_candidates
+                     if isinstance(x, dict) and ID.fullmatch(str(x.get("videoId", "")))}
+            for candidate in candidates:
+                by_id[candidate["videoId"]] = candidate
+            candidate_rows = list(by_id.values())[-8:]
             items[key_id] = {"title": work["title"], "kind": work["kind"],
                              "year": work["year"], "tmdbId": work.get("tmdb_id", 0),
                              "workId": work.get("id", ""),
-                             "checkedAt": now(), "videos": videos,
-                             "matchingCandidates": candidate_count}
+                             "checkedAt": now(),
+                             "videos": videos or previous.get("videos", []),
+                             "candidateVideos": candidate_rows,
+                             "searchPass": pass_number + 1,
+                             "matchingCandidates": len(candidate_rows)}
             print("XIGUA_CHECKED", key_id, "matched",candidate_count,
-                  "embedded",len(videos), flush=True)
+                  "cached",len(candidate_rows),"embedded",len(videos),
+                  "pass",pass_number+1,flush=True)
         except FreeQuotaStop as error:
             print("XIGUA_ZERO_SPEND_STOP",str(error),flush=True)
             break
