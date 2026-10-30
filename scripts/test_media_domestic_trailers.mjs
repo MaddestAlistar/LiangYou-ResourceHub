@@ -141,3 +141,20 @@ test('Dailymotion inline player is gated by a site-owned Player ID',()=>{
   assert.ok(source.includes("const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId)"));
   assert.ok(!source.includes('/player/x8lr5.html'));
 });
+
+test('a site-owned Dailymotion Player ID enables modal buttons; absent ID stays external',()=>{
+ const from=source.indexOf('  function verifiedDomesticTrailers(info,records=[]){');
+ const to=source.indexOf('  let worldNewsPromise=null;',from);
+ const positive=source.slice(from,to).replace("let dailymotionPlayerId='';","let dailymotionPlayerId='xOwned123';");
+ assert.notEqual(positive,source.slice(from,to),'test must set only the local configured Player ID');
+ const galleryOwned=new Function('t','esc','safe','a','formatDuration','english',
+   positive+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false);
+ const info={...selected,tmdbId:550};
+ const row={kind:'movie',title:info.title,tmdbId:550,year:2025,matchedByTitle:true,
+   platform:'dailymotion',videoId:'x8mcq94',name:'Ne Zha 2 trailer',
+   verifiedSource:'https://www.dailymotion.com/video/x8mcq94'};
+ assert.match(gallery({},info,[row]),/mi-video-external/);
+ const html=galleryOwned({},info,[row]);
+ assert.match(html,/data-mi-play-cn="dailymotion"/);
+ assert.match(html,/data-mi-cn-id="x8mcq94"/);
+});
