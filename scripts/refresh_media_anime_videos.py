@@ -67,6 +67,7 @@ def catalog():
 FIELDS = """
 id idMal type format seasonYear startDate { year month day }
 title { native romaji english }
+genres tags { name rank isAdult isMediaSpoiler isGeneralSpoiler }
 synonyms trailer { id site thumbnail }
 """
 
@@ -338,7 +339,62 @@ def discover(work, previous):
             dedup[key] = row
     return list(dedup.values())[:12], status
 
-def refresh(work, previous):
+def mal_ratings_snapshot():
+    """Optional trusted MAL v2 data already published by a separate API job."""
+    try:
+        rows = json.loads((ROOT / "data/media-mal-v2.json").read_text(encoding="utf8"))
+        return rows.get("items", {}) if rows.get("source") == "MyAnimeList v2" else {}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+def anime_classification(ani, work, previous, mal_rows):
+    old = previous.get("classification") if isinstance(previous.get("classification"), dict) else {}
+    genres = list(old.get("genres") or [])
+    tags = list(old.get("keywords") or [])
+    if ani:
+        def clean_labels(items):
+            clean = []
+            for value in items:
+                value = str(value or "").strip()
+                if 2 <= len(value) <= 28 and value not in clean and not any(
+                        ord(c) < 32 or c in "<>{}" for c in value):
+                    clean.append(value)
+            return clean
+        genres = clean_labels(ani.get("genres") or [])[:6]
+        # AniList marks spoiler and adult themes independently; never expose
+        # either as a harmless topic/tag, and do not mistake relevance for safety.
+        rated = sorted(
+            (t for t in (ani.get("tags") or [])
+             if isinstance(t, dict) and isinstance(t.get("rank"), int)
+             and t["rank"] >= 65
+             and t.get("isAdult") is False
+             and t.get("isMediaSpoiler") is False
+             and t.get("isGeneralSpoiler") is False),
+            key=lambda t: t["rank"], reverse=True
+        )
+        tags = [x for x in clean_labels(t.get("name") for t in rated)
+                if x.casefold() not in {g.casefold() for g in genres}][:6]
+    mal = int(ani.get("idMal") or 0) if ani else int(work.get("malId") or previous.get("malId") or 0)
+    rating_record = old.get("parental_rating")
+    record = mal_rows.get(str(mal)) if mal > 0 else None
+    if isinstance(record, dict) and record.get("ok") is True and record.get("malId") == mal:
+        level = str(record.get("contentRating") or "").strip().lower()
+        ratings = {"g": "G", "pg": "PG", "pg_13": "PG-13",
+                   "r": "R", "r+": "R+", "rx": "Rx"}
+        if level in ratings:
+            rating_record = {"source": "MyAnimeList v2", "rating": ratings[level],
+                             "malId": mal}
+    # Carry forward only a validated MAL source, never an inferred minimum age.
+    if not (isinstance(rating_record, dict)
+            and rating_record.get("source") == "MyAnimeList v2"
+            and rating_record.get("rating") in ("G", "PG", "PG-13", "R", "R+", "Rx")
+            and rating_record.get("malId") == mal):
+        rating_record = None
+    return {"genres": genres, "keywords": tags, "parental_rating": rating_record,
+            "source": "AniList" if ani else old.get("source", ""),
+            "checkedAt": now() if ani else old.get("checkedAt", "")}
+
+def refresh(work, previous, mal_rows=None):
     ani = lookup_anilist(work)
     aliases = list(work["aliases"])
     # Preserve previously ID-linked official/AniList clips during transient API
@@ -362,6 +418,7 @@ def refresh(work, previous):
                 "official": False, "embeddable": True,
                 "url": "https://www.youtube.com/watch?v=" + ident
             })
+    classification = anime_classification(ani, work, previous, mal_rows or {})
     query_work = {**work, "aliases": aliases[:24]}
     videos, source_status = discover(query_work, previous)
     seen = set()
@@ -371,10 +428,12 @@ def refresh(work, previous):
             "anilistId": ani.get("id") if ani else previous.get("anilistId"),
             "malId": ani.get("idMal") if ani else work["malId"],
             "youtubeTrailers": trailers, "videos": videos,
+            "classification": classification,
             "sources": source_status, "checkedAt": now()}
 
 def main():
     works = catalog()
+    mal_rows = mal_ratings_snapshot()
     try:
         previous = json.loads(OUT.read_text(encoding="utf-8"))
         old = previous.get("items") or {}
@@ -392,7 +451,7 @@ def main():
     for ident in keys[:batch]:
         work = works[ident]
         try:
-            item = refresh(work, items.get(ident, {}))
+            item = refresh(work, items.get(ident, {}), mal_rows)
             if item.get("youtubeTrailers") or item.get("videos") or ident not in items:
                 items[ident] = item
             else:
