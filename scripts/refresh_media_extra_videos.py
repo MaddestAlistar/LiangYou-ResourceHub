@@ -204,6 +204,32 @@ def parse_kinocheck(work):
           "url":"https://www.youtube.com/watch?v="+key})
         if len(result)>=10:break
     return result
+def backfill_dailymotion_thumbnails(items, max_lookups=10):
+    """Bounded public detail lookups for old video records missing cover art."""
+    candidates=[]
+    for row in items.values():
+        for video in row.get("videos",[]) if isinstance(row,dict) else []:
+            if (isinstance(video,dict) and video.get("platform")=="dailymotion" and
+                DM_ID.fullmatch(str(video.get("videoId") or "")) and
+                not video.get("thumbnail")):
+                candidates.append(video)
+    candidates.sort(key=lambda v:str(v.get("thumbnailCheckedAt") or ""))
+    total=0;filled=0
+    for video in candidates[:max_lookups]:
+        total+=1
+        video["thumbnailCheckedAt"]=utc()
+        ident=video["videoId"]
+        try:
+            info=get_json(search_url("https://api.dailymotion.com/video/"+ident,
+                {"fields":"id,thumbnail_360_url"}),timeout=11)
+            if isinstance(info,dict) and str(info.get("id"))==ident:
+                thumb=trusted_thumbnail("dailymotion",info.get("thumbnail_360_url"))
+                if thumb:video["thumbnail"]=thumb;filled+=1
+        except Exception:
+            pass
+        time.sleep(1)
+    return total,filled
+
 def catalog():
     doc=json.loads(CATALOG.read_text(encoding="utf8"))
     works={}
@@ -309,6 +335,8 @@ def main():
           (v.get("platform")!="acfun" or
            (matches_title(v.get("name"),work["aliases"],work["year"],work["kind"]) and
             credible_acfun_film_title(work,v.get("name"))))]
+    checked,completed=backfill_dailymotion_thumbnails(items, max_lookups=10)
+    print("DAILYMOTION_COVER_BACKFILL",json.dumps({"checked":checked,"filled":completed}))
     if len(items)>MAX_ITEMS:
         items=dict(sorted(items.items(),key=lambda pair:pair[1].get("checkedAt",""),reverse=True)[:MAX_ITEMS])
     OUT.parent.mkdir(exist_ok=True)
