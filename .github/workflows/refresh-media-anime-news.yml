@@ -1,0 +1,91 @@
+name: Refresh verified anime news by exact season
+on:
+  schedule:
+    - cron: '19 */4 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_media_anime_news.py'
+      - '.github/workflows/refresh-media-anime-news.yml'
+permissions:
+  contents: write
+concurrency:
+  group: refresh-media-anime-news
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exact-season matching and metadata source
+        run: |
+          python -m py_compile scripts/refresh_media_anime_news.py
+          python - <<'PY'
+          from scripts.refresh_media_anime_news import verified_headline, catalog
+          alias=['乱马1/2 第三季','らんま1/2 第3期']
+          assert verified_headline('《乱马1/2》第三季公开新预告',alias,3)
+          assert verified_headline('TVアニメ「らんま1/2」第3期 PV公開',alias,3)
+          assert not verified_headline('《乱马1/2》第二季公开新预告',alias,3)
+          assert not verified_headline('《乱马1/2》有趣的角色合集',alias,3)
+          assert len(catalog())>50
+          print('ANIME_NEWS_SEASON_GUARDS_OK')
+          PY
+      - name: Refresh rotated anime news
+        env:
+          ANIME_NEWS_BATCH: '18'
+        run: python scripts/refresh_media_anime_news.py
+      - name: Validate all articles are season-scoped and safe links
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('data/media-anime-news.json')
+          d=json.loads(p.read_text())
+          assert d['schema']==1 and len(d['items'])<=350
+          assert p.stat().st_size < 1000000
+          for key,item in d['items'].items():
+              assert item['workId']==key and item['kind']=='anime'
+              assert len(item['articles'])<=18
+              for a in item['articles']:
+                  assert a['titleMatchVerified'] is True
+                  assert a['url'].startswith('https://')
+                  assert a['language'] in ('zh','en','ja','ko')
+          PY
+      - name: Safely merge results with the latest main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-anime-news.json /tmp/liangyou-anime-news-candidate.json
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          dst=Path('data/media-anime-news.json')
+          new=json.loads(Path('/tmp/liangyou-anime-news-candidate.json').read_text())
+          try: old=json.loads(dst.read_text())
+          except (ValueError,OSError): old={}
+          items=dict(old.get('items') or {})
+          for key,row in new['items'].items():
+              prior=items.get(key)
+              if prior is None or str(row.get('checkedAt') or '')>=str(prior.get('checkedAt') or ''):
+                  items[key]=row
+          dst.write_text(json.dumps({'schema':1,'updatedAt':new['updatedAt'],'items':items},
+              ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')
+          PY
+            git add data/media-anime-news.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'Refresh verified anime headline archive [skip ci]'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'Could not publish anime news after retry' >&2
+          exit 1
