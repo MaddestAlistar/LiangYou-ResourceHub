@@ -9,6 +9,7 @@ import json
 import os
 import re
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -48,6 +49,10 @@ def read(path):
 def now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
+def normalized_title(value):
+    return "".join(c for c in unicodedata.normalize("NFKC",str(value or "")).casefold()
+                   if c.isalnum())
+
 def ident(name):
     return int(name.rsplit("-",1)[1]) if re.fullmatch(r"(?:bangumi|anilist|mal)-[1-9]\d*",name) else 0
 
@@ -84,9 +89,12 @@ def record_map():
         if not 0<mal<10**10:mal=0
         raw=str(work.get("date") or "")
         year=int(raw[:4]) if re.match(r"^\d{4}",raw) else 0
+        titles=[work.get("title"),work.get("original_title"),work.get("english_title")]
+        titles+=list(v.get("aliases") or [])[:24]
         rows[wid]={"id":wid,"year":year,"bangumiId":bangumi,
                    "anilistId":anilist,"malId":mal,
-                   "title":str(work.get("title") or "")[:160]}
+                   "title":str(work.get("title") or "")[:160],
+                   "identityTitles":[str(x) for x in titles if isinstance(x,str) and x]}
     return rows
 
 def request_json(url,body=None,timeout=13):
@@ -110,9 +118,12 @@ def bangumi_detail(w):
         return None
     tags=raw.get("tags") or []
     tagged=sorted((x for x in tags if isinstance(x,dict)),key=lambda x:int(x.get("count") or 0),reverse=True)
+    excluded_titles={normalized_title(v) for v in w.get("identityTitles") or []
+                     if len(normalized_title(v))>=3}
     valid=[x["name"] for x in tagged
            if isinstance(x.get("name"),str)
            and x["name"].strip() not in META_TAGS
+           and normalized_title(x["name"]) not in excluded_titles
            and int(x.get("count") or 0)>=5
            and SAFE_TAG.fullmatch(x["name"].strip())]
     themes=clean(valid,8)
@@ -158,7 +169,9 @@ def combine(w,prior,bgm,ani,mal):
                   *(bgm or {}).get("genres",[])],6)
     themes=clean([*(bgm or {}).get("themes",[]),*(ani or {}).get("themes",[])],6)
     group_source=((ani or {}).get("source") or (mal and "MAL") or (bgm or {}).get("source") or "")
-    tag_source=((bgm or {}).get("source") or (ani or {}).get("source") or "")
+    tag_source=("Bangumi · AniList" if (bgm or {}).get("themes") and (ani or {}).get("themes")
+                else (bgm or {}).get("source") if (bgm or {}).get("themes")
+                else (ani or {}).get("source") or "")
     fresh={"kind":"anime","workId":w["id"],"year":w["year"],
            "genres":genres,"keywords":themes,
            "genreSource":group_source,"themeSource":tag_source,
