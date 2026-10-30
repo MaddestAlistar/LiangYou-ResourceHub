@@ -51,6 +51,17 @@ jobs:
                   print('XIGUA_ZERO_FUNDS_VERIFIED',funded_capacity_is_zero(key))
               except Exception as error:
                   print('XIGUA_ZERO_FUNDS_UNKNOWN',type(error).__name__,getattr(error,'code','no_http_code'))
+                  # Only report a documented error CODE; never log raw response or secret.
+                  if getattr(error,'code',None)==403:
+                      import json,re
+                      try:
+                          parsed=json.loads(error.read(1000))
+                          reason=parsed.get('error',{})
+                          code=reason.get('code','') if isinstance(reason,dict) else ''
+                          if re.fullmatch(r'[a-z0-9_-]{1,64}',str(code)):
+                              print('XIGUA_BALANCE_ACCESS_ERROR_CODE',code)
+                      except Exception:
+                          print('XIGUA_BALANCE_RESPONSE_NOT_JSON')
           PY
       - name: Probe official public iframe API without scraping media
         run: |
