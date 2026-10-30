@@ -471,15 +471,26 @@
 
   // Separate, identity-scoped anime news archive. No TMDB ID is required, and
   // an unverified headline must never inherit a different anime season.
-  let animeNewsPromise=null,animeNewsUntil=0;
+  let animeNewsPromise=null,animeNewsUntil=0,animeNewsLastGood=null;
   function animeNewsSnapshot(){
     if(!animeNewsPromise||Date.now()>animeNewsUntil){
       animeNewsUntil=Date.now()+15*60000;
       animeNewsPromise=fetch('./data/media-anime-news.json',{
         cache:'no-cache',signal:AbortSignal.timeout(7000)
       }).then(r=>r.ok?r.json():null)
-        .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
-        .catch(()=>null);
+        .then(d=>{
+          if(d?.schema===1&&d.items&&typeof d.items==='object'){
+            animeNewsLastGood=d;
+            return d;
+          }
+          // Transient CDN / mainland connectivity failures must not leave
+          // the news sections empty for a full 15-minute cache interval.
+          animeNewsUntil=Date.now()+60000;
+          return animeNewsLastGood;
+        }).catch(()=>{
+          animeNewsUntil=Date.now()+60000;
+          return animeNewsLastGood;
+        });
     }
     return animeNewsPromise;
   }
