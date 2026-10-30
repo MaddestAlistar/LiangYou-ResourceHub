@@ -404,7 +404,7 @@
           (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
           ((bvidCover||thumbOriginal)&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
         (verifiedBiliMotion?'<img class="mi-trailer-motion-thumb" data-mi-motion-src="'+esc(verifiedBiliMotion)+'" alt="" aria-hidden="true" loading="lazy">':'')+
-        (isNativeAnimatedGif?'<span class="mi-trailer-motion-label">'+t('动态封面','Motion cover')+'</span>':'')+
+        
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-play" aria-hidden="true">▶</span></span>';
       const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
