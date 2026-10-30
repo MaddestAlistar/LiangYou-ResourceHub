@@ -24,7 +24,8 @@ DEST = ROOT / "data/media-anime-news.json"
 ID = re.compile(r"^(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*$")
 PEERS = {"bangumi-637802": "mal-63801", "mal-63801": "bangumi-637802"}
 CONTEXT = re.compile(r"anime|animation|season|episode|trailer|preview|opening|ending|mappa|netflix|"
-                     r"アニメ|第\d+期|第\d+話|放送|映像|予告|动画|动漫|预告|第\d+季|开播|新番|"\n                     r"柯南|detective conan|case closed|青之箱|蓝箱|アオのハコ|blue box|续作|续篇|周年|剧场版|制作|更新|声优|配信", re.I)
+                     r"アニメ|第\d+期|第\d+話|放送|映像|予告|动画|动漫|预告|第\d+季|开播|新番|" 
+                     r"柯南|detective conan|case closed|青之箱|蓝箱|アオのハコ|blue box|续作|续篇|周年|剧场版|制作|更新|声优|配信", re.I)
 SEASON = re.compile(r"第\s*([一二三四五六七八九0-9]+)\s*[季期]|"
                     r"\bseason\s*([0-9]+)\b|\b([0-9]+)(?:st|nd|rd|th)\s+season\b|第\s*([一二三四五六七八九0-9]+)\s*部", re.I)
 DIGITS = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
@@ -100,7 +101,8 @@ def rss(wid: str, work: dict, lang: str) -> list[dict]:
         name = next((x for x in aliases if re.search(r"[\u3040-\u30ff]", x)), None)
     if not name:
         name = next((x for x in aliases if re.search(r"[A-Za-z]{3}", x)), aliases[0])
-    # Search localized aliases first; avoid requiring English "anime" in Chinese/Japanese news.\n    query = '"' + name[:90] + '" (动画 OR 动漫 OR アニメ OR anime OR 续作 OR 放送)'
+    # Search localized aliases first; avoid requiring English "anime" in Chinese/Japanese news.
+    query = '"' + name[:90] + '" (动画 OR 动漫 OR アニメ OR anime OR 续作 OR 放送)'
     params = urllib.parse.urlencode({"q": query, "hl": lang, "gl": "JP" if lang == "ja" else "CN" if lang == "zh" else "US",
                                      "ceid": "JP:ja" if lang == "ja" else "CN:zh-Hans" if lang == "zh" else "US:en"})
     request = urllib.request.Request("https://news.google.com/rss/search?" + params,
