@@ -2,11 +2,6 @@ name: Manually test Dashixiong video source
 
 # Manual only: does not run on push, schedules or site deployments.
 on:
-  # Temporary diagnostic trigger for one script update; will be removed after this run.
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/probe-dashixiong-source.mjs'
   workflow_dispatch:
     inputs:
       title:
