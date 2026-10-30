@@ -36,6 +36,16 @@ jobs:
           python -m py_compile scripts/refresh_media_xigua_videos.py
           cd scripts && python -m unittest -v test_media_xigua_videos
           cd .. && node --check media-insights.js
+      - name: Probe official public iframe API without scraping media
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          from refresh_media_xigua_videos import approved_embed
+          try:
+              result = approved_embed('7444746393916277283')
+              print('XIGUA_PUBLIC_IFRAME_PROBE',result or 'not_embeddable')
+          except Exception as exc:
+              print('XIGUA_PUBLIC_IFRAME_PROBE_UNAVAILABLE',type(exc).__name__)
+          PY
       - name: Discover Xigua videos with optional private SandBase key
         env:
           SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
