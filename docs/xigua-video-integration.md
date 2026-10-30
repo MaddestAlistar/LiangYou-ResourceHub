@@ -16,6 +16,14 @@
 3. 如果官方嵌入接口暂时失效，可以在**有零付费硬保障**的前提下搜索公开元数据并记录匹配数量，但绝不把未经官方批准的视频当作可播放卡片展示。
 4. 不影响 Bilibili、YouTube、Dailymotion、Niconico、AcFun 的视频抓取、20 条总上限与站内播放。
 
+## 关于 SandBase API Keys 的 SPENT $0 / LIMIT $0 显示
+
+SandBase API Keys 列表中 `SPENT $0` 仅说明这把密钥目前没有产生消费；`LIMIT $0` **不能单凭列表断定已设置 $0 硬限制**。官方文档说明新建/编辑密钥时 **Spending limit 留空意味着 unlimited**，列表可能将未设置的值显示为 $0。需要进入该密钥的 **Edit** 界面核实输入框：如果为空，则不是零消费硬限制。即使明确填入 0，也需进一步确认平台是否支持这项设置、免费额度调用是否允许通过，以及超额是否会被拒绝。
+
+**不要只因为截图显示 `LIMIT $0` 就将 `SANDBASE_HARD_ZERO_SPEND_CONFIRMED=true` 写入 GitHub。** 余额读取因 403 不可用时，网站继续暂停 SandBase 自动搜索；这不会影响原有视频来源。
+
+官方依据：https://www.sandbase.ai/docs/getting-started/api-keys
+
 ## 什么时候才允许搜索？
 
 两条路径满足任意一条才允许：
