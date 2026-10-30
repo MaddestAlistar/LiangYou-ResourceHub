@@ -28,7 +28,9 @@ META_TAGS = {"日本","TV","TV动画","2026","2025","2024","动画","anime","番
              "TRIGGER","J.C.STAFF","J.C. STAFF","P.A.WORKS","BONES","MAPPA",
              "WIT STUDIO","TOEI ANIMATION","东映动画","東映動畫","日升","SUNRISE",
              "十月新番","10月","新番","续作","OVA","剧场版","连载","漫画改",
-             "小说改","游戏改","2026年10月","2026年","官方"}
+             "小说改","游戏改","2026年10月","2026年","官方",
+             "ONEPIECE","ONE PIECE","海贼王","ワンピース","JUMP",
+             "少年JUMP","集英社","尾田榮一郎","尾田荣一郎","尾田栄一郎"}
 AGE = {"g":"G","pg":"PG","pg_13":"PG-13","r":"R-17+","r+":"R+","rx":"Rx"}
 SAFE_TAG = re.compile(r"^[^\x00-\x1f<>]{2,48}$")
 ANILIST = "https://graphql.anilist.co"
