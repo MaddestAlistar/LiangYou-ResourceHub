@@ -31,6 +31,10 @@ def checked_image(raw):
         return None
     if raw.startswith("//"):
         raw = "https:" + raw
+    elif raw.startswith("http://"):
+        # Bilibili may return an HTTP cover URL in otherwise valid JSON.
+        # Upgrade the provider-owned CDN image to HTTPS before publishing.
+        raw = "https://" + raw[len("http://"):]
     try:
         url = urlparse(raw)
         host = (url.hostname or "").lower()
@@ -48,9 +52,10 @@ def official_cover(bvid):
     for api in ENDPOINTS:
         endpoint = api + "?" + urllib.parse.urlencode({"bvid": bvid})
         request = urllib.request.Request(endpoint, headers={
-            "User-Agent": "Mozilla/5.0 (compatible; LiangYouResourceHub/1.0; FilmCoverRefresh)",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             "Accept": "application/json",
             "Referer": "https://www.bilibili.com/",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
         })
         try:
             with urllib.request.urlopen(request, timeout=12) as response:
