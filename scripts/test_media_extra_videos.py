@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck
+from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck, credible_acfun_film_title
 
 class VideoSources(unittest.TestCase):
     def setUp(self):
@@ -43,6 +43,18 @@ class VideoSources(unittest.TestCase):
         self.assertEqual(len(calls),2)
         self.assertEqual([r["videoId"] for r in rows],["43386834","43989846"])
         self.assertTrue(all(r["type"]=="Related" for r in rows))
+    def test_acfun_generic_titles_must_not_match_games_or_other_movies(self):
+        cases=[
+          ({"kind":"movie","title":"奥德赛"},"刺客信条奥德赛亚特兰蒂斯的命运预告",False),
+          ({"kind":"movie","title":"痴迷"},"good morning N°5『痴迷的泡沫』石川恋预告",False),
+          ({"kind":"movie","title":"尸变"},"《负重前行》预告，尸变男子守护孩子",False),
+          ({"kind":"movie","title":"泥面人"},"DCU新电影《泥面人》首支预告",True),
+          ({"kind":"movie","title":"海洋奇缘"},"《海洋奇缘》中国大陆独家版预告",True)
+        ]
+        for work,name,expected in cases:
+            with self.subTest(title=work["title"]):
+                self.assertEqual(credible_acfun_film_title(work,name),expected)
+
     def test_niconico_pv_matching(self):
         doc={"data":[{"title":"TVアニメ『薬屋のひとりごと』第2クールPV","contentId":"sm43190555","viewCounter":16424},
                      {"title":" unrelated PV","contentId":"sm45678999"}]}
