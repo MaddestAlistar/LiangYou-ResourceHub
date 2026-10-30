@@ -245,7 +245,11 @@
         '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
     }
     const candidates=[];
-    for(const v of youtube)candidates.push({key:'youtube:'+v.id,platform:'youtube',domestic:false,
+    // KinoCheck enriches YouTube videos through a verified TMDB ID. Treat it
+    // as a distinct discovery source for diversity ranking, while keeping
+    // playback and the visible platform accurately labeled YouTube.
+    for(const v of youtube)candidates.push({key:'youtube:'+v.id,
+      platform:v.verifiedBy==='KinoCheck'?'kinocheck':'youtube',domestic:false,
       type:['Trailer','Teaser'].includes(v.type)?'trailer':'related',
       official:v.official===true,playable:v.embeddable!==false&&v.ageRestricted!==true,
       likes:Number.isSafeInteger(v.likes)?v.likes:-1,card:youtubeCard(v)});
