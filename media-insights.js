@@ -1432,7 +1432,7 @@
     if(platform==='xigua'&&/^[1-9]\d{14,20}$/.test(id)&&
        url==='https://www.ixigua.com/'+id&&
        /^[1-9]\d{14,20}$/.test(button.dataset.miCnEmbedId||''))
-      frameUrl='https://www.ixigua.com/iframe/'+button.dataset.miCnEmbedId+'?autoplay=0';
+      frameUrl='https://www.ixigua.com/iframe/'+button.dataset.miCnEmbedId+'?autoplay=0&startTime=0';
     if(platform==='dailymotion'&&/^x[a-z0-9]{4,12}$/i.test(id)&&
        url==='https://www.dailymotion.com/video/'+id&&
        /^x[A-Za-z0-9]{3,15}$/.test(dailymotionPlayerId))
@@ -1451,8 +1451,9 @@
       frame.src=frameUrl;
       frame.loading='eager';
       frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
-      // The official Xigua iframe requires an actual site origin for its anti-abuse checks.
-      frame.referrerPolicy='strict-origin-when-cross-origin';
+      // Xigua's official embedding documentation explicitly specifies
+      // unsafe-url for the embed referrer. Keep other platforms' policy as-is.
+      frame.referrerPolicy=platform==='xigua'?'unsafe-url':'strict-origin-when-cross-origin';
       frame.allowFullscreen=true;
       trailerStage.appendChild(frame);
     }
