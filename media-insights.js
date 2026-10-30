@@ -270,7 +270,7 @@
       // its official embed or mobile H5 page in our own dialog on all devices.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const thumbOriginal=safe(x.thumbnail);
-      const posterFallback=x.platform==='bilibili'?safe(info.poster):null;
+      const posterFallback=x.platform==='bilibili'?(safe(info.poster)||(/^\.\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(String(info.poster||''))?info.poster:null)):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
       const thumb=(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
