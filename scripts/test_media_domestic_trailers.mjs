@@ -197,7 +197,7 @@ test('Bilibili cards use labeled work posters only while verified video covers a
  assert.match(backup,/mi-trailer-fallback-label/);
  assert.match(backup,/作品海报/);
  const original=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/0123456789abcdef0123456789abcdef01234567.jpg'}]);
- assert.match(original,/api\/media-cover\/bilibili\?src=/);
+ assert.match(original,/https:\/\/i0\.hdslb\.com\/bfs\/archive\//);
  assert.doesNotMatch(original,/<span class="mi-trailer-fallback-label">/);
  assert.match(original,/data-thumb-poster-fallback="true"/);
 });
@@ -212,7 +212,7 @@ test('Bilibili fallback supports local catalog work poster files without mislabe
  assert.match(html,/mi-trailer-fallback-label/);
  assert.doesNotMatch(gallery({}, {...info,poster:'../../outside.jpg'},[row]),/outside\.jpg/);
  const knownCover=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/abcdef0123456789abcdef0123456789abcdef01.jpg'}]);
- assert.match(knownCover,/api\/media-cover\/bilibili\?src=/);
+ assert.match(knownCover,/https:\/\/i0\.hdslb\.com\/bfs\/archive\//);
  assert.match(knownCover,/data-thumb-fallback="\.\/assets\/media-posters\/0123456789abcdef0123\.webp"/);
  assert.doesNotMatch(knownCover,/<span class="mi-trailer-fallback-label">/);
 });
