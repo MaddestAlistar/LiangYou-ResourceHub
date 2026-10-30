@@ -247,6 +247,9 @@ def official_iframe_api_responds():
         return False
 
 def main():
+    if os.getenv("XIGUA_AUTO_SEARCH_ENABLED", "").strip().lower() != "true":
+        print("XIGUA_PAUSED: $0 SandBase key cap returned HTTP 402; do not retry charged endpoint")
+        return
     key = os.getenv("SANDBASE_API_KEY", "").strip()
     if not key:
         print("XIGUA_DISABLED: configure SANDBASE_API_KEY GitHub Actions secret for automatic discovery")
