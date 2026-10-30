@@ -64,6 +64,25 @@ def get_json(url,timeout=11):
         if res.status!=200:raise RuntimeError("http_"+str(res.status))
         return json.loads(res.read(850000))
 def search_url(base,params):return base+"?"+urllib.parse.urlencode(params)
+def trusted_thumbnail(platform,value):
+    # Keep only provider-owned HTTPS thumbnails in the published JSON.
+    raw=str(value or "").strip()
+    if raw.startswith("//"):raw="https:"+raw
+    if not raw.startswith("https://"):return None
+    try:
+        from urllib.parse import urlparse
+        host=(urlparse(raw).hostname or "").lower()
+    except ValueError:return None
+    endings={
+      "acfun":("acfun.cn","aixifan.com"),
+      "niconico":("nicovideo.jp","nimg.jp"),
+      "dailymotion":("dmcdn.net","dailymotion.com"),
+      "bilibili":("hdslb.com","biliimg.com")
+    }
+    if not any(host==d or host.endswith("."+d) for d in endings.get(platform,())):
+        return None
+    return raw[:600]
+
 def video_record(work,platform,ident,name,kind="Related",**more):
     return {"platform":platform,"videoId":ident,"name":str(name).strip()[:145],
       "type":kind,"title":work["title"],"kind":work["kind"],"tmdbId":work["tmdb_id"],
@@ -100,6 +119,7 @@ def parse_acfun(work):
               "Trailer" if TRAILER_WORDS.search(name) else "Related",
               verifiedSource="https://www.acfun.cn/v/ac"+ident,
               publisher=str(x.get("userName") or "AcFun")[:60],
+              thumbnail=trusted_thumbnail("acfun",x.get("coverUrl")),
               views=x.get("viewCount") if isinstance(x.get("viewCount"),int) else None))
             if len(result)>=MAX_PER_SOURCE:break
         if result:break
@@ -113,7 +133,7 @@ def parse_niconico(work):
     if not jap:return []
     q=sorted(jap,key=len,reverse=True)[0]
     url=search_url("https://snapshot.search.nicovideo.jp/api/v2/snapshot/video/contents/search",
-      {"q":q+" PV","targets":"title","fields":"contentId,title,viewCounter,startTime",
+      {"q":q+" PV","targets":"title","fields":"contentId,title,thumbnailUrl,viewCounter,startTime",
        "_sort":"-viewCounter","_limit":20,"_context":"LiangYouResourceHub"})
     doc=get_json(url);results=[]
     for x in (doc.get("data") or [])[:20]:
@@ -123,7 +143,8 @@ def parse_niconico(work):
         if not VIDEO_WORDS.search(name):continue
         results.append(video_record(work,"niconico",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
           verifiedSource="https://www.nicovideo.jp/watch/"+ident,
-          publisher="Niconico",views=x.get("viewCounter") if isinstance(x.get("viewCounter"),int) else None))
+          publisher="Niconico",thumbnail=trusted_thumbnail("niconico",x.get("thumbnailUrl")),
+          views=x.get("viewCounter") if isinstance(x.get("viewCounter"),int) else None))
         if len(results)>=MAX_PER_SOURCE:break
     return results
 def parse_dailymotion(work):
@@ -131,7 +152,7 @@ def parse_dailymotion(work):
     if not aliases:return []
     query=sorted(aliases,key=len,reverse=True)[0]
     doc=get_json(search_url("https://api.dailymotion.com/videos",
-      {"search":query+" trailer","fields":"id,title,duration,views_total,url","limit":20}))
+      {"search":query+" trailer","fields":"id,title,duration,views_total,url,thumbnail_360_url","limit":20}))
     results=[]
     for x in (doc.get("list") or [])[:20]:
         if not isinstance(x,dict):continue
@@ -151,7 +172,9 @@ def parse_dailymotion(work):
             if generic and not any(abs(y-work["year"])<=1 for y in explicit_years):continue
         results.append(video_record(work,"dailymotion",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
           verifiedSource="https://www.dailymotion.com/video/"+ident,
-          publisher="Dailymotion",views=x.get("views_total") if isinstance(x.get("views_total"),int) else None))
+          publisher="Dailymotion",
+          thumbnail=trusted_thumbnail("dailymotion",x.get("thumbnail_360_url")),
+          views=x.get("views_total") if isinstance(x.get("views_total"),int) else None))
         if len(results)>=MAX_PER_SOURCE:break
     return results
 def parse_kinocheck(work):
