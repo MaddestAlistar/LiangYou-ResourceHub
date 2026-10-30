@@ -9,9 +9,12 @@ const players=Object.freeze({tubo:'./xhs-player.html',n90:'./xhs-player-n90.html
 const ROOT='https://raw.githubusercontent.com/MaddestAlistar/videos/main/clips/';
 if(!dialog||!stage)return;
 function asset(value,ext){
- if(typeof value!=='string'||!value.startsWith(ROOT))return '';
- const path=value.slice(ROOT.length);
- return new RegExp('^[a-f0-9-]{36}\\.'+ext+'$').test(path)?value:'';
+ if(typeof value!=='string')return '';
+ if(value.startsWith(ROOT)){
+  const path=value.slice(ROOT.length);
+  return new RegExp('^[a-f0-9-]{36}\\.'+ext+'$').test(path)?value:'';
+ }
+ return new RegExp('^\\./assets/tech-news/clip-[a-f0-9-]{36}\\.'+ext+'(?:\\?asset=[a-zA-Z0-9-]+)?$').test(value)?value:'';
 }
 function openVideo(button){
  const key=button.dataset.lyVideoOpen;
@@ -32,6 +35,10 @@ function openVideo(button){
   const video=document.createElement('video');
   video.controls=true;video.playsInline=true;video.preload='metadata';video.className='ly-video-direct';
   const poster=asset(button.dataset.lyVideoPoster,'jpg');if(poster)video.poster=poster;
+  const backup=asset(button.dataset.lyVideoBackup,'mp4');
+  if(backup&&backup!==media)video.addEventListener('error',()=>{
+    if(video.src.endsWith(media)){video.src=backup;video.load();video.play().catch(()=>{});}
+  },{once:true});
   video.src=media;video.setAttribute('aria-label',heading?.textContent?.trim()||'视频精选');
   stage.append(video);video.play().catch(()=>{});
  }else{
