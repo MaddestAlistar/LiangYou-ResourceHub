@@ -265,11 +265,13 @@ def main():
         except Exception as error:
             print("XIGUA_ZERO_SPEND_STOP: cannot verify account balance",type(error).__name__)
             return
-    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=24, run_cap=12)
+    # Allow a one-call smoke test without changing the persisted 24/day ceiling.
+    per_run = max(1, min(12, int(os.getenv("XIGUA_SEARCH_PER_RUN", "12"))))
+    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=24, run_cap=per_run)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
         return
-    # Search one title daily even when the official iframe endpoint is broken;
+    # Search only under the configured quota, even if the iframe API is unavailable;
     # unverified matches are counted only, never rendered as playable videos.
     can_embed = official_iframe_api_responds() and official_api_ready()
     if not can_embed:
