@@ -37,6 +37,21 @@ jobs:
           python -m py_compile scripts/refresh_media_xigua_videos.py scripts/xigua_zero_spend.py
           cd scripts && python -m unittest -v test_media_xigua_videos test_xigua_zero_spend
           cd .. && node --check media-insights.js
+      - name: Verify secret and non-billable account funding (read-only)
+        env:
+          SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
+        run: |
+          PYTHONPATH=scripts python - <<'PY'
+          import os
+          from xigua_zero_spend import funded_capacity_is_zero
+          key=os.environ.get('SANDBASE_API_KEY','')
+          print('XIGUA_KEY_CONFIGURED',bool(key))
+          if key:
+              try:
+                  print('XIGUA_ZERO_FUNDS_VERIFIED',funded_capacity_is_zero(key))
+              except Exception as error:
+                  print('XIGUA_ZERO_FUNDS_UNKNOWN',type(error).__name__)
+          PY
       - name: Probe official public iframe API without scraping media
         run: |
           PYTHONPATH=scripts python - <<'PY'
