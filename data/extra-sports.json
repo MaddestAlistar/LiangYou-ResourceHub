@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-30T02:29:54Z",
+  "generated_at": "2026-10-30T12:18:16Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-30T02:29:54Z"
+      "verified_at": "2026-10-30T12:18:16Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 171,
       "standings": 5,
-      "verified_at": "2026-10-30T02:29:54Z"
+      "verified_at": "2026-10-30T12:18:16Z"
     }
   ],
   "status": "ok",
@@ -136,8 +136,8 @@
       "league": "Campeonato Brasileiro Série A",
       "stage": "Regular Season",
       "start_time": "2026-10-30T00:30:00Z",
-      "status": "live",
-      "status_detail": "IN_PLAY",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Grêmio FBPA",
       "away": "CA Paranaense",
       "score_home": 2,
@@ -3109,15 +3109,6 @@
       "provider": "dunkapi",
       "groups": [
         {
-          "team": "Portland Trail Blazers",
-          "group": "Western Conference",
-          "wins": 3,
-          "losses": 0,
-          "played": 3,
-          "win_pct": 1.0,
-          "rank": 3
-        },
-        {
           "team": "Houston Rockets",
           "group": "Western Conference",
           "wins": 5,
@@ -3129,11 +3120,11 @@
         {
           "team": "Memphis Grizzlies",
           "group": "Western Conference",
-          "wins": 4,
+          "wins": 5,
           "losses": 0,
-          "played": 4,
+          "played": 5,
           "win_pct": 1.0,
-          "rank": 2
+          "rank": 1
         },
         {
           "team": "Los Angeles Lakers",
@@ -3142,7 +3133,7 @@
           "losses": 1,
           "played": 5,
           "win_pct": 0.8,
-          "rank": 4
+          "rank": 3
         },
         {
           "team": "Detroit Pistons",
@@ -3160,7 +3151,7 @@
           "losses": 1,
           "played": 5,
           "win_pct": 0.8,
-          "rank": 4
+          "rank": 3
         },
         {
           "team": "Philadelphia 76ers",
@@ -3181,16 +3172,16 @@
           "rank": 3
         },
         {
-          "team": "Boston Celtics",
-          "group": "Eastern Conference",
+          "team": "Portland Trail Blazers",
+          "group": "Western Conference",
           "wins": 3,
           "losses": 1,
           "played": 4,
           "win_pct": 0.75,
-          "rank": 3
+          "rank": 5
         },
         {
-          "team": "Cleveland Cavaliers",
+          "team": "Boston Celtics",
           "group": "Eastern Conference",
           "wins": 3,
           "losses": 1,
@@ -3226,13 +3217,31 @@
           "rank": 6
         },
         {
+          "team": "Cleveland Cavaliers",
+          "group": "Eastern Conference",
+          "wins": 3,
+          "losses": 2,
+          "played": 5,
+          "win_pct": 0.6,
+          "rank": 5
+        },
+        {
           "team": "Charlotte Hornets",
           "group": "Eastern Conference",
           "wins": 3,
           "losses": 2,
           "played": 5,
           "win_pct": 0.6,
-          "rank": 6
+          "rank": 5
+        },
+        {
+          "team": "Atlanta Hawks",
+          "group": "Eastern Conference",
+          "wins": 3,
+          "losses": 3,
+          "played": 6,
+          "win_pct": 0.5,
+          "rank": 7
         },
         {
           "team": "Denver Nuggets",
@@ -3244,22 +3253,13 @@
           "rank": 9
         },
         {
-          "team": "Atlanta Hawks",
-          "group": "Eastern Conference",
-          "wins": 2,
-          "losses": 3,
-          "played": 5,
-          "win_pct": 0.4,
-          "rank": 7
-        },
-        {
           "team": "Indiana Pacers",
           "group": "Eastern Conference",
           "wins": 2,
           "losses": 3,
           "played": 5,
           "win_pct": 0.4,
-          "rank": 7
+          "rank": 8
         },
         {
           "team": "New York Knicks",
@@ -3268,7 +3268,7 @@
           "losses": 3,
           "played": 5,
           "win_pct": 0.4,
-          "rank": 7
+          "rank": 8
         },
         {
           "team": "Golden State Warriors",
@@ -3286,7 +3286,7 @@
           "losses": 3,
           "played": 5,
           "win_pct": 0.4,
-          "rank": 7
+          "rank": 8
         },
         {
           "team": "Phoenix Suns",
@@ -3316,7 +3316,7 @@
           "rank": 11
         },
         {
-          "team": "Utah Jazz",
+          "team": "New Orleans Pelicans",
           "group": "Western Conference",
           "wins": 1,
           "losses": 4,
@@ -3332,6 +3332,15 @@
           "played": 5,
           "win_pct": 0.2,
           "rank": 12
+        },
+        {
+          "team": "Utah Jazz",
+          "group": "Western Conference",
+          "wins": 1,
+          "losses": 4,
+          "played": 5,
+          "win_pct": 0.2,
+          "rank": 13
         },
         {
           "team": "Milwaukee Bucks",
@@ -3352,15 +3361,6 @@
           "rank": 12
         },
         {
-          "team": "New Orleans Pelicans",
-          "group": "Western Conference",
-          "wins": 0,
-          "losses": 4,
-          "played": 4,
-          "win_pct": 0.0,
-          "rank": 14
-        },
-        {
           "team": "Brooklyn Nets",
           "group": "Eastern Conference",
           "wins": 0,
@@ -3373,15 +3373,15 @@
           "team": "Sacramento Kings",
           "group": "Western Conference",
           "wins": 0,
-          "losses": 4,
-          "played": 4,
+          "losses": 5,
+          "played": 5,
           "win_pct": 0.0,
-          "rank": 14
+          "rank": 15
         }
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     },
     {
@@ -3593,7 +3593,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     },
     {
@@ -3805,7 +3805,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     },
     {
@@ -3997,7 +3997,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     },
     {
@@ -4209,7 +4209,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     },
     {
@@ -4401,7 +4401,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T02:29:54Z",
+      "verified_at": "2026-10-30T12:18:16Z",
       "status": "ok"
     }
   ],
