@@ -6,6 +6,7 @@ It does not capture the video stream, generate fake animation, or store signed U
 Upstream errors keep old outputs and never overwrite hand-verified covers.
 """
 import io
+from datetime import date
 import json
 import re
 import urllib.error
@@ -16,6 +17,8 @@ from PIL import Image, UnidentifiedImageError
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=ROOT/"data/media-domestic-trailers.json"
+COVER_INDEX=ROOT/"data/media-bilibili-cover-map.json"
+MOTION_INDEX=ROOT/"data/media-bilibili-motion-map.json"
 OUTPUT=ROOT/"assets/media-video-previews"
 BVID=re.compile(r"^BV[A-Za-z0-9]{10}$")
 MAX_SOURCE_SIZE=4_000_000
@@ -57,7 +60,7 @@ def make_preview(bvid):
     images=[x for x in images if x]
     w=int(doc.get("img_x_size") or 0);h=int(doc.get("img_y_size") or 0)
     cols=int(doc.get("img_x_len") or 0);rows=int(doc.get("img_y_len") or 0)
-    if not images or not (80<=w<=400 and 40<=h<=240 and 1<=cols<=20 and 1<=rows<=20):
+    if not images or not (80<=w<=960 and 40<=h<=540 and 1<=cols<=20 and 1<=rows<=20):
         shots=doc.get("video_shots")
         shot_meta={"type":type(shots).__name__,
           "len":len(shots) if isinstance(shots,(list,dict,str)) else None,
@@ -82,32 +85,64 @@ def make_preview(bvid):
 
 def main():
     doc=json.loads(CATALOG.read_text(encoding="utf8"))
-    if doc.get("schema")!=1:raise ValueError("Unsupported schema")
+    if doc.get("schema")!=1:raise ValueError("Unsupported catalog")
+    covers=json.loads(COVER_INDEX.read_text(encoding="utf8"))
+    if covers.get("schema")!=1:raise ValueError("Unsupported cover map")
     OUTPUT.mkdir(parents=True,exist_ok=True)
-    created=0;reused=0;unavailable=0
+
+    # Use previously verified BV IDs, not inferred film associations or
+    # a generic provider keyword search. Cover map includes films beyond the
+    # small manually curated catalog, so this scales to real matching results.
+    ids={x for x in covers.get("items",{}) if BVID.fullmatch(x)}
+    curated={}
     for row in doc.get("items",[]):
         ident=str(row.get("videoId") or "")
-        if row.get("platform")!="bilibili" or not BVID.fullmatch(ident) or (
-            row.get("verifiedSource")!=f"https://www.bilibili.com/video/{ident}/"):
-            continue
+        if row.get("platform")=="bilibili" and BVID.fullmatch(ident) and (
+            row.get("verifiedSource")==f"https://www.bilibili.com/video/{ident}/"):
+            ids.add(ident)
+            curated[ident]=row
+    ordered=sorted(ids)
+    # Do not repeatedly hammer Bilibili for unavailable storyboard sprites.
+    # A small rotating slice covers the 70+ verified videos every few days.
+    start=(date.today().toordinal()*24)%len(ordered) if ordered else 0
+    selected={ordered[(start+i)%len(ordered)] for i in range(min(24,len(ordered)))}
+    selected.update(curated)
+
+    created=0;reused=0;unavailable=0
+    for ident in sorted(selected):
         output=OUTPUT/f"{ident}.webp"
         if output.exists() and 1000<output.stat().st_size<MAX_OUTPUT_SIZE:
-            row["animatedThumbnailLocal"]=f"./assets/media-video-previews/{ident}.webp"
             reused+=1;continue
         try:
             blob,count=make_preview(ident)
             output.write_bytes(blob)
-            row["animatedThumbnailLocal"]=f"./assets/media-video-previews/{ident}.webp"
             created+=1
             print(f"Animated Bilibili storyboard {ident}: {count} genuine snapshots; {len(blob)} bytes")
         except (ValueError,TimeoutError,urllib.error.URLError,UnidentifiedImageError,OSError,KeyError) as exc:
             unavailable+=1
             print(f"Bilibili storyboard {ident} unavailable: {type(exc).__name__} {str(exc)[:90]}")
-    if created or any(
-        x.get("animatedThumbnailLocal") and str(x.get("animatedThumbnailLocal")).startswith("./assets/")
-        for x in doc.get("items",[]) if x.get("platform")=="bilibili"
-    ):
-        new=json.dumps(doc,ensure_ascii=False,indent=2)+"\n"
-        if new!=CATALOG.read_text(encoding="utf8"):CATALOG.write_text(new,encoding="utf8")
-    print(f"Animated Bilibili storyboards: new={created},reused={reused},unavailable={unavailable}")
+
+    # Preserve successes from earlier runs even when a later API request fails.
+    # Publish only actual first-party WebP files matching a verified BV ID.
+    motion={}
+    for ident in sorted(ids):
+        file=OUTPUT/f"{ident}.webp"
+        if file.is_file() and 1000<file.stat().st_size<MAX_OUTPUT_SIZE:
+            try:
+                with Image.open(file) as img:
+                    if img.format=="WEBP" and img.n_frames>=3:
+                        motion[ident]=f"./assets/media-video-previews/{ident}.webp"
+            except (UnidentifiedImageError,OSError):
+                pass
+    for ident,row in curated.items():
+        if ident in motion:row["animatedThumbnailLocal"]=motion[ident]
+        else:row.pop("animatedThumbnailLocal",None)
+    catalog=json.dumps(doc,ensure_ascii=False,indent=2)+"\\n"
+    if catalog!=CATALOG.read_text(encoding="utf8"):
+        CATALOG.write_text(catalog,encoding="utf8")
+
+    manifest=json.dumps({"schema":1,"items":motion},ensure_ascii=False,indent=2)+"\\n"
+    if not MOTION_INDEX.exists() or MOTION_INDEX.read_text(encoding="utf8")!=manifest:
+        MOTION_INDEX.write_text(manifest,encoding="utf8")
+    print(f"Animated Bilibili storyboards: new={created},reused={reused},unavailable={unavailable},available={len(motion)}")
 if __name__=="__main__":main()
