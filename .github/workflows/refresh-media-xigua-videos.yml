@@ -2,7 +2,7 @@ name: Refresh Xigua verified in-page trailers
 
 on:
   schedule:
-    - cron: '17 7 * * *'
+    - cron: '17 7,19 * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -118,7 +118,7 @@ jobs:
         env:
           SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
           SANDBASE_HARD_ZERO_SPEND_CONFIRMED: ${{ vars.SANDBASE_HARD_ZERO_SPEND_CONFIRMED }}
-          XIGUA_VIDEOS_BATCH: '1'
+          XIGUA_VIDEOS_BATCH: '6'
         run: python scripts/refresh_media_xigua_videos.py
       - name: Validate output, when metadata exists
         run: |
@@ -139,8 +139,8 @@ jobs:
                   assert v['verifiedSource']=='https://www.ixigua.com/'+v['videoId']
           ledger=json.loads(Path('data/media-xigua-budget.json').read_text())
           assert ledger['schema']==1
-          assert 0<=int(ledger['calls'])<=1
-          assert ledger['localDailyCap']==1
+          assert 0<=int(ledger['calls'])<=24
+          assert ledger['localDailyCap']==24
           print('XIGUA_METADATA_VALIDATED',len(doc['items']))
           print('XIGUA_FREE_CALLS_TODAY',ledger['calls'])
           PY
