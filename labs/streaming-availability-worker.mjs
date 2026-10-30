@@ -1320,20 +1320,38 @@ export default {
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
   if(bili){
    const cached=await caches.default.match(request);if(cached)return cached;
+   const id=bili[1];
+   let thumbnail=null,likes=null,views=null;
    try{
-    const id=bili[1],endpoint=new URL("https://api.bilibili.com/x/web-interface/view");
+    const endpoint=new URL("https://api.bilibili.com/x/web-interface/view");
     endpoint.searchParams.set("bvid",id);
     const doc=await jsonRemote(endpoint.toString(),{headers:{
       "Accept":"application/json","User-Agent":"Mozilla/5.0","Referer":"https://www.bilibili.com/"
-    }},6500);
-    if(doc?.code!==0||doc.data?.bvid!==id)throw Error("unverified_id");
-    const stats=doc.data?.stat||{};
-    const likes=Number(stats.like),views=Number(stats.view);
-    if(!Number.isSafeInteger(likes)||likes<0||!Number.isSafeInteger(views)||views<0)throw Error("unavailable_stats");
-    const result=reply({ok:true,bvid:id,source:"Bilibili",likes,views,
-      thumbnail:biliCoverUrl(doc.data.pic),checkedAt:new Date().toISOString()},200,14400);
-    ctx.waitUntil(caches.default.put(request,result.clone()));return result;
-   }catch{return reply({ok:false,status:"unavailable",source:"Bilibili"},200,1800);}
+    }},5000);
+    if(doc?.code===0&&doc.data?.bvid===id&&(doc.data.state==null||doc.data.state===0)){
+      thumbnail=biliCoverUrl(doc.data.pic);
+      const stat=doc.data.stat||{};
+      if(Number.isSafeInteger(stat.like)&&stat.like>=0)likes=stat.like;
+      if(Number.isSafeInteger(stat.view)&&stat.view>=0)views=stat.view;
+    }
+   }catch{/* Some public Bilibili API requests are rate-limited. */}
+   // Metadata availability and popularity are separate. A blocked stats API
+   // must not prevent the original official video page providing its og:image.
+   if(!thumbnail){
+    try{
+     const markup=await publicMarkup("https://www.bilibili.com/video/"+id+"/",5000);
+     const declared=pageMeta(markup,"og:url");
+     if((!declared||/^https:\/\/(?:www\.)?bilibili\.com\/video\/BV[A-Za-z0-9]{10}\/?$/.test(declared)&&
+         declared.includes("/video/"+id))&&markup.includes(id))
+       thumbnail=biliCoverUrl(pageMeta(markup,"og:image"));
+    }catch{/* No cover: the client should retain the movie poster. */}
+   }
+   const available=Boolean(thumbnail)||likes!==null||views!==null;
+   const result=reply({ok:available,bvid:id,source:"Bilibili",
+     thumbnail,likes,views,checkedAt:new Date().toISOString(),
+     status:available?"ok":"unavailable"},200,available?14400:1200);
+   ctx.waitUntil(caches.default.put(request,result.clone()));
+   return result;
   }
   // MyAnimeList v2: join anime only by a verified MAL numeric ID, never by title search.
   const animeMatch=u.pathname.match(/^\/api\/anime\/mal\/([1-9]\d{0,9})$/);
