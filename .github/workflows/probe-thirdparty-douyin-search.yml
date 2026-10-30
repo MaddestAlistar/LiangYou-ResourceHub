@@ -1,0 +1,19 @@
+name: One-time compare third-party Douyin search clients (isolated)
+on:
+  push:
+    branches: [test-douyin-thirdparty-20261031]
+    paths:
+      - '.github/workflows/probe-thirdparty-douyin-search.yml'
+permissions:
+  contents: read
+jobs:
+  anonymous-search-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe three open-source Douyin web-search endpoint variants
+        run: python -u scripts/probe_douyin_search_20261031.py
