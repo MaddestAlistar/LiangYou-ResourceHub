@@ -322,7 +322,19 @@ def main():
     batch = 1 if one_time_paid_test else max(
         1, min(10, int(os.getenv("XIGUA_VIDEOS_BATCH", "10")))
     )
-    chosen = sorted(works, key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k))[:batch]
+    # Interleave anime, television and films. Pure lexical sorting left
+    # film/TV titles unsearched until hundreds of anime had been visited.
+    buckets = {}
+    for kind in ("anime", "tv", "movie"):
+        buckets[kind] = sorted(
+            (k for k in works if works[k]["kind"] == kind),
+            key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k)
+        )
+    chosen = []
+    while len(chosen) < batch and any(buckets.values()):
+        for kind in ("anime", "tv", "movie"):
+            if buckets[kind] and len(chosen) < batch:
+                chosen.append(buckets[kind].pop(0))
     for key_id in chosen:
         if budget.used >= budget.daily_cap or budget.this_run >= budget.run_cap:
             print("XIGUA_ZERO_SPEND_STOP: local run/daily cap reached")
