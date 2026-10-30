@@ -1273,6 +1273,52 @@ export default {
     return reply(video?{ok:true,platform:"acfun",videoId:acfun[1],...video}:
       {ok:false,platform:"acfun",status:"upstream_unavailable"},video?200:502,0);
   }
+  // Public AcFun HTML5 manifest metadata only. Video bytes are never
+  // relayed or stored; signed source URLs are generated per visitor click.
+  // The normal AcFun mobile/desktop pages send SAMEORIGIN and cannot be framed.
+  const acfun=u.pathname.match(/^\\/api\\/video\\/acfun\\/([1-9]\\d{3,11})$/);
+  if(acfun){
+   const id=acfun[1];
+   try{
+    const endpoint="https://www.acfun.cn/v/ac"+id+"?quickViewId=videoInfo_new&ajaxpipe=1";
+    const response=await fetch(endpoint,{signal:AbortSignal.timeout(9000),headers:{
+      "Accept":"*/*","X-Requested-With":"XMLHttpRequest",
+      "Referer":"https://www.acfun.cn/v/ac"+id,
+      "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    }});
+    if(!response.ok)return reply({ok:false,status:"upstream_unavailable"},200);
+    const raw=(await response.text()).slice(0,900000);
+    const outer=JSON.parse(raw);
+    if(typeof outer?.html!=="string")throw Error("acfun_missing_html");
+    const match=/window\\.pageInfo\\s*=\\s*(?:window\\.videoInfo\\s*=\\s*)?/.exec(outer.html);
+    if(!match)throw Error("acfun_missing_info");
+    const rest=outer.html.slice(match.index+match[0].length);
+    const end=rest.indexOf("</script>");
+    if(end<1)throw Error("acfun_missing_script_end");
+    const detail=JSON.parse(rest.slice(0,end).trim().replace(/;\\s*$/,""));
+    if(Number(detail.dougaId||detail.contentId)!==Number(id))throw Error("acfun_identity_mismatch");
+    const play=detail.currentVideoInfo?.ksPlayJson;
+    if(typeof play!=="string"||play.length>150000)throw Error("acfun_no_public_playinfo");
+    const manifest=JSON.parse(play);
+    const root=manifest.data&&typeof manifest.data==="object"?manifest.data:manifest;
+    const groups=Array.isArray(root.adaptationSet)?root.adaptationSet:[root.adaptationSet];
+    const streams=groups.filter(Boolean).flatMap(g=>Array.isArray(g.representation)?g.representation:[]);
+    const candidates=streams.filter(v=>{
+      if(typeof v?.url!=="string"||v.url.length>6000)return false;
+      try{
+       const u=new URL(v.url),host=u.hostname.toLowerCase();
+       return u.protocol==="https:"&&!u.username&&!u.password&&
+        (host.endsWith(".acfun.cn")||host.endsWith(".aixifan.com"))&&
+        /\\.m3u8$/i.test(u.pathname);
+      }catch{return false;}
+    });
+    if(!candidates.length)return reply({ok:false,status:"no_public_hls"},200);
+    const selected=candidates.find(v=>/720p/i.test(String(v.qualityType||"")))||
+       candidates.find(v=>/1080p/i.test(String(v.qualityType||"")))||candidates[0];
+    return reply({ok:true,source:"AcFun",videoId:id,format:"hls",
+      url:selected.url,quality:String(selected.qualityType||"").slice(0,30)},200);
+   }catch{return reply({ok:false,status:"unavailable"},200);}
+  }
   // Bilibili public video statistics; counts are never inferred from view totals.
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
   if(bili){
