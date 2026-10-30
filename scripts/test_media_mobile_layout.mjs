@@ -43,8 +43,27 @@ for(const width of [390,360]){
    close(a.save[0],b.save[0],'watchlist footer top');
    assert.ok(metrics.overflow<=2,'grid horizontal overflow '+metrics.overflow);
    console.log('MOBILE_FILM_LAYOUT_OK',width,JSON.stringify(metrics));
+   // Dedicated card shortcut must open the same Discover panel as the
+   // existing in-dialog tab, without stealing the normal card click.
+   const shortcut=page.locator('#media-grid .mi-card-discover').first();
+   assert.match((await shortcut.textContent()).trim(),/资讯推荐/);
+   const shortcutId=await shortcut.getAttribute('data-mi-card-discover');
+   assert.equal(shortcutId,await page.locator('#media-grid .mi-card-open').first().getAttribute('data-mi-open'));
+   await shortcut.click();
+   await page.waitForFunction(()=>document.querySelector('#media-dialog')?.open,{timeout:10000});
+   assert.equal(await page.locator('#media-dialog [data-mi-detail="discover"]').getAttribute('aria-pressed'),'true');
+   const slots=()=>page.locator('#media-dialog [data-mi-discover-slot]').evaluateAll(
+     nodes=>nodes.map(node=>node.dataset.miDiscoverSlot));
+   const shortcutsSlots=await slots();
+   assert.deepEqual(shortcutsSlots,['trailers','international','domestic','related','similar']);
+   await page.locator('#media-dialog [data-mi-detail="ratings"]').click();
+   await page.locator('#media-dialog [data-mi-detail="discover"]').click();
+   assert.deepEqual(await slots(),shortcutsSlots,'Card and dialog shortcuts must share the exact Discover panel');
+   await page.locator('#media-dialog-close').click();
+
    // Six-category title navigation must remain usable and free of internal API registry.
    await page.locator('#media-grid .mi-card-open').first().click();
+   assert.equal(await page.locator('#media-dialog [data-mi-detail="ratings"]').getAttribute('aria-pressed'),'true');
    await page.waitForFunction(()=>document.querySelector('#media-dialog')?.open,{timeout:10000});
    const titleUI=await page.evaluate(()=>{
      const dialog=document.querySelector('#media-dialog');
