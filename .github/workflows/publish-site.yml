@@ -18,7 +18,9 @@ permissions:
 
 concurrency:
   group: liangyou-pages-ui-publish
-  cancel-in-progress: false
+  # A newer main revision supersedes the previous publish request.
+  # Avoid flooding Pages with duplicate 10-minute polling jobs.
+  cancel-in-progress: true
 
 jobs:
   publish:
