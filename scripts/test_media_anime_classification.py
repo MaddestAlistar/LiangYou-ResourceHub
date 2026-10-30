@@ -41,6 +41,15 @@ class AnimeClassificationTests(unittest.TestCase):
         with patch("refresh_media_anime_classification.request_json",return_value=x):
             self.assertIsNone(anilist_detail(w))
 
+    def test_first_run_without_upstream_data_keeps_valid_empty_entry(self):
+        w={"id":"bangumi-975","year":1999,"malId":21,"anilistId":21,"bangumiId":975}
+        fresh=combine(w,{},None,None,None)
+        self.assertEqual(fresh["workId"],"bangumi-975")
+        self.assertEqual(fresh["genres"],[])
+        self.assertEqual(fresh["keywords"],[])
+        self.assertIsNone(fresh["parental_rating"])
+        self.assertEqual(combine(w,fresh,None,None,None),fresh)
+
     def test_missing_classification_is_never_inferred(self):
         w={"id":"bangumi-975","year":1999,"malId":21,"anilistId":21,"bangumiId":975}
         r=combine(w,{},None,{"genres":["Adventure"],"themes":["Pirates"],"source":"AniList"},None)
