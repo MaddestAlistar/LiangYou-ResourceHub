@@ -40,7 +40,10 @@ try{
    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
      schema:1,items:[{kind,title,year:Number(year),platform:'bilibili',
        videoId:'BV1zprUY2EGj',name:'Matched verified domestic trailer',
-       publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/'}]
+       publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/',
+       thumbnailLocal:'./assets/media-video-covers/BV1zprUY2EGj.jpg'},
+       {kind,title,year:Number(year),platform:'acfun',videoId:'41787132',
+       name:'Matched AcFun public film trailer',verifiedSource:'https://www.acfun.cn/v/ac41787132'}]
    })}));
  await page.route('**/data/media-world-news.json',route=>
    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
@@ -89,6 +92,12 @@ try{
    'There must be exactly one multi-platform trailer section');
  assert.equal(await page.locator('#media-dialog .mi-trailer-grid').count(),1,
    'YouTube and Chinese platforms share one video grid');
+ // Browser-level proof that a cached BV thumbnail is an actual decodable
+ // first-party image, not just a URL written into the DOM.
+ const localCover=page.locator('#media-dialog [data-mi-play-cn="bilibili"] .mi-trailer-platform-thumb').first();
+ await localCover.waitFor({state:'attached',timeout:10000});
+ await localCover.evaluate(img=>img.decode());
+ assert.equal(await localCover.evaluate(img=>img.naturalWidth>0),true);
  await page.locator('#media-dialog [data-mi-play-cn="bilibili"]').first().click();
  assert.equal(await page.locator('#media-trailer-dialog').evaluate(d=>d.open),true);
  assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
@@ -97,6 +106,22 @@ try{
  await page.locator('#media-trailer-close').click();
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
+ await page.route('**/api/video/acfun/41787132',route=>route.fulfill({status:200,contentType:'application/json',
+   body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
+     url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})}));
+ await page.evaluate(()=>{
+   const native=HTMLMediaElement.prototype.canPlayType;
+   HTMLMediaElement.prototype.canPlayType=function(type){
+     return /mpegurl/i.test(type)?'probably':native.call(this,type);
+   };
+ });
+ await page.locator('#media-dialog [data-mi-play-cn="acfun"]').first().click();
+ await page.locator('#media-trailer-stage video.mi-acfun-native').waitFor({state:'attached',timeout:12000});
+ assert.match(await page.locator('#media-trailer-stage video').getAttribute('src'),
+   /tx-safety-video\.acfun\.cn\/testing\/sample\.m3u8/);
+ await page.locator('#media-trailer-close').click();
+ assert.equal(await page.locator('#media-trailer-stage video').count(),0,
+   'Closing native AcFun playback stops and removes video');
  await page.locator('#media-dialog [data-mi-play-video]').first().click();
  assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
    /youtube\.com\/embed\//);
