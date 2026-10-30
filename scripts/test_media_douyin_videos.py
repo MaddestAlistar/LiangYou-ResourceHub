@@ -80,5 +80,29 @@ class DouyinDiscoveryTests(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
         self.assertTrue(all(d.VIDEO_ID.fullmatch(video_id) for video_id in ids))
 
+    def test_concurrent_refresh_preserves_approved_clips_and_all_search_attempts(self):
+        from merge_media_douyin import merge
+        baseline={"schema":1,"updatedAt":"2026-10-30T18:00:00Z",
+                  "discoveryCursor":8,"seedAttempts":["7111111111111111111"],
+                  "items":{"movie:500":{"title":"作品","kind":"movie",
+                           "checkedAt":"2026-10-30T18:00:00Z",
+                           "searchPass":2,"videos":[{"platform":"douyin",
+                             "videoId":"7111111111111111111",
+                             "embedVerified":True,"verifiedByOfficialDouyin":True}]}}}
+        stale={"schema":1,"updatedAt":"2026-10-30T17:59:00Z",
+               "discoveryCursor":7,"seedAttempts":["7222222222222222222"],
+               "items":{"movie:500":{"title":"作品","kind":"movie",
+                        "lastIndexAttemptAt":"2026-10-30T18:01:00Z",
+                        "searchPass":1,"videos":[]}}}
+        combined=merge(baseline,stale)
+        self.assertEqual(combined["discoveryCursor"],8)
+        self.assertEqual(len(combined["seedAttempts"]),2)
+        self.assertEqual(combined["updatedAt"],"2026-10-30T18:00:00Z")
+        record=combined["items"]["movie:500"]
+        self.assertEqual(len(record["videos"]),1)
+        self.assertEqual(record["checkedAt"],"2026-10-30T18:00:00Z")
+        self.assertEqual(record["lastIndexAttemptAt"],"2026-10-30T18:01:00Z")
+        self.assertEqual(record["searchPass"],2)
+
 if __name__=="__main__":
     unittest.main()
