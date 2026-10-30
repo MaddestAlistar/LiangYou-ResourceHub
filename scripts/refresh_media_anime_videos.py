@@ -264,7 +264,7 @@ def recheck_published(items, works):
             vid = str(video.get("id") or "")
             if not VIDEO_ID.fullmatch(vid) or video.get("url") != "https://www.youtube.com/watch?v=" + vid:
                 continue
-            if video.get("verifiedBy") not in ("AniList", "Toei Animation"):
+            if video.get("verifiedBy") not in ("AniList", "Toei Animation", "ONE PIECE Official"):
                 continue
             if vid not in [previous["id"] for previous in trailers]:
                 trailers.append(video)
@@ -311,7 +311,7 @@ def refresh(work, previous):
     # Preserve previously ID-linked official/AniList clips during transient API
     # errors; an empty upstream response must not erase a verified prior result.
     trailers = [v for v in previous.get("youtubeTrailers", [])
-                if isinstance(v, dict) and v.get("verifiedBy") in ("Toei Animation", "AniList")
+                if isinstance(v, dict) and v.get("verifiedBy") in ("Toei Animation", "ONE PIECE Official", "AniList")
                 and VIDEO_ID.fullmatch(str(v.get("id") or ""))
                 and v.get("url") == "https://www.youtube.com/watch?v=" + v["id"]]
     if ani:
