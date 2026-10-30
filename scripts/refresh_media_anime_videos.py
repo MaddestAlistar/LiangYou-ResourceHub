@@ -144,7 +144,7 @@ def safe_anime_video(work, row):
     # A new anime or sequel must not inherit a clearly dated trailer for
     # the old adaptation (e.g. a 1994 video for the 2026 remake).
     first_year = int(work.get("year") or 0)
-    explicit_years = [int(x) for x in re.findall(r"(?<!\\d)(?:19|20)\\d{2}(?!\\d)", label)]
+    explicit_years = [int(x) for x in re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)", label)]
     if first_year >= 2019 and explicit_years and max(explicit_years) < first_year - 3:
         return False
     # Exclude unrelated gameplay, story recaps and crossover fan edits that
