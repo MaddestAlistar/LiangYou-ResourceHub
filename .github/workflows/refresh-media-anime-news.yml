@@ -10,13 +10,14 @@ on:
       - '.github/workflows/refresh-media-anime-news.yml'
 permissions:
   contents: write
+  pages: write
 concurrency:
   group: refresh-media-anime-news
   cancel-in-progress: false
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,3 +93,8 @@ jobs:
           done
           echo 'Could not publish anime news after retry' >&2
           exit 1
+
+      - name: Publish refreshed anime headlines to GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_pages.py
