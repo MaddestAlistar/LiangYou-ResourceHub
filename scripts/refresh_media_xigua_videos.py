@@ -1,0 +1,234 @@
+#!/usr/bin/env python3
+"""Optional Xigua discovery: SandBase public metadata + Xigua's own iframe approval.
+
+Only approved embeds are published; never expose API keys, scrape protected
+playback URLs, or claim a search hit is a verified title identity.
+"""
+from __future__ import annotations
+import json, os, re, time, urllib.parse, urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+from refresh_media_extra_videos import (
+    matches_title, normalize, VIDEO_WORDS, TRAILER_WORDS, BAN_WORDS
+)
+from refresh_media_anime_videos import catalog as anime_catalog, safe_anime_video
+
+ROOT = Path(__file__).resolve().parents[1]
+FILMS = ROOT / "data/media-intel.json"
+OUT = ROOT / "data/media-xigua-videos.json"
+API = "https://api.sandbase.ai/v1/api/xigua/app-v2/search-video"
+OFFICIAL = "https://www.ixigua.com/api/public/get_iframe_info?url="
+ID = re.compile(r"[1-9]\d{14,20}")
+IFRAME = re.compile(r"https://(?:www\.)?ixigua\.com/iframe/([1-9]\d{14,20})(?:[?&/]|(?=['\"\s<>]))")
+MAX_ITEMS = 450
+MAX_VIDEOS = 4
+
+def now():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+def json_request(url, body=None, key=None, timeout=16):
+    headers = {"User-Agent": "LiangYou-ResourceHub-Xigua/1.0", "Accept": "application/json"}
+    if key:
+        headers["Authorization"] = "Bearer " + key
+        headers["Content-Type"] = "application/json"
+    data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
+    with urllib.request.urlopen(urllib.request.Request(url, data=data, headers=headers), timeout=timeout) as response:
+        if response.status != 200:
+            raise RuntimeError("http_" + str(response.status))
+        return json.loads(response.read(1300000))
+
+def search(keyword, key):
+    response = json_request(API, {"keyword": keyword}, key=key)
+    if response.get("status") != "completed":
+        raise RuntimeError("search_unavailable")
+    outputs = response.get("outputs")
+    if not isinstance(outputs, list) or not outputs or not isinstance(outputs[0], dict):
+        raise RuntimeError("search_response_changed")
+    data = outputs[0].get("data")
+    if not isinstance(data, dict) or data.get("err_code") not in (0, None):
+        raise RuntimeError("search_upstream_error")
+    results = data.get("results")
+    if not isinstance(results, list):
+        raise RuntimeError("search_results_changed")
+    return results[:30]
+
+def parse_result(row):
+    """SandBase results carry nested upstream data; do not assume optional fields."""
+    if not isinstance(row, dict):
+        return None
+    parts = [row]
+    for key in ("data", "video", "item", "item_info", "item_data"):
+        val = row.get(key)
+        if isinstance(val, dict):
+            parts.insert(0, val)
+            for sub in ("data", "video", "item"):
+                if isinstance(val.get(sub), dict):
+                    parts.insert(0, val[sub])
+    def get(*keys):
+        for part in parts:
+            for k in keys:
+                if part.get(k) not in (None, ""):
+                    return part[k]
+        return None
+    video_id = str(get("group_id", "item_id", "video_id", "videoId", "id") or "")
+    name = str(get("title", "video_title", "videoTitle") or "").strip()
+    if not ID.fullmatch(video_id) or not 5 <= len(name) <= 170:
+        return None
+    cover = get("large_image_url", "thumbnail", "cover_url", "cover", "poster_url")
+    if isinstance(cover, dict):
+        cover = cover.get("url") or cover.get("url_list", [None])[0]
+    if isinstance(cover, list):
+        cover = cover[0] if cover else None
+    if isinstance(cover, dict):
+        cover = cover.get("url")
+    author = get("author", "user_info")
+    if isinstance(author, dict):
+        author = author.get("name") or author.get("nickname")
+    author = str(author or get("user_name", "nickname") or "西瓜视频")[:60]
+    return {"videoId": video_id, "name": name,
+            "thumbnail": trusted_cover(cover), "publisher": author}
+
+def trusted_cover(value):
+    if not isinstance(value, str):
+        return None
+    url = value.strip()
+    if url.startswith("//"):
+        url = "https:" + url
+    if len(url) > 650 or not url.startswith("https://"):
+        return None
+    host = (urllib.parse.urlsplit(url).hostname or "").lower()
+    allowed = ("bdxiguaimg.com", "byteimg.com", "pstatp.com", "toutiaoimg.com", "ixigua.com")
+    return url if any(host == d or host.endswith("." + d) for d in allowed) else None
+
+def approved_embed(video_id):
+    """Use only the official approval response, not a guessed iframe path."""
+    if not ID.fullmatch(str(video_id)):
+        return None
+    url = OFFICIAL + urllib.parse.quote("https://www.ixigua.com/" + video_id, safe="")
+    response = json_request(url)
+    if response.get("code") != 0 or not isinstance(response.get("data"), dict):
+        return None
+    code = response["data"].get("iframe_code")
+    if not isinstance(code, str) or "<iframe" not in code.lower():
+        return None
+    match = IFRAME.search(code.replace("&amp;", "&"))
+    return match.group(1) if match else None
+
+def film_catalog():
+    result = {}
+    for work in json.loads(FILMS.read_text(encoding="utf8")).get("works", {}).values():
+        if not isinstance(work, dict) or work.get("kind") not in ("movie", "tv"):
+            continue
+        mid = int(work.get("tmdb_id") or 0)
+        if mid <= 0:
+            continue
+        title = str(work.get("title") or "").strip()
+        original = str(work.get("original_title") or "").strip()
+        date = str(work.get("date") or "")
+        year = int(date[:4]) if re.match(r"^\d{4}", date) else 0
+        if not title or year < 1900:
+            continue
+        result[work["kind"] + ":" + str(mid)] = {
+            "kind": work["kind"], "id": work["kind"] + ":" + str(mid),
+            "tmdb_id": mid, "title": title, "original": original,
+            "aliases": list(dict.fromkeys(x for x in (title, original) if x)),
+            "year": year
+        }
+    return result
+
+def accept(work, video):
+    name = video["name"]
+    if BAN_WORDS.search(name) or not VIDEO_WORDS.search(name):
+        return False
+    if work["kind"] == "anime":
+        return safe_anime_video(work, video)
+    if not matches_title(name, work["aliases"], work["year"], work["kind"]):
+        return False
+    # Avoid false hits for very short/common film titles and film commentary
+    # referring to other works.
+    title = work["title"]
+    if work["kind"] == "movie" and len(normalize(title)) <= 4 and re.search(r"[\u4e00-\u9fff]", title):
+        if not re.search(r"[《「『]\s*" + re.escape(title) + r"\s*[》」』]", name):
+            return False
+    if re.search(r"热血航线|海贼无双|游戏实况|游戏攻略|手游|gameplay", name, re.I):
+        return False
+    return True
+
+def work_queries(work):
+    aliases = work["aliases"]
+    han = next((x for x in aliases if re.search(r"[\u4e00-\u9fff]", x)), None)
+    main = han or work["title"]
+    keyword = "动漫 PV" if work["kind"] == "anime" else "预告片"
+    return [main + " " + keyword, main + " " + ("动画 预告" if work["kind"] == "anime" else "相关视频")]
+
+def row_for(work, item, embed):
+    base = {"platform": "xigua", "videoId": item["videoId"],
+            "embedId": embed, "embedVerified": True,
+            "verifiedSource": "https://www.ixigua.com/" + item["videoId"],
+            "name": item["name"][:145],
+            "publisher": item["publisher"],
+            "thumbnail": item["thumbnail"],
+            "type": "Trailer" if TRAILER_WORDS.search(item["name"]) else "Related",
+            "kind": work["kind"], "title": work["title"], "year": work["year"]}
+    if work["kind"] == "anime":
+        base.update(workId=work["id"], verifiedByCatalogTitle=True)
+    else:
+        base.update(tmdbId=work["tmdb_id"], matchedByTitle=True)
+    return base
+
+def discover(work, key):
+    candidates = {}
+    for query in work_queries(work):
+        for result in search(query, key):
+            item = parse_result(result)
+            if item and item["videoId"] not in candidates and accept(work, item):
+                candidates[item["videoId"]] = item
+        if len(candidates) >= MAX_VIDEOS * 3:
+            break
+        time.sleep(.35)
+    videos = []
+    for item in list(candidates.values())[:MAX_VIDEOS * 3]:
+        embed = approved_embed(item["videoId"])
+        if embed:
+            videos.append(row_for(work, item, embed))
+        if len(videos) >= MAX_VIDEOS:
+            break
+        time.sleep(.3)
+    return videos
+
+def main():
+    key = os.getenv("SANDBASE_API_KEY", "").strip()
+    if not key:
+        print("XIGUA_DISABLED: configure SANDBASE_API_KEY GitHub Actions secret for automatic discovery")
+        return
+    works = {**film_catalog(), **anime_catalog()}
+    try:
+        old = json.loads(OUT.read_text(encoding="utf8"))
+    except (OSError, ValueError):
+        old = {}
+    items = {k: v for k, v in (old.get("items") or {}).items() if k in works and isinstance(v, dict)}
+    batch = max(1, min(15, int(os.getenv("XIGUA_VIDEOS_BATCH", "8"))))
+    chosen = sorted(works, key=lambda k: (str(items.get(k, {}).get("checkedAt") or ""), k))[:batch]
+    for key_id in chosen:
+        work = works[key_id]
+        try:
+            videos = discover(work, key)
+            items[key_id] = {"title": work["title"], "kind": work["kind"],
+                             "year": work["year"], "tmdbId": work.get("tmdb_id", 0),
+                             "workId": work.get("id", ""),
+                             "checkedAt": now(), "videos": videos}
+            print("XIGUA_CHECKED", key_id, len(videos), flush=True)
+        except Exception as error:
+            print("XIGUA_UNAVAILABLE", key_id, type(error).__name__, flush=True)
+            # Preserve previously approved records during provider outages.
+        time.sleep(.5)
+    if len(items) > MAX_ITEMS:
+        items = dict(sorted(items.items(),
+            key=lambda item: str(item[1].get("checkedAt") or ""), reverse=True)[:MAX_ITEMS])
+    OUT.write_text(json.dumps({"schema": 1, "updatedAt": now(), "items": items},
+                             ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf8")
+    print("XIGUA_SUMMARY", len(chosen), len(items), flush=True)
+
+if __name__ == "__main__":
+    main()
