@@ -743,6 +743,7 @@
         trailers:[...((trailerResult||{}).trailers||[]),...indexedYoutubeRows,...extraYoutubeRows]};
       pane.innerHTML=trailerGallery(enrichedVideo,enrichedInfo,domesticRows,trailerStatus);
       discoverMissingBiliCovers(pane);
+      setupMobileMotionCovers(pane);
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
       const fallback=discoverSlots.trailers.querySelector('.mi-official-trailer-fallback');
@@ -1085,6 +1086,36 @@
       img.classList.add('is-active');
     }else img.classList.remove('is-active');
   }
+  // On phones, hover does not exist. Start at most one verified small WebP
+  // preview when its card is substantially visible. No network prefetch for
+  // offscreen cards, data-saving connections or reduced-motion preferences.
+  let mobileMotionObserver=null;
+  function setupMobileMotionCovers(host){
+    mobileMotionObserver?.disconnect();
+    mobileMotionObserver=null;
+    if(typeof IntersectionObserver!=='function'||
+       !window.matchMedia('(hover: none), (pointer: coarse)').matches||
+       window.matchMedia('(prefers-reduced-motion: reduce)').matches||
+       navigator.connection?.saveData||
+       /(?:^|-)2g/i.test(navigator.connection?.effectiveType||''))return;
+    const cards=[...host.querySelectorAll('.mi-trailer-card')]
+      .filter(card=>card.querySelector('.mi-trailer-motion-thumb'));
+    if(!cards.length)return;
+    const visible=new Map();
+    function update(){
+      const current=[...visible.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0];
+      for(const card of cards)setMotionCover(card,card===current);
+    }
+    mobileMotionObserver=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(entry.isIntersecting&&entry.intersectionRatio>=.55)
+          visible.set(entry.target,entry.intersectionRatio);
+        else visible.delete(entry.target);
+      }
+      update();
+    },{threshold:[0,.55,.75,1]});
+    for(const card of cards)mobileMotionObserver.observe(card);
+  }
   // AcFun's own public HLS stream is available to the native film player.
   // On a desktop hover, preview one muted source video for at most four seconds.
   // Mobile scrolling never auto-fetches video segments.
@@ -1166,6 +1197,11 @@
       img.remove();return;
     }
     if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb')){
+      // If an upstream animated GIF fails, never keep a false motion badge.
+      if(img.parentElement?.dataset.miNativeMotion==='gif'){
+        img.parentElement.removeAttribute('data-mi-native-motion');
+        img.parentElement.querySelector('.mi-trailer-motion-label')?.remove();
+      }
       const backup=mediaCoverUrl(img.dataset.thumbFallback);
       if(backup&&img.src!==backup){
         img.removeAttribute('data-thumb-fallback');
