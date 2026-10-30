@@ -245,15 +245,24 @@ def main():
     if not official_api_ready():
         print("XIGUA_OFFICIAL_API_UNAVAILABLE: JSON iframe approval not accessible; skip paid search")
         return
-    # The free allocation is SHARED across SandBase organization APIs. If
-    # there is any funded capacity, SandBase may bill overage. Fail closed.
-    try:
-        if not funded_capacity_is_zero(key):
-            print("XIGUA_ZERO_SPEND_STOP: balance or credit line is nonzero / unknown")
+    # The free quota is shared across every SandBase API in this organization.
+    # A one-call/day local limit alone is NOT a no-charge guarantee.
+    # Account API may return 403 to restricted keys. As a separate explicit
+    # safeguard, the owner can confirm a provider-enforced $0 key spend cap.
+    # Never infer this from the GitHub secret being present.
+    provider_zero_spend_confirmed = os.getenv(
+        "SANDBASE_HARD_ZERO_SPEND_CONFIRMED", ""
+    ).strip().lower() == "true"
+    if provider_zero_spend_confirmed:
+        print("XIGUA_ZERO_SPEND_GATE: owner confirmed hard $0 provider key limit")
+    else:
+        try:
+            if not funded_capacity_is_zero(key):
+                print("XIGUA_ZERO_SPEND_STOP: balance or credit line is nonzero / unknown")
+                return
+        except Exception as error:
+            print("XIGUA_ZERO_SPEND_STOP: cannot verify account balance",type(error).__name__)
             return
-    except Exception as error:
-        print("XIGUA_ZERO_SPEND_STOP: could not inspect public account balance",type(error).__name__)
-        return
     budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=1, run_cap=1)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
