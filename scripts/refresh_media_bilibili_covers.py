@@ -49,28 +49,39 @@ def checked_image(raw):
 
 
 def official_cover(bvid):
+    """Return a first-party thumbnail from the public video details endpoint.
+
+    A second metadata-only client identifier is used if a hosted CI runner is
+    challenged by the browser request. No cookies or playback URLs are involved.
+    """
     for api in ENDPOINTS:
         endpoint = api + "?" + urllib.parse.urlencode({"bvid": bvid})
-        request = urllib.request.Request(endpoint, headers={
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept": "application/json",
-            "Referer": "https://www.bilibili.com/",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        })
-        try:
-            with urllib.request.urlopen(request, timeout=12) as response:
-                if response.status != 200:
-                    continue
-                body = json.loads(response.read(400000))
-            data = body.get("data") or {}
-            # view/detail can wrap metadata as data.View
-            view = data.get("View") or data
-            if (body.get("code") == 0 and view.get("bvid") == bvid):
-                image = checked_image(view.get("pic"))
-                if image:
-                    return image
-        except (urllib.error.URLError, TimeoutError, ValueError, KeyError, OSError):
-            continue
+        for user_agent in (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "okhttp/4.9.3",
+        ):
+            request = urllib.request.Request(endpoint, headers={
+                "User-Agent": user_agent,
+                "Accept": "application/json",
+                "Referer": "https://www.bilibili.com/",
+                "Accept-Language": "zh-CN,zh;q=0.9",
+            })
+            try:
+                with urllib.request.urlopen(request, timeout=9) as response:
+                    if response.status != 200:
+                        continue
+                    body = json.loads(response.read(400000))
+                data = body.get("data") or {}
+                view = data.get("View") or data
+                if body.get("code") == 0 and view.get("bvid") == bvid:
+                    image = checked_image(view.get("pic"))
+                    if image:
+                        return image
+                print(f"Bilibili cover query {bvid}: API code {body.get('code', 'unknown')}")
+            except urllib.error.HTTPError as exc:
+                print(f"Bilibili cover query {bvid}: HTTP {exc.code}")
+            except (urllib.error.URLError, TimeoutError, ValueError, KeyError, OSError):
+                print(f"Bilibili cover query {bvid}: request unavailable")
     return None
 
 
