@@ -26,6 +26,23 @@ class VideoSources(unittest.TestCase):
             rows=parse_acfun(self.moana)
         self.assertEqual([r["videoId"] for r in rows],["30636253"])
         self.assertEqual(rows[0]["verifiedSource"],"https://www.acfun.cn/v/ac30636253")
+    def test_acfun_related_fallback_only_after_empty_trailer_search(self):
+        calls=[]
+        def response(url):
+            calls.append(url)
+            if len(calls)==1:
+                return {"videoList":[{"title":"不相关影片的预告","dougaId":12345678}]}
+            return {"videoList":[
+                {"title":"《药屋少女的呢喃》第一季完结简评","dougaId":43386834},
+                {"title":"《药屋少女的呢喃》搞笑场面【01】","dougaId":43989846},
+                {"title":"《药屋少女的呢喃》全集免费观看","dougaId":49000000}
+            ]}
+        with patch("refresh_media_extra_videos.get_json",side_effect=response), \
+             patch("refresh_media_extra_videos.time.sleep",return_value=None):
+            rows=parse_acfun(self.apoth)
+        self.assertEqual(len(calls),2)
+        self.assertEqual([r["videoId"] for r in rows],["43386834","43989846"])
+        self.assertTrue(all(r["type"]=="Related" for r in rows))
     def test_niconico_pv_matching(self):
         doc={"data":[{"title":"TVアニメ『薬屋のひとりごと』第2クールPV","contentId":"sm43190555","viewCounter":16424},
                      {"title":" unrelated PV","contentId":"sm45678999"}]}
