@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from xigua_zero_spend import funded_capacity_is_zero, LocalFreeBudget, FreeQuotaStop
+from merge_xigua_budget import merge_budgets
 
 class FakeResponse:
     def __init__(self, body):
@@ -60,6 +61,17 @@ class ZeroSpendSafety(unittest.TestCase):
             third=LocalFreeBudget(path,day="2026-10-30")
             with self.assertRaises(FreeQuotaStop): third.authorize()
             self.assertEqual(third.used,24)
+
+    def test_stale_workflow_budget_merges_monotonically(self):
+        current={"schema":1,"utcDay":"2026-10-30","calls":13,"localDailyCap":24}
+        stale={"schema":1,"utcDay":"2026-10-30","calls":4,"localDailyCap":24}
+        self.assertEqual(merge_budgets(current,stale)["calls"],13)
+        self.assertEqual(merge_budgets(stale,current)["calls"],13)
+        new_day={"schema":1,"utcDay":"2026-10-31","calls":2,"localDailyCap":24}
+        self.assertEqual(merge_budgets(current,new_day)["calls"],2)
+        self.assertEqual(merge_budgets(new_day,current)["utcDay"],"2026-10-31")
+        with self.assertRaises(ValueError):
+            merge_budgets({"schema":1,"utcDay":"2026-10-30","calls":25},stale)
 
     def test_invalid_same_day_ledger_fails_closed(self):
         with tempfile.TemporaryDirectory() as folder:
