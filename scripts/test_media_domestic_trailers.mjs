@@ -229,6 +229,31 @@ test('platform-specific real cover images render without untrusted sources',()=>
  assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
 });
 
+test('verified AcFun GIF thumbnail is animated without a misleading playback-trial label',()=>{
+ const info={...selected,tmdbId:550};
+ const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+   platform:'acfun',videoId:'30636253',name:'动画预告',
+   verifiedSource:'https://www.acfun.cn/v/ac30636253',
+   thumbnail:'https://tx-free-imgs.acfun.cn/newUpload/anim.gif?imageslim'};
+ const h=gallery({},info,[row]);
+ assert.match(h,/anim\.gif\?imageslim/);
+ assert.match(h,/data-mi-native-motion="gif"/);
+ assert.match(h,/动态封面/);
+ assert.match(h,/站内播放/);
+ assert.doesNotMatch(h,/尝试站内播放|Try in-page playback/);
+ assert.match(source,/function playAcfunCover\(card\)/);
+ assert.match(source,/video\.muted=true/);
+});
+test('Bilibili motion cover accepts only the matching verified BV ID and WebP path',()=>{
+ const info={...selected,tmdbId:550};
+ const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+   platform:'bilibili',videoId:'BV1234567890',name:'影片预告',
+   verifiedSource:'https://www.bilibili.com/video/BV1234567890/',
+   animatedThumbnailLocal:'./assets/media-video-previews/BV1234567890.webp'};
+ assert.match(gallery({},info,[row]),/data-mi-motion-src="\.\/assets\/media-video-previews\/BV1234567890\.webp"/);
+ assert.doesNotMatch(gallery({},info,[{...row,animatedThumbnailLocal:'./assets/media-video-previews/BV1111111111.webp'}]),/data-mi-motion-src/);
+ assert.doesNotMatch(gallery({},info,[{...row,animatedThumbnailLocal:'https://evil.example/a.webp'}]),/data-mi-motion-src/);
+});
 test('Niconico uses verified medium cover and falls back to original on CDN failure',()=>{
   const info={...selected,tmdbId:550};
   const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
