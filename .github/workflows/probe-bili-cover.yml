@@ -1,0 +1,24 @@
+name: Probe Bilibili cover metadata with no account
+on:
+  push:
+    branches: [probe/bilibili-video-thumbnails-20261030]
+    paths: [.github/workflows/probe-bili-cover.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 experiments/bili_cover_probe.py
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bili-video-cover-report
+          path: bilibili-cover-endpoints-report.json
+          if-no-files-found: ignore
+          retention-days: 3
