@@ -40,7 +40,7 @@ jobs:
           PY
       - name: Refresh rotated anime news
         env:
-          ANIME_NEWS_BATCH: '35'
+          ANIME_NEWS_BATCH: '100'
         run: python scripts/refresh_media_anime_news.py
       - name: Validate all articles are season-scoped and safe links
         run: |
