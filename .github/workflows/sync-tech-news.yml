@@ -33,6 +33,7 @@ jobs:
       - name: Validate mirror source
         run: python -m py_compile scripts/sync_tech_news_snapshot.py
       - name: Sync current public news and local image copies
+        id: sync
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -40,17 +41,23 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/sync_tech_news_snapshot.py
-            git add data/tech-news-feed.json assets/tech-news
+            git add data/tech-news-feed.json
+            if [ -d assets/tech-news ]; then git add assets/tech-news; fi
             if git diff --cached --quiet; then
               echo 'Tech news already current'
+              echo 'changed=false' >> "$GITHUB_OUTPUT"
               exit 0
             fi
             git commit -m 'Sync public tech news and images [skip ci]'
-            if git push origin HEAD:main; then exit 0; fi
+            if git push origin HEAD:main; then
+              echo 'changed=true' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           done
           echo 'Unable to push refreshed tech news after retries' >&2
           exit 1
       - name: Publish the new snapshot to GitHub Pages
+        if: steps.sync.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/publish_pages.py
