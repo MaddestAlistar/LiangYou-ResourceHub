@@ -126,7 +126,7 @@ def parse_dailymotion(work):
             english=work.get("original") or ""
             tokens=re.findall(r"[A-Za-z]+",english)
             generic=(len(tokens)==1 or len(tokens)==2 and tokens[0].casefold()=="the")
-            explicit_years=[int(y) for y in re.findall(r"(?<!\\d)(?:19|20)\\d{2}(?!\\d)",name)]
+            explicit_years=[int(y) for y in re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)",name)]
             if generic and not any(abs(y-work["year"])<=1 for y in explicit_years):continue
         results.append(video_record(work,"dailymotion",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
           verifiedSource="https://www.dailymotion.com/video/"+ident,
