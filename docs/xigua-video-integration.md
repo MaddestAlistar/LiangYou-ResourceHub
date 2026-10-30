@@ -1,32 +1,37 @@
-# 西瓜视频：零付费影视预告接入
+# 西瓜视频：谨慎免费调用与站内播放接入
 
-本项目把官方允许嵌入的西瓜视频，与电影 TMDB ID / 动漫作品 ID、年份、季数关联，保留影视中心现有的 Bilibili、YouTube、Dailymotion、Niconico、AcFun 视频卡片和总计 20 条上限。不对访客直接调用 SandBase，密钥只存在 GitHub Actions Secrets。
+## 状态（2026-10-30）
 
-## 现状与限制（2026-10-30）
+已接入影视情报中心的作品 ID 核对、站内播放器和静态视频快照。**但尚无可实际播放的西瓜视频通过审核上架。** GitHub Actions 实测：
+- `SANDBASE_API_KEY` 已被 GitHub 识别；
+- `GET /v1/account/balance` 返回 403，不能用这个密钥核实有无可付费余额；
+- 西瓜 `get_iframe_info` 返回 HTML，不是文档列出的 JSON。因而无法从其公开 API 验证视频可嵌入性。
 
-- 西瓜官方 `get_iframe_info` 在 GitHub Actions 实测 HTTP 200，但响应为 HTML 而不是预期 JSON；因此**真实西瓜视频并未完成审核入库，播放器效果仍须大陆手机网络确认**。
-- 即使已配置 `SANDBASE_API_KEY`，只有官方接口可用、账户资金状态安全、每日调用额度剩余时才会启动搜索。缓存为空不会导致其他视频来源失效。
-- 单独的[站内播放诊断页](../labs/xigua-embed-probe.html)可让中国大陆用户实际尝试 iframe 播放，不能把 HTTP 200 等同于“已经成功播放”。
-- SandBase 共有 100 次/组织/UTC 日的免费适用 API 调用，**超出后不会自动拒绝计费**，且是跨本组织其他应用共享，单凭固定调用次数不能保证零费用。
+**注意：SandBase 官方免费 100 次是整个组织共享的 UTC 日限额。用完后可继续收费；即使本网站每天只发起 1 次，也无法独立保证这次一定免费。** [SandBase 官方免费额度说明](https://sandbase.ai/docs/for-agents/full)。
 
-## 这个项目的零付费限制（Fail closed）
+## 网站侧已经设置的限制
 
-1. 使用 SandBase **公开只读** `GET /v1/account/balance` 查询组织资金状态。如果 `balance` 非零、`credit_limit` 非零，或者无法确定资金状态，则直接终止；不会向 SandBase 提交视频搜索。
-2. 仅在可计费余额与信用额度都为零时执行免费搜索，因此即使 SandBase 整个组织的 100 次免费额度已被其它项目占用，后续请求也不能从余额或授信扣款（可能返回 402 并停机）。如果将来给账户充值或授信，这个工作流会自动转为“禁用搜索”。
-3. 本仓库搜索预算另外独立限流：**UTC 每日最多 20 次、每次工作流最多 8 次**。计数发生于发请求之前；失败也占用预算，不会盲目重试。
-4. `data/media-xigua-budget.json` 持久化每日已尝试调用次数，由 GitHub Actions 同数据快照一起提交；重跑不会将本日配额重置。为降低跨任务竞争，单一工作流设置串行组。
-5. 官方 iframe 返回非 JSON、API 无法授权、配额用尽或搜索返回错误，均**不展示未验证的西瓜视频**，不影响已有作品的其他视频来源。
-6. **不会利用第三方直链、代理、绕过 DRM 或权限校验来实现强制播放**。西瓜官方仅允许部分视频站外嵌入，已嵌入视频也可能后来失效。
+1. 每天 UTC 最多 **1 次** SandBase 搜索；单次运行也最多 **1 次**。每天仅调度一次，失败不重试、超限不再继续。
+2. `data/media-xigua-budget.json` 记录当天已尝试的请求。工作流串行、记录会随 JSON 缓存写回 GitHub。
+3. 如果官方嵌入接口暂时失效，可以在**有零付费硬保障**的前提下搜索公开元数据并记录匹配数量，但绝不把未经官方批准的视频当作可播放卡片展示。
+4. 不影响 Bilibili、YouTube、Dailymotion、Niconico、AcFun 的视频抓取、20 条总上限与站内播放。
 
-## 无需充值的使用办法
+## 什么时候才允许搜索？
 
-- 你可以在 GitHub Actions Secrets 中配置 `SANDBASE_API_KEY`。
-- 检查 [西瓜刷新工作流](../.github/workflows/refresh-media-xigua-videos.yml) 的日志：`XIGUA_KEY_CONFIGURED`、`XIGUA_ZERO_FUNDS_VERIFIED`、`XIGUA_EMBED_API_UNAVAILABLE`、`XIGUA_ZERO_SPEND_STOP`。
-- 不需要购买套餐。要让工作流搜索，当前组织必须满足可扣费余额 **0**、信用额度 **0**；如果存在余额，脚本将停止以履行零付费原则。
-- 日志显示工作流 `success` 仅代表脚本执行无异常，不代表已匹配到视频。最终以 `data/media-xigua-videos.json` 中获得官方 iframe 认证的条目与中国大陆实际播放结果为准。
+两条路径满足任意一条才允许：
 
-官方西瓜嵌入文档：https://developers.ixigua.com/iframe.html
+- **路径 A（自动验证）**：`GET /v1/account/balance` 成功，且组织余额、授信都等于 0。当前密钥返回 403，因此此路径暂不可用。
+- **路径 B（账户明确设置）**：在 SandBase Developer → API Keys 把**本网站专用密钥**设置为平台强制执行的 **$0 付费上限**，确认 SandBase 允许免费配额请求且对超额请求实行硬拒绝；然后才在 GitHub 仓库 Settings → Secrets and variables → Actions → **Variables** 添加：
+  `SANDBASE_HARD_ZERO_SPEND_CONFIRMED=true`
 
-SandBase 免费额度说明：https://sandbase.ai/docs/for-agents/full
+> 此变量代表网站所有者已经亲自核实 SandBase 的硬限制；GitHub 无法从这个变量验证平台实际配置。**官方文档没有明确保证 $0 消费上限能否成功创建或是否允许免费请求。** 如果控制台不提供有效的零金额硬限制，**不要设置此变量**，程序继续安全暂停。仅靠“每天 1 次”不是零付费保证。
 
-SandBase 账户余额只读 API：https://www.sandbase.ai/docs/api-reference/account/balance
+这两个条件之外不会向 SandBase 发送可能收费的搜索请求。密钥只放在 Actions Secret 内，不得放在网站前端。
+
+## 核验
+
+- [每日西瓜检查 GitHub Actions](../.github/workflows/refresh-media-xigua-videos.yml)
+- [西瓜官方 iframe 播放测试页](../labs/xigua-embed-probe.html)
+- [西瓜视频 iframe 开发者文档](https://developers.ixigua.com/iframe.html)
+
+日志 `XIGUA_CHECKED` 的 `matched` 只是名字匹配数量，`embedded` 才是官方接口核验并可供前端显示的条数。即使 `embedded` > 0，仍须在中国大陆实际播放，才能确认最终效果。
