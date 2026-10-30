@@ -57,6 +57,23 @@ class VideoSources(unittest.TestCase):
         with patch("refresh_media_extra_videos.get_json",return_value=doc):
             rows=parse_dailymotion(w)
         self.assertEqual([r["videoId"] for r in rows],["x8mcq94"])
+    def test_dailymotion_rejects_ambiguous_one_word_movie_titles_without_year(self):
+        runner={"title":"护肝人","original":"Runner","aliases":["护肝人","Runner"],
+                "year":2026,"kind":"movie","tmdb_id":1377237}
+        found={"list":[
+            {"id":"x11dhgw","title":"Runner, Runner - Trailer"},
+            {"id":"x117m9p","title":"Runner Runner Trailer"},
+            {"id":"xabcdef","title":"Runner (2026) Official Trailer"},
+            {"id":"xabcde1","title":"Runner 2024 trailer"}
+        ]}
+        with patch("refresh_media_extra_videos.get_json",return_value=found):
+            results=parse_dailymotion(runner)
+        self.assertEqual([x["videoId"] for x in results],["xabcdef"])
+        obsession={"title":"痴迷","original":"Obsession","aliases":["痴迷","Obsession"],
+                  "year":2026,"kind":"movie","tmdb_id":1339713}
+        with patch("refresh_media_extra_videos.get_json",
+                   return_value={"list":[{"id":"x8joimv","title":"Obsession Trailer"}]}):
+            self.assertEqual(parse_dailymotion(obsession),[])
     def test_kinocheck_tmdb_mismatch_rejected(self):
         doc={"tmdb_id":277835,"trailer":{"youtube_video_id":"F0zP0L_sUDA"}}
         with patch("refresh_media_extra_videos.get_json",return_value=doc):
