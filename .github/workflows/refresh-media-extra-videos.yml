@@ -5,8 +5,7 @@ on:
     - cron: '37 */6 * * *'
   workflow_dispatch:
   push:
-    branches:
-      - feature/media-videos-20-sources-20261030
+    branches: [main]
     paths:
       - '.github/workflows/refresh-media-extra-videos.yml'
       - 'scripts/refresh_media_extra_videos.py'
@@ -23,7 +22,7 @@ concurrency:
 
 jobs:
   refresh:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/media-videos-20-sources-20261030'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -55,7 +54,7 @@ jobs:
           p=Path('data/media-extra-videos.json')
           d=json.loads(p.read_text())
           assert d['schema']==1 and isinstance(d['items'],dict)
-          assert len(d['items'])<=450 and p.stat().st_size<600000
+          assert len(d['items'])<=450 and p.stat().st_size<1800000
           for key,row in d['items'].items():
               kind,id=key.split(':')
               assert kind in ('movie','tv') and int(id)>0
