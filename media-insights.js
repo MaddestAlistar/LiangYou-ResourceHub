@@ -218,11 +218,6 @@
       if(p==='acfun')verified=/^[1-9]\d{3,11}$/.test(id)&&u==='https://www.acfun.cn/v/ac'+id;
       if(p==='niconico')verified=/^(sm|so)\d{6,12}$/.test(id)&&u==='https://www.nicovideo.jp/watch/'+id;
       if(p==='dailymotion')verified=/^x[a-z0-9]{4,12}$/i.test(id)&&u==='https://www.dailymotion.com/video/'+id;
-      // Xigua cards require a recorded official iframe approval; never infer
-      // embeddability from an indexed search result or a guessed player URL.
-      if(p==='xigua')verified=/^[1-9]\d{14,20}$/.test(id)&&
-        /^[1-9]\d{14,20}$/.test(String(x.embedId||''))&&x.embedVerified===true&&
-        u==='https://www.ixigua.com/'+id;
       // Douyin Jingxuan clips require official video-ID iframe authorization
       // AND independent successful in-page playback checks.
       if(p==='douyin')verified=/^[1-9]\d{14,20}$/.test(id)&&
@@ -259,9 +254,9 @@
       if(v.platform)platforms.add(v.platform);
     };
     // Prefer sources that can play on mainland Chinese networks: put one
-    // verified Bilibili and officially approved Xigua videos first.
+    // verified Bilibili and officially approved Douyin videos first.
     // Do not create placeholder slots or promote source-only links.
-    for(const provider of ['bilibili','douyin','xigua','acfun']){
+    for(const provider of ['bilibili','douyin','acfun']){
       include(ranked.find(v=>v.platform===provider&&v.playable===true));
     }
     // Every other available platform still receives one early representative.
@@ -383,7 +378,7 @@
       likes:Number.isSafeInteger(v.likes)?v.likes:-1,card:youtubeCard(v)});
     for(const v of verifiedRelated)candidates.push({key:'youtube:'+v.id,platform:'youtube',domestic:false,
       type:'related',official:false,playable:true,likes:v.likes,card:youtubeCard(v,true)});
-    const names={bilibili:'Bilibili',douyin:'抖音精选',xigua:'西瓜视频',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'};
+    const names={bilibili:'Bilibili',douyin:'抖音精选',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'};
     for(const x of domestic){
       const provider=names[x.platform];
       if(!provider)continue;
@@ -407,7 +402,7 @@
       const bvidCover=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
         ['jpg','png','webp'].some(ext=>x.thumbnailLocal==='./assets/media-video-covers/'+x.videoId+'.'+ext)?
         x.thumbnailLocal:null;
-      const posterFallback=['bilibili','douyin','xigua'].includes(x.platform)?mediaCoverUrl(info.poster):null;
+      const posterFallback=['bilibili','douyin'].includes(x.platform)?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
       const verifiedBiliMotion=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
@@ -430,14 +425,14 @@
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-play" aria-hidden="true">▶</span></span>';
       const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
-        '" data-mi-cn-id="'+esc(x.videoId)+'"'+(x.platform==='xigua'?' data-mi-cn-embed-id="'+esc(x.embedId)+'"':'')+' data-mi-cn-url="'+esc(x.url)+
+        '" data-mi-cn-id="'+esc(x.videoId)+'"'++' data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>';
       const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
           (Number.isSafeInteger(x.likes)&&x.likes>=0?' · '+esc(new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact'}).format(x.likes))+t(' 赞',' likes'):'')+'</small>'+
         '</div></article>';
-      candidates.push({key:x.platform+':'+x.videoId,platform:x.platform,domestic:['bilibili','douyin','xigua'].includes(x.platform),
+      candidates.push({key:x.platform+':'+x.videoId,platform:x.platform,domestic:['bilibili','douyin'].includes(x.platform),
         type:x.type==='Related'?'related':'trailer',
         official:x.official===true,playable:supportedPlayer,likes:Number.isSafeInteger(x.likes)?x.likes:-1,
         views:Number.isSafeInteger(x.views)?x.views:0,card});
@@ -581,30 +576,15 @@
       .catch(()=>({}));
     return extraVideoPromise;
   }
-  // Two public, catalog-bound sources. No API keys or searches in browsers.
-  let xiguaVideoPromise=null;
-  function xiguaVideoSnapshot(){
-    if(!xiguaVideoPromise){
-      const load=url=>fetch(url,{cache:'no-cache',signal:AbortSignal.timeout(7000)})
-        .then(r=>r.ok?r.json():null)
-        .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d.items:{})
-        .catch(()=>({}));
-      xiguaVideoPromise=Promise.all([
-        load('./data/media-xigua-videos.json'),
-        load('./data/media-douyin-verified.json')
-      ]).then(([xigua,douyin])=>{
-        const out={...xigua};
-        for(const [key,row] of Object.entries(douyin)){
-          if(!row||!Array.isArray(row.videos))continue;
-          const current=out[key];
-          out[key]=current?{...current,videos:[
-            ...(Array.isArray(current.videos)?current.videos:[]),...row.videos
-          ]}:row;
-        }
-        return out;
-      });
-    }
-    return xiguaVideoPromise;
+  // Public, officially iframe-verified Douyin video catalog. No API keys in browser.
+  let douyinVideoPromise=null;
+  function douyinVideoSnapshot(){
+    if(!douyinVideoPromise)douyinVideoPromise=fetch('./data/media-douyin-verified.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(7000)
+    }).then(r=>r.ok?r.json():null)
+      .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d.items:{})
+      .catch(()=>({}));
+    return douyinVideoPromise;
   }
   let worldNewsPromise=null;
   function worldNewsSnapshot(){
@@ -832,10 +812,10 @@
       slot.prepend(pane);
       pane.innerHTML=trailerGallery({},info,[],'loading');
       slot.querySelector('.mi-official-trailer-fallback')?.remove();
-      let animeItem=null,animeLoaded=false,animeXiguaRows=[];
+      let animeItem=null,animeLoaded=false,animeDouyinRows=[];
       function paintAnime(){
         if(!pane.isConnected)return;
-        const videos=[...(Array.isArray(animeItem?.videos)?animeItem.videos:[]),...animeXiguaRows];
+        const videos=[...(Array.isArray(animeItem?.videos)?animeItem.videos:[]),...animeDouyinRows];
         const youtube=Array.isArray(animeItem?.youtubeTrailers)?animeItem.youtubeTrailers:[];
         pane.innerHTML=trailerGallery({trailers:youtube},info,videos,animeLoaded?'ready':'loading');
         discoverMissingBiliCovers(pane);
@@ -874,7 +854,7 @@
         animeLoaded=true;
         paintAnime();
       }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
-      xiguaVideoSnapshot().then(items=>{
+      douyinVideoSnapshot().then(items=>{
         if(!pane.isConnected)return;
         const year=Number(String(info.year||'').slice(0,4));
         const approvedIds=[...new Set([info.id,...(Array.isArray(info.aliases)?info.aliases:[])])]
@@ -886,11 +866,11 @@
              (Number.isInteger(year)&&year>=1900&&Math.abs(Number(item.year)-year)>1))continue;
           for(const v of Array.isArray(item.videos)?item.videos:[]){
             if(v.kind!=='anime'||v.workId!==id||v.verifiedByCatalogTitle!==true||
-               !['xigua','douyin'].includes(v.platform)||seen.has(v.videoId))continue;
+               v.platform!=='douyin'||seen.has(v.videoId))continue;
             seen.add(v.videoId);rows.push({...v,workId:info.id,title:info.title});
           }
         }
-        animeXiguaRows=rows;
+        animeDouyinRows=rows;
         paintAnime();
       }).catch(()=>{});
       animeNewsSnapshot().then(doc=>{
@@ -908,14 +888,14 @@
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
-    let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],xiguaDomesticRows=[],extraYoutubeRows=[];
+    let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],douyinDomesticRows=[],extraYoutubeRows=[];
     let localBilibiliCovers={},localBilibiliMotion={};
     function setDomesticRows(){
       // Sources can return the same verified BV ID at different times. Keep
       // metadata and a real cover from any matching record, not whichever
       // network request happened to finish first.
       const merged=new Map();
-      for(const sourceItem of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows,...xiguaDomesticRows]){
+      for(const sourceItem of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows,...douyinDomesticRows]){
         if(!sourceItem||typeof sourceItem.platform!=='string'||!sourceItem.videoId)continue;
         const local=sourceItem.platform==='bilibili'?localBilibiliCovers[sourceItem.videoId]:null;
         const motion=sourceItem.platform==='bilibili'?localBilibiliMotion[sourceItem.videoId]:null;
@@ -1000,14 +980,14 @@
         dailymotionPlayerId=playerId;
         paintTrailers();
       }).catch(()=>{});
-      xiguaVideoSnapshot().then(items=>{
+      douyinVideoSnapshot().then(items=>{
         if(!pane.isConnected)return;
         const row=items?.[info.kind+':'+Number(info.tmdbId)];
         const year=Number(String(info.year||'').slice(0,4));
         if(!row||row.kind!==info.kind||Number(row.tmdbId)!==Number(info.tmdbId)||
            (Number.isInteger(year)&&year>=1900&&Math.abs(Number(row.year)-year)>1))return;
-        xiguaDomesticRows=(Array.isArray(row.videos)?row.videos:[]).filter(v=>
-          ['xigua','douyin'].includes(v?.platform)&&v.kind===info.kind&&
+        douyinDomesticRows=(Array.isArray(row.videos)?row.videos:[]).filter(v=>
+          v?.platform==='douyin'&&v.kind===info.kind&&
           Number(v.tmdbId)===Number(info.tmdbId)&&v.embedVerified===true);
         setDomesticRows();
       }).catch(()=>{});
@@ -1453,10 +1433,6 @@
       frameUrl='native-acfun-hls';
     if(platform==='niconico'&&/^(sm|so)\d{6,12}$/.test(id)&&url==='https://www.nicovideo.jp/watch/'+id)
       frameUrl='https://embed.nicovideo.jp/watch/'+id;
-    if(platform==='xigua'&&/^[1-9]\d{14,20}$/.test(id)&&
-       url==='https://www.ixigua.com/'+id&&
-       /^[1-9]\d{14,20}$/.test(button.dataset.miCnEmbedId||''))
-      frameUrl='https://www.ixigua.com/iframe/'+button.dataset.miCnEmbedId+'?autoplay=0&startTime=0';
     if(platform==='douyin'&&/^[1-9]\d{14,20}$/.test(id)&&
        url==='https://jingxuan.douyin.com/m/video/'+id)
       frameUrl='https://open.douyin.com/player/video?vid='+id+'&autoplay=0';
@@ -1466,7 +1442,7 @@
       frameUrl='https://geo.dailymotion.com/player/'+dailymotionPlayerId+'.html?video='+id;
     if(!frameUrl)return;
     const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
-    const provider={bilibili:'Bilibili',douyin:'抖音精选',xigua:'西瓜视频',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'}[platform];
+    const provider={bilibili:'Bilibili',douyin:'抖音精选',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'}[platform];
     stopTrailer();
     if(platform==='acfun'){
       // Show the modal immediately; fetch the short-lived stream only on click.
@@ -1478,9 +1454,8 @@
       frame.src=frameUrl;
       frame.loading='eager';
       frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
-      // Xigua's official embedding documentation explicitly specifies
-      // unsafe-url for the embed referrer. Keep other platforms' policy as-is.
-      frame.referrerPolicy=['xigua','douyin'].includes(platform)?'unsafe-url':'strict-origin-when-cross-origin';
+      // Douyin requires Referrer; other providers use the existing policy.
+      frame.referrerPolicy=platform==='douyin'?'unsafe-url':'strict-origin-when-cross-origin';
       frame.allowFullscreen=true;
       // iOS WebKit puts the Douyin mobile player in a 324x624 viewport
       // even when the source video is 1920x1080. Match that height rather
