@@ -42,7 +42,7 @@ def request(url, timeout=17):
     req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=timeout) as response:
         if response.status != 200:
-            raise RuntimeError("http_" + str(response.status))
+            raise urllib.error.HTTPError(url, response.status, "unexpected_status", response.headers, None)
         return response.read(380000).decode("utf-8", "replace")
 
 def film_catalog():
