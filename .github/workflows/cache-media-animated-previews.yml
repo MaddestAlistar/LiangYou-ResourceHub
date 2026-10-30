@@ -4,8 +4,11 @@ on:
     branches: [main]
     paths:
       - 'scripts/cache_media_bilibili_animated_previews.py'
+      - 'data/media-bilibili-cover-map.json'
       - '.github/workflows/cache-media-animated-previews.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '35 3 * * *'
 permissions:
   contents: write
 concurrency:
@@ -35,19 +38,24 @@ jobs:
           from pathlib import Path
           from PIL import Image
           data=json.loads(Path('data/media-domestic-trailers.json').read_text())
+          manifest=json.loads(Path('data/media-bilibili-motion-map.json').read_text())
+          assert manifest['schema']==1 and isinstance(manifest['items'],dict)
+          for ident,u in manifest['items'].items():
+              assert re.fullmatch(r'BV[A-Za-z0-9]{10}',ident)
+              assert u==f'./assets/media-video-previews/{ident}.webp'
+              with Image.open(u) as im:
+                  assert im.format=='WEBP' and im.n_frames>=3
           for item in data['items']:
               u=item.get('animatedThumbnailLocal')
               if u:
-                  assert re.fullmatch(r'\./assets/media-video-previews/BV[A-Za-z0-9]{10}\.webp',u)
-                  im=Image.open(u)
-                  assert im.format=='WEBP' and im.n_frames>=3
+                  assert manifest['items'].get(item['videoId'])==u
           PY
       - name: Commit confirmed animated thumbnails
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/media-domestic-trailers.json assets/media-video-previews/
+          git add data/media-domestic-trailers.json data/media-bilibili-motion-map.json assets/media-video-previews/
           if git diff --cached --quiet; then echo 'No new animated video previews'; exit 0; fi
           git commit -m "Cache animated Bilibili storyboard previews [skip ci]"
           for attempt in 1 2 3; do
