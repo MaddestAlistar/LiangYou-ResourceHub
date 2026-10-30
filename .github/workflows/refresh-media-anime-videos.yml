@@ -44,7 +44,7 @@ jobs:
           assert d['schema']==1 and isinstance(d['items'],dict)
           assert p.stat().st_size<1500000
           for key,row in d['items'].items():
-              assert re.fullmatch(r'(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*',key)
+              assert re.fullmatch(r'(?:(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*|imdb-tt[1-9]\d{4,11})',key)
               assert row['workId']==key and row['kind']=='anime'
               assert len(row.get('youtubeTrailers',[]))<=12 and len(row.get('videos',[]))<=12
               for video in row.get('youtubeTrailers',[]):
