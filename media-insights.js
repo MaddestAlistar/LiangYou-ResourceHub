@@ -287,7 +287,8 @@
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
-        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'站内播放':'原站观看',supportedPlayer?'Play here':'Open video')+'</span></span>';
+        '<span class="mi-trailer-source-hint">'+t(x.platform==='acfun'?'尝试站内播放':supportedPlayer?'站内播放':'原站观看',
+          x.platform==='acfun'?'Try in-page playback':supportedPlayer?'Play here':'Open video')+'</span></span>';
       const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
         '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
@@ -807,26 +808,21 @@
     useStandardHost=standard;
     if(playerSwitch)playerSwitch.textContent=standard?t('切换隐私播放器','Try privacy-enhanced player'):t('切换普通播放器','Try standard player');
   }
-  // AcFun has two public web surfaces. Its desktop iframe may ask iOS users
-  // to update the player engine; mobile H5 is tried first on iOS. Both stay in
-  // our modal; upstream frame restrictions remain outside our control.
-  function showAcfunFrame(id,mobile){
+  // AcFun mobile and desktop pages send X-Frame-Options: SAMEORIGIN and
+  // cannot be displayed by a GitHub Pages iframe. The official /player/
+  // endpoint is the only tested cross-origin embed entry point. On devices
+  // where that player demands an engine upgrade, use the original-site link.
+  function showAcfunFrame(id){
     if(!trailerStage||!/^[1-9][0-9]{3,11}$/.test(id))return;
     const frame=document.createElement('iframe');
     frame.title='AcFun · '+t('视频播放器','video player');
-    frame.src=mobile?'https://m.acfun.cn/v/?ac='+id:'https://www.acfun.cn/player/ac'+id;
+    frame.src='https://www.acfun.cn/player/ac'+id;
     frame.loading='eager';
     frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
     frame.referrerPolicy='strict-origin-when-cross-origin';
     frame.allowFullscreen=true;
     trailerStage.replaceChildren(frame);
-    activeAcfunId=id;
-    useAcfunMobile=mobile;
-    if(playerSwitch){
-      playerSwitch.hidden=false;
-      playerSwitch.textContent=mobile?t('切换官方嵌入播放器','Try official embedded player'):
-        t('切换手机 H5 播放器','Try mobile H5 player');
-    }
+    if(playerSwitch)playerSwitch.hidden=true;
   }
   // If an upstream CDN refuses cross-site thumbnail use, show the original
   // gradient card instead of a broken-image symbol.
@@ -872,9 +868,7 @@
     const provider={bilibili:'Bilibili',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'}[platform];
     stopTrailer();
     if(platform==='acfun'){
-      const isiOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||
-        (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-      showAcfunFrame(id,isiOS);
+      showAcfunFrame(id);
     }else{
       const frame=document.createElement('iframe');
       frame.title=provider+' · '+name;
@@ -888,8 +882,8 @@
     document.getElementById('media-trailer-title').textContent=name;
     document.getElementById('media-trailer-kicker').textContent=provider+' · '+t('相关视频','Related video');
     document.getElementById('media-trailer-help').textContent=platform==='acfun'?
-      t('优先尝试适合当前设备的 AcFun 播放器；若出现内核升级或嵌入限制，可切换播放模式或打开原站。',
-        'Try the AcFun player for your device. If it fails or asks for an engine upgrade, switch player modes or open the source.'):
+      t('正在尝试 AcFun 官方嵌入播放器。部分 iPhone 会提示升级播放内核，这属于 AcFun 播放器限制；如果无法播放，请使用下方原站链接。',
+        'Trying the official AcFun embed. Some iPhones may report an unsupported player engine; use the original link if playback fails.'):
       t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
     const external=document.getElementById('media-trailer-external');
     external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
@@ -917,8 +911,7 @@
     if(!trailerDialog.open)trailerDialog.showModal();
   });
   playerSwitch?.addEventListener('click',()=>{
-    if(activeAcfunId)showAcfunFrame(activeAcfunId,!useAcfunMobile);
-    else if(activeVideoId)showTrailerFrame(activeVideoId,!useStandardHost);
+    if(activeVideoId)showTrailerFrame(activeVideoId,!useStandardHost);
   });
   trailerDialog?.addEventListener('close',stopTrailer);
   document.getElementById('media-trailer-close')?.addEventListener('click',closeTrailer);
