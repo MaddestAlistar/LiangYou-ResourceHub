@@ -100,6 +100,23 @@ def report_streams(markup):
                     return
     except Exception as exc:
         print("page_info_parse",type(exc).__name__,str(exc)[:100])
+def probe_bilibili_covers():
+    # Check the three already verified metadata covers; no image downloads.
+    url="https://i1.hdslb.com/bfs/archive/3bb32693eb30498f4510c53716b11fcb6aab30bf.jpg"
+    for ref in (None, "https://www.bilibili.com/"):
+        headers={"User-Agent":"Mozilla/5.0","Accept":"image/avif,image/webp,image/jpeg,*/*"}
+        if ref:headers["Referer"]=ref
+        req=urllib.request.Request(url,method="HEAD",headers=headers)
+        try:
+            with urllib.request.urlopen(req,timeout=12) as response:
+                print("bilibili_cover HEAD",{"referrer":bool(ref),"status":response.status,
+                    "content_type":response.headers.get("Content-Type"),
+                    "length":response.headers.get("Content-Length")})
+        except urllib.error.HTTPError as exc:
+            print("bilibili_cover HEAD",{"referrer":bool(ref),"status":exc.code})
+        except Exception as exc:
+            print("bilibili_cover HEAD",{"referrer":bool(ref),"error":type(exc).__name__})
+
 if __name__=="__main__":
     pages={name:fetch(name,url) for name,url in URLS.items()}
     quick=pages.get("quick_video_info","")
@@ -112,3 +129,5 @@ if __name__=="__main__":
         if name.endswith("page") or name=="ajax_video_info":
             print("checking",name)
             report_streams(body)
+
+    probe_bilibili_covers()
