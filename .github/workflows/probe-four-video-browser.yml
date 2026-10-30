@@ -1,0 +1,39 @@
+name: Browser-test four film video players (isolated)
+
+on:
+  push:
+    branches:
+      - probe/film-video-four-sources-20261030
+    paths:
+      - .github/workflows/probe-four-video-browser.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-probe:
+    if: github.ref == 'refs/heads/probe/film-video-four-sources-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser automation library without downloading a browser
+        run: npm install --prefix /tmp/liangyou-player-test --no-save --no-audit --no-fund playwright-core@1.56.1
+      - name: Check Chrome exists and test actual video time progression
+        run: |
+          test -x /usr/bin/google-chrome
+          node experiments/probe_video_browser_playback.cjs
+      - name: Upload browser playback report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-browser-playback
+          path: video-player-browser-report.json
+          if-no-files-found: ignore
+          retention-days: 5
