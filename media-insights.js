@@ -582,7 +582,21 @@
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
     let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],extraYoutubeRows=[];
     function setDomesticRows(){
-      domesticRows=[...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows];
+      // Sources can return the same verified BV ID at different times. Keep
+      // metadata and a real cover from any matching record, not whichever
+      // network request happened to finish first.
+      const merged=new Map();
+      for(const item of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows]){
+        if(!item||typeof item.platform!=='string'||!item.videoId)continue;
+        const key=item.platform+':'+item.videoId;
+        const prior=merged.get(key);
+        merged.set(key,prior?{...prior,
+          thumbnail:prior.thumbnail||item.thumbnail||null,
+          likes:Number.isSafeInteger(prior.likes)?prior.likes:item.likes,
+          views:Number.isSafeInteger(prior.views)?prior.views:item.views
+        }:item);
+      }
+      domesticRows=[...merged.values()];
       paintTrailers();
     }
     function paintTrailers(){
@@ -657,14 +671,21 @@
         indexedDomesticRows=all;setDomesticRows();
         // Curated public videos may not include like counts. Never invent them.
         const relevant=all.filter(x=>x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId)&&
-          !Number.isSafeInteger(x.likes)).slice(0,16);
+          (!Number.isSafeInteger(x.likes)||!x.thumbnail)).slice(0,16);
         if(!relevant.length)return;
         const withLikes=await Promise.all(relevant.map(async x=>{
           try{
-            const r=await fetch(base+'/api/video/bilibili/'+x.videoId,{signal:AbortSignal.timeout(7500)});
+            const r=await fetch(base+'/api/video/bilibili/'+x.videoId+'?cover=20261030',{
+              signal:AbortSignal.timeout(7500)});
             if(!r.ok)return x;
             const d=await r.json();
-            return d.ok===true&&d.bvid===x.videoId&&Number.isSafeInteger(d.likes)&&d.likes>=0?{...x,likes:d.likes}:x;
+            const cover=safe(d.thumbnail);
+            const verifiedCover=cover&&/^https:\/\/[^/]+\.(?:hdslb\.com|biliimg\.com)\/bfs\//i.test(cover);
+            return d.ok===true&&d.bvid===x.videoId?{
+              ...x,
+              likes:Number.isSafeInteger(d.likes)&&d.likes>=0?d.likes:x.likes,
+              thumbnail:x.thumbnail||(verifiedCover?cover:null)
+            }:x;
           }catch{return x;}
         }));
         if(!pane.isConnected)return;
