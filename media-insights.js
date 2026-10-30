@@ -23,6 +23,22 @@
     if(!r.ok)throw Error('unavailable');
     return await r.json();
   }
+  let bilibiliCoverIndexPromise=null;
+  function bilibiliCoverIndex(){
+    if(!bilibiliCoverIndexPromise)bilibiliCoverIndexPromise=fetch('./data/media-bilibili-cover-map.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(7000)
+    }).then(r=>r.ok?r.json():null).then(d=>{
+      const out={};
+      if(d?.schema!==1||!d.items||typeof d.items!=='object')return out;
+      for(const [id,url] of Object.entries(d.items)){
+        if(/^BV[A-Za-z0-9]{10}$/.test(id)&&
+          ['jpg','png','webp'].some(ext=>url==='./assets/media-video-covers/'+id+'.'+ext))
+          out[id]=url;
+      }
+      return out;
+    }).catch(()=>({}));
+    return bilibiliCoverIndexPromise;
+  }
   let sourceSnapshotPromise=null;
   async function sourceSnapshot(){
     if(!sourceSnapshotPromise)sourceSnapshotPromise=(async()=>{
@@ -651,13 +667,16 @@
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
     let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],extraYoutubeRows=[];
+    let localBilibiliCovers={};
     function setDomesticRows(){
       // Sources can return the same verified BV ID at different times. Keep
       // metadata and a real cover from any matching record, not whichever
       // network request happened to finish first.
       const merged=new Map();
-      for(const item of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows]){
-        if(!item||typeof item.platform!=='string'||!item.videoId)continue;
+      for(const sourceItem of [...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows]){
+        if(!sourceItem||typeof sourceItem.platform!=='string'||!sourceItem.videoId)continue;
+        const local=sourceItem.platform==='bilibili'?localBilibiliCovers[sourceItem.videoId]:null;
+        const item=local?{...sourceItem,thumbnailLocal:local}:sourceItem;
         const key=item.platform+':'+item.videoId;
         const prior=merged.get(key);
         merged.set(key,prior?{...prior,
@@ -670,6 +689,12 @@
       domesticRows=[...merged.values()];
       paintTrailers();
     }
+    // The cover map is separate from the frequently refreshed film snapshots.
+    // Once loaded, rerender without blocking title/news/video discovery.
+    if(discoverSlots)bilibiliCoverIndex().then(map=>{
+      localBilibiliCovers=map;
+      if(pane.isConnected)setDomesticRows();
+    });
     function paintTrailers(){
       if(!discoverSlots?.trailers||!pane.isConnected)return;
       const enrichedInfo={...info,aliases:[...(Array.isArray(info.aliases)?info.aliases:[]),...verifiedAliases]};
