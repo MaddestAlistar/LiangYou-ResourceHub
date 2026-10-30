@@ -143,7 +143,11 @@ def lookup_anilist(work):
     return next(iter(matches.values())) if len(matches) == 1 else None
 
 def season_marker(text):
-    m = SEASON.search(str(text or ""))
+    raw = str(text or "")
+    for word, number in (("second", "2"), ("third", "3"), ("fourth", "4")):
+        if re.search(r"\\b" + word + r"\\s+season\\b", raw, re.I):
+            return number
+    m = SEASON.search(raw)
     if not m:
         return ""
     val = next((x for x in m.groups() if x), "")
