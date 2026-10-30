@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Half-hour watchdog; prices every 3h, sports every 2h, retry failures next tick."""
+"""Due-aware feed refresh: preserve source intervals; retry failures on the next heartbeat."""
 from __future__ import annotations
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -95,7 +95,15 @@ def main():
         return name, entry
     with ThreadPoolExecutor(max_workers=4) as pool:
         jobs = dict(pool.map(refresh, JOBS))
-    write_json(ROOT / 'data/update-status.json', {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai', 'watchdog_minutes': 30, 'jobs': jobs})
+    # A no-op heartbeat is visible in Actions logs. Do not commit a new
+    # timestamp (and trigger extra Pages work) when no source state changed.
+    if old.get('jobs') != jobs or old.get('watchdog_minutes') != 15:
+        write_json(ROOT / 'data/update-status.json',
+                   {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai',
+                    'watchdog_minutes': 15, 'jobs': jobs})
+        print('REFRESH_WATCHDOG_STATUS_UPDATED', flush=True)
+    else:
+        print('REFRESH_WATCHDOG_NO_CHANGES', flush=True)
     # Optional official fixtures must not break the six established working feeds.
     return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles', 'media')))
 
