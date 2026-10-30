@@ -1,0 +1,37 @@
+name: Retest AcFun and Niconico actual playback in Chrome
+
+on:
+  push:
+    branches:
+      - probe/film-video-four-sources-20261030
+    paths:
+      - .github/workflows/probe-retest-acfun-niconico.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retest:
+    if: github.ref == 'refs/heads/probe/film-video-four-sources-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Set up browser automation
+        run: npm install --prefix /tmp/liangyou-player-test --no-save --no-audit --no-fund playwright-core@1.56.1
+      - name: Browser retest with simulated click
+        run: node experiments/retest_acfun_niconico_players.cjs
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acfun-niconico-playback-retest
+          path: acfun-niconico-playback-retest.json
+          if-no-files-found: ignore
+          retention-days: 5
