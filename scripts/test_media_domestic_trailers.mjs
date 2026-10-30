@@ -305,3 +305,20 @@ test('Niconico uses verified medium cover and falls back to original on CDN fail
   assert.match(html,/data-thumb-fallback="https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/43190555\/43190555\.5693593"/);
   assert.match(source,/img\.dataset\.thumbFallback/);
 });
+
+test('anime video gallery uses exact catalog IDs, accepted aliases and release years',()=>{
+  const info={id:'bangumi-975',kind:'anime',title:'航海王',originalTitle:'ONE PIECE',year:'1999-10-20'};
+  const clip={kind:'anime',workId:'bangumi-975',verifiedByCatalogTitle:true,year:1999,
+    platform:'acfun',videoId:'30636253',name:'海贼王 TV 动画官方 PV',
+    verifiedSource:'https://www.acfun.cn/v/ac30636253'};
+  const yt={trailers:[{id:'i8J164xspbU',title:'ONE PIECE 20周年官方PV',
+    type:'Trailer',official:true,verifiedBy:'Toei Animation',embeddable:true}]};
+  const html=gallery(yt,info,[clip],'ready');
+  assert.match(html,/data-mi-play-cn="acfun"/);
+  assert.match(html,/data-mi-play-video="i8J164xspbU"/);
+  assert.equal((html.match(/class="mi-trailer-card"/g)||[]).length,2);
+  assert.equal(verified(info,[{...clip,workId:'bangumi-899'}]).length,0);
+  assert.equal(verified(info,[{...clip,year:2016}]).length,0);
+  assert.equal(verified(info,[{...clip,verifiedSource:'https://untrusted.test/video'}]).length,0);
+  assert.doesNotMatch(html,/动态封面|mi-trailer-motion-label/);
+});
