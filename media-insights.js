@@ -542,8 +542,17 @@
       animeVideoPromise=fetch('./data/media-anime-videos.json',{
         cache:'no-cache',signal:AbortSignal.timeout(7000)
       }).then(r=>r.ok?r.json():null)
-        .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
-        .catch(()=>null);
+        .then(d=>{
+          if(d?.schema===1&&d.items&&typeof d.items==='object')return d;
+          animeNewsUntil=Date.now()+60000;
+          return null;
+        })
+        .catch(()=>{
+          // A failed mainland/mobile network request must not pin an empty
+          // news section for the usual 15-minute successful cache period.
+          animeNewsUntil=Date.now()+60000;
+          return null;
+        });
     }
     return animeVideoPromise;
   }
