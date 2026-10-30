@@ -236,6 +236,7 @@
   // API is rate-limited. Fetch each verified BV ID's own official metadata once
   // without blocking the gallery or claiming a film poster is a video thumbnail.
   const biliCoverRequests=new Map();
+  const biliVerifiedThumbCache=new Map();
   function discoverMissingBiliCovers(host){
     for(const cover of host.querySelectorAll('[data-mi-bili-cover-id]')){
       if(cover.dataset.miBiliCoverStarted==='true')continue;
@@ -260,26 +261,31 @@
         if(biliCoverRequests.size>100)biliCoverRequests.delete(biliCoverRequests.keys().next().value);
       }
       biliCoverRequests.get(id).then(src=>{
-        if(!src||!cover.isConnected)return;
+        if(!src)return;
         const probe=new Image();
         probe.decoding='async';
         probe.referrerPolicy='no-referrer';
         probe.onload=()=>{
-          if(!cover.isConnected)return;
-          let img=cover.querySelector('.mi-trailer-platform-thumb');
-          if(!img){
-            img=document.createElement('img');
-            img.className='mi-trailer-platform-thumb';
-            img.alt='';
-            img.loading='lazy';
-            img.decoding='async';
-            img.referrerPolicy='no-referrer';
-            cover.prepend(img);
+          biliVerifiedThumbCache.set(id,src);
+          // The gallery can rerender while the metadata or image is loading.
+          // Update currently mounted matching covers, not an obsolete card.
+          for(const current of root.querySelectorAll('[data-mi-bili-cover-id]')){
+            if(current.dataset.miBiliCoverId!==id)continue;
+            let img=current.querySelector('.mi-trailer-platform-thumb');
+            if(!img){
+              img=document.createElement('img');
+              img.className='mi-trailer-platform-thumb';
+              img.alt='';
+              img.loading='lazy';
+              img.decoding='async';
+              img.referrerPolicy='no-referrer';
+              current.prepend(img);
+            }
+            img.src=src;
+            img.removeAttribute('data-thumb-fallback');
+            img.removeAttribute('data-thumb-poster-fallback');
+            current.querySelector('.mi-trailer-fallback-label')?.remove();
           }
-          img.src=src;
-          img.removeAttribute('data-thumb-fallback');
-          img.removeAttribute('data-thumb-poster-fallback');
-          cover.querySelector('.mi-trailer-fallback-label')?.remove();
         };
         probe.src=src;
       });
@@ -342,7 +348,7 @@
       // Dailymotion requires a Player ID belonging to this site. AcFun uses
       // its official embed or mobile H5 page in our own dialog on all devices.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
-      const sourceThumb=safe(x.thumbnail);
+      const sourceThumb=safe(x.thumbnail)||(x.platform==='bilibili'?biliVerifiedThumbCache.get(x.videoId)||null:null);
       const trustedBiliThumb=x.platform==='bilibili'&&sourceThumb&&(()=>{
         const u=new URL(sourceThumb),h=u.hostname.toLowerCase();
         return ['hdslb.com','biliimg.com'].some(d=>h===d||h.endsWith('.'+d))&&
