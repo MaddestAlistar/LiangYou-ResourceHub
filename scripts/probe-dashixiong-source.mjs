@@ -4,6 +4,8 @@ import { createHash, createCipheriv, randomBytes } from "node:crypto";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { mkdir, writeFile, appendFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 const host="app2.dsx.ac", origin="https://maddestalistar.github.io";
 const build="1791855838435", pkg="com.zyx.cheyong";
@@ -187,6 +189,23 @@ function playData(value,depth=0){
   }
   return null;
 }
+async function probeMetadata(url){
+  try{
+    const {stdout}=await promisify(execFile)("ffprobe",[
+      "-v","error","-rw_timeout","9000000","-probesize","32768",
+      "-analyzeduration","1000000","-show_entries",
+      "format=duration:stream=codec_name,codec_type,width,height",
+      "-of","json",url],{timeout:16000,maxBuffer:65536});
+    const data=JSON.parse(stdout);
+    const sec=Number(data.format?.duration);
+    return {ok:true,durationMinutes:Number.isFinite(sec)&&sec>0?Math.round(sec/6)/10:null,
+      streams:(data.streams||[]).slice(0,4).map(s=>({type:s.codec_type,codec:s.codec_name,
+        width:s.width??null,height:s.height??null}))};
+  }catch(e){
+    return {ok:false,reason:e.code==="ENOENT"?"ffprobe_unavailable":"ffprobe_failed_or_timeout"};
+  }
+}
+
 function staticMediaFromHTML(html){
   const normalized=String(html||"").replace(/&amp;/gi,"&").replace(/\\\//g,"/")
     .replace(/\\u0026/gi,"&").replace(/&#38;/gi,"&");
@@ -260,6 +279,8 @@ async function probeLine(item,index){
       const u=new URL(found.url);
       if(!["http:","https:"].includes(u.protocol))throw Error("not_http_url");
       const media=await mediaCheck(found.url);
+      if(media.format==="file"&&media.fileSignature==="MP4"&&media.contentLengthBytes>=30000000)
+        media.metadata=await probeMetadata(found.url);
       result.status=media.head>=200&&media.head<300&&
         (media.format==="HLS"?(media.get>=200&&media.get<300&&media.manifest):
           (media.get>=200&&media.get<300&&["MP4","WEBM"].includes(media.fileSignature)))?
@@ -328,6 +349,8 @@ async function run(){
     report.notes.push("部分线路通过了服务端文件头检查，但无法仅凭 MP4 与 HTTP 200 认定是指定作品正片；仍须确认视频身份、时长和播放授权。");
   if(report.media.some(x=>x.warning))
     report.notes.push("某些文件过小，可能是广告或预览，不能计为已找到正片。");
+  if(report.media.some(x=>x.metadata?.ok))
+    report.notes.push("ffprobe 仅确认文件时长与音视频编码，不能确认视频内容与影片标题一致。");
   if(report.media.some(x=>!x.httpsCompatible))report.notes.push("HTTP 直链可能被 HTTPS GitHub Pages 阻止（混合内容）。");
   if(report.media.some(x=>x.cors===false))report.notes.push("部分媒体服务器未对本站 Origin 放行跨域。");
   report.notes.push("仅检测公开接口、直链元数据、HLS 清单及响应头；不下载视频片段或密钥。不绕过额外解析或访问控制。连通性通过不代表浏览器实际可播放或获得播放授权。");
@@ -352,10 +375,11 @@ async function run(){
     ...report.lines.map(x=>"- 线路 "+x.number+"："+JSON.stringify({apiHttp:x.apiHttp,apiCode:x.apiCode,
       attempts:x.attempts,error:x.error})).filter(Boolean),"",
     "## 视频文件元数据（不记录完整视频地址）","",
-    "| 媒体域名 | 大小（MB） | 文件签名 | GET | CORS GET | 是否可能是短片 |",
-    "|---|---:|---|---|---|---|",
+    "| 媒体域名 | 大小（MB） | 文件签名 | GET | CORS GET | 时长（分钟） | 编码 | 短片风险 |",
+    "|---|---:|---|---|---|---:|---|---|",
     ...report.media.map(x=>"| "+x.host+" | "+(x.contentLengthBytes!=null?(x.contentLengthBytes/1000000).toFixed(2):"未知")+
       " | "+(x.fileSignature||"-")+" | "+(x.get??"-")+" | "+(x.getCors??"-")+
+      " | "+(x.metadata?.durationMinutes??"-")+" | "+(x.metadata?.streams?.map(s=>s.codec).join(",")||"-")+
       " | "+(x.warning?"需核对":"未知")+" |"),"",
     "## 视频地址状态（仅域名，不写入完整视频地址）","",
     "| 域名 | 协议 | 类型 | HTTP HEAD | HTTP GET | CORS | OPTIONS | HLS 清单 |",
