@@ -2,7 +2,7 @@ const fs=require('node:fs');
 const {chromium}=require('/tmp/media-probe/node_modules/playwright-core');
 (async()=>{
   const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
-  const targets=[["药屋少女的呢喃","tmdb-tv-220542"],["复仇者联盟5","tmdb-movie-1003596"]];
+  const targets=[["药屋少女的呢喃","tmdb-tv-220542"],["复仇者联盟5","tmdb-movie-1003596"],["泥面人","tmdb-movie-1400940"]];
   const report=[];
   for(const [name,id] of targets){
     const context=await browser.newContext({viewport:{width:390,height:844},locale:'zh-CN'});
@@ -19,9 +19,14 @@ const {chromium}=require('/tmp/media-probe/node_modules/playwright-core');
       row.currentTitle=await page.locator('#media-dialog-title').textContent().catch(()=>null);
       if(row.dialogOpen){
         await page.locator('button[data-mi-detail="discover"]').click({timeout:8000});
-        await page.waitForTimeout(23000);
+        await page.waitForTimeout(15000);
         row.videoCardCount=await page.locator('#media-dialog .mi-trailer-card').count();
         row.platformTags=await page.locator('#media-dialog .mi-trailer-card .mi-trailer-tags').allTextContents();
+        row.firstSixSources=row.platformTags.slice(0,6);
+        row.acfunVisible=row.platformTags.some(x=>x.includes('AcFun'));
+        row.niconicoVisible=row.platformTags.some(x=>x.includes('Niconico'));
+        row.kinoCheckVisible=row.platformTags.some(x=>x.includes('KinoCheck'));
+        row.dailymotionVisible=row.platformTags.some(x=>x.includes('Dailymotion'));
         row.cardTitles=await page.locator('#media-dialog .mi-trailer-card .mi-trailer-body strong').allTextContents();
         row.sectionPreview=(await page.locator('#media-dialog .mi-videos-block').innerText().catch(()=>''))?.slice(0,600);
         row.status=await page.locator('#media-dialog .mi-trailer-state').textContent().catch(()=>null);
