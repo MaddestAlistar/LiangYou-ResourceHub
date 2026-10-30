@@ -266,6 +266,16 @@ def main():
           "videos":list(dedup.values())[:15],"youtubeTrailers":youtube[:10],"sources":source_status}
         print("EXTRA_VIDEO_RESULT",json.dumps({"key":key,"title":work["title"],"videos":len(dedup),
           "youtube":len(youtube),"sources":source_status,"samples":[{"platform":r.get("platform"),"id":r.get("videoId"),"name":r.get("name")} for r in list(dedup.values())[:3]]},ensure_ascii=False),flush=True)
+    # Revalidate all cached AcFun cards against current matching safeguards,
+    # not only titles selected in this scheduled rotation.
+    for oldkey,oldrow in items.items():
+        work=works.get(oldkey)
+        if not work or not isinstance(oldrow,dict):continue
+        oldvideos=oldrow.get("videos") or []
+        oldrow["videos"]=[v for v in oldvideos if isinstance(v,dict) and
+          (v.get("platform")!="acfun" or
+           (matches_title(v.get("name"),work["aliases"],work["year"],work["kind"]) and
+            credible_acfun_film_title(work,v.get("name"))))]
     if len(items)>MAX_ITEMS:
         items=dict(sorted(items.items(),key=lambda pair:pair[1].get("checkedAt",""),reverse=True)[:MAX_ITEMS])
     OUT.parent.mkdir(exist_ok=True)
