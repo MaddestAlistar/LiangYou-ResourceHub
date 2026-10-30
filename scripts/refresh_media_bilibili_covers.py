@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from html.parser import HTMLParser
 import time
 import urllib.error
 import urllib.parse
@@ -48,6 +49,44 @@ def checked_image(raw):
         return None
 
 
+class OgImage(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.image = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() != "meta" or self.image:
+            return
+        data = dict(attrs)
+        if (data.get("property") == "og:image" or
+                data.get("name") in ("og:image", "twitter:image") or
+                data.get("itemprop") == "image"):
+            self.image = checked_image(data.get("content"))
+
+
+def public_page_cover(bvid):
+    # Bilibili can block API metadata calls while allowing the public webpage's
+    # Open Graph cover. Both responses are provider-authored; no guessing IDs.
+    request = urllib.request.Request(
+        f"https://www.bilibili.com/video/{bvid}/",
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "zh-CN,zh;q=0.9",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=12) as response:
+            if response.status != 200:
+                return None
+            html = response.read(800000).decode("utf-8", "replace")
+        parser = OgImage()
+        parser.feed(html)
+        return parser.image
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return None
+
+
 def official_cover(bvid):
     """Return a first-party thumbnail from the public video details endpoint.
 
@@ -82,7 +121,7 @@ def official_cover(bvid):
                 print(f"Bilibili cover query {bvid}: HTTP {exc.code}")
             except (urllib.error.URLError, TimeoutError, ValueError, KeyError, OSError):
                 print(f"Bilibili cover query {bvid}: request unavailable")
-    return None
+    return public_page_cover(bvid)
 
 
 def refresh():
