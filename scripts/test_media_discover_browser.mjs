@@ -6,6 +6,16 @@ const context=await browser.newContext({viewport:{width:390,height:844},deviceSc
 let acfunMockCalls=0;
 await context.route('**/*',route=>{
  const requested=new URL(route.request().url());
+ if(requested.pathname==='/api/video/bilibili/BV1111111111'){
+   return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},
+     body:JSON.stringify({ok:true,bvid:'BV1111111111',likes:null,views:null,
+       thumbnail:'https://i1.hdslb.com/bfs/archive/3bb32693eb30498f4510c53716b11fcb6aab30bf.jpg'})});
+ }
+ if(requested.pathname==='/api/media-cover/bilibili'){
+   return route.fulfill({status:200,contentType:'image/jpeg',
+     path:'assets/media-video-covers/BV1zprUY2EGj.jpg',
+     headers:{'access-control-allow-origin':'*'}});
+ }
  const acfunRequest=/^\/api\/video\/acfun\/([1-9][0-9]{3,11})$/.exec(requested.pathname);
  if(acfunRequest){
    acfunMockCalls++;
@@ -52,6 +62,9 @@ try{
        videoId:'BV1zprUY2EGj',name:'Matched verified domestic trailer',
        publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/',
        thumbnailLocal:'./assets/media-video-covers/BV1zprUY2EGj.jpg'},
+       {kind,title,year:Number(year),platform:'bilibili',videoId:'BV1111111111',
+         name:'Verified Bilibili clip lacking initial cover',
+         verifiedSource:'https://www.bilibili.com/video/BV1111111111/'},
        {kind,title,year:Number(year),platform:'acfun',videoId:'41787132',
        name:'Matched AcFun public film trailer',verifiedSource:'https://www.acfun.cn/v/ac41787132'}]
    })}));
@@ -108,6 +121,13 @@ try{
  await localCover.waitFor({state:'attached',timeout:10000});
  await localCover.evaluate(img=>img.decode());
  assert.equal(await localCover.evaluate(img=>img.naturalWidth>0),true);
+ // Missing dynamic BV covers use a verified per-video metadata lookup and
+ // the same image relay, without blocking or hiding the rest of the gallery.
+ await page.waitForFunction(()=>{
+   const el=document.querySelector('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-platform-thumb');
+   return el?.complete&&el.naturalWidth>0&&el.src.includes('/api/media-cover/bilibili?src=');
+ },{timeout:15000});
+ assert.equal(await page.locator('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-fallback-label').count(),0);
  await page.locator('#media-dialog [data-mi-play-cn="bilibili"]').first().click();
  assert.equal(await page.locator('#media-trailer-dialog').evaluate(d=>d.open),true);
  assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
