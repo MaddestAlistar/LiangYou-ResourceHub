@@ -138,10 +138,13 @@ jobs:
           # cap. The one-shot test succeeded with no observed charge.
           # Recurring runs are enabled separately only after quota tests pass.
           SANDBASE_HARD_ZERO_SPEND_CONFIRMED: 'false'
-          # Batch limit: 5 runs/day x 10 searches, with shared daily 50 cap.
+          # Account owner: dedicated Xigua key, cumulative provider spend cap $0.01.
+          # Do not set this true if the provider key limit is ever removed.
+          XIGUA_CAPPED_KEY_CONFIRMED: 'true'
           XIGUA_ONE_TIME_PAID_TEST: 'false'
+          # Five 10-query daily batches. All attempted requests count upfront.
           XIGUA_SEARCH_PER_RUN: '10'
-          XIGUA_AUTO_SEARCH_ENABLED: 'false'
+          XIGUA_AUTO_SEARCH_ENABLED: 'true'
           XIGUA_VIDEOS_BATCH: '10'
         run: python scripts/refresh_media_xigua_videos.py
       - name: Validate output, when metadata exists
