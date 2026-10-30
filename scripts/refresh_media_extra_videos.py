@@ -195,6 +195,13 @@ def main():
     limit=max(1,min(18,int(os.getenv("EXTRA_VIDEOS_BATCH","10"))))
     priority=["tv:220542","movie:277834","movie:299534"]
     chosen=[k for k in priority if k in works and k not in items]
+    # One-time refresh of the previously empty AcFun sample after correcting
+    # AcFun's contentId/id field, without pinning the same title forever.
+    acfun_fix_cutoff="2026-10-30T06:12:00+00:00"
+    for key in ("tv:220542",):
+        if key in works and key not in chosen and \
+           str(items.get(key,{}).get("checkedAt") or "")<acfun_fix_cutoff:
+            chosen.append(key)
     chosen=chosen[:limit]
     # Re-check already-cached ambiguous English movie titles first, so that
     # stricter matching rules promptly clear old false positives (e.g. Runner
