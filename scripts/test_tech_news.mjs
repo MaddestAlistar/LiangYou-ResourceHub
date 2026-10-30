@@ -207,7 +207,7 @@ test('Homepage tech news keeps Telegram video and image fallback independent of 
  const player=readFileSync(new URL('../ly-video.js',import.meta.url),'utf8');
  const mirror=JSON.parse(readFileSync(new URL('../data/tech-news-feed.json',import.meta.url),'utf8'));
  assert.equal(mirror.schema,1);
- assert.ok(html.includes('tech-news.js?v=20261030.china-media2'));
+ assert.ok(html.includes('tech-news.js?v=20261030.china-media3'));
  const tg=mirror.items.find(x=>x.sourceUrl==='https://t.me/Amazing_jlqz/7309');
  assert.ok(tg,'Verified TG record should remain in the public mirror');
  assert.ok(tg.localVideoUrl?.startsWith('./assets/tech-news/clip-'));
