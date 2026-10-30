@@ -152,7 +152,7 @@
     const found=[],ids=new Set();
     for(const x of Array.isArray(records)?records:[]){
       if(!x||x.kind!==kind)continue;
-      const idBound=x.verifiedByTitleId===true&&Number.isSafeInteger(Number(info?.tmdbId))&&
+      const idBound=(x.verifiedByTitleId===true||x.matchedByTitle===true)&&Number.isSafeInteger(Number(info?.tmdbId))&&
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
         (!yearKnown||Math.abs(Number(x.year)-year)<=1);
@@ -166,19 +166,19 @@
       if(p==='tencent')verified=/^[A-Za-z0-9]{11}$/.test(id)&&u==='https://v.qq.com/x/page/'+id+'.html';
       if(p==='youku')verified=/^[A-Za-z0-9=_-]{8,80}$/.test(id)&&u==='https://v.youku.com/v_show/id_'+id+'.html';
       if(p==='iqiyi')verified=/^[A-Za-z0-9]{6,40}$/.test(id)&&u==='https://www.iqiyi.com/v_'+id+'.html';
-      if(p==='1905')verified=/^[1-9]\d{4,10}$/.test(id)&&u==='https://www.1905.com/video/play/'+id+'.shtml';
+      if(p==='acfun')verified=/^[1-9]\d{3,11}$/.test(id)&&u==='https://www.acfun.cn/v/ac'+id;
+      if(p==='niconico')verified=/^(sm|so)\d{6,12}$/.test(id)&&u==='https://www.nicovideo.jp/watch/'+id;
+      if(p==='dailymotion')verified=/^x[a-z0-9]{4,12}$/i.test(id)&&u==='https://www.dailymotion.com/video/'+id;
       // A 1905 movie profile is not a verified trailer playback URL. Show as
       // source link only, never construct an unapproved streaming iframe.
       if(!verified||ids.has(p+':'+id))continue;
       ids.add(p+':'+id);
       found.push({...x,videoId:id,url:u});
-      if(found.length>=36)break;
+      if(found.length>=64)break;
     }
     return found;
   }
-  // Select one cross-platform gallery: 6 strongest matched clips, and only when
-  // there are more than six candidates, up to four additional Chinese-platform clips.
-  // This applies equally to trailers, teasers, interviews, reviews and scene clips.
+  // One shared maximum of twenty videos; ensure each available provider has a slot.
   function rankFilmVideos(rows){
     const seen=new Set();
     const unique=(Array.isArray(rows)?rows:[]).filter(v=>{
@@ -187,24 +187,32 @@
     });
     const merit=v=>{
       const likes=Number.isSafeInteger(v.likes)&&v.likes>=0?v.likes:0;
-      const role=v.type==='trailer'?(v.official?130:108):75;
-      const playable=v.playable===false?-45:0;
-      return role+Math.log10(likes+1)*10+playable;
+      const views=Number.isSafeInteger(v.views)&&v.views>=0?v.views:0;
+      const role=v.type==='trailer'?(v.official?140:115):76;
+      return role+Math.log10(likes+1)*9+Math.log10(views+1)*3+(v.playable===false?-18:0);
     };
-    const ranked=unique.slice().sort((a,b)=>merit(b)-merit(a)||
-      Number(b.domestic)-Number(a.domestic)||a.key.localeCompare(b.key));
-    const main=ranked.slice(0,6),picked=new Set(main.map(x=>x.key));
-    const extra=ranked.length>6?ranked.filter(x=>x.domestic&&!picked.has(x.key)).slice(0,4):[];
-    return [...main,...extra];
+    const ranked=unique.slice().sort((a,b)=>merit(b)-merit(a)||a.key.localeCompare(b.key));
+    const picked=[],used=new Set(),platforms=new Set();
+    for(const v of ranked){
+      if(v.platform&&!platforms.has(v.platform)){
+        picked.push(v);used.add(v.key);platforms.add(v.platform);
+      }
+      if(picked.length>=20)break;
+    }
+    for(const v of ranked){
+      if(picked.length>=20)break;
+      if(!used.has(v.key)){picked.push(v);used.add(v.key);}
+    }
+    return picked.sort((a,b)=>merit(b)-merit(a)||a.key.localeCompare(b.key));
   }
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
-    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,12):[];
+    const youtube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')).slice(0,36):[];
     const domestic=verifiedDomesticTrailers(info,domesticRows);
     const ytIds=new Set(youtube.map(x=>x.id));
     const verifiedRelated=Array.isArray(d?.relatedVideos)?d.relatedVideos
       .filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable===true&&
         v.ageRestricted!==true&&!ytIds.has(v.id))
-      .sort((a,b)=>(Number.isFinite(b.likes)?b.likes:-1)-(Number.isFinite(a.likes)?a.likes:-1)).slice(0,16):[];
+      .sort((a,b)=>(Number.isFinite(b.likes)?b.likes:-1)-(Number.isFinite(a.likes)?a.likes:-1)).slice(0,36):[];
     function youtubeCard(v,related=false){
       const poster=safe(v.thumbnail)||'https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg';
       const duration=formatDuration(v.duration);
@@ -214,6 +222,7 @@
       const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
         v.official?t('TMDB 标注官方','TMDB official'):
+        v.verifiedBy==='KinoCheck'?t('KinoCheck · TMDB 精确匹配','KinoCheck · TMDB exact match'):
         v.verifiedBy==='TMDB'?t('TMDB 已关联','TMDB linked'):
         t('搜索候选 · 待核对','Unverified search match');
       const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
@@ -231,16 +240,20 @@
         '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
     }
     const candidates=[];
-    for(const v of youtube)candidates.push({key:'youtube:'+v.id,domestic:false,
+    for(const v of youtube)candidates.push({key:'youtube:'+v.id,platform:'youtube',domestic:false,
       type:['Trailer','Teaser'].includes(v.type)?'trailer':'related',
       official:v.official===true,playable:v.embeddable!==false&&v.ageRestricted!==true,
       likes:Number.isSafeInteger(v.likes)?v.likes:-1,card:youtubeCard(v)});
-    for(const v of verifiedRelated)candidates.push({key:'youtube:'+v.id,domestic:false,
+    for(const v of verifiedRelated)candidates.push({key:'youtube:'+v.id,platform:'youtube',domestic:false,
       type:'related',official:false,playable:true,likes:v.likes,card:youtubeCard(v,true)});
+    const names={bilibili:'Bilibili',acfun:'AcFun',niconico:'Niconico',dailymotion:'Dailymotion'};
     for(const x of domestic){
-      const provider=x.platform==='bilibili'?'Bilibili':x.platform==='tencent'?'腾讯视频':x.platform==='youku'?'优酷':x.platform==='1905'?'1905电影网':'爱奇艺';
+      const provider=names[x.platform];
+      if(!provider)continue;
       const name=String(x.name||t('影视预告片','Trailer'));
-      const supportedPlayer=x.platform==='bilibili'||x.platform==='tencent'||x.platform==='youku';
+      // Dailymotion inline embeds require an owned Player ID; external playback
+      // is used until configured, never a third-party sample Player ID.
+      const supportedPlayer=x.platform!=='dailymotion';
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
@@ -254,29 +267,12 @@
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
           (Number.isSafeInteger(x.likes)&&x.likes>=0?' · '+esc(new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact'}).format(x.likes))+t(' 赞',' likes'):'')+'</small>'+
         '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>';
-      candidates.push({key:x.platform+':'+x.videoId,domestic:true,type:x.type==='Related'?'related':'trailer',
-        official:x.official===true,playable:supportedPlayer,likes:Number.isSafeInteger(x.likes)?x.likes:-1,card});
+      candidates.push({key:x.platform+':'+x.videoId,platform:x.platform,domestic:x.platform==='bilibili',
+        type:x.type==='Related'?'related':'trailer',
+        official:x.official===true,playable:supportedPlayer,likes:Number.isSafeInteger(x.likes)?x.likes:-1,
+        views:Number.isSafeInteger(x.views)?x.views:0,card});
     }
     const selected=rankFilmVideos(candidates);
-    // Platform search links are discovery fallbacks, not unverified embedded videos.
-    const title=String(info?.title||info?.originalTitle||'').normalize('NFKC').trim();
-    const q=encodeURIComponent(title+' 预告片');
-    const year=Number(String(info?.year||'').slice(0,4));
-    const aliases=[info?.title,info?.originalTitle,...(Array.isArray(info?.aliases)?info.aliases:[])]
-      .filter(x=>typeof x==='string').map(x=>x.normalize('NFKC').trim().toLowerCase()).filter(Boolean);
-    const cinemaSource=(Array.isArray(domesticRows)?domesticRows:[]).find(x=>
-      x&&x.platform==='1905'&&x.kind===info?.kind&&Number(x.year)===year&&
-      aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())&&
-      /^https:\/\/www\.1905\.com\/mdb\/film\/[1-9]\d{3,10}\/$/.test(safe(x.verifiedSource)||''));
-    const finder=title?
-      '<details class="mi-trailer-search"><summary>'+t('其他平台查找预告片','Find trailers on other platforms')+'</summary>'+
-      '<div class="mi-insight-links">'+
-      a('https://search.bilibili.com/all?keyword='+q,'Bilibili')+
-      a('https://v.qq.com/x/search/?q='+q,t('腾讯视频','Tencent Video'))+
-      a('https://so.youku.com/search/q_'+encodeURIComponent(title),t('优酷','Youku'))+
-      a('https://so.iq.com/so/?q='+encodeURIComponent(title),t('爱奇艺','iQIYI'))+
-      a(cinemaSource?.verifiedSource||'https://www.1905.com/news/yg/',
-        cinemaSource?t('1905 · 当前作品资料','1905 · Matched title'):'1905电影网')+'</div></details>':'';
     let state='';
     if(!selected.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
@@ -286,7 +282,7 @@
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
       (selected.length?'<div class="mi-trailer-grid">'+selected.map(x=>x.card).join('')+'</div>':'')+
-      (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+finder+'</section>';
+      (state?'<p class="mi-caption mi-trailer-state">'+state+'</p>':'')+'</section>';
   }
 
   // Domestic snapshot is intentionally independent of the YouTube/TMDB Worker.
@@ -303,6 +299,16 @@
     return domesticVideoPromise;
   }
 
+  // Offline metadata snapshot: no visitor-triggered platform requests.
+  let extraVideoPromise=null;
+  function extraVideoSnapshot(){
+    if(!extraVideoPromise)extraVideoPromise=fetch('./data/media-extra-videos.json',{
+      cache:'no-cache',signal:AbortSignal.timeout(7000)
+    }).then(r=>r.ok?r.json():null)
+      .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d.items:{})
+      .catch(()=>({}));
+    return extraVideoPromise;
+  }
   let worldNewsPromise=null;
   function worldNewsSnapshot(){
     if(!worldNewsPromise)worldNewsPromise=(async()=>{
@@ -530,9 +536,9 @@
     const pane=document.createElement('div');pane.className='mi-insight-host';
     pane.dataset.miInsight=String(info.id)+':'+info.section;
     let domesticRows=[],trailerResult=null,trailerStatus='loading',verifiedAliases=[],indexedYoutubeRows=[];
-    let indexedDomesticRows=[],discoveredDomesticRows=[];
+    let indexedDomesticRows=[],discoveredDomesticRows=[],extraDomesticRows=[],extraYoutubeRows=[];
     function setDomesticRows(){
-      domesticRows=[...indexedDomesticRows,...discoveredDomesticRows];
+      domesticRows=[...indexedDomesticRows,...discoveredDomesticRows,...extraDomesticRows];
       paintTrailers();
     }
     function paintTrailers(){
@@ -541,7 +547,7 @@
       // TMDB-ID verified static trailers remain usable when dynamic video APIs
       // are slow, unavailable, or quota-limited. Ranker deduplicates by video ID.
       const enrichedVideo={...(trailerResult||{}),
-        trailers:[...((trailerResult||{}).trailers||[]),...indexedYoutubeRows]};
+        trailers:[...((trailerResult||{}).trailers||[]),...indexedYoutubeRows,...extraYoutubeRows]};
       pane.innerHTML=trailerGallery(enrichedVideo,enrichedInfo,domesticRows,trailerStatus);
       // The original TMDB links have been integrated into the single trailer
       // experience; a duplicate headline must never remain underneath.
@@ -582,6 +588,19 @@
     if(discoverSlots?.trailers){
       discoverSlots.trailers.prepend(pane);
       paintTrailers();
+      extraVideoSnapshot().then(items=>{
+        if(!pane.isConnected)return;
+        const row=items?.[info.kind+':'+Number(info.tmdbId)];
+        const year=Number(String(info.year||'').slice(0,4));
+        if(!row||row.kind!==info.kind||Number(row.tmdbId)!==Number(info.tmdbId)||
+           (Number.isInteger(year)&&year>=1900&&Math.abs(Number(row.year)-year)>1))return;
+        extraDomesticRows=Array.isArray(row.videos)?row.videos:[];
+        extraYoutubeRows=Array.isArray(row.youtubeTrailers)?row.youtubeTrailers.filter(x=>
+          x.verifiedByTitleId===true&&x.kind===info.kind&&Number(x.tmdbId)===Number(info.tmdbId)&&
+          Math.abs(Number(x.year)-Number(row.year))<=1&&/^[A-Za-z0-9_-]{11}$/.test(x.id||'')&&
+          x.url==='https://www.youtube.com/watch?v='+x.id):[];
+        setDomesticRows();
+      }).catch(()=>{});
       Promise.all([domesticVideoSnapshot(),window.LiangYouTitleNews?.forInfo(info)??Promise.resolve(null)]).then(async ([rows,index])=>{
         const all=[...rows,...(index?.videos||[])];
         verifiedAliases=[...new Set([...verifiedAliases,...(index?.aliases||[])])];
@@ -723,16 +742,14 @@
     if(platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(id)&&
        url==='https://www.bilibili.com/video/'+id+'/')
       frameUrl='https://player.bilibili.com/player.html?bvid='+id+'&autoplay=1&danmaku=0&poster=1';
-    if(platform==='tencent'&&/^[A-Za-z0-9]{11}$/.test(id)&&
-       url==='https://v.qq.com/x/page/'+id+'.html')
-      frameUrl='https://v.qq.com/txp/iframe/player.html?vid='+id;
-    if(platform==='youku'&&/^[A-Za-z0-9=_-]{8,80}$/.test(id)&&
-       url==='https://v.youku.com/v_show/id_'+id+'.html')
-      frameUrl='https://player.youku.com/embed/'+encodeURIComponent(id);
+    if(platform==='acfun'&&/^[1-9]\d{3,11}$/.test(id)&&url==='https://www.acfun.cn/v/ac'+id)
+      frameUrl='https://www.acfun.cn/player/ac'+id;
+    if(platform==='niconico'&&/^(sm|so)\d{6,12}$/.test(id)&&url==='https://www.nicovideo.jp/watch/'+id)
+      frameUrl='https://embed.nicovideo.jp/watch/'+id;
     if(!frameUrl)return;
     const name=button.closest('.mi-trailer-card')?.querySelector('.mi-trailer-body strong')?.textContent?.trim()||t('预告片','Trailer');
     const frame=document.createElement('iframe');
-    const provider=platform==='bilibili'?'Bilibili':platform==='tencent'?'Tencent Video':'Youku';
+    const provider=platform==='bilibili'?'Bilibili':platform==='acfun'?'AcFun':'Niconico';
     frame.title=provider+' · '+name;
     frame.src=frameUrl;
     frame.loading='eager';
@@ -742,7 +759,7 @@
     stopTrailer();
     trailerStage.appendChild(frame);
     document.getElementById('media-trailer-title').textContent=name;
-    document.getElementById('media-trailer-kicker').textContent=(platform==='bilibili'?'Bilibili':platform==='tencent'?'腾讯视频':'优酷')+' · '+t('相关视频','Related video');
+    document.getElementById('media-trailer-kicker').textContent=provider+' · '+t('相关视频','Related video');
     document.getElementById('media-trailer-help').textContent=t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
     const external=document.getElementById('media-trailer-external');
     external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
