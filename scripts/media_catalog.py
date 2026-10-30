@@ -1,6 +1,7 @@
 """Canonical public work records. Identity comes only from provider IDs."""
 import math
 import re
+import unicodedata
 
 RATING_SOURCES = {
     'imdb': ('IMDb', 10), 'internet movie database': ('IMDb', 10),
@@ -60,12 +61,40 @@ def build_catalog(sources):
             if not tokens: continue
             for token in tokens[1:]: parent[find(token)]=find(tokens[0])
             records.append((provider,snapshot,item,tokens))
+    # Join anime records only with strong, shared work identity. Franchise
+    # names alone are insufficient: remakes and numbered seasons are separate.
+    anime = [(item, tokens) for _, _, item, tokens in records
+             if item.get('kind') == 'anime']
+    def native_key(value):
+        raw = unicodedata.normalize('NFKC', str(value or '')).casefold()
+        return ''.join(c for c in raw if c.isalnum())
+    def same_premiere(a, b):
+        ay, by = str(a.get('date') or '')[:4], str(b.get('date') or '')[:4]
+        return ay.isdigit() and by.isdigit() and abs(int(ay) - int(by)) <= 1
+    # Editorially checked against the 2026 remake's third-season official
+    # announcement and MAL/AniList record. Never apply this to season 1/2.
+    verified_pairs = {frozenset(('bangumi-637802', 'mal-63801'))}
+    for i, (left, ids_left) in enumerate(anime):
+        for right, ids_right in anime[i + 1:]:
+            if not same_premiere(left, right): continue
+            if not ((any(x.startswith('bangumi-') for x in ids_left) and
+                     any(x.startswith('mal-') for x in ids_right)) or
+                    (any(x.startswith('bangumi-') for x in ids_right) and
+                     any(x.startswith('mal-') for x in ids_left))): continue
+            explicit = any(frozenset((x, y)) in verified_pairs
+                           for x in ids_left for y in ids_right)
+            originals = [native_key(left.get('original_title') or left.get('title')),
+                         native_key(right.get('title'))]
+            # Exact native title (including season number), never fuzzy prefix.
+            exact_native = len(originals[0]) >= 7 and originals[0] == originals[1]
+            if explicit or exact_native:
+                parent[find(ids_right[0])] = find(ids_left[0])
     groups={}
     for row in records: groups.setdefault(find(row[3][0]),[]).append(row)
     works={};aliases={}
     for group in groups.values():
         tokens=sorted({t for row in group for t in row[3]})
-        rank=lambda t:(0 if t.startswith('tmdb-') else 1 if t.startswith('imdb-') else 2 if t.startswith('mal-') else 3,t)
+        rank=lambda t:((0 if t.startswith('bangumi-') else 1 if t.startswith('mal-') else 2) if any(row[2].get('kind')=='anime' for row in group) else (0 if t.startswith('tmdb-') else 1 if t.startswith('imdb-') else 2 if t.startswith('mal-') else 3),t)
         wid=min(tokens,key=rank)
         work={'id':wid,'aliases':tokens,'ratings':[],'links':[],'profile':{},'categories':[]}
         # Provider order is intentional: TMDB supplies the preferred Chinese metadata.
