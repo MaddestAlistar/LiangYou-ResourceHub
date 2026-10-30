@@ -138,10 +138,10 @@ jobs:
           # explicitly changed from 'unlimited' to $0 on SandBase.
           # If this key's cap is ever lifted, immediately set this to 'false'.
           SANDBASE_HARD_ZERO_SPEND_CONFIRMED: 'false'
-          # One-time user-authorized test (key cumulative limit $0.01).
-          XIGUA_ONE_TIME_PAID_TEST: 'true'
+          # One-time paid probe is disabled; do not make recurring charged calls.
+          XIGUA_ONE_TIME_PAID_TEST: 'false'
           XIGUA_SEARCH_PER_RUN: '1'
-          XIGUA_AUTO_SEARCH_ENABLED: 'true'
+          XIGUA_AUTO_SEARCH_ENABLED: 'false'
           XIGUA_VIDEOS_BATCH: '1'
         run: python scripts/refresh_media_xigua_videos.py
       - name: Validate output, when metadata exists
