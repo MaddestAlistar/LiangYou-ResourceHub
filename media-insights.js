@@ -197,6 +197,9 @@
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
         (!yearKnown||Math.abs(Number(x.year)-year)<=1);
+      // Catalog-bound anime rows must never fall back to same-title records
+      // from another season or catalog work ID.
+      if(kind==='anime'&&x.verifiedByCatalogTitle===true&&!animeBound)continue;
       // A title-matched external row must never fall back to loose title/year
       // matching after its TMDB identity check fails.
       if((x.matchedByTitle===true||x.verifiedByTitleId===true)&&!idBound&&!animeBound)continue;
@@ -252,7 +255,7 @@
     // Prefer sources that can play on mainland Chinese networks: put one
     // verified Bilibili and officially approved Xigua videos first.
     // Do not create placeholder slots or promote source-only links.
-    for(const provider of ['bilibili','xigua']){
+    for(const provider of ['bilibili','xigua','acfun']){
       include(ranked.find(v=>v.platform===provider&&v.playable===true));
     }
     // Every other available platform still receives one early representative.
