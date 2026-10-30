@@ -132,7 +132,9 @@ def parse_dailymotion(work):
         if work["kind"]=="movie":
             english=work.get("original") or ""
             tokens=re.findall(r"[A-Za-z]+",english)
-            generic=(len(tokens)<=2)
+            generic=(len(tokens)==1 or
+                (len(tokens)==2 and tokens[0].casefold()=="the") or
+                english.casefold().strip()=="resident evil")
             explicit_years=[int(y) for y in re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)",name)]
             if generic and not any(abs(y-work["year"])<=1 for y in explicit_years):continue
         results.append(video_record(work,"dailymotion",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
@@ -201,7 +203,9 @@ def main():
         w=works[k]
         if w["kind"]!="movie":return False
         tokens=re.findall(r"[A-Za-z]+",w.get("original") or "")
-        generic=len(tokens)==1 or len(tokens)==2 and tokens[0].casefold()=="the"
+        generic=(len(tokens)==1 or
+            (len(tokens)==2 and tokens[0].casefold()=="the") or
+            (w.get("original") or "").casefold().strip()=="resident evil")
         return generic and any(v.get("platform")=="dailymotion"
             for v in items.get(k,{}).get("videos",[]) if isinstance(v,dict))
     # Then oldest first; works with empty matches still get their turn.
