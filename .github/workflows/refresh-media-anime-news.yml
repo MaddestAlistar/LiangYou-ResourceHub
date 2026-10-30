@@ -35,6 +35,9 @@ jobs:
           assert verified_headline('TVアニメ「らんま1/2」第3期 PV公開',alias,3)
           assert not verified_headline('《乱马1/2》第二季公开新预告',alias,3)
           assert not verified_headline('《乱马1/2》有趣的角色合集',alias,3)
+          assert verified_headline('TVアニメ「アオのハコ」Season 2 放送開始', ['青之箱 第二季','アオのハコ Season 2'], 2)
+          assert not verified_headline('TVアニメ「アオのハコ」Season 1 放送開始', ['青之箱 第二季','アオのハコ Season 2'], 2)
+          assert verified_headline('名探偵コナン アニメ放送30周年記念企画', ['名侦探柯南','名探偵コナン'], 0)
           assert len(catalog())>50
           print('ANIME_NEWS_SEASON_GUARDS_OK')
           PY
