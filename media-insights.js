@@ -342,6 +342,7 @@
       const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
         v.verifiedBy==='Toei Animation'?t('东映动画官方','Toei Animation official'):
+        v.verifiedBy==='ONE PIECE Official'?t('航海王官方频道','ONE PIECE official'):
         v.verifiedBy==='AniList'?t('AniList 已关联','AniList linked'):
         v.verifiedBy==='KinoCheck'?t('KinoCheck · TMDB 精确匹配','KinoCheck · TMDB exact match'):
         v.official?(info.kind==='anime'?t('官方预告','Official trailer'):t('TMDB 标注官方','TMDB official')):
