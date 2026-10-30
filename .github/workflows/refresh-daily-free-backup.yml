@@ -16,6 +16,8 @@ permissions:
   contents: write
   pages: write
 
+# Also serves as an independent hourly heartbeat for the main due-aware
+# refresh workflow (via workflow_run after this job completes).
 # Serializes with the normal data refresh to avoid conflicts or double lookups.
 concurrency:
   group: resourcehub-data-refresh
