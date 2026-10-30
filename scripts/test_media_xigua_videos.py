@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from refresh_media_xigua_videos import parse_result, approved_embed, accept, row_for, trusted_cover, search, official_api_ready
+from refresh_media_xigua_videos import parse_result, approved_embed, accept, row_for, trusted_cover, search, official_api_ready, discover
 
 class XiguaVideoTest(unittest.TestCase):
     def setUp(self):
@@ -42,6 +42,16 @@ class XiguaVideoTest(unittest.TestCase):
             self.assertTrue(official_api_ready())
         with patch("refresh_media_xigua_videos.json_request", return_value="<html>not json</html>"):
             self.assertFalse(official_api_ready())
+
+    def test_metadata_only_search_never_claims_public_embed(self):
+        mock_search=[{"data":{"group_id":"7444746393916277283",
+              "title":"《海洋奇缘》正式预告片"}}]
+        with patch("refresh_media_xigua_videos.search",return_value=mock_search), \\
+             patch("refresh_media_xigua_videos.approved_embed") as iframe, \\
+             patch("refresh_media_xigua_videos.time.sleep",return_value=None):
+            videos,count=discover(self.movie,"dummy",verify_embed=False)
+        self.assertEqual((videos,count),([],1))
+        iframe.assert_not_called()
 
     def test_no_result_is_not_successfully_embeddable(self):
         with patch("refresh_media_xigua_videos.json_request", return_value={
