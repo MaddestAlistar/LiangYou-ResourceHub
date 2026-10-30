@@ -1,0 +1,17 @@
+name: Check AcFun search response video identifier schema
+on:
+  push:
+    branches: [probe/acfun-targeted-recall-20261030]
+    paths: [.github/workflows/probe-acfun-schema.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 experiments/acfun_schema_probe.py
