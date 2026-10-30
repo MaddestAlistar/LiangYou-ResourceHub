@@ -42,13 +42,14 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
   const input=document.querySelector('#videoUrl'),stage=document.querySelector('#stage'),status=document.querySelector('#status');
   fetch('../data/media-xigua-videos.json',{cache:'no-cache',signal:AbortSignal.timeout(8500)})
     .then(r=>r.ok?r.json():null).then(d=>{
-      const count=d?.schema===1&&d.items&&typeof d.items==='object'
-        ?Object.values(d.items).filter(x=>Array.isArray(x?.videos)&&x.videos.length>0).length
-        :null;
-      const videos=count===null?null:Object.values(d.items).reduce((n,x)=>n+(Array.isArray(x?.videos)?x.videos.length:0),0);
-      document.querySelector('#catalogStatus').textContent=count===null
+      const rows=d?.schema===1&&d.items&&typeof d.items==='object'?Object.values(d.items):null;
+      const checked=rows===null?null:rows.filter(x=>typeof x?.checkedAt==='string').length;
+      const candidates=rows===null?null:rows.reduce((n,x)=>n+(Array.isArray(x?.candidateVideos)?x.candidateVideos.length:0),0);
+      const count=rows===null?null:rows.filter(x=>Array.isArray(x?.videos)&&x.videos.length>0).length;
+      const videos=rows===null?null:rows.reduce((n,x)=>n+(Array.isArray(x?.videos)?x.videos.length:0),0);
+      document.querySelector('#catalogStatus').textContent=rows===null
         ?'影视中心西瓜视频数据状态：暂时无法读取'
-        :'影视中心已核验：'+count+' 部作品，'+videos+' 条视频。未匹配作品不会显示西瓜视频卡片。';
+        :'已搜索 '+checked+' 部作品，发现 '+candidates+' 条候选视频；通过官方播放核验 '+count+' 部作品、'+videos+' 条视频。候选不等于可播放，未经核验不会在影视中心显示。';
     }).catch(()=>{
       document.querySelector('#catalogStatus').textContent='影视中心西瓜视频数据状态：网络加载失败';
     });
