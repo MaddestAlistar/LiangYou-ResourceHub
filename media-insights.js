@@ -333,8 +333,10 @@
           /^\/bfs\/archive\/[a-f0-9]{32,80}\.(?:jpg|jpeg|png|webp)(?:@[\w!.-]{1,80})?$/i.test(u.pathname);
       })();
       const thumbOriginal=x.platform==='bilibili'?(trustedBiliThumb?sourceThumb:null):sourceThumb;
-      const proxiedBiliThumb=trustedBiliThumb?
-        base+'/api/media-cover/bilibili?src='+encodeURIComponent(thumbOriginal):null;
+      // Cloudflare Worker cover forwarding was tested live and returned 502.
+      // Prefer the official image directly; a local, clearly labeled film
+      // poster is kept as fallback if the visitor cannot reach that CDN.
+      const directBiliThumb=trustedBiliThumb?thumbOriginal:null;
       // The first-party cover filename must exactly match the verified BV ID.
       const bvidCover=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
         ['jpg','png','webp'].some(ext=>x.thumbnailLocal==='./assets/media-video-covers/'+x.videoId+'.'+ext)?
@@ -342,7 +344,7 @@
       const posterFallback=x.platform==='bilibili'?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
-      const thumb=bvidCover||proxiedBiliThumb||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
+      const thumb=bvidCover||directBiliThumb||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
       const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
       const needBiliCoverLookup=x.platform==='bilibili'&&!bvidCover&&!trustedBiliThumb;
