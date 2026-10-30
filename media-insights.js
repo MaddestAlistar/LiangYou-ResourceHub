@@ -184,20 +184,21 @@
     // A trusted TMDB-ID-linked catalog clip remains valid when a list card has
     // no localized release year. Loose/manual title matching still requires a year.
     const yearKnown=Number.isSafeInteger(year)&&year>=1900;
-    if(!['movie','tv'].includes(kind))return [];
+    if(!['movie','tv','anime'].includes(kind))return [];
     const found=[],ids=new Set();
     for(const x of Array.isArray(records)?records:[]){
       if(!x||x.kind!==kind)continue;
+      const animeBound=kind==='anime'&&x.workId===info.id&&x.verifiedByCatalogTitle===true;
       const idBound=(x.verifiedByTitleId===true||x.matchedByTitle===true)&&Number.isSafeInteger(Number(info?.tmdbId))&&
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
         (!yearKnown||Math.abs(Number(x.year)-year)<=1);
       // A title-matched external row must never fall back to loose title/year
       // matching after its TMDB identity check fails.
-      if((x.matchedByTitle===true||x.verifiedByTitleId===true)&&!idBound)continue;
-      if(x.tmdbId!=null&&Number.isSafeInteger(Number(x.tmdbId))&&
+      if((x.matchedByTitle===true||x.verifiedByTitleId===true)&&!idBound&&!animeBound)continue;
+      if(!animeBound&&x.tmdbId!=null&&Number.isSafeInteger(Number(x.tmdbId))&&
          Number(x.tmdbId)!==Number(info?.tmdbId))continue;
-      if(!idBound&&(!yearKnown||Number(x.year)!==year||
+      if(!animeBound&&!idBound&&(!yearKnown||Number(x.year)!==year||
          !aliases.includes(String(x.title||'').normalize('NFKC').trim().toLowerCase())))continue;
       const u=safe(x.verifiedSource);
       if(!u)continue;
@@ -336,8 +337,10 @@
       const likes=Number.isFinite(v.likes)&&v.likes>0?fmt(v.likes)+t(' 赞',' likes'):'';
       const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
+        v.verifiedBy==='Toei Animation'?t('东映动画官方','Toei Animation official'):
+        v.verifiedBy==='AniList'?t('AniList 已关联','AniList linked'):
         v.verifiedBy==='KinoCheck'?t('KinoCheck · TMDB 精确匹配','KinoCheck · TMDB exact match'):
-        v.official?t('TMDB 标注官方','TMDB official'):
+        v.official?(info.kind==='anime'?t('官方预告','Official trailer'):t('TMDB 标注官方','TMDB official')):
         v.verifiedBy==='TMDB'?t('TMDB 已关联','TMDB linked'):
         t('搜索候选 · 待核对','Unverified search match');
       const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
@@ -459,6 +462,20 @@
       return doc?.schema===1&&/^x[A-Za-z0-9]{3,15}$/.test(id)?id:'';
     }).catch(()=>'');
     return mediaPlayerConfigPromise;
+  }
+
+  // Independent anime video snapshot, keyed to stable catalog work IDs.
+  let animeVideoPromise=null,animeVideoUntil=0;
+  function animeVideoSnapshot(){
+    if(!animeVideoPromise||Date.now()>animeVideoUntil){
+      animeVideoUntil=Date.now()+15*60000;
+      animeVideoPromise=fetch('./data/media-anime-videos.json',{
+        cache:'no-cache',signal:AbortSignal.timeout(7000)
+      }).then(r=>r.ok?r.json():null)
+        .then(d=>d?.schema===1&&d.items&&typeof d.items==='object'?d:null)
+        .catch(()=>null);
+    }
+    return animeVideoPromise;
   }
 
   // Offline metadata snapshot: no visitor-triggered platform requests.
@@ -688,6 +705,33 @@
     if(info.section==='boxoffice')displayBoxOfficeArchive(info,target);
     if(info.section==='ratings'){hydrateClassification(info);return;}
     if(info.kind==='anime')return;
+    if(info.kind==='anime'){
+      if(info.section!=='discover')return;
+      const slot=target.querySelector('[data-mi-discover-slot="trailers"]');
+      if(!slot)return;
+      const pane=document.createElement('div');pane.className='mi-insight-host';
+      pane.dataset.miInsight=String(info.id)+':discover';
+      slot.prepend(pane);
+      pane.innerHTML=trailerGallery({},info,[],'loading');
+      slot.querySelector('.mi-official-trailer-fallback')?.remove();
+      animeVideoSnapshot().then(doc=>{
+        if(!pane.isConnected)return;
+        const item=doc?.items?.[info.id];
+        const year=Number(String(info.year||'').slice(0,4));
+        const verified=item&&item.workId===info.id&&item.kind==='anime'&&
+          (!Number.isSafeInteger(year)||year<1900||Math.abs(Number(item.year)-year)<=1);
+        const videos=verified&&Array.isArray(item.videos)?item.videos:[];
+        const youtube=verified&&Array.isArray(item.youtubeTrailers)?item.youtubeTrailers:[];
+        pane.innerHTML=trailerGallery({trailers:youtube},info,videos,'ready');
+        discoverMissingBiliCovers(pane);
+        setupMobileMotionCovers(pane);
+      }).catch(()=>{if(pane.isConnected)pane.innerHTML=trailerGallery({},info,[],'error');});
+      for(const name of ['international','domestic']){
+        const news=target.querySelector('[data-mi-discover-slot="'+name+'"] .mi-caption');
+        if(news)news.textContent=t('暂无这部动漫的已核验报道。','No verified articles for this anime yet.');
+      }
+      return;
+    }
     const kind=info.kind==='tv'?'tv':info.kind==='movie'?'movie':null;
     const id=Number(info.tmdbId);
     const discoverSlots=info.section==='discover'?{
