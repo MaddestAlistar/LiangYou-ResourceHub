@@ -239,10 +239,46 @@ test('verified AcFun GIF thumbnail is animated without a misleading playback-tri
  assert.match(h,/anim\.gif\?imageslim/);
  assert.match(h,/data-mi-native-motion="gif"/);
  assert.match(h,/动态封面/);
- assert.match(h,/站内播放/);
+ assert.doesNotMatch(h,/站内播放|Play here|mi-trailer-source-hint/);
  assert.doesNotMatch(h,/尝试站内播放|Try in-page playback/);
  assert.match(source,/function playAcfunCover\(card\)/);
  assert.match(source,/video\.muted=true/);
+});
+
+test('verified mainland-accessible Bilibili and AcFun lead the same 20-card gallery',()=>{
+ const info={...selected,tmdbId:550};
+ const shared={kind:'movie',tmdbId:550,matchedByTitle:true,
+   title:info.title,year:2025,type:'Trailer'};
+ const rows=[
+   {...shared,platform:'niconico',videoId:'sm43190555',
+     verifiedSource:'https://www.nicovideo.jp/watch/sm43190555'},
+   {...shared,platform:'dailymotion',videoId:'x8mcq94',
+     verifiedSource:'https://www.dailymotion.com/video/x8mcq94'},
+   {...shared,platform:'acfun',videoId:'30636253',
+     verifiedSource:'https://www.acfun.cn/v/ac30636253'},
+   {...shared,platform:'bilibili',videoId:'BV1234567890',
+     verifiedSource:'https://www.bilibili.com/video/BV1234567890/'}
+ ];
+ const from={trailers:[{id:'AbCdEf12345',title:'Official trailer',
+   type:'Trailer',official:true,embeddable:true,likes:10000000}]};
+ const cards=html=>[...html.matchAll(/<article class="mi-trailer-card">([\s\S]*?)<\/article>/g)].map(m=>m[1]);
+ const all=cards(gallery(from,info,rows));
+ assert.equal(all.length,5);
+ assert.match(all[0],/data-mi-play-cn="bilibili"/);
+ assert.match(all[1],/data-mi-play-cn="acfun"/);
+ assert.match(all[2],/data-mi-play-video="AbCdEf12345"/);
+ assert.ok(all.some(c=>c.includes('Niconico')));
+ assert.ok(all.some(c=>c.includes('Dailymotion')));
+ assert.doesNotMatch(all.join(''),/站内播放|Play here/);
+ assert.doesNotMatch(all[0]+all[1],/mi-trailer-source-hint/);
+ // Source-only videos still have a clear fallback label.
+ assert.match(all.find(c=>c.includes('Dailymotion')),/原站观看/);
+ assert.match(cards(gallery(from,info,rows.filter(r=>r.platform!=='bilibili')))[0],
+   /data-mi-play-cn="acfun"/);
+ assert.match(cards(gallery(from,info,rows.filter(r=>r.platform!=='acfun')))[0],
+   /data-mi-play-cn="bilibili"/);
+ assert.match(cards(gallery(from,info,rows.filter(r=>!['acfun','bilibili'].includes(r.platform))))[0],
+   /data-mi-play-video="AbCdEf12345"/);
 });
 test('Bilibili motion cover accepts only the matching verified BV ID and WebP path',()=>{
  const info={...selected,tmdbId:550};
