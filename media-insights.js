@@ -360,6 +360,10 @@
       const posterFallback=x.platform==='bilibili'?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
+      const verifiedBiliMotion=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
+        x.animatedThumbnailLocal==='./assets/media-video-previews/'+x.videoId+'.webp'?
+        x.animatedThumbnailLocal:null;
+      const isNativeAnimatedGif=x.platform==='acfun'&&/^https:\/\/[^\s"'<>]+\.gif(?:\?|$)/i.test(sourceThumb||'');
       const thumb=bvidCover||directBiliThumb||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
       const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
@@ -369,11 +373,13 @@
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
           (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+
           ((bvidCover||thumbOriginal)&&posterFallback?' data-thumb-poster-fallback="true"':'')+' alt="">':'')+
+        (verifiedBiliMotion?'<img class="mi-trailer-motion-thumb" data-mi-motion-src="'+esc(verifiedBiliMotion)+'" alt="" aria-hidden="true" loading="lazy">':'')+
+        (isNativeAnimatedGif?'<span class="mi-trailer-motion-label">'+t('动态封面','Motion cover')+'</span>':'')+
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
-        '<span class="mi-trailer-source-hint">'+t(x.platform==='acfun'?'尝试站内播放':supportedPlayer?'站内播放':'原站观看',
-          x.platform==='acfun'?'Try in-page playback':supportedPlayer?'Play here':'Open video')+'</span></span>';
+        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'站内播放':'原站观看',
+          supportedPlayer?'Play here':'Open video')+'</span></span>';
       const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
         '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
@@ -1048,6 +1054,25 @@
         'Public HLS stream unavailable. Try the official embed or original page.'));
     }
   }
+  // Load Bilibili's verified, precomputed animated WEBP only when
+  // requested by a visitor interaction; static cover remains the default.
+  const activeMotionCovers=new WeakMap();
+  function setMotionCover(card,on){
+    const img=card?.querySelector('img.mi-trailer-motion-thumb');
+    if(!img||window.matchMedia('(prefers-reduced-motion: reduce)').matches||navigator.connection?.saveData)return;
+    if(on){
+      if(!img.src)img.src=img.dataset.miMotionSrc;
+      img.classList.add('is-active');
+    }else img.classList.remove('is-active');
+  }
+  root.addEventListener('pointerover',e=>{
+    const card=e.target.closest?.('.mi-trailer-card');
+    if(card&&!card.contains(e.relatedTarget))setMotionCover(card,true);
+  });
+  root.addEventListener('pointerout',e=>{
+    const card=e.target.closest?.('.mi-trailer-card');
+    if(card&&!card.contains(e.relatedTarget))setMotionCover(card,false);
+  });
   // If an upstream CDN refuses cross-site thumbnail use, show the original
   // gradient card instead of a broken-image symbol.
   root.addEventListener('error',ev=>{
