@@ -37,6 +37,13 @@ def verified_time(name, snapshot):
 def is_due(verified, instant, hours):
     return verified is None or verified > instant + timedelta(hours=1) or instant - verified >= timedelta(hours=hours)
 
+def status_needs_write(previous, jobs):
+    """No-op heartbeats should not generate commits or Pages rebuilds."""
+    return (previous.get('schema') != 1
+            or previous.get('watchdog_minutes') != 15
+            or previous.get('jobs') != jobs)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--force', action='store_true')
@@ -97,7 +104,7 @@ def main():
         jobs = dict(pool.map(refresh, JOBS))
     # A no-op heartbeat is visible in Actions logs. Do not commit a new
     # timestamp (and trigger extra Pages work) when no source state changed.
-    if old.get('jobs') != jobs or old.get('watchdog_minutes') != 15:
+    if status_needs_write(old, jobs):
         write_json(ROOT / 'data/update-status.json',
                    {'schema': 1, 'checked_at': iso(), 'timezone': 'Asia/Shanghai',
                     'watchdog_minutes': 15, 'jobs': jobs})
