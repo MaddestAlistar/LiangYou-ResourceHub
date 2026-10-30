@@ -16,7 +16,7 @@ OUT=ROOT/"data/media-extra-videos.json"
 MAX_ITEMS=450
 MAX_PER_SOURCE=5
 HEADERS={"User-Agent":"LiangYou-MovieVideoMetadata/1.0", "Accept":"application/json"}
-VIDEO_WORDS=re.compile(r"预告|先导|花絮|片段|幕后|影评|解说|访谈|宣传|PV|ティザー|予告|特報|トレーラー|trailer|teaser|clip|scene|review|interview|featurette|behind.the.scenes|promo|official|解禁",re.I)
+VIDEO_WORDS=re.compile(r"预告|先导|花絮|片段|幕后|影评|简评|解说|访谈|宣传|搞笑场面|精彩片段|PV|ティザー|予告|特報|トレーラー|trailer|teaser|clip|scene|review|interview|featurette|behind.the.scenes|promo|official|解禁",re.I)
 TRAILER_WORDS=re.compile(r"预告|先导|PV|ティザー|予告|特報|トレーラー|trailer|teaser|promo",re.I)
 BAN_WORDS=re.compile(r"全集|完整版电影|全片|电影完整版|未删减|full.movie|full.episode|第\d+話|第\d+话|第\d+集|完整正片|海盗版|破解",re.I)
 OTHER_FILM_WORDS=re.compile(r"团队打造|团队联手|主创团队|制作团队|from.the.creators.of|制作班底",re.I)
@@ -64,18 +64,27 @@ def video_record(work,platform,ident,name,kind="Related",**more):
 def parse_acfun(work):
     title=work["title"]; aliases=work["aliases"]; year=work["year"]
     if not re.search(r"[\u4e00-\u9fff]",title):return []
-    doc=get_json(search_url("https://www.acfun.cn/rest/pc-direct/search/video",
-        {"keyword":title+" 预告","page":1,"pageSize":20}))
-    result=[]
-    for x in (doc.get("videoList") or [])[:35]:
-        if not isinstance(x,dict):continue
-        ident=str(x.get("dougaId") or "");name=x.get("title") or ""
-        if not ACFUN_ID.fullmatch(ident) or not matches_title(name,aliases,year,work["kind"]):continue
-        if not VIDEO_WORDS.search(name):continue
-        result.append(video_record(work,"acfun",ident,name,"Trailer" if TRAILER_WORDS.search(name) else "Related",
-          verifiedSource="https://www.acfun.cn/v/ac"+ident,
-          publisher=str(x.get("userName") or "AcFun")[:60],views=x.get("viewCount") if isinstance(x.get("viewCount"),int) else None))
-        if len(result)>=MAX_PER_SOURCE:break
+    result=[];seen=set()
+    # Prefer trailers. If no relevant result, one additional low-frequency
+    # general-title search can supply reviews or related clips without
+    # fetching individual video streams or requiring accounts.
+    for search_term in (title+" 预告", title):
+        doc=get_json(search_url("https://www.acfun.cn/rest/pc-direct/search/video",
+            {"keyword":search_term,"page":1,"pageSize":20}))
+        for x in (doc.get("videoList") or [])[:35]:
+            if not isinstance(x,dict):continue
+            ident=str(x.get("dougaId") or "");name=x.get("title") or ""
+            if not ACFUN_ID.fullmatch(ident) or ident in seen:continue
+            if not matches_title(name,aliases,year,work["kind"]) or not VIDEO_WORDS.search(name):continue
+            seen.add(ident)
+            result.append(video_record(work,"acfun",ident,name,
+              "Trailer" if TRAILER_WORDS.search(name) else "Related",
+              verifiedSource="https://www.acfun.cn/v/ac"+ident,
+              publisher=str(x.get("userName") or "AcFun")[:60],
+              views=x.get("viewCount") if isinstance(x.get("viewCount"),int) else None))
+            if len(result)>=MAX_PER_SOURCE:break
+        if result:break
+        time.sleep(2)
     return result
 def parse_niconico(work):
     aliases=[x for x in work["aliases"] if re.search(r"[\u3040-\u30ff\u3400-\u9fff]",x)]
