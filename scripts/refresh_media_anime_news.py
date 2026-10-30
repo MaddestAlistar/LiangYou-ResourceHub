@@ -71,7 +71,7 @@ def verified_headline(headline: str, aliases: list[str], season_num: int) -> boo
             name = SEASON.sub("", name)
         name = re.sub(r"\(\s*20\d{2}\s*\)", "", name).strip()
         key = compact(name)
-        if len(key) >= 4 and key in headline_key:
+        if len(key) >= (2 if season_num and re.search(r"[\u3400-\u9fff]", name) else 3 if re.search(r"[\u3400-\u9fff]", name) else 4) and key in headline_key:
             return True
     return False
 
@@ -119,7 +119,7 @@ def search_names(work: dict, lang: str) -> list[str]:
     names = []
     for alias in work["aliases"]:
         base = SEASON.sub("", unicodedata.normalize("NFKC", alias)).strip(" -—:：()（）")
-        if len(compact(base)) < 4:
+        if len(compact(base)) < (2 if lang == "zh" else 4):
             continue
         if lang == "zh" and (not re.search(r"[\u3400-\u9fff]", base) or re.search(r"[\u3040-\u30ff]", base)):
             continue
