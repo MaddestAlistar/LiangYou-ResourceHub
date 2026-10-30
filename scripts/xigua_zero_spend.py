@@ -45,8 +45,12 @@ class LocalFreeBudget:
         else:
             self.used=0
         self.this_run=0
+        self.blocked_reason=(str(old.get("blockedReason") or "")[:64]
+                             if old.get("utcDay")==self.day else "")
 
     def authorize(self):
+        if self.blocked_reason:
+            raise FreeQuotaStop("provider_day_paused_" + self.blocked_reason)
         if self.this_run>=self.run_cap or self.used>=self.daily_cap:
             raise FreeQuotaStop("local_free_limit_reached")
         # Count potentially charged requests before sending. No automatic retries.
@@ -54,9 +58,15 @@ class LocalFreeBudget:
         self.this_run+=1
         self.save()
 
+    def halt_today(self, reason):
+        # A provider billing/auth/rate-limit denial is not retried next batch.
+        self.blocked_reason=str(reason)[:64]
+        self.save()
+
     def save(self):
         self.path.parent.mkdir(parents=True,exist_ok=True)
         self.path.write_text(json.dumps({
             "schema":1,"utcDay":self.day,"calls":self.used,
-            "localDailyCap":self.daily_cap
+            "localDailyCap":self.daily_cap,
+            "blockedReason":self.blocked_reason
         },separators=(",",":"))+"\n",encoding="utf8")
