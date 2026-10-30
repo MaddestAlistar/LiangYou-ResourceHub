@@ -115,6 +115,21 @@ jobs:
           except Exception as error:
               print('XIGUA_IFRAME_HEADER_UNAVAILABLE',type(error).__name__)
           PY
+      - name: Load latest committed UTC budget before any charged API request
+        run: |
+          set -euo pipefail
+          git fetch origin "$GITHUB_REF_NAME"
+          git show "origin/$GITHUB_REF_NAME:data/media-xigua-budget.json" > data/media-xigua-budget.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('data/media-xigua-budget.json')
+          data=json.loads(path.read_text())
+          data['schema']=1
+          data['localDailyCap']=24
+          path.write_text(json.dumps(data,separators=(',',':'))+'\\n')
+          print('XIGUA_LOADED_LATEST_BUDGET',data.get('utcDay'),data.get('calls'))
+          PY
       - name: Discover Xigua videos with optional private SandBase key
         env:
           SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
@@ -157,7 +172,26 @@ jobs:
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
             cp /tmp/liangyou-xigua.json data/media-xigua-videos.json
-            cp /tmp/liangyou-xigua-budget.json data/media-xigua-budget.json
+            python - <<'PY'
+            import json
+            from pathlib import Path
+            current_path=Path('data/media-xigua-budget.json')
+            incoming_path=Path('/tmp/liangyou-xigua-budget.json')
+            current=json.loads(current_path.read_text())
+            incoming=json.loads(incoming_path.read_text())
+            if str(current.get('utcDay','')) == str(incoming.get('utcDay','')):
+                merged=dict(incoming)
+                merged['calls']=max(int(current.get('calls',0)),int(incoming.get('calls',0)))
+            elif str(current.get('utcDay','')) > str(incoming.get('utcDay','')):
+                merged=dict(current)
+            else:
+                merged=dict(incoming)
+            merged['schema']=1
+            merged['localDailyCap']=24
+            if not 0 <= int(merged.get('calls',0)) <= 24:
+                raise SystemExit('XIGUA_QUOTA_LEDGER_CONFLICT')
+            current_path.write_text(json.dumps(merged,separators=(',',':'))+'\\n')
+            PY
             git add data/media-xigua-videos.json data/media-xigua-budget.json
             if git diff --cached --quiet; then exit 0; fi
             git commit -m "Refresh approved Xigua film and anime videos [skip ci]"
