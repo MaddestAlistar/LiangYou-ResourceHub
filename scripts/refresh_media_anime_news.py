@@ -58,7 +58,8 @@ def verified_headline(headline: str, aliases: list[str], season_num: int) -> boo
     # A sequel needs an explicit season cue. Generic franchise articles from
     # other seasons must never become "new" news for season three.
     if season_num:
-        if season(raw) != season_num:
+        reported = season(raw)
+        if reported != season_num:
             return False
     for alias in aliases:
         name = str(alias or "").strip()
