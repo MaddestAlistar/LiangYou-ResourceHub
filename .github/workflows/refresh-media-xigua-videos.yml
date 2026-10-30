@@ -10,6 +10,7 @@ on:
       - '.github/workflows/refresh-media-xigua-videos.yml'
       - 'scripts/refresh_media_xigua_videos.py'
       - 'scripts/xigua_zero_spend.py'
+      - 'scripts/merge_xigua_budget.py'
       - 'scripts/test_media_xigua_videos.py'
       - 'scripts/test_xigua_zero_spend.py'
       - 'media-insights.js'
@@ -35,7 +36,7 @@ jobs:
           python-version: '3.12'
       - name: Run matching and iframe authorization tests
         run: |
-          python -m py_compile scripts/refresh_media_xigua_videos.py scripts/xigua_zero_spend.py
+          python -m py_compile scripts/refresh_media_xigua_videos.py scripts/xigua_zero_spend.py scripts/merge_xigua_budget.py
           cd scripts && python -m unittest -v test_media_xigua_videos test_xigua_zero_spend
           cd .. && node --check media-insights.js
       - name: Verify secret and non-billable account funding (read-only)
@@ -172,26 +173,7 @@ jobs:
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
             cp /tmp/liangyou-xigua.json data/media-xigua-videos.json
-            python - <<'PY'
-            import json
-            from pathlib import Path
-            current_path=Path('data/media-xigua-budget.json')
-            incoming_path=Path('/tmp/liangyou-xigua-budget.json')
-            current=json.loads(current_path.read_text())
-            incoming=json.loads(incoming_path.read_text())
-            if str(current.get('utcDay','')) == str(incoming.get('utcDay','')):
-                merged=dict(incoming)
-                merged['calls']=max(int(current.get('calls',0)),int(incoming.get('calls',0)))
-            elif str(current.get('utcDay','')) > str(incoming.get('utcDay','')):
-                merged=dict(current)
-            else:
-                merged=dict(incoming)
-            merged['schema']=1
-            merged['localDailyCap']=24
-            if not 0 <= int(merged.get('calls',0)) <= 24:
-                raise SystemExit('XIGUA_QUOTA_LEDGER_CONFLICT')
-            current_path.write_text(json.dumps(merged,separators=(',',':'))+'\n')
-            PY
+            python scripts/merge_xigua_budget.py data/media-xigua-budget.json /tmp/liangyou-xigua-budget.json
             git add data/media-xigua-videos.json data/media-xigua-budget.json
             if git diff --cached --quiet; then exit 0; fi
             git commit -m "Refresh approved Xigua film and anime videos [skip ci]"
