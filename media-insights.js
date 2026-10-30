@@ -1193,7 +1193,7 @@
        url==='https://www.bilibili.com/video/'+id+'/')
       frameUrl='https://player.bilibili.com/player.html?bvid='+id+'&autoplay=1&danmaku=0&poster=1';
     if(platform==='acfun'&&/^[1-9]\d{3,11}$/.test(id)&&url==='https://www.acfun.cn/v/ac'+id)
-      frameUrl='https://www.acfun.cn/player/ac'+id;
+      frameUrl='native-acfun-hls';
     if(platform==='niconico'&&/^(sm|so)\d{6,12}$/.test(id)&&url==='https://www.nicovideo.jp/watch/'+id)
       frameUrl='https://embed.nicovideo.jp/watch/'+id;
     if(platform==='dailymotion'&&/^x[a-z0-9]{4,12}$/i.test(id)&&
