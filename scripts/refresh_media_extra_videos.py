@@ -47,7 +47,7 @@ def matches_title(video,aliases,year=0,kind="movie"):
         # and accidentally pass the same-year check for the original film.
         if latin(alias) and re.search(
             r"(?<![a-z0-9])"+re.escape(str(alias).strip())+
-            r"[\\s,.:;()\\-]*[2-9](?![0-9])",title,re.I):
+            r"[\s,.:;()\-]*[2-9](?![0-9])",title,re.I):
             return False
         pos=normalize(title).find(normalize(alias))
         if pos>=0:
