@@ -99,7 +99,7 @@ jobs:
                   row['thumbnail']=index[bvid]
                   changed=True
           if changed:
-              fresh.write_text(json.dumps(base,ensure_ascii=False,indent=2)+'\\n')
+              fresh.write_text(json.dumps(base,ensure_ascii=False,indent=2)+'\n')
           PY
             git add data/media-extra-videos.json data/media-domestic-trailers.json
             if git diff --cached --quiet; then exit 0; fi
