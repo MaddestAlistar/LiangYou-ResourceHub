@@ -2,7 +2,7 @@
 """Low-frequency source-specific AcFun response and metadata matcher check."""
 import json, time, sys
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).resolve().parent))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1] / "scripts"))
 import refresh_media_extra_videos as m
 rows=[]
 for work in [
