@@ -53,7 +53,7 @@ def report_streams(markup):
     if not markup:return
     print("ajax_preview",repr(markup[:155]))
     try:
-        outer=json.loads(markup)
+        outer=json.JSONDecoder().raw_decode(markup)[0]
         print("ajax_json_keys",sorted(outer.keys())[:10])
         markup=outer.get("html") or markup
     except (ValueError,AttributeError) as exc:
