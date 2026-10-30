@@ -51,7 +51,11 @@ def search(keyword, key, budget=None):
             print("XIGUA_SANDBASE_SEARCH_HTTP", http_status, flush=True)
         else:
             print("XIGUA_SANDBASE_SEARCH_EXCEPTION", type(error).__name__, flush=True)
-        # Do not retry; a rejected request could still count against free quota.
+        # 402/429/403 and unknown failures halt remaining scheduled batches
+        # that day; don't spend 50 requests on the same upstream error.
+        if budget is not None and hasattr(budget, "halt_today"):
+            budget.halt_today("http_" + str(http_status) if isinstance(http_status, int)
+                              else type(error).__name__.lower())
         raise FreeQuotaStop("sandbase_search_failed") from None
     if response.get("status") != "completed":
         raise RuntimeError("search_unavailable")
