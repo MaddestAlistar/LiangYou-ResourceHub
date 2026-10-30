@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync,statSync} from 'node:fs';
 import {serveTechNews,NEWS_CATEGORIES,sourceOf,VIDEO_MAX_BYTES,VIDEO_TITLE_MAX,VIDEO_DESC_MAX} from '../workers/tech-news.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'sample-admin-passphrase-not-real',GITHUB_TOKEN:'sample',REVIEW_REPO:'demo/review'};
@@ -198,4 +199,31 @@ test('News photo upload rejects oversized requests before repository writes',asy
   origin,allowed:origin,fetcher:async()=>{throw Error('Should not upload')}
  });
  assert.equal(result.status,413);
+});
+
+test('Homepage tech news keeps Telegram video and image fallback independent of Worker',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const script=readFileSync(new URL('../tech-news.js',import.meta.url),'utf8');
+ const player=readFileSync(new URL('../ly-video.js',import.meta.url),'utf8');
+ const mirror=JSON.parse(readFileSync(new URL('../data/tech-news-feed.json',import.meta.url),'utf8'));
+ assert.equal(mirror.schema,1);
+ assert.ok(html.includes('tech-news.js?v=20261030.china-media2'));
+ const tg=mirror.items.find(x=>x.sourceUrl==='https://t.me/Amazing_jlqz/7309');
+ assert.ok(tg,'Verified TG record should remain in the public mirror');
+ assert.ok(tg.localVideoUrl?.startsWith('./assets/tech-news/clip-'));
+ assert.ok(html.includes(tg.localVideoUrl));
+ assert.ok(html.includes('data-news-video="'+tg.id+'"'));
+ assert.ok(html.includes('data-ly-video-open="uploaded"'));
+ assert.ok(player.includes('assets/tech-news/clip-'));
+ assert.ok(script.includes('localVideoUrl'));
+ assert.ok(script.includes('withMirror(data.items)'));
+ const clip=new URL('../'+tg.localVideoUrl.slice(2),import.meta.url);
+ assert.ok(statSync(clip).size>1_000_000,'Telegram MP4 must actually be mirrored');
+ for(const item of mirror.items.filter(x=>x.newsImageUrl)){
+  assert.ok(item.localNewsImageUrl?.startsWith('./assets/tech-news/'));
+  assert.ok(html.includes(item.localNewsImageUrl));
+  const jpeg=readFileSync(new URL('../'+item.localNewsImageUrl.slice(2),import.meta.url));
+  assert.equal(jpeg[0],255);assert.equal(jpeg[1],216);
+ }
+ assert.ok(html.includes('loading="eager" fetchpriority="high"'));
 });
