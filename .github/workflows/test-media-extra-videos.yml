@@ -1,0 +1,46 @@
+name: Verify 20-video film gallery integration
+
+on:
+  push:
+    branches:
+      - feature/media-five-video-providers-20261030
+    paths:
+      - '.github/workflows/test-media-extra-videos.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check new provider scripts and JS source
+        run: |
+          node --check media-insights.js
+          node --check china-perf.js
+          python -m py_compile scripts/update_media_extra_videos.py
+          python scripts/test_media_extra_videos.py
+      - name: Verify video display regressions and modal
+        run: |
+          node --test scripts/test_media_domestic_trailers.mjs scripts/test_media_player.mjs
+      - name: Verify snapshots and cached update contract
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('data/media-extra-videos.json'))
+          assert d['schema']==1 and isinstance(d['items'],dict)
+          assert 'media-extra-videos.json' in open('media-insights.js').read()
+          assert 'extraVideoRows' in open('media-insights.js').read()
+          print('VIDEO_ROLLOUT_CONTRACT_OK')
+          PY
