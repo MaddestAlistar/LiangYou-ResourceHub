@@ -42,6 +42,13 @@ def matches_title(video,aliases,year=0,kind="movie"):
     # "Moana 2" cannot match Moana (2016), nor 海洋奇缘2 match 海洋奇缘.
     for alias in matched:
         if str(alias).strip().endswith(("2","Ⅱ","II","第二季","第2季")):continue
+        # Match explicit sequel numbers *before* punctuation is normalized.
+        # "Resident Evil 2 (2026)" must not become "Resident Evil 22026"
+        # and accidentally pass the same-year check for the original film.
+        if latin(alias) and re.search(
+            r"(?<![a-z0-9])"+re.escape(str(alias).strip())+
+            r"[\\s,.:;()\\-]*[2-9](?![0-9])",title,re.I):
+            return False
         pos=normalize(title).find(normalize(alias))
         if pos>=0:
             after=normalize(title)[pos+len(normalize(alias)):]
