@@ -152,6 +152,11 @@
     const found=[],ids=new Set();
     for(const x of Array.isArray(records)?records:[]){
       if(!x||x.kind!==kind)continue;
+      // A stored TMDB identity must never fall back to a coincidental title
+      // match for another film. Anonymous provider searches are only admitted
+      // when the independent title/year check succeeded.
+      if(x.tmdbId!=null&&Number(x.tmdbId)>0&&Number(x.tmdbId)!==Number(info?.tmdbId))continue;
+      if(['acfun','niconico','dailymotion'].includes(x.platform)&&x.titleMatchVerified!==true)continue;
       const idBound=x.verifiedByTitleId===true&&Number.isSafeInteger(Number(info?.tmdbId))&&
         Number(info.tmdbId)>0&&Number(x.tmdbId)===Number(info.tmdbId)&&
         Number.isSafeInteger(Number(x.year))&&Number(x.year)>=1900&&
