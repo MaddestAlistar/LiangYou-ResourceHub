@@ -102,6 +102,25 @@ def report_streams(markup):
                     return
     except Exception as exc:
         print("page_info_parse",type(exc).__name__,str(exc)[:100])
+def probe_live_worker_hls():
+    # No playback URLs or signed query tokens are printed.
+    url=f"https://liangyou-streaming-availability.maddestalistar.workers.dev/api/video/acfun/{VIDEO}"
+    req=urllib.request.Request(url,headers={"Accept":"application/json"})
+    try:
+        with urllib.request.urlopen(req,timeout=20) as response:
+            data=json.loads(response.read(15000))
+            stream=str(data.get("url") or "")
+            parsed=urlsplit(stream)
+            print("acfun_worker_hls",{"http":response.status,"ok":data.get("ok"),
+                "video_id_matches":str(data.get("videoId"))==VIDEO,
+                "stream_host":parsed.hostname,"hls":parsed.path.endswith(".m3u8"),
+                "quality":data.get("quality"),
+                "cors":response.headers.get("Access-Control-Allow-Origin")})
+    except urllib.error.HTTPError as e:
+        print("acfun_worker_hls",{"http":e.code,"ok":False})
+    except Exception as e:
+        print("acfun_worker_hls",{"error":type(e).__name__})
+
 def probe_bilibili_covers():
     # Check the three already verified metadata covers; no image downloads.
     url="https://i1.hdslb.com/bfs/archive/3bb32693eb30498f4510c53716b11fcb6aab30bf.jpg"
@@ -133,3 +152,4 @@ if __name__=="__main__":
             report_streams(body)
 
     probe_bilibili_covers()
+    probe_live_worker_hls()
