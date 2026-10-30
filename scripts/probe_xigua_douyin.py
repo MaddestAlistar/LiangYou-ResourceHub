@@ -33,6 +33,7 @@ for label,ident in samples.items():
             print("XIGUA_DOUYIN_API",label,ident,
                   "status",response.status,"err_no",data.get("err_no"),
                   "iframe",bool(embed and "open.douyin.com/player/video" in embed),
+                  "dimensions",str((payload or {}).get("video_width"))+"x"+str((payload or {}).get("video_height")),
                   "title",str(name)[:80],flush=True)
     except urllib.error.HTTPError as e:
         print("XIGUA_DOUYIN_API",label,ident,"http",e.code,flush=True)
