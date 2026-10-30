@@ -1195,7 +1195,7 @@ export default {
   }
   const matchingVideos=u.pathname.match(/^\/api\/videos\/title\/(movie|tv)\/([1-9]\d{0,9})$/);
   if(matchingVideos){
-   const cacheKey=new Request(new URL(u.pathname+"?matching=20261029-v13",u.origin));
+   const cacheKey=new Request(new URL(u.pathname+"?matching=20261030-bili-cover-v14",u.origin));
    const cached=await caches.default.match(cacheKey);if(cached)return cached;
    try{
     const body=await titleDomesticVideos(matchingVideos[1],matchingVideos[2],env);
@@ -1219,7 +1219,8 @@ export default {
     const stats=doc.data?.stat||{};
     const likes=Number(stats.like),views=Number(stats.view);
     if(!Number.isSafeInteger(likes)||likes<0||!Number.isSafeInteger(views)||views<0)throw Error("unavailable_stats");
-    const result=reply({ok:true,bvid:id,source:"Bilibili",likes,views,checkedAt:new Date().toISOString()},200,14400);
+    const result=reply({ok:true,bvid:id,source:"Bilibili",likes,views,
+      thumbnail:biliCoverUrl(doc.data.pic),checkedAt:new Date().toISOString()},200,14400);
     ctx.waitUntil(caches.default.put(request,result.clone()));return result;
    }catch{return reply({ok:false,status:"unavailable",source:"Bilibili"},200,1800);}
   }
