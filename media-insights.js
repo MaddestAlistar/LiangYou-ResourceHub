@@ -317,7 +317,7 @@
     }
   }
   function trailerGallery(d={},info={},domesticRows=[],status='ready'){
-    const allYoutube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')):[];
+    const allYoutube=Array.isArray(d?.trailers)?d.trailers.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||'')&&v.embeddable!==false&&v.ageRestricted!==true):[];
     // Cached TMDB/YouTube records can be numerous. Reserve candidate space
     // for KinoCheck's exact-ID extras before the 20-card final ranking.
     const kinoCandidates=allYoutube.filter(v=>v.verifiedBy==='KinoCheck').slice(0,12);
@@ -340,19 +340,15 @@
         v.official?t('TMDB 标注官方','TMDB official'):
         v.verifiedBy==='TMDB'?t('TMDB 已关联','TMDB linked'):
         t('搜索候选 · 待核对','Unverified search match');
-      const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
       const thumb='<img loading="lazy" decoding="async" src="'+esc(poster)+'" alt="" referrerpolicy="no-referrer">'+
-        '<span class="mi-trailer-play" aria-hidden="true">'+(embedAllowed?'▶':'↗')+'</span>'+
+        '<span class="mi-trailer-play" aria-hidden="true">▶</span>'+
         (duration?'<span class="mi-trailer-duration">'+esc(duration)+'</span>':'');
-      const url='https://www.youtube.com/watch?v='+v.id;
-      const player=embedAllowed?
-        '<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(v.title||'Video')+'">'+thumb+'</button>':
-        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+thumb+'</a>';
+      const player='<button class="mi-trailer-trigger" type="button" data-mi-play-video="'+esc(v.id)+'" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(v.title||'Video')+'">'+thumb+'</button>';
       return '<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>YouTube</span><span class="'+(related||v.official||v.verifiedBy==='KinoCheck'?'':'mi-warning-source')+'">'+label+'</span></div>'+
         '<strong>'+esc(v.title||'Video')+'</strong><small>'+esc(v.channel||'YouTube')+
         (likes?'<span class="mi-video-likes"> · '+esc(likes)+'</span>':'')+(views?' · '+esc(views):'')+'</small>'+
-        '<div class="mi-insight-links">'+a(url,'YouTube')+'</div></div></article>';
+        '</div></article>';
     }
     const candidates=[];
     // KinoCheck enriches YouTube videos through a verified TMDB ID. Treat it
@@ -373,6 +369,7 @@
       // Dailymotion requires this site's own Player ID. AcFun plays through
       // the verified public HTML5 stream in the site's video dialog.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
+      if(!supportedPlayer)continue; // No source-only cards or outbound watch links.
       const sourceThumb=safe(x.thumbnail)||(x.platform==='bilibili'?biliVerifiedThumbCache.get(x.videoId)||null:null);
       const trustedBiliThumb=x.platform==='bilibili'&&sourceThumb&&(()=>{
         const u=new URL(sourceThumb),h=u.hostname.toLowerCase();
@@ -409,20 +406,15 @@
         (verifiedBiliMotion?'<img class="mi-trailer-motion-thumb" data-mi-motion-src="'+esc(verifiedBiliMotion)+'" alt="" aria-hidden="true" loading="lazy">':'')+
         (isNativeAnimatedGif?'<span class="mi-trailer-motion-label">'+t('动态封面','Motion cover')+'</span>':'')+
         (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
-        '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
-        '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
-        // The play icon already conveys in-page playback; keep a label only
-        // for genuinely source-only cards, not for playable Bilibili/AcFun/etc.
-        (supportedPlayer?'':'<span class="mi-trailer-source-hint">'+t('原站观看','Open video')+'</span>')+'</span>';
-      const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
+        '<span class="mi-trailer-play" aria-hidden="true">▶</span></span>';
+      const player='<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
         '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
-        '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
-        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+cover+'</a>';
+        '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>';
       const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
           (Number.isSafeInteger(x.likes)&&x.likes>=0?' · '+esc(new Intl.NumberFormat(english()?'en':'zh-CN',{notation:'compact'}).format(x.likes))+t(' 赞',' likes'):'')+'</small>'+
-        '<div class="mi-insight-links">'+a(x.url,t('原站观看','Original video'))+'</div></div></article>';
+        '</div></article>';
       candidates.push({key:x.platform+':'+x.videoId,platform:x.platform,domestic:x.platform==='bilibili',
         type:x.type==='Related'?'related':'trailer',
         official:x.official===true,playable:supportedPlayer,likes:Number.isSafeInteger(x.likes)?x.likes:-1,
@@ -432,8 +424,8 @@
     let state='';
     if(!selected.length){
       if(status==='loading')state=t('正在查找可播放的预告片…','Checking verified trailers…');
-      else if(status==='error')state=t('预告片接口暂不可用，已保留平台查找入口。','Trailer service unavailable; platform links remain available.');
-      else state=t('暂无核验过的预告片，可通过下方入口前往原平台查找。','No verified videos for this title; try the original platforms.');
+      else if(status==='error')state=t('预告片接口暂不可用，请稍后再试。','Trailer service unavailable. Please try again later.');
+      else state=t('暂无核验过的可站内播放的视频。','No verified videos available for in-page playback.');
     }
     return '<section class="mi-insight-block mi-videos-block"><div class="mi-insight-head"><h3>'+t('预告片/相关视频','Trailers / Related videos')+
       '</h3><span class="mi-tech-tag">'+t('多平台','Multiple platforms')+'</span></div>'+
@@ -1018,12 +1010,7 @@
       retry.type='button';
       retry.textContent=t('重新获取播放地址','Refresh the video stream');
       retry.addEventListener('click',()=>showAcfunHls(id),{once:true});
-      const openSource=document.createElement('a');
-      openSource.href='https://www.acfun.cn/v/ac'+id;
-      openSource.target='_blank';
-      openSource.rel='noopener noreferrer';
-      openSource.textContent=t('原站观看','Watch on AcFun');
-      pane.append(note,retry,openSource);
+      pane.append(note,retry);
       trailerStage.appendChild(pane);
     };
     const loading=document.createElement('p');
@@ -1056,8 +1043,8 @@
         video.src=url;
         trailerStage.replaceChildren(video);
         acfunReadyTimer=setTimeout(()=>fallback(t(
-          'AcFun 视频加载超时，尝试重新获取地址或从原站观看。',
-          'AcFun playback timed out. Refresh or open the source.')),25000);
+          'AcFun 视频加载超时，请重新获取播放地址。',
+          'AcFun playback timed out. Please refresh the stream.')),25000);
         video.play().catch(()=>{});
       }else{
         const Hls=await loadHlsLibrary();
@@ -1068,22 +1055,22 @@
         trailerStage.replaceChildren(video);
         hls.on(Hls.Events.ERROR,(_event,data)=>{
           if(data?.fatal){hls.destroy();if(acfunHlsInstance===hls)acfunHlsInstance=null;
-            fallback(t('AcFun 视频流播放失败，请重试或从原站观看。',
-              'AcFun stream failed. Retry or open the original page.'));}
+            fallback(t('AcFun 视频流播放失败，请重试。',
+              'AcFun stream failed. Please retry.'));}
         });
         hls.on(Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}));
         hls.loadSource(url);
         hls.attachMedia(video);
         acfunReadyTimer=setTimeout(()=>fallback(t(
-          'AcFun 视频加载超时，尝试重新获取地址或从原站观看。',
-          'AcFun playback timed out. Refresh or open the source.')),25000);
+          'AcFun 视频加载超时，请重新获取播放地址。',
+          'AcFun playback timed out. Please refresh the stream.')),25000);
       }
       document.getElementById('media-trailer-help').textContent=t(
         '正在使用本站 HTML5 播放器读取 AcFun 公开视频。按播放键开始；临时视频地址过期时重新打开即可。',
         'Using our HTML5 player for this public AcFun stream. Tap play if needed; reopen to refresh expired links.');
     }catch{
-      fallback(t('此视频的公开 HLS 地址暂不可用，请重新获取或从原站观看。',
-        'Public HLS stream unavailable. Refresh or open the original page.'));
+      fallback(t('此视频的公开 HLS 地址暂不可用，请重新获取。',
+        'Public HLS stream unavailable. Please refresh.'));
     }
   }
   // Load Bilibili's verified, precomputed animated WEBP only when
@@ -1267,9 +1254,7 @@
     document.getElementById('media-trailer-title').textContent=name;
     document.getElementById('media-trailer-kicker').textContent=provider+' · '+t('相关视频','Related video');
     if(platform!=='acfun')document.getElementById('media-trailer-help').textContent=
-      t('视频由原平台直接播放；若嵌入受到平台限制，请点击原站观看。','The source platform handles playback. If embedding is restricted, open the original page.');
-    const external=document.getElementById('media-trailer-external');
-    external.href=url;external.textContent=t('原站观看 ↗','Open original ↗');
+      t('视频由原平台直接播放；如果暂时无法播放，请尝试其他视频。','Video playback is provided by the source platform. If it is unavailable, try another video.');
     if(playerSwitch)playerSwitch.hidden=true;
     if(!trailerDialog.open)trailerDialog.showModal();
   });
@@ -1285,9 +1270,6 @@
     document.getElementById('media-trailer-kicker').textContent=t('公开视频 · 无需 YouTube 账号','PUBLIC TRAILER · NO ACCOUNT REQUIRED');
     document.getElementById('media-trailer-close').setAttribute('aria-label',t('关闭视频播放器','Close trailer player'));
     document.getElementById('media-trailer-help').textContent=t('公开视频通常无需登录；如果出现播放错误，可切换官方播放器。年龄或账号验证限制无法绕过。','Public videos usually play without a login. For playback errors, try the other official player; account and age restrictions still apply.');
-    const external=document.getElementById('media-trailer-external');
-    external.href='https://www.youtube.com/watch?v='+id;
-    external.textContent=t('原站观看 ↗','Open on YouTube ↗');
     // Wait until the visitor taps a trailer before making requests to YouTube.
     if(playerSwitch)playerSwitch.hidden=false;
     showTrailerFrame(id,true);
