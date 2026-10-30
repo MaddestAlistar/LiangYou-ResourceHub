@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck, credible_acfun_film_title, trusted_thumbnail
+from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck, credible_acfun_film_title, trusted_thumbnail, backfill_dailymotion_thumbnails
 
 class VideoSources(unittest.TestCase):
     def setUp(self):
@@ -93,6 +93,23 @@ class VideoSources(unittest.TestCase):
         with patch("refresh_media_extra_videos.get_json",return_value=doc):
             rows=parse_dailymotion(w)
         self.assertEqual(rows[0]["thumbnail"],doc["list"][0]["thumbnail_360_url"])
+
+    def test_dailymotion_cache_cover_backfill_is_bounded(self):
+        rows={"movie:55":{"videos":[
+            {"platform":"dailymotion","videoId":"x8mcq94","name":"Trailer"},
+            {"platform":"dailymotion","videoId":"xabcdef","name":"Other video"},
+            {"platform":"niconico","videoId":"sm43190555"}]}}
+        seen=[]
+        def fetch(url,timeout=11):
+            seen.append(url)
+            return {"id":"x8mcq94","thumbnail_360_url":"https://s1.dmcdn.net/e7/x360"}
+        with patch("refresh_media_extra_videos.get_json",side_effect=fetch), \\
+             patch("refresh_media_extra_videos.time.sleep",return_value=None):
+            checked,filled=backfill_dailymotion_thumbnails(rows,max_lookups=1)
+        self.assertEqual((checked,filled),(1,1))
+        self.assertEqual(len(seen),1)
+        self.assertEqual(rows["movie:55"]["videos"][0]["thumbnail"],"https://s1.dmcdn.net/e7/x360")
+        self.assertFalse("thumbnail" in rows["movie:55"]["videos"][1])
 
     def test_niconico_pv_matching(self):
         doc={"data":[{"title":"TVアニメ『薬屋のひとりごと』第2クールPV","contentId":"sm43190555","viewCounter":16424},
