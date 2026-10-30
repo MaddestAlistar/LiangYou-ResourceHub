@@ -88,10 +88,22 @@ def year_match(work, ani):
     origin = (ani.get("startDate") or {}).get("year") or ani.get("seasonYear") or 0
     return not (local >= 1900 and origin >= 1900 and abs(local - origin) > 1)
 
+def comparable_title(value):
+    """Canonicalize equivalent, explicit season-number spellings, not franchises."""
+    key = normalize(value)
+    for old, new in (
+        ("secondseason", "season2"), ("2ndseason", "season2"),
+        ("seasontwo", "season2"), ("thirdseason", "season3"),
+        ("3rdseason", "season3"), ("seasonthree", "season3"),
+        ("fourthseason", "season4"), ("4thseason", "season4")
+    ):
+        key = key.replace(old, new)
+    return key
+
 def exact_title(work, ani):
-    local = {normalize(x) for x in work["aliases"] if x}
+    local = {comparable_title(x) for x in work["aliases"] if x}
     remote = [*(ani.get("synonyms") or []), *((ani.get("title") or {}).values())]
-    return any(normalize(name) in local for name in remote if name and len(normalize(name)) >= 4)
+    return any(comparable_title(name) in local for name in remote if name and len(comparable_title(name)) >= 4)
 
 def lookup_anilist(work):
     if work["anilistId"] or work["malId"]:
@@ -103,15 +115,32 @@ def lookup_anilist(work):
         if ani and year_match(work, ani):
             return ani
         return None
-    # Search only the original catalog name, never a generated English guess.
+    # Query only catalog-backed titles and equivalent season spellings.
+    # English "Second Season" and AniList "2nd Season" refer to the same
+    # edition but must never silently collapse into the original first season.
     term = work["original"] or work["title"]
     if not term:
         return None
+    terms = [term]
+    for previous, alternatives in (
+        ("Second Season", ("2nd Season", "Season 2")),
+        ("Third Season", ("3rd Season", "Season 3")),
+        ("Fourth Season", ("4th Season", "Season 4"))
+    ):
+        if previous.casefold() in term.casefold():
+            terms.extend(re.sub(re.escape(previous), substitute, term, flags=re.I)
+                         for substitute in alternatives)
     query = "query($q:String){Page(page:1,perPage:8){media(search:$q,type:ANIME,sort:SEARCH_MATCH){" + FIELDS + "}}}"
-    response = graphql(query, {"q": term})
-    candidates = (((response or {}).get("Page") or {}).get("media") or [])
-    candidates = [a for a in candidates if isinstance(a, dict) and year_match(work, a) and exact_title(work, a)]
-    return candidates[0] if len(candidates) == 1 else None
+    matches = {}
+    for query_term in dict.fromkeys(terms[:3]):
+        response = graphql(query, {"q": query_term})
+        candidates = (((response or {}).get("Page") or {}).get("media") or [])
+        for candidate in candidates:
+            if isinstance(candidate, dict) and year_match(work, candidate) and exact_title(work, candidate):
+                matches[candidate["id"]] = candidate
+        if len(matches) == 1:
+            return next(iter(matches.values()))
+    return next(iter(matches.values())) if len(matches) == 1 else None
 
 def season_marker(text):
     m = SEASON.search(str(text or ""))
