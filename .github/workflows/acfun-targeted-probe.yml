@@ -2,7 +2,7 @@ name: Diagnose AcFun film search matches (isolated)
 on:
   push:
     branches: [probe/acfun-targeted-recall-20261030]
-    paths: [.github/workflows/acfun-targeted-probe.yml]
+    paths: [.github/workflows/acfun-targeted-probe.yml, experiments/acfun_targeted_recall_probe.py]
   workflow_dispatch:
 permissions:
   contents: read
