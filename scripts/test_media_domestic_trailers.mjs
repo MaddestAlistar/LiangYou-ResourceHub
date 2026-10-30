@@ -141,3 +141,16 @@ test('Dailymotion inline player is gated by a site-owned Player ID',()=>{
   assert.match(source,/const supportedPlayer=x\\.platform!==\'dailymotion\'\\|\\|Boolean\\(dailymotionPlayerId\\)/);
   assert.doesNotMatch(source,/\/player\/x8lr5\\.html/);
 });
+
+test('KinoCheck exact-TMDB YouTube trailer stays visible with twenty competing YouTube videos',()=>{
+  const yt=Array.from({length:29},(_,i)=>({
+    id:'YTvideo'+String(i).padStart(4,'0'),title:'Related film video '+i,
+    type:'Clip',official:false,embeddable:true,views:999999
+  }));
+  const kino={id:'KinoTrailer',title:'KinoCheck official trailer',type:'Trailer',
+    verifiedBy:'KinoCheck',official:false,embeddable:true};
+  const h=gallery({trailers:[...yt,kino]},selected,[],'ready');
+  assert.equal((h.match(/class="mi-trailer-card"/g)||[]).length,20);
+  assert.match(h,/KinoCheck · TMDB 精确匹配/);
+  assert.match(h,/data-mi-play-video="KinoTrailer"/);
+});
