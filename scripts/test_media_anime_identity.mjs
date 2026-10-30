@@ -13,12 +13,34 @@ test('Japanese third-season titles match despite original remake year',()=>{
   assert.notEqual(core.animeTitleKey('らんま1/2 第2期'),core.animeTitleKey('らんま1/2 (2024) 第3期'));
 });
 
-test('Ranma 2026 metadata joins without mixing scores or losing Chinese name',()=>{
-  const merged=core.mergeAnimeCatalog(core.catalog(d));
+test('Ranma 2026 keeps verified Bangumi data when optional MAL/AniList records are absent',()=>{
+  const current=core.mergeAnimeCatalog(core.catalog(d));
+  const source=current.works['bangumi-637802'];
+  assert.ok(source);
+  assert.equal(source.title,'乱马1/2 第三季');
+  assert.ok(source.ratings.some(x=>x.source==='Bangumi'&&x.value===7.5));
+  // Do not claim linked scores or aliases that the latest fetched catalog lacks.
+  if(!d.works['mal-63801'])assert.equal(current.aliases['mal-63801'],undefined);
+  if(!d.works['anilist-209872'])assert.equal(current.aliases['anilist-209872'],undefined);
+});
+
+test('Ranma 2026 merges additional MAL/AniList scores only with matching season identity',()=>{
+  const bangumi=d.works['bangumi-637802'];
+  assert.ok(bangumi);
+  const mal={
+    id:'mal-63801',kind:'anime',title:'らんま1/2 (2024) 第3期',
+    original_title:'らんま1/2 (2024) 第3期',date:'2026-10-03',
+    aliases:['mal-63801','anilist-209872'],mal_id:63801,
+    ratings:[{source:'AniList',value:78}]
+  };
+  const merged=core.mergeAnimeCatalog({
+    works:{[bangumi.id]:bangumi,[mal.id]:mal},aliases:{}
+  });
   assert.equal(merged.aliases['mal-63801'],'bangumi-637802');
   assert.equal(merged.aliases['anilist-209872'],'bangumi-637802');
   const w=merged.works['bangumi-637802'];
-  assert.ok(w);assert.equal(w.mal_id,63801);
+  assert.ok(w);assert.equal(w.title,'乱马1/2 第三季');
+  assert.equal(w.mal_id,63801);
   assert.equal(merged.works['mal-63801'],undefined);
   assert.ok(w.ratings.some(x=>x.source==='Bangumi'&&x.value===7.5));
   assert.ok(w.ratings.some(x=>x.source==='AniList'&&x.value===78));
