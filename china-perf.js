@@ -21,7 +21,7 @@
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-multiplatform9',
-        './media-insights.js?v=20261030.anime-news-retry1',
+        './media-insights.js?v=20261030.xigua1',
         './media-cn-enhance.js?v=20261030.anime-unify2',
         './media-exact-scores.js?v=20261029.newsroom1',
         './media-boxoffice-rankings.js?v=20261029.noarchive1'
