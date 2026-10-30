@@ -128,17 +128,21 @@ def refresh():
     snapshot = json.loads(CATALOG.read_text(encoding="utf-8"))
     if snapshot.get("schema") != 1 or not isinstance(snapshot.get("items"), list):
         raise ValueError("Unexpected trailer catalog schema")
-    found = changed = 0
+    found = changed = reused = 0
     for row in snapshot["items"]:
         ident = str(row.get("videoId") or "")
         if (row.get("platform") != "bilibili" or not BV_RE.fullmatch(ident) or
                 row.get("verifiedSource") != f"https://www.bilibili.com/video/{ident}/"):
             continue
         found += 1
-        # Use the original provider-supplied cover until a newer official one
-        # has been verified; never clear it after a transient API failure.
+        # Cover URLs remain stable for published BV IDs. Reuse official CDN
+        # images already verified in the snapshot rather than issuing up to
+        # five external requests every three hours for the same metadata.
+        if checked_image(row.get("thumbnail")):
+            reused += 1
+            continue
         cover = official_cover(ident)
-        if cover and cover != row.get("thumbnail"):
+        if cover:
             row["thumbnail"] = cover
             changed += 1
         time.sleep(0.6)
@@ -148,7 +152,7 @@ def refresh():
             json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-    print(f"Bilibili covers: {found} checked, {changed} changed")
+    print(f"Bilibili covers: {found} catalog records, {reused} reused, {changed} new")
 
 
 if __name__ == "__main__":
