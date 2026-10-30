@@ -169,7 +169,11 @@ def combine(w,prior,bgm,ani,mal):
     # High-confidence genre sources precede crowdsourced wiki tags.
     genres=clean([*(ani or {}).get("genres",[]),*(mal or {}).get("genres",[]),
                   *(bgm or {}).get("genres",[])],6)
-    themes=clean([*(bgm or {}).get("themes",[]),*(ani or {}).get("themes",[])],6)
+    # Balance crowd tags with higher-ranked AniList topics. Do not let six
+    # fandom shorthands crowd all the verified subject themes off the panel.
+    community=(bgm or {}).get("themes",[])
+    editorial=(ani or {}).get("themes",[])
+    themes=clean([*community[:3],*editorial[:4],*community[3:]],6)
     group_source=((ani or {}).get("source") or (mal and "MAL") or (bgm or {}).get("source") or "")
     tag_source=("Bangumi · AniList" if (bgm or {}).get("themes") and (ani or {}).get("themes")
                 else (bgm or {}).get("source") if (bgm or {}).get("themes")
