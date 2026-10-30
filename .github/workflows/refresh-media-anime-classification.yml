@@ -1,0 +1,84 @@
+name: Refresh anime themes and parental guidance
+on:
+  schedule:
+    - cron: '12 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_media_anime_classification.py'
+      - 'scripts/test_media_anime_classification.py'
+      - '.github/workflows/refresh-media-anime-classification.yml'
+permissions:
+  contents: write
+concurrency:
+  group: media-anime-classification
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate identity, genre and audience-rating safeguards
+        run: |
+          python -m py_compile scripts/refresh_media_anime_classification.py
+          python scripts/test_media_anime_classification.py
+      - name: Build official-provider metadata snapshot
+        env:
+          ANIME_CLASS_BATCH: '35'
+        run: python scripts/refresh_media_anime_classification.py
+      - name: Check published classification schema
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          p=Path('data/media-anime-classification.json')
+          data=json.loads(p.read_text(encoding='utf8'))
+          assert data['schema']==1 and len(data['items'])>=1 and p.stat().st_size<500000
+          for wid,entry in data['items'].items():
+              assert re.fullmatch(r'(?:(?:bangumi|anilist|mal|simkl-anime)-[1-9]\d*|imdb-tt[1-9]\d{4,11})',wid)
+              assert entry['workId']==wid and entry['kind']=='anime'
+              assert isinstance(entry['year'],int)
+              assert len(entry.get('genres',[]))<=6 and len(entry.get('keywords',[]))<=6
+              for tag in entry.get('genres',[])+entry.get('keywords',[]):
+                  assert isinstance(tag,str) and len(tag)<=48 and '<' not in tag and '>' not in tag
+              advisory=entry.get('parental_rating')
+              assert advisory is None or (advisory.get('source')=='MAL' and advisory.get('rating') in ('G','PG','PG-13','R-17+','R+','Rx'))
+          print('ANIME_CLASSIFICATION_VALIDATED',len(data['items']))
+          PY
+      - name: Merge current snapshot and publish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-anime-classification.json /tmp/liangyou-anime-classification-candidate.json
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          dst=Path('data/media-anime-classification.json')
+          current=json.loads(dst.read_text(encoding='utf8')) if dst.exists() else {}
+          candidate=json.loads(Path('/tmp/liangyou-anime-classification-candidate.json').read_text(encoding='utf8'))
+          merged=dict(current.get('items') or {})
+          for wid,record in candidate['items'].items():
+              old=merged.get(wid)
+              if not old or str(record.get('checkedAt',''))>=str(old.get('checkedAt','')):
+                  merged[wid]=record
+          dst.write_text(json.dumps({'schema':1,'updatedAt':candidate['updatedAt'],'items':merged},
+             ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf8')
+          PY
+            git add data/media-anime-classification.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Refresh verified anime classification data [skip ci]"
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          echo 'Unable to publish anime classification snapshot' >&2
+          exit 1
