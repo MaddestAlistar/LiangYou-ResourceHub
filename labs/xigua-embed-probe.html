@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>西瓜视频站内播放诊断 · 良友科技</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft Yahei",sans-serif;background:#091329;color:#e9f0ff}
+*{box-sizing:border-box}body{margin:0;padding:24px 15px 60px;background:radial-gradient(circle at 75% 0,#223f82 0,transparent 45%)}
+main{max-width:820px;margin:auto}h1{font-size:clamp(22px,5vw,32px)}h2{font-size:18px;margin-top:26px}p{line-height:1.75;color:#acbddc}
+.card{border:1px solid #345183;background:#101d38;border-radius:16px;padding:18px;margin:18px 0}
+label{font-size:14px;color:#c6d5f4;display:block;margin:12px 0 9px}
+input{width:100%;padding:13px 11px;background:#0c1730;border:1px solid #405c8d;color:white;border-radius:10px;font-size:14px}
+button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:0;color:white;padding:12px 19px;border-radius:10px;font-weight:650}
+.stage{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:#050a15;border-radius:10px;overflow:hidden;margin-top:15px;position:relative}
+.stage iframe{width:100%;height:100%;border:0}small{color:#91a6cb;line-height:1.6}
+#status{min-height:22px;color:#bcd6ff}a{color:#90bdff}
+</style>
+</head>
+<body><main>
+<h1>西瓜视频 · 网页内播放诊断</h1>
+<p>用于验证西瓜视频官方 iframe 能否在 GitHub Pages 上播放，不会对影视情报中心现有来源做改动。请在中国大陆的手机流量或家庭宽带下测试。</p>
+<div class="card">
+<label for="videoUrl">西瓜视频链接，或官方 iframe 数字 ID</label>
+<input id="videoUrl" inputmode="url" value="https://www.ixigua.com/iframe/6803260807372079623?autoplay=0" spellcheck="false" autocomplete="off">
+<button id="test" type="button">测试网页内播放</button>
+<p id="status" role="status"></p>
+<div class="stage" id="stage"><small>点击测试后加载官方播放器，播放器是否实际可播需手动确认</small></div>
+<p><small>输入框初始链接是西瓜开发者文档中的演示 iframe，并非已核验可播放的电影预告。其他视频应优先使用西瓜原站“分享 → 嵌入代码”生成的链接。</small></p>
+</div>
+<div class="card">
+<h2>如何判断结果</h2>
+<p>可以在此页直接看到视频画面、点击播放且声音正常，才算站内播放成功。只有黑框、站外跳转、登录提示、网站拒绝连接，或加载出空白框，都不算成功。</p>
+<p><small>播放器跨域运行，本站无法直接读取其内部播放状态。这是人工播放测试页，不会绕过平台播放权限，也不会上传你填写的视频地址。</small></p>
+</div>
+<p><a href="../#media">返回影视情报中心</a></p>
+</main>
+<script>
+(() => {
+  const input=document.querySelector('#videoUrl'),stage=document.querySelector('#stage'),status=document.querySelector('#status');
+  document.querySelector('#test').addEventListener('click',()=>{
+    const value=input.value.trim();
+    let ident='';
+    if (/^[1-9]\d{14,20}$/.test(value)) ident=value;
+    else{
+      try{
+        const url=new URL(value);
+        if(url.protocol==='https:'&&['ixigua.com','www.ixigua.com'].includes(url.hostname)){
+          const match=url.pathname.match(/^\/(?:iframe\/)?([1-9]\d{14,20})\/?$/);
+          if(match)ident=match[1];
+        }
+      }catch{}
+    }
+    if(!ident){status.textContent='请输入西瓜视频的有效数字 ID、原视频页或官方 iframe 链接。';return}
+    const frame=document.createElement('iframe');
+    frame.title='西瓜视频官方嵌入播放器';
+    frame.src='https://www.ixigua.com/iframe/'+ident+'?autoplay=0';
+    frame.referrerPolicy='strict-origin-when-cross-origin';
+    frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    frame.allowFullscreen=true;
+    frame.loading='eager';
+    stage.replaceChildren(frame);
+    status.textContent='已请求加载官方 iframe。请实际点击播放，以判断视频能否正常播放。';
+  });
+})();
+</script>
+</body></html>
