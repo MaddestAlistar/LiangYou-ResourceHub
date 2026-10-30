@@ -275,9 +275,13 @@
         (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
       const supportedPlayer=(x.platform!=='dailymotion'||Boolean(dailymotionPlayerId))&&
         !(x.platform==='acfun'&&isiOS);
-      const thumb=safe(x.thumbnail);
+      const thumbOriginal=safe(x.thumbnail);
+      const nicoMedium=x.platform==='niconico'&&
+        /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
+      const thumb=nicoMedium?thumbOriginal+'.M':thumbOriginal;
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
-        (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'" alt="">':'')+
+        (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
+          (nicoMedium?' data-thumb-fallback="'+esc(thumbOriginal)+'"':'')+' alt="">':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
         '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'点击播放':x.platform==='acfun'?'手机原站观看':'原站观看','Open video')+'</span></span>';
@@ -780,8 +784,11 @@
   // gradient card instead of a broken-image symbol.
   root.addEventListener('error',ev=>{
     const img=ev.target;
-    if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb'))
-      img.remove();
+    if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb')){
+      const backup=safe(img.dataset.thumbFallback);
+      if(backup&&img.src!==backup){img.removeAttribute('data-thumb-fallback');img.src=backup;}
+      else img.remove();
+    }
   },true);
   root.addEventListener('click',ev=>{
     const button=ev.target.closest('button[data-mi-play-cn]');
