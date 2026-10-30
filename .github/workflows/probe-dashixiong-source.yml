@@ -1,0 +1,74 @@
+name: Manually test Dashixiong video source
+
+# Manual only: does not run on push, schedules or site deployments.
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Film or TV title (e.g. 名侦探柯南)'
+        type: string
+        required: true
+        default: '名侦探柯南'
+      media_type:
+        description: 'Choose film/TV for strict title matching'
+        type: choice
+        required: true
+        options: [tv, movie, auto]
+        default: tv
+      season:
+        description: 'Season (1 for movies)'
+        type: string
+        required: true
+        default: '1'
+      episode:
+        description: 'Episode (1 for movies)'
+        type: string
+        required: true
+        default: '1'
+      year:
+        description: 'Optional release year'
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manual-dashixiong-source-probe
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    name: Search / media URLs / HTTP / CORS
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository, no write credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax and matching logic
+        run: |
+          node --check scripts/probe-dashixiong-source.mjs
+          PROBE_TITLE='名侦探柯南' node scripts/probe-dashixiong-source.mjs --self-test
+      - name: Check actual API and response headers
+        env:
+          PROBE_TITLE: ${{ inputs.title }}
+          PROBE_TYPE: ${{ inputs.media_type }}
+          PROBE_SEASON: ${{ inputs.season }}
+          PROBE_EPISODE: ${{ inputs.episode }}
+          PROBE_YEAR: ${{ inputs.year }}
+          REPORT_DIR: ${{ runner.temp }}/dashixiong-source-report
+        run: node scripts/probe-dashixiong-source.mjs
+      - name: Save sanitized report for seven days
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dashixiong-source-probe-${{ github.run_number }}
+          path: ${{ runner.temp }}/dashixiong-source-report/
+          if-no-files-found: warn
+          retention-days: 7
