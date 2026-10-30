@@ -179,8 +179,8 @@ def canonical_cached_clip(work, row):
         return False
     platform, ident = row.get("platform"), str(row.get("videoId") or "")
     canonical = {
-        "acfun": ("https://www.acfun.cn/v/ac" + ident, r"[1-9]\\d{3,11}"),
-        "niconico": ("https://www.nicovideo.jp/watch/" + ident, r"(?:sm|so)\\d{6,12}"),
+        "acfun": ("https://www.acfun.cn/v/ac" + ident, r"[1-9]\d{3,11}"),
+        "niconico": ("https://www.nicovideo.jp/watch/" + ident, r"(?:sm|so)\d{6,12}"),
         "dailymotion": ("https://www.dailymotion.com/video/" + ident, r"x[a-z0-9]{4,12}")
     }
     if platform not in canonical:
