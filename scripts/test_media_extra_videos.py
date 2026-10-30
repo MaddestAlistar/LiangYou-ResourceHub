@@ -103,8 +103,7 @@ class VideoSources(unittest.TestCase):
         def fetch(url,timeout=11):
             seen.append(url)
             return {"id":"x8mcq94","thumbnail_360_url":"https://s1.dmcdn.net/e7/x360"}
-        with patch("refresh_media_extra_videos.get_json",side_effect=fetch), \\
-             patch("refresh_media_extra_videos.time.sleep",return_value=None):
+        with patch("refresh_media_extra_videos.get_json",side_effect=fetch), patch("refresh_media_extra_videos.time.sleep",return_value=None):
             checked,filled=backfill_dailymotion_thumbnails(rows,max_lookups=1)
         self.assertEqual((checked,filled),(1,1))
         self.assertEqual(len(seen),1)
