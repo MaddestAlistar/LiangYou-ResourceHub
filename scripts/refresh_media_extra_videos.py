@@ -68,6 +68,17 @@ def video_record(work,platform,ident,name,kind="Related",**more):
     return {"platform":platform,"videoId":ident,"name":str(name).strip()[:145],
       "type":kind,"title":work["title"],"kind":work["kind"],"tmdbId":work["tmdb_id"],
       "year":work["year"],"matchedByTitle":True,**more}
+def credible_acfun_film_title(work,name):
+    # Short/generic Chinese film names need an explicit *whole work* mention;
+    # a word occurring inside a game trailer or another film is insufficient.
+    title=str(work.get("title") or "")
+    if work.get("kind")!="movie":return True
+    if re.search(r"游戏|试玩|实况|DLC|刺客信条|游戏发售|实机演示|steam",str(name),re.I):
+        return False
+    if 1<=len(normalize(title))<=4 and re.search(r"[\u4e00-\u9fff]",title):
+        return bool(re.search(r"[《『「]\s*"+re.escape(title)+r"\s*[》』」]",str(name)))
+    return True
+
 def parse_acfun(work):
     title=work["title"]; aliases=work["aliases"]; year=work["year"]
     if not re.search(r"[\u4e00-\u9fff]",title):return []
@@ -83,6 +94,7 @@ def parse_acfun(work):
             ident=str(x.get("contentId") or x.get("id") or x.get("dougaId") or "");name=x.get("title") or ""
             if not ACFUN_ID.fullmatch(ident) or ident in seen:continue
             if not matches_title(name,aliases,year,work["kind"]) or not VIDEO_WORDS.search(name):continue
+            if not credible_acfun_film_title(work,name):continue
             seen.add(ident)
             result.append(video_record(work,"acfun",ident,name,
               "Trailer" if TRAILER_WORDS.search(name) else "Related",
@@ -243,6 +255,11 @@ def main():
             if source_status.get(label,"").startswith("unavailable"):
                 videos.extend(v for v in (prev.get("videos") or [])
                   if isinstance(v,dict) and v.get("platform")==platform)
+        # Clean earlier false positives even if a provider is temporarily unavailable.
+        videos=[v for v in videos if isinstance(v,dict) and
+          (v.get("platform")!="acfun" or
+           (matches_title(v.get("name"),work["aliases"],work["year"],work["kind"]) and
+            credible_acfun_film_title(work,v.get("name"))))]
         dedup={v["platform"]+":"+v["videoId"]:v for v in videos if isinstance(v,dict) and v.get("videoId")}
         items[key]={"title":work["title"],"kind":work["kind"],"tmdbId":work["tmdb_id"],
           "year":work["year"],"checkedAt":utc(),
