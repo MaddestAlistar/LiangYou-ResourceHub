@@ -543,7 +543,7 @@ test('all-title Bilibili discovery verifies TMDB identity and each matching BVID
     ]}});
   if(u.hostname==='api.bilibili.com'&&u.pathname.endsWith('/view'))
     return json({code:0,data:{bvid,title:'《我的有罪之人》预告片',state:0,
-      owner:{name:'Film Creator'},stat:{like:238,view:4567}}});
+      owner:{name:'Film Creator'},pic:'http://i1.hdslb.com/bfs/archive/verifiedabc.jpg',stat:{like:238,view:4567}}});
   throw Error('Unexpected network URL: '+u.href);
  };
  try{
@@ -552,6 +552,7 @@ test('all-title Bilibili discovery verifies TMDB identity and each matching BVID
   assert.equal(body.videos.length,1);
   assert.equal(body.videos[0].videoId,bvid);
   assert.equal(body.videos[0].likes,238);
+  assert.equal(body.videos[0].thumbnail,'https://i1.hdslb.com/bfs/archive/verifiedabc.jpg');
   assert.equal(body.videos[0].verifiedByTitleId,true);
   assert.ok(body.videos[0].verifiedSource.endsWith('/'+bvid+'/'));
  }finally{globalThis.fetch=previous;}
