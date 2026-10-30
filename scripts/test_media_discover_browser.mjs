@@ -41,6 +41,7 @@ const pageErrors=[];
 page.on('pageerror',err=>pageErrors.push(String(err)));
 try{
  await page.goto('http://127.0.0.1:8765/index.html#media',{waitUntil:'domcontentloaded',timeout:25000});
+ await page.locator('#media').scrollIntoViewIfNeeded();
  try{
    await page.waitForFunction(()=>document.querySelectorAll('#media-grid .mi-card').length>=2,null,{timeout:45000});
  }catch(error){
@@ -224,6 +225,7 @@ try{
  offlinePage.on('pageerror',err=>offlineErrors.push(String(err)));
  try{
    await offlinePage.goto('http://127.0.0.1:8765/index.html#media',{waitUntil:'domcontentloaded',timeout:25000});
+   await offlinePage.locator('#media').scrollIntoViewIfNeeded();
    await offlinePage.waitForFunction(()=>document.querySelectorAll('#media-grid .mi-card').length>=2,null,{timeout:45000});
    await offlinePage.route('**/data/media-domestic-trailers.json',route=>
      route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
