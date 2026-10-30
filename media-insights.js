@@ -230,6 +230,7 @@
       const label=related?t('相关视频','Related video'):
         v.ageRestricted===true?t('年龄限制 · 原站观看','Age-restricted · source only'):
         v.official?t('TMDB 标注官方','TMDB official'):
+        v.verifiedBy==='KinoCheck'?t('KinoCheck · TMDB 对应','KinoCheck · TMDB linked'):
         v.verifiedBy==='TMDB'?t('TMDB 已关联','TMDB linked'):
         t('搜索候选 · 待核对','Unverified search match');
       const embedAllowed=v.embeddable!==false&&v.ageRestricted!==true;
