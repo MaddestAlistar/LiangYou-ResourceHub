@@ -7,7 +7,7 @@
     {
       id: 'media',
       // The essential catalogue is usable after these two scripts and one CSS.
-      styles: ['./media-intel.css?v=20261029.newsvideo6'],
+      styles: ['./media-intel.css?v=20261030-video-thumbnails1'],
       urls: [
         './media-core.js?v=20261028.3',
         './media-intel.js?v=20261029.cnfast2'
@@ -21,7 +21,7 @@
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-news.js?v=20261029-multiplatform9',
-        './media-insights.js?v=20261030-video20-sources2-dailymotion',
+        './media-insights.js?v=20261030-video-thumbnails1',
         './media-cn-enhance.js?v=20261030.stable-cn-news1',
         './media-exact-scores.js?v=20261029.newsroom1',
         './media-boxoffice-rankings.js?v=20261029.noarchive1'
