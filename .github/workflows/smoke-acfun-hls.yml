@@ -1,0 +1,29 @@
+name: Verify public AcFun HTML5 video endpoint
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/smoke-acfun-hls.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check deployed Worker returns public HLS metadata
+        run: |
+          node --input-type=module <<'NODE'
+          const target='https://liangyou-streaming-availability.maddestalistar.workers.dev/api/video/acfun/41787132';
+          try{
+            const response=await fetch(target,{signal:AbortSignal.timeout(20000),headers:{'Origin':'https://maddestalistar.github.io'}});
+            const body=await response.json();
+            let safe=false,host='';
+            try{const u=new URL(body.url);host=u.hostname;safe=u.protocol==='https:'&&u.pathname.endsWith('.m3u8')&&
+              (host==='acfun.cn'||host.endsWith('.acfun.cn'));}catch{}
+            console.log('ACFUN_HLS_LIVE',JSON.stringify({http:response.status,ok:body.ok,quality:body.quality||null,
+              mediaHost:host||null,validHttpsHls:safe,cors:response.headers.get('access-control-allow-origin')}));
+            if(!response.ok||!safe||!body.ok)process.exitCode=1;
+          }catch(error){console.error('ACFUN_HLS_LIVE',error.name,error.message);process.exitCode=1;}
+          NODE
