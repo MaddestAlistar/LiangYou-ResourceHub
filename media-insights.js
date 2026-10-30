@@ -270,12 +270,16 @@
       // its official embed or mobile H5 page in our own dialog on all devices.
       const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
       const thumbOriginal=safe(x.thumbnail);
+      const posterFallback=x.platform==='bilibili'?safe(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
-      const thumb=nicoMedium?thumbOriginal+'.M':thumbOriginal;
+      const thumb=(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
+      const isWorkPoster=!thumbOriginal&&Boolean(posterFallback);
+      const thumbBackup=nicoMedium?thumbOriginal:(thumbOriginal?posterFallback:null);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
         (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'"'+
-          (nicoMedium?' data-thumb-fallback="'+esc(thumbOriginal)+'"':'')+' alt="">':'')+
+          (thumbBackup?' data-thumb-fallback="'+esc(thumbBackup)+'"':'')+' alt="">':'')+
+        (isWorkPoster?'<span class="mi-trailer-fallback-label">'+t('作品海报','Film poster')+'</span>':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
         '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'站内播放':'原站观看',supportedPlayer?'Play here':'Open video')+'</span></span>';
