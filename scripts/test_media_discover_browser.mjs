@@ -82,7 +82,7 @@ try{
        publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/',
        thumbnailLocal:'./assets/media-video-covers/BV1zprUY2EGj.jpg'},
        {kind,title,year:Number(year),platform:'bilibili',videoId:'BV1111111111',
-         name:'Verified Bilibili clip lacking initial cover',
+         name:'Verified Bilibili clip lacking initial cover',likes:8000000,views:15000000,
          verifiedSource:'https://www.bilibili.com/video/BV1111111111/'},
        {kind,title,year:Number(year),platform:'acfun',videoId:'41787132',
        name:'Matched AcFun public film trailer',verifiedSource:'https://www.acfun.cn/v/ac41787132'}]
@@ -145,9 +145,9 @@ try{
  await page.waitForFunction(()=>{
    const el=document.querySelector('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-platform-thumb');
    return el?.complete&&el.naturalWidth>0&&el.src.includes('i1.hdslb.com/bfs/archive/');
- },{timeout:15000});
+ },null,{timeout:15000});
  assert.equal(await page.locator('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-fallback-label').count(),0);
- await page.locator('#media-dialog [data-mi-play-cn="bilibili"]').first().click();
+ await page.locator('#media-dialog [data-mi-play-cn="bilibili"][data-mi-cn-id="BV1zprUY2EGj"]').first().click();
  assert.equal(await page.locator('#media-trailer-dialog').evaluate(d=>d.open),true);
  assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
    /player\.bilibili\.com\/player\.html\?bvid=BV1zprUY2EGj/);
