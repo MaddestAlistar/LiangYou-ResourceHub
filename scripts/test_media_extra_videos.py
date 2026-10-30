@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck, credible_acfun_film_title
+from refresh_media_extra_videos import matches_title, parse_acfun, parse_niconico, parse_dailymotion, parse_kinocheck, credible_acfun_film_title, trusted_thumbnail
 
 class VideoSources(unittest.TestCase):
     def setUp(self):
@@ -54,6 +54,45 @@ class VideoSources(unittest.TestCase):
         for work,name,expected in cases:
             with self.subTest(title=work["title"]):
                 self.assertEqual(credible_acfun_film_title(work,name),expected)
+
+    def test_trusted_video_thumbnail_hosts(self):
+        self.assertEqual(trusted_thumbnail("acfun",
+            "https://tx-free-imgs.acfun.cn/newUpload/example.png?imageslim"),
+            "https://tx-free-imgs.acfun.cn/newUpload/example.png?imageslim")
+        self.assertEqual(trusted_thumbnail("niconico",
+            "https://nicovideo.cdn.nimg.jp/thumbnails/43190555/43190555.L"),
+            "https://nicovideo.cdn.nimg.jp/thumbnails/43190555/43190555.L")
+        self.assertEqual(trusted_thumbnail("dailymotion",
+            "https://s1.dmcdn.net/test/x360"),
+            "https://s1.dmcdn.net/test/x360")
+        for platform,url in [("acfun","javascript:evil"),
+                             ("niconico","https://attacker.com/thumbnail.jpg"),
+                             ("dailymotion","https://dmcdn.net.attacker.org/a.jpg")]:
+            self.assertIsNone(trusted_thumbnail(platform,url))
+
+    def test_acfun_provides_real_cover_url(self):
+        data={"videoList":[{"title":"【旧资讯】《海洋奇缘》中国大陆独家版预告片一则",
+                           "contentId":30636253,
+                           "coverUrl":"https://tx-free-imgs.acfun.cn/newUpload/cover.png?imageslim"}]}
+        with patch("refresh_media_extra_videos.get_json",return_value=data):
+            rows=parse_acfun(self.moana)
+        self.assertEqual(rows[0]["thumbnail"],data["videoList"][0]["coverUrl"])
+
+    def test_niconico_thumbnail_from_search(self):
+        data={"data":[{"title":"TVアニメ『薬屋のひとりごと』第2クールPV",
+            "contentId":"sm43190555","viewCounter":16424,
+            "thumbnailUrl":"https://nicovideo.cdn.nimg.jp/thumbnails/43190555/43190555.L"}]}
+        with patch("refresh_media_extra_videos.get_json",return_value=data):
+            rows=parse_niconico(self.apoth)
+        self.assertEqual(rows[0]["thumbnail"],data["data"][0]["thumbnailUrl"])
+
+    def test_dailymotion_thumbnail_from_search(self):
+        w={**self.apoth,"aliases":[*self.apoth["aliases"],"The Apothecary Diaries"]}
+        doc={"list":[{"id":"x8mcq94","title":"The Apothecary Diaries - Official Trailer",
+                      "thumbnail_360_url":"https://s1.dmcdn.net/something/x360"}]}
+        with patch("refresh_media_extra_videos.get_json",return_value=doc):
+            rows=parse_dailymotion(w)
+        self.assertEqual(rows[0]["thumbnail"],doc["list"][0]["thumbnail_360_url"])
 
     def test_niconico_pv_matching(self):
         doc={"data":[{"title":"TVアニメ『薬屋のひとりごと』第2クールPV","contentId":"sm43190555","viewCounter":16424},

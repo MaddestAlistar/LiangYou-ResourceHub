@@ -261,7 +261,12 @@
 #media .mi-trailer-tencent{background:radial-gradient(ellipse at 18% 10%,rgba(90,186,125,.28),transparent 60%),linear-gradient(140deg,#1f513f,#102333)}
 #media .mi-trailer-source-brand{position:absolute;left:10px;top:9px;font-size:12px;font-weight:700;letter-spacing:.025em;color:#e9eefb}
 #media .mi-trailer-source-hint{position:absolute;bottom:9px;left:10px;color:#d5e1f1;font-size:10px}
-#media .mi-trailer-source-cover .mi-trailer-play{font-size:18px}
+#media .mi-trailer-source-cover{overflow:hidden}
+#media .mi-trailer-platform-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92;z-index:0}
+#media .mi-trailer-source-brand{z-index:2;padding:3px 6px;border-radius:5px;background:rgba(8,16,34,.73);text-shadow:0 1px 3px #000}
+#media .mi-trailer-source-hint{z-index:2;padding:3px 6px;border-radius:4px;background:rgba(8,16,34,.7);text-shadow:0 1px 3px #000}
+#media .mi-trailer-source-cover .mi-trailer-play{font-size:18px;z-index:2}
+
 #media .mi-trailer-search{margin-top:12px;color:#bacbe2}
 #media .mi-trailer-search summary{cursor:pointer;display:list-item;font-size:11px;padding:6px 2px;list-style-position:inside}
 #media .mi-trailer-search .mi-insight-links{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0 2px}

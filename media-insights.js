@@ -268,15 +268,24 @@
       const name=String(x.name||t('影视预告片','Trailer'));
       // Dailymotion inline embeds require an owned Player ID; external playback
       // is used until configured, never a third-party sample Player ID.
-      const supportedPlayer=x.platform!=='dailymotion'||Boolean(dailymotionPlayerId);
+      // The legacy AcFun iframe requests a desktop/Chromium player and
+      // produces an unsupported-browser screen on iOS Safari. Never launch
+      // that incompatible iframe on iPhone/iPad; use the original H5 site.
+      const isiOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+        (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      const supportedPlayer=(x.platform!=='dailymotion'||Boolean(dailymotionPlayerId))&&
+        !(x.platform==='acfun'&&isiOS);
+      const thumb=safe(x.thumbnail);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
+        (thumb?'<img class="mi-trailer-platform-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" src="'+esc(thumb)+'" alt="">':'')+
         '<span class="mi-trailer-source-brand">'+esc(provider)+'</span>'+
         '<span class="mi-trailer-play" aria-hidden="true">'+(supportedPlayer?'▶':'↗')+'</span>'+
-        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'点击播放':'原站观看','Open video')+'</span></span>';
+        '<span class="mi-trailer-source-hint">'+t(supportedPlayer?'点击播放':x.platform==='acfun'?'手机原站观看':'原站观看','Open video')+'</span></span>';
       const player=supportedPlayer?'<button class="mi-trailer-trigger" type="button" data-mi-play-cn="'+esc(x.platform)+
         '" data-mi-cn-id="'+esc(x.videoId)+'" data-mi-cn-url="'+esc(x.url)+
         '" aria-haspopup="dialog" aria-label="'+t('播放视频：','Play video: ')+esc(name)+'">'+cover+'</button>':
-        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+cover+'</a>';
+        '<a class="mi-trailer-trigger mi-video-external" href="'+esc(x.platform==='acfun'&&isiOS?
+          'https://m.acfun.cn/v/?ac='+x.videoId:x.url)+'" target="_blank" rel="noopener noreferrer">'+cover+'</a>';
       const card='<article class="mi-trailer-card"><div class="mi-trailer-preview">'+player+'</div>'+
         '<div class="mi-trailer-body"><div class="mi-trailer-tags"><span>'+esc(provider)+'</span></div>'+
         '<strong>'+esc(name)+'</strong><small>'+esc(x.publisher||provider)+
@@ -767,6 +776,13 @@
     useStandardHost=standard;
     if(playerSwitch)playerSwitch.textContent=standard?t('切换隐私播放器','Try privacy-enhanced player'):t('切换普通播放器','Try standard player');
   }
+  // If an upstream CDN refuses cross-site thumbnail use, show the original
+  // gradient card instead of a broken-image symbol.
+  root.addEventListener('error',ev=>{
+    const img=ev.target;
+    if(img instanceof HTMLImageElement&&img.classList.contains('mi-trailer-platform-thumb'))
+      img.remove();
+  },true);
   root.addEventListener('click',ev=>{
     const button=ev.target.closest('button[data-mi-play-cn]');
     if(!button||!trailerDialog||!trailerStage)return;
