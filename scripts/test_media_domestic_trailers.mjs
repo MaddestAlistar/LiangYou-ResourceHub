@@ -12,9 +12,10 @@ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 const safe=url=>{try{const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}};
 const link=(url,label)=>safe(url)?'<a href="'+escape(safe(url))+'">'+escape(label)+'</a>':'';
 const coverUrl=x=>safe(x)||(/^\.\/assets\/media-posters\/[a-f0-9]{20}\.webp$/i.test(String(x||''))?x:null);
-const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl',
+const workerBase='https://liangyou-streaming-availability.maddestalistar.workers.dev';
+const {gallery,verified}=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl','base',
  source.slice(start,end)+';return {gallery:trailerGallery,verified:verifiedDomesticTrailers};')(
-  (zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl
+  (zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase
 );
 const selected={title:'哪吒之魔童闹海',originalTitle:'Ne Zha 2',kind:'movie',year:'2025-01-29',aliases:['哪吒2']};
 const yt={trailers:[{id:'AbCdEf12345',title:'Official movie trailer',official:true,embeddable:true,url:'https://www.youtube.com/watch?v=AbCdEf12345'}]};
@@ -153,8 +154,8 @@ test('a site-owned Dailymotion Player ID enables modal buttons; absent ID stays 
  const to=source.indexOf('  let worldNewsPromise=null;',from);
  const positive=source.slice(from,to).replace("let dailymotionPlayerId='';","let dailymotionPlayerId='xOwned123';");
  assert.notEqual(positive,source.slice(from,to),'test must set only the local configured Player ID');
- const galleryOwned=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl',
-   positive+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl);
+ const galleryOwned=new Function('t','esc','safe','a','formatDuration','english','mediaCoverUrl','base',
+   positive+';return trailerGallery;')((zh)=>zh,escape,safe,link,()=>'',()=>false,coverUrl,workerBase);
  const info={...selected,tmdbId:550};
  const row={kind:'movie',title:info.title,tmdbId:550,year:2025,matchedByTitle:true,
    platform:'dailymotion',videoId:'x8mcq94',name:'Ne Zha 2 trailer',
@@ -196,7 +197,7 @@ test('Bilibili cards use labeled work posters only while verified video covers a
  assert.match(backup,/mi-trailer-fallback-label/);
  assert.match(backup,/作品海报/);
  const original=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/0123456789abcdef0123456789abcdef01234567.jpg'}]);
- assert.match(original,/realcover\.jpg/);
+ assert.match(original,/api\/media-cover\/bilibili\?src=/);
  assert.doesNotMatch(original,/<span class="mi-trailer-fallback-label">/);
  assert.match(original,/data-thumb-poster-fallback="true"/);
 });
@@ -207,10 +208,11 @@ test('Bilibili fallback supports local catalog work poster files without mislabe
    verifiedSource:'https://www.bilibili.com/video/BV1234567890/'};
  const html=gallery({},info,[row]);
  assert.match(html,/assets\/media-posters\/0123456789abcdef0123\.webp/);
+ assert.match(html,/data-mi-bili-cover-id="BV1234567890"/,'Missing BV covers must trigger an on-demand lookup');
  assert.match(html,/mi-trailer-fallback-label/);
  assert.doesNotMatch(gallery({}, {...info,poster:'../../outside.jpg'},[row]),/outside\.jpg/);
  const knownCover=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/abcdef0123456789abcdef0123456789abcdef01.jpg'}]);
- assert.match(knownCover,/abc\.jpg/);
+ assert.match(knownCover,/api\/media-cover\/bilibili\?src=/);
  assert.match(knownCover,/data-thumb-fallback="\.\/assets\/media-posters\/0123456789abcdef0123\.webp"/);
  assert.doesNotMatch(knownCover,/<span class="mi-trailer-fallback-label">/);
 });
