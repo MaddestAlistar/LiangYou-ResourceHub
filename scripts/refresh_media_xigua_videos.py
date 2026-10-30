@@ -265,7 +265,7 @@ def main():
         except Exception as error:
             print("XIGUA_ZERO_SPEND_STOP: cannot verify account balance",type(error).__name__)
             return
-    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=1, run_cap=1)
+    budget = LocalFreeBudget(ROOT / "data/media-xigua-budget.json", daily_cap=24, run_cap=12)
     if budget.used >= budget.daily_cap:
         print("XIGUA_ZERO_SPEND_STOP: UTC daily local cap reached")
         return
