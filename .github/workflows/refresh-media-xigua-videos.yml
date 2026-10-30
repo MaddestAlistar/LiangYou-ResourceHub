@@ -117,6 +117,7 @@ jobs:
       - name: Discover Xigua videos with optional private SandBase key
         env:
           SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
+          SANDBASE_HARD_ZERO_SPEND_CONFIRMED: ${{ vars.SANDBASE_HARD_ZERO_SPEND_CONFIRMED }}
           XIGUA_VIDEOS_BATCH: '1'
         run: python scripts/refresh_media_xigua_videos.py
       - name: Validate output, when metadata exists
