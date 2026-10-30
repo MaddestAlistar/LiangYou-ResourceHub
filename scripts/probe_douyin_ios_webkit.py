@@ -52,7 +52,7 @@ with sync_playwright() as pw:
                 f.style.cssText='width:760px;height:428px;border:0;transform-origin:0 0;transform:scale('+factor+');';
               }else f.style.cssText='width:100%;height:100%;border:0';
               stage.replaceChildren(f);
-            }""",{"vid":VIDEO,"height":height,"wide":mode==="wide-desktop-scaled"})
+            }""",{"vid":VIDEO,"height":height,"wide":mode=="wide-desktop-scaled"})
             p.wait_for_timeout(7000)
             frames=[f for f in p.frames if "open.douyin.com/player/video" in f.url]
             before=[inspect(f) for f in frames]
