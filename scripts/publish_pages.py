@@ -17,28 +17,66 @@ def request(url, method='GET'):
     with urlopen(req, timeout=30) as response:
         return json.load(response)
 
-# Ask for a build even when collection partially fails: publish honest health status.
+# A GitHub Pages POST only acknowledges an asynchronous build request.
+# Do not hold the data-refresh lock for 10 minutes waiting for GitHub's
+# separate deploy queue. The native "pages build and deployment" Actions
+# workflow reports the actual publication success or failure.
 head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-request(base, 'POST')
-print('Requested GitHub Pages build for refreshed snapshots', flush=True)
-for attempt in range(60):
-    build = request(base + '/latest')
-    if build.get('commit') == head:
-        if build.get('status') == 'built':
-            print('Pages build completed for ' + head, flush=True)
+
+
+def published(build):
+    if not isinstance(build, dict) or build.get('status') != 'built':
+        return False
+    committed = build.get('commit', '')
+    if committed == head:
+        print('PAGES_ALREADY_PUBLISHED', head, flush=True)
+        return True
+    if isinstance(committed, str) and len(committed) == 40:
+        # The latest published commit may supersede this runner's checkout.
+        try:
+            subprocess.run(['git', 'fetch', 'origin', 'main'],
+                           check=True, capture_output=True, timeout=20)
+            if subprocess.run(['git', 'merge-base', '--is-ancestor', head, committed],
+                              capture_output=True, timeout=10).returncode == 0:
+                print('PAGES_PUBLISHED_NEWER_COMMIT', committed, flush=True)
+                return True
+        except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+    return False
+
+
+try:
+    if published(request(base + '/latest')):
+        raise SystemExit(0)
+except (OSError, ValueError):
+    # A transient status read must not block an otherwise valid build request.
+    pass
+
+# Retry transient GitHub API failures, not every kind of authorization error.
+from urllib.error import HTTPError, URLError
+for attempt in range(3):
+    try:
+        request(base, 'POST')
+        break
+    except HTTPError as error:
+        if error.code not in (429, 500, 502, 503, 504) or attempt == 2:
+            raise
+    except URLError:
+        if attempt == 2:
+            raise
+    time.sleep(3 * (attempt + 1))
+print('PAGES_BUILD_REQUEST_ACCEPTED', head, flush=True)
+
+# A brief best-effort check; completion is asynchronous and monitored by
+# GitHub's separate Pages deployment workflow, not this collector.
+for attempt in range(4):
+    time.sleep(5)
+    try:
+        if published(request(base + '/latest')):
             break
-        if build.get('status') == 'errored':
-            # A replacement Pages build may still be running for the same SHA.
-            # Treat the latest build's early 'errored' state as provisional:
-            # the automated deployment workflow may supersede it shortly.
-            print('Pages latest build temporarily errored; checking for replacement', flush=True)
-    # A newer user commit can supersede this one while retaining the data.
-    if build.get('status') == 'built' and build.get('commit') != head:
-        subprocess.run(['git', 'fetch', 'origin', 'main'], check=True, capture_output=True)
-        newer = build.get('commit', '')
-        if len(newer) == 40 and subprocess.run(['git', 'merge-base', '--is-ancestor', head, newer], capture_output=True).returncode == 0:
-            print('Pages published a newer commit including this refresh', flush=True)
-            break
-    time.sleep(10)
+    except (OSError, ValueError):
+        continue
 else:
-    raise SystemExit('Pages build was requested but not confirmed within 10 minutes')
+    print('::notice::Pages build accepted but not yet confirmed; '
+          'check the separate Pages deployment workflow for completion',
+          flush=True)
