@@ -73,5 +73,12 @@ class DouyinDiscoveryTests(unittest.TestCase):
         with patch.object(d,"request",side_effect=HTTPError("url",202,"throttled",{},None)):
             self.assertIsNone(d.indexed_ids("query"))
 
+    def test_public_index_audit_uses_distinct_verified_shape_ids(self):
+        ids = [video_id for candidates in d.PUBLIC_SEARCH_CANDIDATES.values()
+               for video_id in candidates]
+        self.assertLessEqual(len(ids), 8)
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertTrue(all(d.VIDEO_ID.fullmatch(video_id) for video_id in ids))
+
 if __name__=="__main__":
     unittest.main()
