@@ -214,6 +214,10 @@
 #media .mi-player-close{flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #acbcd448;background:#1a2940;color:#e4ebf8;border-radius:11px;cursor:pointer;font-size:22px;line-height:1}
 #media .mi-player-stage{aspect-ratio:16/9;width:100%;background:#03070d;display:block}
 #media .mi-player-stage iframe{display:block;width:100%;height:100%;border:0}
+#media .mi-player-stage .mi-acfun-native{display:block;width:100%;height:100%;background:#050b13;object-fit:contain}
+#media .mi-acfun-loading,#media .mi-acfun-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:18px;color:#d4e0f2;text-align:center;font-size:12px;line-height:1.7}
+#media .mi-acfun-fallback button{margin-top:12px;padding:8px 12px;color:#efd6a4;background:#17283d;border:1px solid #a58b62;border-radius:8px;cursor:pointer}
+
 #media .mi-player-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px}
 #media .mi-player-footer p{font-size:11px;line-height:1.65;color:#a5b6d0;margin:0}
 #media .mi-player-footer a{display:inline-flex;flex:none;align-items:center;min-height:34px;padding:7px 10px;font-size:11px;text-decoration:none;color:#efdaad;border-radius:9px;border:1px solid #caa56870;background:#d1a96c13}
