@@ -1147,6 +1147,67 @@ async function koreanBoxOffice(env){
   data:list.slice(0,10).filter(r=>r.movieNm&&r.rank).map(r=>({rank:Number(r.rank),title:r.movieNm,releaseDate:r.openDt||"",salesKRW:Number(r.salesAmt)||null,audience:Number(r.audiCnt)||null}))};
 }
 
+// Read only public AcFun video metadata. The native iOS HTML5 player consumes
+// the original HLS stream directly; the Worker never relays video bytes.
+function firstJsonObject(body){
+ const start=body.indexOf("{");
+ if(start<0)return null;
+ let depth=0,quoted=false,escaped=false;
+ for(let i=start;i<body.length;i++){
+  const ch=body[i];
+  if(quoted){
+   if(escaped)escaped=false;
+   else if(ch==="\\")escaped=true;
+   else if(ch==='"')quoted=false;
+  }else if(ch==='"')quoted=true;
+  else if(ch==="{")depth++;
+  else if(ch==="}"&&--depth===0){
+   try{return JSON.parse(body.slice(start,i+1));}catch{return null;}
+  }
+ }
+ return null;
+}
+function trustedAcfunHls(raw){
+ try{
+  const u=new URL(raw),hostname=u.hostname.toLowerCase();
+  if(u.protocol!=="https:"||u.username||u.password||!u.pathname.endsWith(".m3u8")||
+     !["acfun.cn","acfunchina.com","kuaishou.com","gifshow.com","yximgs.com","kwaicdn.com"].some(
+       domain=>hostname===domain||hostname.endsWith("."+domain)))return null;
+  return u.href;
+ }catch{return null;}
+}
+async function acfunPublicHls(id){
+ const endpoint="https://www.acfun.cn/v/ac"+id+"?quickViewId=videoInfo_new&ajaxpipe=1";
+ const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),9000);
+ try{
+  const response=await fetch(endpoint,{signal:ac.signal,headers:{
+   "Accept":"*/*","X-Requested-With":"XMLHttpRequest",
+   "Referer":"https://www.acfun.cn/v/ac"+id,
+   "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+  }});
+  if(!response.ok)return null;
+  const raw=(await response.text()).slice(0,1000000);
+  const envelope=firstJsonObject(raw);
+  const html=envelope?.html;
+  if(typeof html!=="string")return null;
+  const script=/<script[^>]*class=["']videoInfo["'][^>]*>([\s\S]*?)<\/script>/i.exec(html)?.[1]||html;
+  const marker=/window\.pageInfo\s*=\s*(?:window\.videoInfo\s*=\s*)?/m.exec(script);
+  if(!marker)return null;
+  const info=firstJsonObject(script.slice(marker.index+marker[0].length));
+  if(!info||Number(info.dougaId||info.contentId||id)!==Number(id))return null;
+  const video=info.currentVideoInfo;
+  if(!video||!video.ksPlayJson)return null;
+  const k=typeof video.ksPlayJson==="string"?JSON.parse(video.ksPlayJson):video.ksPlayJson;
+  const data=k?.data&&typeof k.data==="object"?k.data:k;
+  const sets=Array.isArray(data?.adaptationSet)?data.adaptationSet:[];
+  const clips=sets.flatMap(x=>Array.isArray(x?.representation)?x.representation:[])
+   .map(x=>({url:trustedAcfunHls(x?.url),quality:String(x?.qualityType||"").slice(0,16)}))
+   .filter(x=>x.url);
+  if(!clips.length)return null;
+  // Prioritize 720p for mobile bandwidth, otherwise first accessible variant.
+  return clips.find(x=>/720/i.test(x.quality))||clips[0];
+ }catch{return null;}finally{clearTimeout(timer);}
+}
 export default {
  async fetch(request,env,ctx){
   const u=new URL(request.url);
@@ -1204,6 +1265,13 @@ export default {
     return response;
    }catch{return reply({ok:true,kind:matchingVideos[1],tmdbId:Number(matchingVideos[2]),
        status:"unavailable",videos:[]},200,300);}
+  }
+  // On-demand public HLS metadata; no signed URLs are persisted or cached.
+  const acfun=u.pathname.match(/^\/api\/video\/acfun\/([1-9][0-9]{3,11})$/);
+  if(acfun){
+    const video=await acfunPublicHls(acfun[1]);
+    return reply(video?{ok:true,platform:"acfun",videoId:acfun[1],...video}:
+      {ok:false,platform:"acfun",status:"upstream_unavailable"},video?200:502,0);
   }
   // Bilibili public video statistics; counts are never inferred from view totals.
   const bili=u.pathname.match(/^\/api\/video\/bilibili\/(BV[A-Za-z0-9]{10})$/);
