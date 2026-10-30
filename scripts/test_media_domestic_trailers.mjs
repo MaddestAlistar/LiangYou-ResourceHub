@@ -196,6 +196,20 @@ test('Bilibili cards use labeled work posters only while verified video covers a
  assert.doesNotMatch(original,/<span class="mi-trailer-fallback-label">/);
  assert.match(original,/data-thumb-poster-fallback="true"/);
 });
+test('Bilibili fallback supports local catalog work poster files without mislabeling them as video covers',()=>{
+ const info={...selected,tmdbId:550,poster:'./assets/media-posters/0123456789abcdef0123.webp'};
+ const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
+   platform:'bilibili',videoId:'BV1234567890',name:'官方预告',
+   verifiedSource:'https://www.bilibili.com/video/BV1234567890/'};
+ const html=gallery({},info,[row]);
+ assert.match(html,/assets\/media-posters\/0123456789abcdef0123\.webp/);
+ assert.match(html,/mi-trailer-fallback-label/);
+ assert.doesNotMatch(gallery({}, {...info,poster:'../../outside.jpg'},[row]),/outside\.jpg/);
+ const knownCover=gallery({},info,[{...row,thumbnail:'https://i0.hdslb.com/bfs/archive/abc.jpg'}]);
+ assert.match(knownCover,/abc\.jpg/);
+ assert.match(knownCover,/data-thumb-fallback="\.\/assets\/media-posters\/0123456789abcdef0123\.webp"/);
+ assert.doesNotMatch(knownCover,/<span class="mi-trailer-fallback-label">/);
+});
 test('platform-specific real cover images render without untrusted sources',()=>{
  const info={...selected,tmdbId:550};
  const row={kind:'movie',tmdbId:550,matchedByTitle:true,title:info.title,year:2025,
