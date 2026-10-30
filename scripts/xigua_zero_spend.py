@@ -31,7 +31,7 @@ def funded_capacity_is_zero(key, opener=urllib.request.urlopen):
     return balance == 0 and limit == 0
 
 class LocalFreeBudget:
-    def __init__(self,path,day=None,daily_cap=1,run_cap=1):
+    def __init__(self,path,day=None,daily_cap=24,run_cap=12):
         self.path=Path(path)
         self.day=day or datetime.now(timezone.utc).strftime("%Y-%m-%d")
         self.daily_cap=max(0,min(100,int(daily_cap)))
