@@ -37,7 +37,7 @@ def ids_from_catalog(data):
 
 def fetch(id):
     url="https://api.myanimelist.net/v2/anime/"+str(id)+"?"+urllib.parse.urlencode({
-      "fields":"mean,rank,popularity,num_scoring_users,num_list_users,media_type,num_episodes,genres,studios"
+      "fields":"mean,rank,popularity,num_scoring_users,num_list_users,media_type,num_episodes,genres,studios,rating"
     })
     req=urllib.request.Request(url,headers={"X-MAL-CLIENT-ID":KEY,"Accept":"application/json","User-Agent":"LiangYouResourceHub/1.0"})
     with urllib.request.urlopen(req,timeout=13) as response:
@@ -55,6 +55,9 @@ def fetch(id):
        "listUsers":x.get("num_list_users") if isinstance(x.get("num_list_users"),int) else None,
        "episodes":x.get("num_episodes") if isinstance(x.get("num_episodes"),int) else None,
        "mediaType":str(x.get("media_type") or "")[:30],
+       # MAL suitability codes, not a statutory national film classification.
+       "contentRating":str(x.get("rating") or "").lower() if str(x.get("rating") or "").lower() in
+         {"g","pg","pg_13","r","r+","rx"} else None,
        "studios":[str(s["name"])[:70] for s in x.get("studios",[])[:5] if s.get("name")],
        "genres":[str(s["name"])[:70] for s in x.get("genres",[])[:8] if s.get("name")]
     }
