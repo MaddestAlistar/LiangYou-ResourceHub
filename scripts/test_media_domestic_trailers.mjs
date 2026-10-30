@@ -32,7 +32,7 @@ test('Douyin Jingxuan official embed is in-page playable and requires exact iden
  assert.equal((cards.match(/data-mi-play-cn="douyin"/g)||[]).length,2);
  assert.match(cards,/抖音精选/);
  assert.doesNotMatch(cards,/原站观看|mi-video-external/);
- assert.match(source,/open\\.douyin\\.com\\/player\\/video\\?vid=/);
+ assert.ok(source.includes('https://open.douyin.com/player/video?vid='));
  for(const row of [
   {...clips[0],verifiedByOfficialDouyin:false},
   {...clips[0],embedVerified:false},
