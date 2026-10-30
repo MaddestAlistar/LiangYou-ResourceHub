@@ -11,7 +11,7 @@ await context.route('**/*',route=>{
      body:JSON.stringify({ok:true,bvid:'BV1111111111',likes:null,views:null,
        thumbnail:'https://i1.hdslb.com/bfs/archive/3bb32693eb30498f4510c53716b11fcb6aab30bf.jpg'})});
  }
- if(requested.pathname==='/api/media-cover/bilibili'){
+ if(requested.hostname==='i1.hdslb.com'&&requested.pathname.startsWith('/bfs/archive/')){
    return route.fulfill({status:200,contentType:'image/jpeg',
      path:'assets/media-video-covers/BV1zprUY2EGj.jpg',
      headers:{'access-control-allow-origin':'*'}});
@@ -125,7 +125,7 @@ try{
  // the same image relay, without blocking or hiding the rest of the gallery.
  await page.waitForFunction(()=>{
    const el=document.querySelector('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-platform-thumb');
-   return el?.complete&&el.naturalWidth>0&&el.src.includes('/api/media-cover/bilibili?src=');
+   return el?.complete&&el.naturalWidth>0&&el.src.includes('i1.hdslb.com/bfs/archive/');
  },{timeout:15000});
  assert.equal(await page.locator('#media-dialog [data-mi-bili-cover-id="BV1111111111"] .mi-trailer-fallback-label').count(),0);
  await page.locator('#media-dialog [data-mi-play-cn="bilibili"]').first().click();
