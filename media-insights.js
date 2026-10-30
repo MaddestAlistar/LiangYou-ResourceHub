@@ -280,8 +280,6 @@
           /^\/bfs\/archive\/[a-f0-9]{32,80}\.(?:jpg|jpeg|png|webp)(?:@[\w!.-]{1,80})?$/i.test(u.pathname);
       })();
       const thumbOriginal=x.platform==='bilibili'?(trustedBiliThumb?sourceThumb:null):sourceThumb;
-      const proxiedBiliThumb=trustedBiliThumb?
-        base+'/api/media-cover/bilibili?src='+encodeURIComponent(thumbOriginal):null;
       // The first-party cover filename must exactly match the verified BV ID.
       const bvidCover=x.platform==='bilibili'&&/^BV[A-Za-z0-9]{10}$/.test(x.videoId||'')&&
         ['jpg','png','webp'].some(ext=>x.thumbnailLocal==='./assets/media-video-covers/'+x.videoId+'.'+ext)?
@@ -289,7 +287,7 @@
       const posterFallback=x.platform==='bilibili'?mediaCoverUrl(info.poster):null;
       const nicoMedium=x.platform==='niconico'&&
         /^https:\/\/nicovideo\.cdn\.nimg\.jp\/thumbnails\/\d+\/\d+(?:\.\d+)?$/.test(thumbOriginal||'');
-      const thumb=bvidCover||proxiedBiliThumb||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
+      const thumb=bvidCover||(nicoMedium?thumbOriginal+'.M':thumbOriginal)||posterFallback;
       const isWorkPoster=!bvidCover&&!thumbOriginal&&Boolean(posterFallback);
       const thumbBackup=nicoMedium?thumbOriginal:((bvidCover||thumbOriginal)?posterFallback:null);
       const cover='<span class="mi-trailer-source-cover '+(x.platform==='bilibili'?'mi-trailer-bilibili':'mi-trailer-tencent')+'">'+
