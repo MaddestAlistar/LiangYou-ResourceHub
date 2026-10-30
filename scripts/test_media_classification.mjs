@@ -51,7 +51,7 @@ test('HTML special characters are escaped and excessive keywords are capped',()=
  assert.ok((detail.match(/mi-keyword-pill/g)||[]).length<=6);
 });
 
-test('anime genres, verified theme tags and MAL guidance render with clear source labels',()=>{
+test('anime genres, theme tags and MAL guidance render without source captions',()=>{
  const work={kind:'anime',profile:{genres:['Action','Adventure','Fantasy','Shounen'],
    keywords:['Pirates','Found Family'],anime_genre_source:'AniList',anime_theme_source:'Bangumi',
    parental_rating:{source:'MAL',rating:'PG-13'}}};
@@ -63,8 +63,7 @@ test('anime genres, verified theme tags and MAL guidance render with clear sourc
  assert.match(detail,/主题标签/);
  assert.match(detail,/海盗/);
  assert.match(detail,/伙伴羁绊/);
- assert.match(detail,/来源：AniList/);
- assert.match(detail,/来源：Bangumi/);
+ assert.doesNotMatch(detail,/来源：AniList|来源：Bangumi|Source: /);
  assert.match(detail,/MAL · PG-13/);
  assert.match(detail,/并非国家或地区官方年龄分级/);
 });
@@ -97,4 +96,12 @@ test('visible-card metadata requests are bounded and do not block the film grid'
  assert.match(insights,/hydrateClassification\(info\)/);
  assert.match(src,/insertAdjacentHTML\('afterend',markup\)/);
  assert.doesNotMatch(src,/w\.profile=\{\.\.\.\(w\.profile\|\|\{\}\),genres,keywords,parental_rating\};\s*render\(\)/);
+});
+
+test('verified MAL scores render directly on anime cover cards with their own precision',()=>{
+ assert.match(src,/r\.source==='MyAnimeList'\?r\.value\.toFixed\(2\)/);
+ assert.match(src,/source:'MyAnimeList',value:record\.score/);
+ assert.match(src,/ratingBox\.innerHTML=scores\(w\)/);
+ assert.match(src,/verifiedAnimePeers=Object\.freeze/);
+ assert.match(src,/if\(peer\)for\(const r of peer\.ratings/);
 });
