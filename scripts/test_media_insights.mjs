@@ -924,6 +924,43 @@ test('Bilibili likes are returned only from matching public video metadata',asyn
   assert.equal(body.bvid,id);assert.equal(body.likes,250);assert.equal(body.views,87500);
  }finally{globalThis.fetch=origin;}
 });
+test('verified Bilibili image remains available when like and view statistics are absent',async()=>{
+ const prior=globalThis.fetch,id='BV1spJR6yEci';
+ const cover='https://i0.hdslb.com/bfs/archive/0123456789abcdef0123456789abcdef01234567.jpg';
+ globalThis.fetch=async input=>{
+  const uri=new URL(String(input));
+  if(uri.hostname==='api.bilibili.com')
+   return json({code:0,data:{bvid:id,state:0,pic:cover,stat:{}}});
+  throw Error('Unexpected remote fetch '+uri.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/video/bilibili/'+id);
+  assert.equal(status,200);
+  assert.equal(body.ok,true);
+  assert.equal(body.thumbnail,cover);
+  assert.equal(body.likes,null);
+  assert.equal(body.views,null);
+ }finally{globalThis.fetch=prior;}
+});
+test('Bilibili video page cover is checked when the public details API rate-limits',async()=>{
+ const prior=globalThis.fetch,id='BV1spJR6yEci';
+ const cover='https://i0.hdslb.com/bfs/archive/0123456789abcdef0123456789abcdef01234567.jpg';
+ globalThis.fetch=async input=>{
+  const uri=new URL(String(input));
+  if(uri.hostname==='api.bilibili.com')throw Error('rate_limited');
+  if(uri.hostname==='www.bilibili.com'&&uri.pathname.includes(id))
+   return new Response('<html><head><meta property="og:url" content="https://www.bilibili.com/video/'+id+'/">'+
+     '<meta property="og:image" content="'+cover+'"></head><body>'+id+'</body></html>',{status:200});
+  throw Error('Unexpected remote fetch '+uri.href);
+ };
+ try{
+  const {status,body}=await invoke('/api/video/bilibili/'+id);
+  assert.equal(status,200);
+  assert.equal(body.ok,true);
+  assert.equal(body.thumbnail,cover);
+  assert.equal(body.likes,null);
+ }finally{globalThis.fetch=prior;}
+});
 test('Bilibili mismatched IDs and unavailable like counters cannot be shown as popularity',async()=>{
  const origin=globalThis.fetch,id='BV1spJR6yEci';
  globalThis.fetch=async()=>json({code:0,data:{bvid:'BV1F3aF6mEQn',stat:{like:999999,view:99999}}});
