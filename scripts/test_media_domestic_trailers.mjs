@@ -126,7 +126,7 @@ test('every movie can display server-verified Bilibili videos by TMDB ID rather 
 });
 test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own Player ID',()=>{
  assert.match(source,/https:\/\/player\.bilibili\.com\/player\.html\?bvid=/);
- assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
+ assert.match(source,/frameUrl='native-acfun-hls'/);
  assert.match(source,/https:\/\/embed\.nicovideo\.jp\/watch\//);
  assert.match(source,/button\.closest\('\.mi-trailer-card'\)/);
  assert.match(source,/trailerStage\.replaceChildren\(\)/);
@@ -135,7 +135,7 @@ test('YouTube Bilibili AcFun Niconico use in-site modal; Dailymotion needs own P
  assert.ok(source.includes("/api/video/acfun/"));
  assert.ok(source.includes("openSource.href='https://www.acfun.cn/v/ac'+id"));
  assert.ok(!source.includes('https://m.acfun.cn/v/?ac='));
- assert.match(source,/X-Frame-Options: SAMEORIGIN/);
+ assert.ok(!source.includes('尝试 AcFun 官方嵌入播放器'));
  assert.match(source,/if\(playerSwitch\)playerSwitch\.hidden=false/);
  assert.doesNotMatch(source,/mi-domestic-trailer-host|domesticTrailerPanel/);
 });
@@ -226,7 +226,7 @@ test('platform-specific real cover images render without untrusted sources',()=>
  assert.match(html,/class="mi-trailer-platform-thumb"/);
  assert.match(html,/tx-free-imgs.acfun.cn\/newUpload\/valid-cover.jpeg/);
  assert.match(source,/mi-trailer-platform-thumb/);
- assert.match(source,/https:\/\/www\.acfun\.cn\/player\/ac/);
+ assert.match(source,/frameUrl='native-acfun-hls'/);
 });
 
 test('verified AcFun GIF thumbnail is animated without a misleading playback-trial label',()=>{
