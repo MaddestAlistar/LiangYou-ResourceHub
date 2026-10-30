@@ -13,6 +13,16 @@ class AnimeVideoMatching(unittest.TestCase):
         self.assertIn("imdb-tt38268282",items)
         self.assertEqual(items["imdb-tt7441658"]["kind"],"anime")
 
+    def test_english_season_translation_is_strictly_equivalent(self):
+        work = {"aliases":["Black Clover Second Season"],"year":0}
+        matching = {"title":{"english":"Black Clover Season 2",
+                             "romaji":"Black Clover 2nd Season",
+                             "native":"ブラッククローバー 第2期"}, "synonyms":[]}
+        original = {"title":{"english":"Black Clover","romaji":"Black Clover",
+                             "native":"ブラッククローバー"}, "synonyms":[]}
+        self.assertTrue(exact_title(work,matching))
+        self.assertFalse(exact_title(work,original))
+
     def test_one_piece_names_are_one_catalog_work(self):
         w = {"id": "bangumi-975", "title": "航海王", "original_title": "ONE PIECE", "english_title": ""}
         names = name_aliases(w)
