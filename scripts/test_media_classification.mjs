@@ -102,6 +102,9 @@ test('verified MAL scores render directly on anime cover cards with their own pr
  assert.match(src,/r\.source==='MyAnimeList'\?r\.value\.toFixed\(2\)/);
  assert.match(src,/source:'MyAnimeList',value:record\.score/);
  assert.match(src,/ratingBox\.innerHTML=scores\(w\)/);
- assert.match(src,/verifiedAnimePeers=Object\.freeze/);
- assert.match(src,/if\(peer\)for\(const r of peer\.ratings/);
+ assert.match(src,/core\.mergeAnimeCatalog\(core\.catalog\(snapshot\)\)/);
+ assert.doesNotMatch(src,/verifiedAnimePeers=Object\.freeze/);
+ const insights=readFileSync(new URL('../media-insights.js',import.meta.url),'utf8');
+ assert.match(insights,/approvedIds=\[/);
+ assert.match(insights,/seenYoutube=new Set\(\)/);
 });
