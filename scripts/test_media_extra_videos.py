@@ -74,6 +74,17 @@ class VideoSources(unittest.TestCase):
         with patch("refresh_media_extra_videos.get_json",
                    return_value={"list":[{"id":"x8joimv","title":"Obsession Trailer"}]}):
             self.assertEqual(parse_dailymotion(obsession),[])
+    def test_franchise_sequels_and_old_unverified_trailers_are_rejected(self):
+        evil={"title":"生化危机：爆发夜","original":"Resident Evil",
+              "aliases":["生化危机：爆发夜","Resident Evil"],
+              "year":2026,"kind":"movie","tmdb_id":1423191}
+        data={"list":[{"id":"x54cy6t","title":"Resident Evil 7 Biohazard - Trailer"},
+                      {"id":"x3mm55d","title":"Resident Evil - Trailer"},
+                      {"id":"xabc123","title":"Resident Evil (2026) - Official Trailer"},
+                      {"id":"xabc124","title":"Resident Evil 2 (2026) Trailer"}]}
+        with patch("refresh_media_extra_videos.get_json",return_value=data):
+            rows=parse_dailymotion(evil)
+        self.assertEqual([r["videoId"] for r in rows],["xabc123"])
     def test_kinocheck_tmdb_mismatch_rejected(self):
         doc={"tmdb_id":277835,"trailer":{"youtube_video_id":"F0zP0L_sUDA"}}
         with patch("refresh_media_extra_videos.get_json",return_value=doc):
