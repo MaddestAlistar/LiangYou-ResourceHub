@@ -47,6 +47,20 @@ class ZeroSpendSafety(unittest.TestCase):
             tomorrow=LocalFreeBudget(path,day="2026-10-31",daily_cap=3,run_cap=2)
             self.assertEqual(tomorrow.used,0)
 
+    def test_production_default_24_utc_day_and_12_per_run(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/"budget.json"
+            first=LocalFreeBudget(path,day="2026-10-30")
+            self.assertEqual((first.daily_cap,first.run_cap),(24,12))
+            for _ in range(12): first.authorize()
+            with self.assertRaises(FreeQuotaStop): first.authorize()
+            second=LocalFreeBudget(path,day="2026-10-30")
+            for _ in range(12): second.authorize()
+            with self.assertRaises(FreeQuotaStop): second.authorize()
+            third=LocalFreeBudget(path,day="2026-10-30")
+            with self.assertRaises(FreeQuotaStop): third.authorize()
+            self.assertEqual(third.used,24)
+
     def test_invalid_same_day_ledger_fails_closed(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/"budget.json"
