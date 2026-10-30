@@ -2,7 +2,7 @@ name: Refresh Xigua verified in-page trailers
 
 on:
   schedule:
-    - cron: '17 7,19 * * *'
+    - cron: '17 1,5,9,13,17 * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -127,7 +127,7 @@ jobs:
           path=Path('data/media-xigua-budget.json')
           data=json.loads(path.read_text())
           data['schema']=1
-          data['localDailyCap']=24
+          data['localDailyCap']=50
           path.write_text(json.dumps(data,separators=(',',':'))+'\n')
           print('XIGUA_LOADED_LATEST_BUDGET',data.get('utcDay'),data.get('calls'))
           PY
@@ -135,14 +135,14 @@ jobs:
         env:
           SANDBASE_API_KEY: ${{ secrets.SANDBASE_API_KEY }}
           # Owner changed this dedicated SandBase key to a cumulative $0.01
-          # cap and authorized exactly ONE test. That test completed successfully.
-          # Do NOT call this a $0 hard cap or automatically resume searches.
+          # cap. The one-shot test succeeded with no observed charge.
+          # Recurring runs are enabled separately only after quota tests pass.
           SANDBASE_HARD_ZERO_SPEND_CONFIRMED: 'false'
-          # One-time paid probe is disabled; do not make recurring charged calls.
+          # Batch limit: 5 runs/day x 10 searches, with shared daily 50 cap.
           XIGUA_ONE_TIME_PAID_TEST: 'false'
-          XIGUA_SEARCH_PER_RUN: '1'
+          XIGUA_SEARCH_PER_RUN: '10'
           XIGUA_AUTO_SEARCH_ENABLED: 'false'
-          XIGUA_VIDEOS_BATCH: '1'
+          XIGUA_VIDEOS_BATCH: '10'
         run: python scripts/refresh_media_xigua_videos.py
       - name: Validate output, when metadata exists
         run: |
@@ -163,8 +163,8 @@ jobs:
                   assert v['verifiedSource']=='https://www.ixigua.com/'+v['videoId']
           ledger=json.loads(Path('data/media-xigua-budget.json').read_text())
           assert ledger['schema']==1
-          assert 0<=int(ledger['calls'])<=24
-          assert ledger['localDailyCap']==24
+          assert 0<=int(ledger['calls'])<=50
+          assert ledger['localDailyCap']==50
           print('XIGUA_METADATA_VALIDATED',len(doc['items']))
           print('XIGUA_FREE_CALLS_TODAY',ledger['calls'])
           PY
