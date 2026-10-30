@@ -62,11 +62,76 @@
       return {work:snapshot({id,title:x.title,original_title:x.originalTitle,kind:x.kind,date:x.year,imdb_id:x.imdbId}),status:x.status==='watchlist'?'want':x.status,updated_at:x.updatedAt};
     });
   }
+  // Join distinct provider cards only when their full anime edition title and
+  // premiere year agree. Exact provider IDs already merge upstream; this is
+  // a conservative presentation bridge for Japanese/Chinese season spellings.
+  function animeTitleKey(value) {
+    let raw=String(value||'').normalize('NFKC').toLowerCase().replace(/½/g,'1/2').trim();
+    const season=/第\s*[一二三四五六七八九十\d]+\s*[季期]|(?:2nd|3rd|4th|5th|second|third|fourth|fifth)\s+season|season\s*[2-9]/i.test(raw);
+    if(season)raw=raw.replace(/\((?:19|20)\d{2}\)/g,'');
+    const nums={'一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9','十':'10'};
+    raw=raw.replace(/第\s*([一二三四五六七八九十\d]+)\s*[季期]/g,(_,n)=>'season'+(nums[n]||n))
+      .replace(/(2nd|second)\s+season/g,'season2')
+      .replace(/(3rd|third)\s+season/g,'season3')
+      .replace(/(4th|fourth)\s+season/g,'season4')
+      .replace(/(5th|fifth)\s+season/g,'season5')
+      .replace(/season\s*([2-9])/g,'season$1')
+      .replace(/[^\p{L}\p{N}]+/gu,'');
+    return raw.length>=6?raw:'';
+  }
+  function animeEquivalentGroups(works) {
+    const rows=Object.values(works||{}).filter(w=>w?.kind==='anime'&&/^\d{4}/.test(w.date||''));
+    const byKey=new Map(),pairs=[],parent=new Map(rows.map(w=>[w.id,w.id]));
+    const find=id=>{const x=parent.get(id);if(x!==id)parent.set(id,find(x));return parent.get(id);};
+    for(const w of rows)for(const key of new Set([w.title,w.original_title,w.english_title].map(animeTitleKey).filter(Boolean))){
+      const items=byKey.get(key)||[];items.push(w);byKey.set(key,items);
+    }
+    for(const values of byKey.values()){
+      for(let i=0;i<values.length;i++)for(let j=i+1;j<values.length;j++){
+        const a=values[i],b=values[j],ya=Number(a.date.slice(0,4)),yb=Number(b.date.slice(0,4));
+        if(Math.abs(ya-yb)>1||a.mal_id&&b.mal_id&&Number(a.mal_id)!==Number(b.mal_id))continue;
+        // A unique full title across two provider records is required.
+        if(values.length!==2)continue;
+        pairs.push([a.id,b.id]);
+      }
+    }
+    for(const [a,b] of pairs)if(find(a)!==find(b))parent.set(find(b),find(a));
+    const groups=new Map();
+    for(const w of rows){const id=find(w.id);const group=groups.get(id)||[];group.push(w.id);groups.set(id,group);}
+    return [...groups.values()].filter(g=>g.length>1);
+  }
+  function mergeAnimeCatalog(input) {
+    const works={...input.works},aliases={...input.aliases};
+    for(const group of animeEquivalentGroups(works)){
+      const ids=group.slice().sort((a,b)=>(a.startsWith('bangumi-')?0:1)-(b.startsWith('bangumi-')?0:1)||a.localeCompare(b));
+      const head=ids[0];let w={...works[head]};
+      for(const otherId of ids.slice(1)){
+        const other=works[otherId];if(!other)continue;
+        w={
+          ...w,
+          mal_id:w.mal_id||other.mal_id,
+          poster:w.poster||other.poster,
+          overview:w.overview||other.overview,
+          english_title:w.english_title||other.english_title,
+          aliases:[...new Set([...(w.aliases||[]),...(other.aliases||[]),other.id])],
+          categories:[...new Set([...(w.categories||[]),...(other.categories||[])])],
+          links:[...new Map([...(w.links||[]),...(other.links||[])].map(l=>[l.url,l])).values()],
+          ratings:[...new Map([...(other.ratings||[]),...(w.ratings||[])].map(r=>[r.source,r])).values()],
+          profile:{...(other.profile||{}),...(w.profile||{})}
+        };
+        for(const id of [otherId,...(other.aliases||[])])aliases[id]=head;
+        delete works[otherId];
+      }
+      for(const id of [head,...(w.aliases||[])])aliases[id]=head;
+      works[head]=w;
+    }
+    return {works,aliases};
+  }
   function createStore(storage) {
     return {
       read(){const raw=storage.getItem(KEY);return raw?parseBackup(raw):[];},
       write(items){const raw=backup(items);parseBackup(raw);storage.setItem(KEY,raw);return items;}
     };
   }
-  globalThis.LiangYouMedia={KEY,LIMIT,statuses,validId,safeURL,snapshot,parseBackup,catalog,resolve,merge,backup,createStore,legacy};
+  globalThis.LiangYouMedia={KEY,LIMIT,statuses,validId,safeURL,snapshot,parseBackup,catalog,mergeAnimeCatalog,animeEquivalentGroups,animeTitleKey,resolve,merge,backup,createStore,legacy};
 })();
