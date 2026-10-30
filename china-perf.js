@@ -7,10 +7,10 @@
     {
       id: 'media',
       // The essential catalogue is usable after these two scripts and one CSS.
-      styles: ['./media-intel.css?v=20261031-douyin-iosportrait'],
+      styles: ['./media-intel.css?v=20261031-discover-shortcut1'],
       urls: [
         './media-core.js?v=20261030.anime-unify2',
-        './media-intel.js?v=20261030.anime-unify2'
+        './media-intel.js?v=20261031.discover-shortcut1'
       ],
       // Optional film detail modules hydrate after the catalogue is responsive.
       extraStyles: [
