@@ -214,18 +214,24 @@
 #media .mi-player-close{flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #acbcd448;background:#1a2940;color:#e4ebf8;border-radius:11px;cursor:pointer;font-size:22px;line-height:1}
 #media .mi-player-stage{aspect-ratio:16/9;width:100%;background:#03070d;display:block}
 #media .mi-player-stage iframe{display:block;width:100%;height:100%;border:0}
-/* Douyin switches to a 324 x 624 portrait page when embedded under 730px,
-   clipping controls inside our 16:9 player on iOS Safari. Use a 760px
-   desktop breakpoint iframe scaled back into the original landscape stage.
-   Do not change the layout of YouTube, Bilibili, AcFun or other providers. */
-#media .mi-player-stage.mi-douyin-stage{position:relative;overflow:hidden;isolation:isolate;background:#000}
-#media .mi-player-stage.mi-douyin-stage iframe.mi-douyin-wide{
-  position:absolute;left:0;top:0;display:block;
-  width:760px!important;min-width:760px;max-width:none!important;
-  height:428px!important;max-height:none!important;
-  border:0;transform-origin:top left;
-  transform:scale(var(--mi-douyin-scale,1));
-  -webkit-transform:scale(var(--mi-douyin-scale,1));
+/* iOS WebKit gives the official Douyin embed a 324x624 portrait video
+   viewport even for 1920x1080 source clips. The previous 16:9 iframe cut off
+   its entire bottom control bar and exposed a white strip on the right.
+   Keep other providers' landscape 16:9 players completely unchanged. */
+@media(max-width:760px){
+  #media .mi-player-stage.mi-douyin-stage{
+    position:relative;isolation:isolate;overflow:hidden;
+    display:block;box-sizing:border-box;
+    width:min(100%,324px);max-width:324px;
+    min-height:624px;height:624px;aspect-ratio:auto;
+    margin-inline:auto;background:#000;
+  }
+  #media .mi-player-stage.mi-douyin-stage iframe.mi-douyin-mobile{
+    display:block;position:relative;width:100%!important;min-width:0!important;
+    height:624px!important;max-height:none;border:0;
+    transform:none!important;-webkit-transform:none!important;
+  }
+  #media .mi-player-dialog:has(.mi-douyin-stage){overflow-y:auto}
 }
 #media .mi-player-stage .mi-acfun-native{display:block;width:100%;height:100%;background:#050b13;object-fit:contain}
 #media .mi-acfun-loading,#media .mi-acfun-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:18px;color:#d4e0f2;text-align:center;font-size:12px;line-height:1.7}
