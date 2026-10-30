@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-10-30T12:18:16Z",
+  "generated_at": "2026-10-30T18:22:52Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-10-30T12:18:16Z"
+      "verified_at": "2026-10-30T18:22:52Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 171,
       "standings": 5,
-      "verified_at": "2026-10-30T12:18:16Z"
+      "verified_at": "2026-10-30T18:22:52Z"
     }
   ],
   "status": "ok",
@@ -154,12 +154,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-10-30T18:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Le Havre AC",
       "away": "Paris Saint-Germain FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -172,12 +172,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-10-30T18:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "OGC Nice",
       "away": "Stade Rennais FC 1901",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -3381,7 +3381,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     },
     {
@@ -3593,7 +3593,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     },
     {
@@ -3805,7 +3805,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     },
     {
@@ -3997,7 +3997,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     },
     {
@@ -4209,7 +4209,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     },
     {
@@ -4223,10 +4223,10 @@
           "rank": 1,
           "team": "Paris Saint-Germain FC",
           "wins": 5,
-          "losses": 1,
+          "losses": 2,
           "draws": 2,
           "points": 17,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
@@ -4234,9 +4234,9 @@
           "team": "Stade Rennais FC 1901",
           "wins": 5,
           "losses": 2,
-          "draws": 1,
-          "points": 16,
-          "played": 8,
+          "draws": 2,
+          "points": 17,
+          "played": 9,
           "group": ""
         },
         {
@@ -4314,9 +4314,9 @@
           "team": "OGC Nice",
           "wins": 3,
           "losses": 3,
-          "draws": 2,
-          "points": 11,
-          "played": 8,
+          "draws": 3,
+          "points": 12,
+          "played": 9,
           "group": ""
         },
         {
@@ -4381,6 +4381,16 @@
         },
         {
           "rank": 17,
+          "team": "Le Havre AC",
+          "wins": 1,
+          "losses": 6,
+          "draws": 2,
+          "points": 5,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 18,
           "team": "ES Troyes AC",
           "wins": 1,
           "losses": 5,
@@ -4388,20 +4398,10 @@
           "points": 5,
           "played": 8,
           "group": ""
-        },
-        {
-          "rank": 18,
-          "team": "Le Havre AC",
-          "wins": 0,
-          "losses": 6,
-          "draws": 2,
-          "points": 2,
-          "played": 8,
-          "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-10-30T12:18:16Z",
+      "verified_at": "2026-10-30T18:22:52Z",
       "status": "ok"
     }
   ],
