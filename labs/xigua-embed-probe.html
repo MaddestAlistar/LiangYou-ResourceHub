@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>西瓜视频站内播放诊断 · 良友科技</title>
+<title>西瓜迁移源 · 抖音精选官方播放器验证</title>
 <style>
 :root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft Yahei",sans-serif;background:#091329;color:#e9f0ff}
 *{box-sizing:border-box}body{margin:0;padding:24px 15px 60px;background:radial-gradient(circle at 75% 0,#223f82 0,transparent 45%)}
@@ -19,23 +19,24 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
 </style>
 </head>
 <body><main>
-<h1>西瓜视频 · 网页内播放诊断</h1>
+<h1>西瓜视频迁移 · 站内播放验证</h1>
 <p id="catalogStatus" aria-live="polite">正在读取影视中心的西瓜视频匹配数量…</p>
-<p>用于验证西瓜视频官方 iframe 能否在 GitHub Pages 上播放，不会对影视情报中心现有来源做改动。请在中国大陆的手机流量或家庭宽带下测试。</p>
+<p>已确认旧西瓜 iframe 在海外浏览器跳转至“内容可能已删除”。部分相关视频可使用抖音精选官方播放器。请用国内手机网络测试实际播放。</p>
 <div class="card">
 <label for="videoUrl">西瓜视频链接，或官方 iframe 数字 ID</label>
-<input id="videoUrl" inputmode="url" value="https://www.ixigua.com/iframe/6803260807372079623?autoplay=0" spellcheck="false" autocomplete="off">
+<input id="videoUrl" inputmode="url" value="7140302841666686239" spellcheck="false" autocomplete="off">
 <label for="embedMode">官方嵌入路径对比</label>
 <select id="embedMode" style="display:block;width:100%;padding:11px;margin:6px 0 12px;border-radius:9px;background:#111a30;color:white;border:1px solid #43577e">
-<option value="iframe">标准 iframe 播放器（优先）</option>
-<option value="embed">移动端 embed 播放器（兼容性核验）</option>
+<option value="douyin">抖音精选官方 iframe（实测可播放）</option>
+<option value="iframe">西瓜原有 iframe（已发现失效案例）</option>
+<option value="embed">西瓜移动端 embed（兼容性对比）</option>
 </select>
 <div id="candidateList" aria-label="已找到的西瓜视频候选" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0"></div>
 <small>下面提供真实搜索命中的视频，点击可以快速测试；并非全部已取得站外嵌入授权。</small>
 <button id="test" type="button">测试网页内播放</button>
 <p id="status" role="status"></p>
 <div class="stage" id="stage"><small>点击测试后加载官方播放器，播放器是否实际可播需手动确认</small></div>
-<p><small>输入框初始链接是西瓜开发者文档中的演示 iframe，并非已核验可播放的电影预告。其他视频应优先使用西瓜原站“分享 → 嵌入代码”生成的链接。</small></p>
+<p><small>默认数字 ID 属于官方审核通过且浏览器播放测试成功的抖音精选视频。它是迁移后可用的另一平台来源，不代表旧西瓜视频已恢复。</small></p>
 </div>
 <div class="card">
 <h2>如何判断结果</h2>
@@ -49,6 +50,24 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
   const input=document.querySelector('#videoUrl'),stage=document.querySelector('#stage'),status=document.querySelector('#status');
   const candidateList=document.querySelector('#candidateList'),mode=document.querySelector('#embedMode');
   const testButton=document.querySelector('#test');
+  mode.value='douyin';
+  fetch('../data/media-douyin-verified.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null)
+    .then(d=>{
+      for(const work of Object.values(d?.items||{})){
+        for(const item of (work.videos||[])){
+          if(item.platform!=='douyin'||item.embedVerified!==true||
+             !/^[1-9]\\d{14,20}$/.test(String(item.videoId||'')))continue;
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.style.cssText='width:auto;padding:8px 10px;font-size:12px;background:#17482f;color:white;border:1px solid #51a77e;border-radius:8px';
+          btn.textContent='已验证 · '+String(item.name||work.title).slice(0,28);
+          btn.addEventListener('click',()=>{
+            mode.value='douyin';input.value=item.videoId;testButton.click();
+          });
+          candidateList.prepend(btn);
+        }
+      }
+    }).catch(()=>{});
   fetch('../data/media-xigua-videos.json',{cache:'no-cache',signal:AbortSignal.timeout(8500)})
     .then(r=>r.ok?r.json():null).then(d=>{
       const rows=d?.schema===1&&d.items&&typeof d.items==='object'?Object.values(d.items):null;
@@ -71,7 +90,7 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
             choice.style.cssText='width:auto;padding:8px 10px;font-size:12px;background:#21345d;border:1px solid #5777bc;color:#eaf2ff;border-radius:8px';
             choice.textContent=String(item.name||work.title||'相关视频').slice(0,32);
             choice.title='测试官方视频 ID '+id;
-            choice.addEventListener('click',()=>{input.value=id;testButton.click()});
+            choice.addEventListener('click',()=>{mode.value='iframe';input.value=id;testButton.click()});
             candidateList.appendChild(choice);
           }
         }
@@ -94,8 +113,10 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
     }
     if(!ident){status.textContent='请输入西瓜视频的有效数字 ID、原视频页或官方 iframe 链接。';return}
     const frame=document.createElement('iframe');
-    frame.title='西瓜视频官方嵌入播放器';
-    frame.src=mode.value==='embed'
+    frame.title=mode.value==='douyin'?'抖音精选官方嵌入播放器':'西瓜视频官方嵌入播放器';
+    frame.src=mode.value==='douyin'
+      ?'https://open.douyin.com/player/video?vid='+ident+'&autoplay=0'
+      :mode.value==='embed'
       ?'https://www.ixigua.com/embed/?autoplay=0&group_id='+ident
       :'https://www.ixigua.com/iframe/'+ident+'?autoplay=0&startTime=0';
     // Official Xigua iframe docs explicitly use a referrer and unsafe-url.
@@ -104,7 +125,7 @@ button{margin-top:12px;background:linear-gradient(95deg,#4369d8,#6d54d9);border:
     frame.allowFullscreen=true;
     frame.loading='eager';
     stage.replaceChildren(frame);
-    status.textContent='已请求加载官方 iframe。请实际点击播放，以判断视频能否正常播放。';
+    status.textContent='已请求加载'+(mode.value==='douyin'?'抖音精选':'西瓜')+'官方 iframe。请实际点击播放，并确认画面与声音。';
   });
 })();
 </script>
