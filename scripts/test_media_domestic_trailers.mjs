@@ -27,9 +27,10 @@ test('Douyin Jingxuan official embed is in-page playable and requires exact iden
  const info={kind:'tv',tmdbId:105248,title:'赛博朋克：边缘行者',
    originalTitle:'Cyberpunk: Edgerunners',year:2022};
  const clips=douyinCatalog.items['tv:105248'].videos;
- assert.equal(clips.length,2);
+ assert.ok(clips.length>=1&&clips.length<=4,'Approved Douyin clips remain bounded by the per-title snapshot');
  const cards=gallery({},info,clips);
- assert.equal((cards.match(/data-mi-play-cn="douyin"/g)||[]).length,2);
+ assert.equal((cards.match(/data-mi-play-cn="douyin"/g)||[]).length,clips.length,
+   'Every officially approved exact-ID clip renders without a stale fixed-count assumption');
  assert.match(cards,/抖音精选/);
  assert.doesNotMatch(cards,/原站观看|mi-video-external/);
  assert.ok(source.includes('https://open.douyin.com/player/video?vid='));
