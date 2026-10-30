@@ -1,0 +1,88 @@
+name: Refresh matched movie video sources (no visitor requests)
+
+on:
+  schedule:
+    - cron: '47 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-media-extra-videos.yml'
+      - 'scripts/update_media_extra_videos.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: liangyou-extra-film-videos
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Python runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify source matching and URL validation offline
+        run: |
+          python -m py_compile scripts/update_media_extra_videos.py
+          python scripts/test_media_extra_videos.py
+      - name: Collect rotating batch of public video metadata
+        env:
+          EXTRA_VIDEO_BATCH: '6'
+          EXTRA_VIDEO_INTERVAL: '3'
+        run: python scripts/update_media_extra_videos.py
+      - name: Verify snapshot never mixes movie IDs
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          doc=json.loads(Path("data/media-extra-videos.json").read_text())
+          assert doc["schema"]==1
+          assert len(doc["items"])<=650
+          for key,entry in doc["items"].items():
+              kind,ident=key.split(":")
+              assert kind in ("movie","tv") and int(ident)>0
+              assert len(entry["videos"])<=24
+              for v in entry["videos"]:
+                  assert v["kind"]==kind and v["tmdbId"]==int(ident)
+                  assert v["platform"] in ("youtube","acfun","niconico","dailymotion")
+                  assert v["verifiedSource"].startswith("https://") if "verifiedSource" in v else v["platform"]=="youtube"
+          print("MEDIA_EXTRA_VIDEO_SNAPSHOT_OK",len(doc["items"]))
+          PY
+      - name: Safely merge isolated snapshot with latest main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp data/media-extra-videos.json /tmp/liangyou-extra-video-candidate.json
+          for attempt in 1 2 3 4; do
+            git fetch origin main
+            git reset --hard origin/main
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          candidate=json.loads(Path('/tmp/liangyou-extra-video-candidate.json').read_text())
+          dest=Path('data/media-extra-videos.json')
+          try: old=json.loads(dest.read_text())
+          except (OSError,ValueError): old={}
+          items=dict(old.get('items') or {})
+          for key,row in candidate['items'].items():
+              prev=items.get(key)
+              if prev is None or row['checkedAt'] >= str(prev.get('checkedAt') or ''):
+                  items[key]=row
+          dest.write_text(json.dumps({'schema':1,'updatedAt':candidate['updatedAt'],'items':items},ensure_ascii=False,separators=(',',':'))+'\n')
+          PY
+            git add data/media-extra-videos.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "Refresh matched film videos [skip ci]"
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
