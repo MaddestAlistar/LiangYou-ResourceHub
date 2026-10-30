@@ -930,7 +930,8 @@ test('Bilibili mismatched IDs and unavailable like counters cannot be shown as p
  try{
   const {body}=await invoke('/api/video/bilibili/'+id);
   assert.equal(body.ok,false);
-  assert.equal(body.likes,undefined);
+  assert.equal(body.likes,null);
+  assert.equal(body.thumbnail,null);
  }finally{globalThis.fetch=origin;}
 });
 test('older movies may show a TMDB-linked unflagged trailer without falsely claiming it is official',async()=>{
