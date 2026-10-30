@@ -1505,7 +1505,7 @@
   playerSwitch?.addEventListener('click',()=>{
     if(activeVideoId){
       showTrailerFrame(activeVideoId,!useStandardHost);
-    }else if(/^[1-9]\\d{14,20}$/.test(activeDouyinId)){
+    }else if(/^[1-9]\d{14,20}$/.test(activeDouyinId)){
       // Explicit visitor tap retries the official player without opening
       // a new page. The standalone iframe retains mobile layout and referrer.
       const old=trailerStage?.querySelector('iframe');
