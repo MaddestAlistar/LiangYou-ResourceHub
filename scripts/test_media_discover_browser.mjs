@@ -117,6 +117,12 @@ try{
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
  await page.evaluate(()=>{
+   const network=window.fetch.bind(window);
+   window.__acfunFetches=[];
+   window.fetch=(input,opts)=>{
+     if(String(input).includes('/api/video/acfun/'))window.__acfunFetches.push(String(input));
+     return network(input,opts);
+   };
    const native=HTMLMediaElement.prototype.canPlayType;
    HTMLMediaElement.prototype.canPlayType=function(type){
      return /mpegurl/i.test(type)?'probably':native.call(this,type);
@@ -129,6 +135,7 @@ try{
    console.log('ACFUN_BROWSER_DEBUG',JSON.stringify({acfunMockCalls,
      stage:await page.locator('#media-trailer-stage').innerText().catch(()=>'(missing)'),
      dialogOpen:await page.locator('#media-trailer-dialog').evaluate(d=>d.open),
+     acfunFetches:await page.evaluate(()=>window.__acfunFetches||[]),
      errors:pageErrors.slice(-4)}));
    throw error;
  }
