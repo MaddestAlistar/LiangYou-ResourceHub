@@ -187,10 +187,38 @@ def safe_anime_video(work, row):
             return False
     if not edition and clip_edition:
         return False
-    # "ONE PIECE" also describes film, live-action, games and a separate remake.
-    if work["id"] == "bangumi-975" and re.search(
-        r"THE ONE PIECE|film|电影|真人|剧场|重制|游戏|手游|航海王热血航线", label, re.I):
-        return False
+    # One Piece is an unusually ambiguous franchise. Anime TV, theatrical
+    # films, console/mobile games, live action and the remake are separate works.
+    # A shared "ONE PIECE / ワンピース" substring must never be sufficient by itself.
+    if work["id"] == "bangumi-975":
+        wrong_franchise = (
+            r"THE\s+ONE\s+PIECE|ONE\s+PIECE\s+FILM|STRONG\s+WORLD|"
+            r"STAMPEDE|FILM\s*(?:RED|Z|GOLD)|强者天下|強者天下|"
+            r"狂热行动|狂熱行動|黄金城|黃金城|劇場版|剧场版|"
+            r"真人|live.action|电影版|映画|重制|リメイク|"
+            r"壮志雄心|壯志雄心|热血航线|熱血航線|"
+            r"海贼无双|海賊無双|PIRATE\s+WARRIORS|"
+            r"BURNING\s+BLOOD|ギガントバトル|バウンティラッシュ|"
+            r"トレジャークルーズ|PS[345]|PSVita|PSV\b|"
+            r"nintendo|switch\b|xbox\b|steam\b|"
+            r"^\s*【?DS】|^\s*【?3DS】|スターライトワンピースター"
+        )
+        if re.search(wrong_franchise, label, re.I):
+            return False
+        # 'ワンピース' also means a dress; only an anime/video-specific
+        # mention can turn a free-text Japanese title into a TV-series match.
+        has_anime_context = re.search(
+            r"TVアニメ|アニメ|动画|動畫|动漫|動漫|"
+            r"ルフィ|麦わら|麦わらの一味|草帽|路飞|魯夫|"
+            r"サンジ|ゾロ|ナミ|エッグヘッド|"
+            r"公式PV|公式予告|放送|次回予告|東映|toei|"
+            r"anime|animation|trailer|teaser|第[0-9]+話",
+            label, re.I
+        )
+        if not has_anime_context:
+            return False
+        if re.search(r"ワンピース(?=[ァ-ヺ])", label):
+            return False
     return True
 
 def canonical_cached_clip(work, row):
