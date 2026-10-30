@@ -106,10 +106,11 @@ try{
  await page.locator('#media-trailer-close').click();
  assert.equal(await page.locator('#media-trailer-stage iframe').count(),0,
    'Closing a domestic video stops playback');
- await page.route('**/api/video/acfun/41787132',route=>route.fulfill({status:200,contentType:'application/json',
+ let acfunMockCalls=0;
+ await page.route('**/api/video/acfun/41787132',route=>{acfunMockCalls++;return route.fulfill({status:200,contentType:'application/json',
    headers:{'access-control-allow-origin':'*'},
    body:JSON.stringify({ok:true,videoId:'41787132',quality:'720p',
-     url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})}));
+     url:'https://tx-safety-video.acfun.cn/testing/sample.m3u8?token=test'})});});
  await page.evaluate(()=>{
    const native=HTMLMediaElement.prototype.canPlayType;
    HTMLMediaElement.prototype.canPlayType=function(type){
@@ -117,7 +118,15 @@ try{
    };
  });
  await page.locator('#media-dialog [data-mi-play-cn="acfun"]').first().click();
- await page.locator('#media-trailer-stage video.mi-acfun-native').waitFor({state:'attached',timeout:12000});
+ try{
+   await page.locator('#media-trailer-stage video.mi-acfun-native').waitFor({state:'attached',timeout:6500});
+ }catch(error){
+   console.log('ACFUN_BROWSER_DEBUG',JSON.stringify({acfunMockCalls,
+     stage:await page.locator('#media-trailer-stage').innerText().catch(()=>'(missing)'),
+     dialogOpen:await page.locator('#media-trailer-dialog').evaluate(d=>d.open),
+     errors:pageErrors.slice(-4)}));
+   throw error;
+ }
  assert.match(await page.locator('#media-trailer-stage video').getAttribute('src'),
    /tx-safety-video\.acfun\.cn\/testing\/sample\.m3u8/);
  await page.locator('#media-trailer-close').click();
