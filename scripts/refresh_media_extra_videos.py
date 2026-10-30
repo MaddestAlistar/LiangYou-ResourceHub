@@ -45,7 +45,7 @@ def matches_title(video,aliases,year=0,kind="movie"):
         pos=normalize(title).find(normalize(alias))
         if pos>=0:
             after=normalize(title)[pos+len(normalize(alias)):]
-            if re.match(r"(?:2|ii|Ⅱ|第二部|第二季|第2季)",after,re.I):return False
+            if re.match(r"(?:2(?!\d)|ii(?![a-z0-9])|Ⅱ|第二部|第二季|第2季)",after,re.I):return False
     # Reject title/year conflicts for films, not later seasons of a television series.
     if kind=="movie" and year>1900:
         years=[int(x) for x in re.findall(r"(?:19|20)\d{2}",title)]
@@ -132,7 +132,7 @@ def parse_kinocheck(work):
             years=[int(y) for y in re.findall(r"(?:19|20)\d{2}",name)]
             if years and not any(abs(y-work["year"])<=1 for y in years):continue
         # Avoid sequel videos inside a movie's matched KinoCheck recommendations.
-        if kind=="movie" and work["year"]<2025 and re.search(r"(?:Moana\s*2|海洋奇缘\s*2)",name,re.I):continue
+        if kind=="movie" and work["year"]<2025 and re.search(r"(?:Moana\s*2(?!\d)|海洋奇缘\s*2(?!\d))",name,re.I):continue
         seen.add(key)
         cats=x.get("categories") or []
         label="Trailer" if (TRAILER_WORDS.search(name) or any(c in ("Trailer","Teaser") for c in cats)) else "Clip"
