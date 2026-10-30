@@ -137,11 +137,11 @@ def main():
     for ident,row in curated.items():
         if ident in motion:row["animatedThumbnailLocal"]=motion[ident]
         else:row.pop("animatedThumbnailLocal",None)
-    catalog=json.dumps(doc,ensure_ascii=False,indent=2)+"\\n"
+    catalog=json.dumps(doc,ensure_ascii=False,indent=2)+"\n"
     if catalog!=CATALOG.read_text(encoding="utf8"):
         CATALOG.write_text(catalog,encoding="utf8")
 
-    manifest=json.dumps({"schema":1,"items":motion},ensure_ascii=False,indent=2)+"\\n"
+    manifest=json.dumps({"schema":1,"items":motion},ensure_ascii=False,indent=2)+"\n"
     if not MOTION_INDEX.exists() or MOTION_INDEX.read_text(encoding="utf8")!=manifest:
         MOTION_INDEX.write_text(manifest,encoding="utf8")
     print(f"Animated Bilibili storyboards: new={created},reused={reused},unavailable={unavailable},available={len(motion)}")
