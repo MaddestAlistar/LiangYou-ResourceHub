@@ -1,0 +1,38 @@
+name: Probe public indexes for XHS film notes (no XHS traffic)
+
+on:
+  push:
+    branches:
+      - probe/openweb-xhs-anon-20261030
+    paths:
+      - .github/workflows/probe-xhs-public-index.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: probe-xhs-public-index-isolated
+  cancel-in-progress: false
+
+jobs:
+  public-index:
+    if: github.ref == 'refs/heads/probe/openweb-xhs-anon-20261030'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout isolated branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Query public search indexes without contacting Xiaohongshu
+        shell: bash
+        run: python3 experiments/xhs_public_index_only.py
+      - name: Upload public index report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xhs-public-index-results
+          path: xhs-public-index-results.json
+          if-no-files-found: ignore
+          retention-days: 3
