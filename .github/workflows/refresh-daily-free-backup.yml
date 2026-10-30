@@ -1,0 +1,72 @@
+name: Rescue independent Apple paid-to-free verification
+
+on:
+  schedule:
+    # Hourly safety net, but the collector only runs if the verified
+    # CN/US price snapshot has reached its 3-hour refresh interval.
+    - cron: '41 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-daily-free-backup.yml'
+      - 'scripts/refresh_daily_free_if_due.py'
+
+permissions:
+  contents: write
+  pages: write
+
+# Serializes with the normal data refresh to avoid conflicts or double lookups.
+concurrency:
+  group: resourcehub-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  apple:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install price source HTML parser
+        run: python -m pip install --disable-pip-version-check beautifulsoup4 pillow
+      - name: Verify due App Store paid-to-free prices and publish snapshot
+        id: save
+        env:
+          FORCE_REFRESH: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git reset --hard origin/main
+          python -m py_compile scripts/refresh_daily_free_if_due.py scripts/update_daily_free.py
+          if [ "$FORCE_REFRESH" = "true" ]; then
+            python scripts/refresh_daily_free_if_due.py --force
+          else
+            python scripts/refresh_daily_free_if_due.py
+          fi
+          git add -A data/daily-free.json assets/daily-free
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m 'Refresh Apple price-drop snapshot [skip ci]'
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo 'changed=true' >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo 'Failed to publish refreshed App Store snapshot' >&2
+          exit 1
+      - name: Publish verified prices to existing GitHub Pages site
+        if: steps.save.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/publish_pages.py
