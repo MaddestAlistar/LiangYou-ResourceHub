@@ -237,7 +237,7 @@
             const url=new URL(value),host=url.hostname.toLowerCase();
             if(!['hdslb.com','biliimg.com'].some(d=>host===d||host.endsWith('.'+d))||
               !/^\/bfs\/archive\/[a-f0-9]{32,80}\.(?:jpg|jpeg|png|webp)(?:@[\w!.-]{1,80})?$/i.test(url.pathname))return null;
-            return base+'/api/media-cover/bilibili?src='+encodeURIComponent(value);
+            return value; // Only the exact Bilibili image URL; removed relay returns 502.
           }catch{return null;}
         })();
         biliCoverRequests.set(id,job);
