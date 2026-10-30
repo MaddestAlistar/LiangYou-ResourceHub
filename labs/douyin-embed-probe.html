@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>抖音精选 · 影视视频站内播放诊断 · 良友科技</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#eaf1ff;background:#071324}
+*{box-sizing:border-box}body{margin:0;padding:20px 14px 45px;background:radial-gradient(ellipse at 50% 0,#21376a,transparent 55%)}
+main{max-width:720px;margin:auto}h1{font-size:24px}p{color:#b1c3df;line-height:1.6;font-size:13px}
+article{padding:16px;border-radius:15px;border:1px solid #34507f;background:#11203a}
+label{display:block;margin:13px 0 7px;font-size:13px;color:#dbdef1}
+input{width:100%;padding:12px;border:1px solid #4c699e;border-radius:9px;background:#09142b;color:#e6efff}
+button{padding:10px 14px;border:1px solid #6c91c4;color:#f0f7ff;border-radius:10px;background:#243c64;cursor:pointer}
+#examples{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+#player{width:min(100%,324px);height:624px;margin:12px auto;background:#000;overflow:hidden;position:relative}
+#player iframe{width:100%;height:100%;border:0;display:block}
+a{color:#9dd0ff}
+</style>
+</head>
+<body><main>
+<h1>抖音精选 · 站内播放诊断</h1>
+<p>只测试经过抖音官方 iframe 接口核验的公开视频。已按 iPhone Safari 的播放器纵向布局适配 324×624。搜索和播放均不调用 SandBase 或西瓜视频。</p>
+<article>
+<label for="video">视频 ID 或抖音精选视频链接</label>
+<input id="video" value="7140302841666686239" autocorrect="off" spellcheck="false">
+<div id="examples" aria-label="已核验的抖音视频"></div>
+<button id="play" type="button">在本页播放</button>
+<p id="status" aria-live="polite">请点击播放按钮。</p>
+<div id="player"><small>播放器尚未打开</small></div>
+</article>
+<p><a href="../#media">返回影视情报中心</a></p>
+<script>
+(()=>{
+const input=document.getElementById('video'),player=document.getElementById('player');
+const status=document.getElementById('status'),examples=document.getElementById('examples');
+let approved=new Set();
+fetch('../data/media-douyin-verified.json',{cache:'no-cache'})
+ .then(r=>r.ok?r.json():null).then(d=>{
+   if(!d?.items)return;
+   for(const work of Object.values(d.items)){
+     for(const v of (work?.videos||[])){
+       const id=String(v.videoId||'');
+       if(v.platform!=='douyin'||v.embedVerified!==true||
+          v.verifiedByOfficialDouyin!==true||!/^[1-9]\d{14,20}$/.test(id))continue;
+       approved.add(id);
+       if(examples.children.length>=8)continue;
+       const button=document.createElement('button');
+       button.type='button';
+       button.textContent=String(v.name||work.title||'相关视频').slice(0,35);
+       button.addEventListener('click',()=>{input.value=id;document.getElementById('play').click()});
+       examples.appendChild(button);
+     }
+   }
+   status.textContent='本站当前收录 '+approved.size+' 条已核验视频。点击一条在页面内测试。';
+ }).catch(()=>{status.textContent='视频列表暂时无法读取，请刷新页面重试。'});
+document.getElementById('play').addEventListener('click',()=>{
+ let id=input.value.trim();
+ if(!/^[1-9]\d{14,20}$/.test(id)){
+   try{
+     const u=new URL(id);
+     if(u.protocol!=='https:'||!['jingxuan.douyin.com','www.douyin.com'].includes(u.hostname))throw Error('host');
+     const match=u.pathname.match(/^\/(?:m\/)?video\/([1-9]\d{14,20})\/?$/);
+     id=match?.[1]||'';
+   }catch{id=''}
+ }
+ if(!approved.has(id)){status.textContent='该视频尚未通过本站官方 iframe 核验，不提供未经批准的嵌入。';return}
+ const frame=document.createElement('iframe');
+ frame.src='https://open.douyin.com/player/video?vid='+id+'&autoplay=0';
+ frame.title='抖音精选官方播放器';
+ frame.referrerPolicy='unsafe-url';
+ frame.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+ frame.allowFullscreen=true;
+ frame.loading='eager';
+ player.replaceChildren(frame);
+ status.textContent='已载入官方播放器。请在下方点击播放，并确认画面与声音。';
+});
+})();
+</script>
+</main></body>
+</html>
