@@ -19,7 +19,9 @@ def merge(current, latest):
         if not isinstance(prior, dict):
             rows[work_id] = proposed
             continue
-        newer = proposed if str(proposed.get("checkedAt") or "") >= str(prior.get("checkedAt") or "") else prior
+        def last_attempt(row):
+            return max(str(row.get("checkedAt") or ""), str(row.get("lastIndexAttemptAt") or ""))
+        newer = proposed if last_attempt(proposed) >= last_attempt(prior) else prior
         others = prior if newer is proposed else proposed
         vids = {}
         for src in (others, newer):
@@ -29,11 +31,25 @@ def merge(current, latest):
                 if video.get("embedVerified") is not True or video.get("verifiedByOfficialDouyin") is not True:
                     continue
                 vids[str(video.get("videoId") or "")] = video
-        rows[work_id] = {**newer, "videos": list(vids.values())[-4:]}
+        row = {**others, **newer, "videos": list(vids.values())[-4:]}
+        for name in ("checkedAt", "lastIndexAttemptAt"):
+            value = max(str(prior.get(name) or ""), str(proposed.get(name) or ""))
+            if value:
+                row[name] = value
+        row["searchPass"] = max(int(prior.get("searchPass") or 0),
+                                int(proposed.get("searchPass") or 0))
+        rows[work_id] = row
     merged = {**current, **latest}
     merged["items"] = rows
     merged["discoveryCursor"] = max(int(current.get("discoveryCursor") or 0),
                                     int(latest.get("discoveryCursor") or 0))
+    # Candidate checks are an append-only audit: concurrent refreshes must
+    # never forget which IDs were already checked against the official player.
+    merged["seedAttempts"] = sorted(set(str(x) for source in (current, latest)
+                                         for x in (source.get("seedAttempts") or [])
+                                         if isinstance(x, str)))
+    merged["updatedAt"] = max(str(current.get("updatedAt") or ""),
+                               str(latest.get("updatedAt") or ""))
     return merged
 
 def main():
