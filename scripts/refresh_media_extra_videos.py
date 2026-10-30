@@ -80,7 +80,7 @@ def parse_acfun(work):
             {"keyword":search_term,"page":1,"pageSize":20}))
         for x in (doc.get("videoList") or [])[:35]:
             if not isinstance(x,dict):continue
-            ident=str(x.get("dougaId") or "");name=x.get("title") or ""
+            ident=str(x.get("contentId") or x.get("id") or x.get("dougaId") or "");name=x.get("title") or ""
             if not ACFUN_ID.fullmatch(ident) or ident in seen:continue
             if not matches_title(name,aliases,year,work["kind"]) or not VIDEO_WORDS.search(name):continue
             seen.add(ident)
