@@ -25,6 +25,8 @@ GENRE_SET = {"热血","动作","冒险","喜剧","搞笑","奇幻","科幻","悬
              "日常","校园","运动","音乐","历史","恐怖","机战","战争","剧情","家庭",
              "百合","治愈","武侠","魔法","悬疑","战斗","少年","少女"}
 META_TAGS = {"日本","TV","TV动画","2026","2025","2024","动画","anime","番剧",
+             "TRIGGER","J.C.STAFF","J.C. STAFF","P.A.WORKS","BONES","MAPPA",
+             "WIT STUDIO","TOEI ANIMATION","东映动画","東映動畫","日升","SUNRISE",
              "十月新番","10月","新番","续作","OVA","剧场版","连载","漫画改",
              "小说改","游戏改","2026年10月","2026年","官方"}
 AGE = {"g":"G","pg":"PG","pg_13":"PG-13","r":"R-17+","r+":"R+","rx":"Rx"}
@@ -183,7 +185,9 @@ def main():
     # Refresh unfilled records first, then oldest entries for stable rotation.
     batch=max(1,min(50,int(os.environ.get("ANIME_CLASS_BATCH","35"))))
     ordered=sorted(works,key=lambda wid:(
-        bool(items[wid].get("genres") or items[wid].get("keywords")),
+        0 if wid in ("bangumi-975","bangumi-899") else 1,
+        bool(items[wid].get("keywords")),
+        bool(items[wid].get("genres")),
         str(items[wid].get("checkedAt") or ""),wid))
     checked=0
     for wid in ordered[:batch]:
