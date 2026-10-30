@@ -298,7 +298,7 @@ def recheck_published(items, works):
             vid = str(video.get("id") or "")
             if not VIDEO_ID.fullmatch(vid) or video.get("url") != "https://www.youtube.com/watch?v=" + vid:
                 continue
-            if video.get("verifiedBy") not in ("AniList", "Toei Animation", "ONE PIECE Official"):
+            if video.get("verifiedBy") not in ("AniList", "Toei Animation", "ONE PIECE Official", "Ranma Official"):
                 continue
             if vid not in [previous["id"] for previous in trailers]:
                 trailers.append(video)
@@ -400,7 +400,7 @@ def refresh(work, previous, mal_rows=None):
     # Preserve previously ID-linked official/AniList clips during transient API
     # errors; an empty upstream response must not erase a verified prior result.
     trailers = [v for v in previous.get("youtubeTrailers", [])
-                if isinstance(v, dict) and v.get("verifiedBy") in ("Toei Animation", "ONE PIECE Official", "AniList")
+                if isinstance(v, dict) and v.get("verifiedBy") in ("Toei Animation", "ONE PIECE Official", "Ranma Official", "AniList")
                 and VIDEO_ID.fullmatch(str(v.get("id") or ""))
                 and v.get("url") == "https://www.youtube.com/watch?v=" + v["id"]]
     if ani:
@@ -417,6 +417,18 @@ def refresh(work, previous, mal_rows=None):
                 "type": "Trailer", "verifiedBy": "AniList",
                 "official": False, "embeddable": True,
                 "url": "https://www.youtube.com/watch?v=" + ident
+            })
+    # Production site's exact third-season official PV references.
+    if work["id"] in ("bangumi-637802", "mal-63801") and work["year"] == 2026:
+        for vid, label in (
+            ("3uLb6c-4ni0", "《乱马1/2》第三季 · 官方第三弹 PV"),
+            ("MnYDGUBUzJQ", "《乱马1/2》第三季 · 官方第一弹 PV")
+        ):
+            trailers.append({
+                "id": vid, "title": label, "type": "Trailer",
+                "verifiedBy": "Ranma Official", "official": True,
+                "embeddable": True,
+                "url": "https://www.youtube.com/watch?v=" + vid
             })
     classification = anime_classification(ani, work, previous, mal_rows or {})
     query_work = {**work, "aliases": aliases[:24]}
