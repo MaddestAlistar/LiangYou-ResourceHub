@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - labs/title-playback-worker.mjs
+      - labs/title-playback-danmaku.mjs
+      - scripts/test_media_danmaku.mjs
       - labs/playback-extra-sources.mjs
       - scripts/test_playback_extra_sources.mjs
       - scripts/test_title_playback_worker.mjs
@@ -34,6 +36,8 @@ jobs:
       - name: Verify source matching tests and syntax
         run: |
           node --check labs/title-playback-worker.mjs
+          node --check labs/title-playback-danmaku.mjs
+          node --test scripts/test_media_danmaku.mjs
           node --check labs/playback-extra-sources.mjs
           node --test scripts/test_playback_extra_sources.mjs
           node --test scripts/test_title_playback_worker.mjs
@@ -106,4 +110,24 @@ jobs:
               videoProxied:d.videoProxied??null,
               diagnostics:Array.isArray(d.diagnostics)?d.diagnostics.slice(0,12):null}));
           }catch(e){console.log('EPISODE_PLAYBACK_SMOKE',JSON.stringify({error:String(e?.name||'network_error')}));}
+          NODE
+
+      - name: Verify danmaku matching without logging messages
+        run: |
+          node --input-type=module <<'NODE'
+          const p='https://liangyou-title-playback.maddestalistar.workers.dev/api/danmaku/work/tmdb-tv-30984';
+          const u=new URL(p);
+          Object.entries({kind:'tv',title:'死神',original:'BLEACH',year:'2004',
+            season:'1',episode:'4'}).forEach(([k,v])=>u.searchParams.set(k,v));
+          try{
+            const r=await fetch(u,{signal:AbortSignal.timeout(26000)});
+            const d=await r.json();
+            console.log('DANMAKU_SMOKE',JSON.stringify({
+              http:r.status,status:d.status||null,workId:d.workId||null,
+              episode:d.episode||null,count:Number(d.count)||0,
+              hasValidTiming:Array.isArray(d.comments)&&d.comments.every(x=>
+                Number.isFinite(x.time)&&typeof x.text==='string'),videoProxied:false}));
+          }catch(e){
+            console.log('DANMAKU_SMOKE',JSON.stringify({error:String(e.name||'network_error')}));
+          }
           NODE
