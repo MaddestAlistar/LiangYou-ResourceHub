@@ -129,7 +129,7 @@ test("normal playback tools render below the video while fullscreen retains cont
  assert.match(source,/state\.screen\.after\(state\.controls\)/);
  assert.match(source,/mtk-danmaku-setting-row/);
  assert.match(source,/\"rows\"/);
- assert.match(source,/\"position\"/);
+ assert.match(source,/position:position\.value/);
  assert.match(source,/\"opacity\"/);
  assert.match(source,/settingsOptions=sanitizeSettings/);
  assert.match(css,/#media \.mtk-danmaku-actions\{[\s\S]*position:relative/);
