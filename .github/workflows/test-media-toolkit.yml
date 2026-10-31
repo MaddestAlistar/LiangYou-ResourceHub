@@ -12,6 +12,11 @@ on:
       - data/media-cn-news.json
       - scripts/update_media_cn_news.py
       - media-toolkit.js
+      - media-title-playback.js
+      - media-title-playback.css
+      - labs/title-playback-worker.mjs
+      - scripts/test_title_playback_worker.mjs
+      - china-perf.js
       - media-toolkit.css
       - labs/streaming-availability-worker.mjs
       - scripts/test_media_insights.mjs
@@ -29,7 +34,9 @@ jobs:
         with:
           node-version: '24'
       - name: Verify offline film-insights contracts
-        run: node --test scripts/test_media_insights.mjs
+        run: |
+          node --test scripts/test_media_insights.mjs
+          node --test scripts/test_title_playback_worker.mjs
       - name: Validate JavaScript syntax and no public credentials
         run: |
           node --check media-intel.js
@@ -37,6 +44,8 @@ jobs:
           node --check media-cn-enhance.js
           python -m py_compile scripts/update_media_cn_news.py
           node --check media-toolkit.js
+          node --check media-title-playback.js
+          node --check labs/title-playback-worker.mjs
           node --check labs/streaming-availability-worker.mjs
           python - <<'PY'
           from pathlib import Path
@@ -46,6 +55,12 @@ jobs:
           worker=Path("labs/streaming-availability-worker.mjs").read_text()
           assert html.count('./media-toolkit.js?')==1
           assert html.count('./media-toolkit.css?')==1
+          assert html.count('./media-title-playback.js?')==1
+          assert html.count('./media-title-playback.css?')==1
+          playback=Path('media-title-playback.js').read_text()
+          assert 'liangyou:media-detail' in playback and 'mtk-playback' in playback
+          assert 'api/play/' in Path('labs/title-playback-worker.mjs').read_text() or 'mode===\"title\"' in Path('labs/title-playback-worker.mjs').read_text()
+          assert 'videoProxied:false' in Path('labs/title-playback-worker.mjs').read_text()
           assert "liangyou:media-detail" in base and "liangyou:media-detail" in toolkit
           assert "media-insights.js" in html
           assert 'media-cn-enhance.js' in html and 'media-cn-enhance.css' in html
