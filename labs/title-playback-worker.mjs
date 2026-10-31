@@ -177,8 +177,8 @@ async function candidateUrl(url){
  const r=await fetchLimited(url,{headers:{accept:"application/json,text/plain,text/html,*/*"}},7000);
  if(!r.ok)return null;
  const contentType=r.headers.get("content-type")||"";
- if(Number(r.headers.get("content-length")||0)>120000){await r.body?.cancel();return null;}
- const text=await limitedText(r,120000);
+ if(Number(r.headers.get("content-length")||0)>160000){await r.body?.cancel();return null;}
+ const text=await limitedText(r,160000);
  if(/html/i.test(contentType))return fromHtml(text);
  try{return decoded(JSON.parse(text));}catch{return decoded(text);}
 }
@@ -204,31 +204,51 @@ async function validMedia(url,kind){
  return {url:parsed.href,format:type,mime:type==="hls"?"application/vnd.apple.mpegurl":"video/mp4",cors:allowCors};
 }
 async function resolve(lines,kind,episode){
- const started=Date.now();
- // The UI should never hang while trying weak upstream parsers.
- const ranked=lines.slice(0,18).sort((a,b)=>
-  Number(!b.parse_secret&&entries(b).some(e=>direct(e.url)))-
-  Number(!a.parse_secret&&entries(a).some(e=>direct(e.url))));
- for(const line of ranked.slice(0,10)){
-  if(Date.now()-started>18000)break;
-  const entry=selectEntry(line,kind,episode);if(!entry?.url)continue;
-  const candidates=[];
-  if(!line.parse_secret&&direct(entry.url))candidates.push(entry.url);
-  if(line.parse_secret){
-   try{const data=await sourceApi("secret_parse_api_url",{url:entry.url,player_code:String(line.code||"")});
-    const u=decoded(data);if(u)candidates.push(u);
-   }catch{}
-  }else if(!direct(entry.url)){
-   for(const url of parseCandidates(line,entry.url)){
-    if(Date.now()-started>18000)break;
-    try{const output=await candidateUrl(url);if(output){candidates.push(output);break;}}catch{}
+ // Prefer inexpensive parser metadata checks over historically failing direct HLS links.
+ // Three bounded workers can verify different lines without one slow source starving others.
+ const started=Date.now(),diagnostics=[];
+ const ranked=lines.slice(0,18).map((line,i)=>({line,index:i+1})).sort((a,b)=>
+  Number(Boolean(a.line.parse_secret))-Number(Boolean(b.line.parse_secret))||
+  Number(entries(a.line).some(x=>direct(x.url)))-Number(entries(b.line).some(x=>direct(x.url))));
+ let cursor=0;
+ async function verifyOne(){
+  while(cursor<Math.min(14,ranked.length)&&Date.now()-started<35000){
+   const {line,index}=ranked[cursor++],entry=selectEntry(line,kind,episode);
+   if(!entry?.url)continue;
+   const trace={line:index,mode:line.parse_secret?"secret":direct(entry.url)?"direct":"parser",
+     parserAttempts:0,candidates:0,accepted:false};
+   const candidates=[];
+   if(!line.parse_secret&&direct(entry.url))candidates.push(entry.url);
+   if(line.parse_secret){
+    try{
+     const data=await sourceApi("secret_parse_api_url",{url:entry.url,player_code:String(line.code||"")});
+     const u=decoded(data);if(u)candidates.push(u);
+    }catch{trace.secretError=true;}
+   }else if(!direct(entry.url)){
+    for(const url of parseCandidates(line,entry.url)){
+     if(Date.now()-started>35000)break;
+     trace.parserAttempts++;
+     try{
+      const found=await candidateUrl(url);
+      if(found){candidates.push(found);break;}
+     }catch{trace.parseError=true;}
+    }
    }
+   trace.candidates=candidates.length;
+   for(const item of candidates){
+    try{
+     const result=await validMedia(item,kind);
+     if(result){trace.accepted=true;diagnostics.push(trace);return result;}
+    }catch{}
+   }
+   diagnostics.push(trace);
   }
-  for(const item of candidates){
-   try{const result=await validMedia(item,kind);if(result)return result;}catch{}
-  }
+  throw Error("no_verified_media");
  }
- return null;
+ try{
+  const media=await Promise.any(Array.from({length:Math.min(3,ranked.length)},()=>verifyOne()));
+  return {media,diagnostics};
+ }catch{return {media:null,diagnostics};}
 }
 export default {
  async fetch(req,env,ctx){
@@ -276,10 +296,11 @@ export default {
    if(mode==="title"){const {_lines,...pub}=base;return response(pub,200,60);}
    if(base.status!=="matched"||!base.episodes.includes(episode))
     return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
-   const media=await resolve(base._lines,kind,episode);
-   if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,season,episode});
+   const resolved=await resolve(base._lines,kind,episode);
+   if(!resolved.media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,
+     season,episode,diagnostics:resolved.diagnostics.slice(0,14)});
    return response({ok:true,status:"ready",kind,tmdbId:id,workId,season,episode,
-     media,videoProxied:false,verifiedTitle:base.matchedTitle},200);
+     media:resolved.media,videoProxied:false,verifiedTitle:base.matchedTitle},200);
   }catch(e){
    return response({ok:false,status:"unavailable",error:"source_not_ready",kind,tmdbId:id},502);
   }
