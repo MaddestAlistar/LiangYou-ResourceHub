@@ -283,25 +283,25 @@ function configureSkip(video,info,token){
   if(Math.abs(now-state.lastTime)>10){state.lastTime=now;return;}
   state.lastTime=now;
   for(const [index,item] of state.segments.entries()){
-   if(state.skipped.has(index)||now<item.start||now>=item.end-0.4)continue;
+   const segmentEnd=item.end==null?duration:item.end;
+   if(state.skipped.has(index)||now<item.start||now>=segmentEnd-0.4)continue;
    if(now>item.start+5&&item.type!=="outro")continue;
    if(item.type==="intro"||item.type==="recap"){
     state.skipped.add(index);
-    try{video.currentTime=Math.min(item.end+.15,duration-.15);}catch{}
+    try{video.currentTime=Math.min(segmentEnd+.15,duration-.15);}catch{}
     return;
    }
    // Never automatically cut off post-credit scenes or previews.
    if(item.type==="outro"&&!state.segments.some(x=>x.type==="postCredits"||x.type==="preview")&&
-       duration-item.end<=8){
+       duration-segmentEnd<=8){
     state.skipped.add(index);
-    if(!nextEpisode())try{video.currentTime=Math.min(duration-.15,item.end);}catch{}
+    if(!nextEpisode())try{video.currentTime=Math.min(duration-.15,segmentEnd);}catch{}
     return;
    }
   }
  };
  video.addEventListener("seeking",handleSeek);
  video.addEventListener("timeupdate",onTime);
- video.addEventListener("ended",()=>{if(serial===token)nextEpisode();},{once:true});
  video.addEventListener("loadedmetadata",async()=>{
   if(ac.signal.aborted||serial!==token)return;
   const duration=Number(video.duration);
@@ -346,6 +346,8 @@ async function startPlayback(){
   const v=document.createElement("video");video=v;v.controls=true;v.playsInline=true;v.preload="metadata";
   v.setAttribute("webkit-playsinline","");v.setAttribute("aria-label",info.title+" "+episodeLabel(info.episode));
   const sourceKey=body.media.sourceKey;
+  // Autoplay next episode even if a work has no IntroDB identifiers or skip markers.
+  v.addEventListener("ended",()=>{if(serial===token)nextEpisode();},{once:true});
   v.addEventListener("timeupdate",()=>{
     if(serial===token&&v.currentTime>0)lastProgress=v.currentTime;
   });
