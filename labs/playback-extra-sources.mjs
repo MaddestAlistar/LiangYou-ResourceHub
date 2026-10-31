@@ -98,7 +98,9 @@ async function requestJson(url,fetcher=fetch,maxMs=7500){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),maxMs);
  try{
   const r=await fetcher(url,{method:"GET",redirect:"manual",signal:ctrl.signal,
-   headers:{"accept":"application/json,text/plain,*/*"}});
+   headers:{"accept":"application/json,text/plain,*/*",
+    "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "accept-language":"zh-CN,zh;q=0.9"}});
   if(!r.ok||r.status>=300)return null;
   const len=Number(r.headers.get("content-length")||0);
   if(len>1300000)return null;
