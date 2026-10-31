@@ -22,6 +22,7 @@ function harness(body){
   card:()=>target,serial:0,controller:null,video:null,hls:null,
   pendingSwitch:null,stallTimer:null,lastProgress:0,URL,clearTimeout,setTimeout,
   clearPlayback(){context.serial++;},
+  configureSkip(){},
   boxAction(ready){button.disabled=!ready;},
   showStatus(message,state){history.push({message,state})},
   t:a=>a,
