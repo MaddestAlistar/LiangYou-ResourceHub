@@ -102,7 +102,7 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  }};
  vm.createContext(context);
  const parts=vm.runInContext(source.slice(start,end)+
-  "\n({exitWebFullscreen,toggleWebFullscreen})",context);
+  "\n({exitWebFullscreen,toggleWebFullscreen,revealFullscreenControls})",context);
  await parts.toggleWebFullscreen(state);
  assert.equal(state.webFullscreen,true);
  assert.ok(classes.has("mtk-danmaku-webfullscreen"));
