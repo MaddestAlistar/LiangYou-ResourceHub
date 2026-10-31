@@ -208,7 +208,8 @@ async function validMedia(url,kind){
  return {url:parsed.href,format:type,mime:type==="hls"?"application/vnd.apple.mpegurl":"video/mp4",cors:allowCors};
 }
 async function resolveExtras(extraLines,kind,episode,skipped=new Set()){
- const candidates=extraLines.filter(x=>x.number===episode&&!skipped.has(x.provider));
+ const candidates=extraLines.filter(x=>x.number===episode&&!skipped.has(x.provider)&&
+   !(x.provider==="aggregate"&&skipped.has("aggregate:"+x.channel)));
  if(!candidates.length)return {media:null,latencyMs:null,considered:0};
  const started=Date.now(),distinct=new Set(),selected=[];
  for(const line of candidates){
@@ -225,7 +226,8 @@ async function resolveExtras(extraLines,kind,episode,skipped=new Set()){
    const t=Date.now();
    const media=await validMedia(entry.url,kind);
    if(!media)throw Error("invalid_media");
-   return {...media,sourceKey:entry.provider,latencyMs:Date.now()-t};
+   return {...media,sourceKey:entry.provider==="aggregate"?
+      "aggregate:"+entry.channel:entry.provider,latencyMs:Date.now()-t};
   }));
   return {media:fast,latencyMs:fast.latencyMs,considered:selected.length};
  }catch{return {media:null,latencyMs:null,considered:selected.length};}
@@ -355,7 +357,8 @@ export default {
    if(base.status!=="matched"||!base.episodes.includes(episode))
     return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
    const skip=String(u.searchParams.get("skip")||"").split(",")
-     .filter(x=>["primary","jianpian","aggregate"].includes(x)).slice(0,3);
+     .filter(x=>["primary","jianpian","aggregate"].includes(x)||
+       /^aggregate:[a-z0-9-]{1,28}$/.test(x)).slice(0,3);
    const media=await chooseVerifiedStream(base._lines||[],base._extraLines||[],kind,episode,skip);
    if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,season,episode});
    return response({ok:true,status:"ready",kind,tmdbId:id,workId,season,episode,
