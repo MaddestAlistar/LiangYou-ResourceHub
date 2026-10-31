@@ -33,6 +33,7 @@ function showText(state,message){
  state.button.setAttribute("aria-label",message);
 }
 function setButton(state){
+ state.button.hidden=!state.available;
  const on=state.enabled,loading=state.loading;
  state.button.textContent=t("弹幕 ","Danmaku ")+(on?t("开","On"):t("关","Off"));
  state.button.setAttribute("aria-pressed",String(on));
@@ -76,8 +77,26 @@ function update(state){
  }
  state.lastTime=now;
 }
+async function probe(state){
+ const ac=new AbortController();state.probeAbort=ac;
+ try{
+  const res=await fetch(pathFor(state.info)+"&check=1",
+    {mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
+  const body=await res.json();
+  if(ac.signal.aborted||state!==session)return;
+  state.available=!!(res.ok&&body?.ok===true&&body?.status==="ready"&&
+    body?.workId===state.info.id&&body?.kind===state.info.kind&&
+    body?.season===state.info.season&&body?.episode===state.info.episode&&
+    Number(body?.count)>0);
+  state.controls.hidden=!state.available;
+  setButton(state);
+  if(state.available&&state.enabled)load(state);
+ }catch{
+  if(state===session){state.available=false;state.controls.hidden=true;setButton(state);}
+ }finally{if(state===session)state.probeAbort=null;}
+}
 async function load(state){
- if(!state.enabled||state.entries.length||state.loading)return;
+ if(!state.enabled||!state.available||state.entries.length||state.loading)return;
  state.loading=true;setButton(state);
  const ac=new AbortController();state.abort=ac;
  try{
@@ -92,7 +111,9 @@ async function load(state){
     Number.isInteger(x.color)&&typeof x.text==="string")
    .slice(0,3000).sort((a,b)=>a.time-b.time):[];
   seek(state);
-  if(!state.entries.length)showText(state,t("该集暂未匹配到弹幕","No danmaku found for this episode"));
+  if(!state.entries.length){
+   state.available=false;state.controls.hidden=true;setButton(state);
+  }
  }catch(e){
   if(ac.signal.aborted||state!==session)return;
   state.entries=[];
@@ -101,11 +122,55 @@ async function load(state){
   if(state===session){state.loading=false;state.abort=null;setButton(state);}
  }
 }
+function exitWebFullscreen(state){
+ if(!state)return;
+ const fullscreenElement=document.fullscreenElement||document.webkitFullscreenElement;
+ if(fullscreenElement===state.screen){
+  try{(document.exitFullscreen||document.webkitExitFullscreen)?.call(document);}catch{}
+ }
+ state.screen.classList.remove("mtk-danmaku-webfullscreen");
+ state.webFullscreen=false;
+ state.fullscreen.setAttribute("aria-pressed","false");
+ state.fullscreen.textContent="⛶";
+ document.documentElement.classList.remove("mtk-danmaku-page-expanded");
+}
+async function toggleWebFullscreen(state){
+ if(state!==session||!state.available)return;
+ if(state.webFullscreen){exitWebFullscreen(state);return;}
+ // iPhone Safari's native *video* fullscreen cannot contain HTML overlays.
+ // Use a viewport-filling web mode instead; tablet/desktop supports element fullscreen.
+ const iphone=/iPhone|iPod/i.test(navigator.userAgent||"");
+ if(!iphone&&(state.screen.requestFullscreen||state.screen.webkitRequestFullscreen)){
+  try{
+   await (state.screen.requestFullscreen||state.screen.webkitRequestFullscreen).call(state.screen);
+   if(state!==session)return;
+   state.webFullscreen=true;
+   state.fullscreen.setAttribute("aria-pressed","true");
+   state.fullscreen.textContent="↙";
+   return;
+  }catch{}
+ }
+ state.screen.classList.add("mtk-danmaku-webfullscreen");
+ state.webFullscreen=true;
+ state.fullscreen.setAttribute("aria-pressed","true");
+ state.fullscreen.textContent="↙";
+ document.documentElement.classList.add("mtk-danmaku-page-expanded");
+}
+document.addEventListener("fullscreenchange",()=>{
+ if(session&&!document.fullscreenElement&&session.webFullscreen&&
+   !session.screen.classList.contains("mtk-danmaku-webfullscreen"))exitWebFullscreen(session);
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&session?.webFullscreen&&
+   session.screen.classList.contains("mtk-danmaku-webfullscreen"))exitWebFullscreen(session);
+});
 function destroy(){
  if(!session)return;
+ exitWebFullscreen(session);
+ session.probeAbort?.abort();
  session.abort?.abort();
  session.area.replaceChildren();
- session.button.remove();
+ session.controls.remove();
  session.area.remove();
  session.video.removeEventListener("timeupdate",session.onTime);
  session.video.removeEventListener("seeked",session.onSeek);
@@ -120,12 +185,22 @@ function mount(video,info){
  if(!screen||!screen.classList.contains("mtk-playback-screen"))return;
  const area=document.createElement("div");area.className="mtk-danmaku-overlay";
  area.setAttribute("aria-hidden","true");
+ const controls=document.createElement("div");
+ controls.className="mtk-danmaku-actions";controls.hidden=true;
  const button=document.createElement("button");button.type="button";
  button.className="mtk-danmaku-toggle";
  button.setAttribute("aria-label",t("开启弹幕","Turn on danmaku"));
- screen.append(area,button);
- const state={video,info:{...info},area,button,enabled,entries:[],cursor:0,lastTime:0,
-   lane:0,live:[],loading:false,abort:null};
+ const fullscreen=document.createElement("button");fullscreen.type="button";
+ fullscreen.className="mtk-danmaku-expand";
+ fullscreen.textContent="⛶";
+ fullscreen.title=t("网页全屏：保留弹幕，iPhone 原生全屏无法叠加网页弹幕",
+  "Web fullscreen preserves comments; iPhone native fullscreen does not");
+ fullscreen.setAttribute("aria-label",t("弹幕网页全屏","Fullscreen with danmaku"));
+ controls.append(button,fullscreen);
+ screen.append(area,controls);
+ const state={video,screen,info:{...info},area,controls,button,fullscreen,enabled,
+   available:false,entries:[],cursor:0,lastTime:0,webFullscreen:false,
+   lane:0,live:[],loading:false,abort:null,probeAbort:null};
  state.onTime=()=>update(state);
  state.onSeek=()=>seek(state);
  state.onPause=()=>screen.classList.add("mtk-danmaku-paused");
@@ -135,14 +210,16 @@ function mount(video,info){
  video.addEventListener("pause",state.onPause);
  video.addEventListener("play",state.onPlay);
  button.addEventListener("click",()=>{
+  if(!state.available)return;
   enabled=!state.enabled;state.enabled=enabled;
   try{localStorage.setItem(PREFERENCE,enabled?"1":"0");}catch{}
   if(!enabled){state.abort?.abort();state.abort=null;state.loading=false;removeItems(state);}
   else if(!state.entries.length)load(state);else seek(state);
   setButton(state);
  });
+ fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
  session=state;setButton(state);
- if(state.enabled)load(state);
+ probe(state);
 }
 document.addEventListener("liangyou:player-video",event=>{
  const {video,info}=event.detail||{};mount(video,info);
