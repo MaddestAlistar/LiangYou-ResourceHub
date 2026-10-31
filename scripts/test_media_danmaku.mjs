@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {exactTitle,episodeMatches,chooseMatch,parseComments,lookupDanmaku,handleDanmaku} from
+import {exactTitle,episodeMatches,chooseMatch,parseComments,lookupDanmaku,readSeriesIndex,extractIndex,seasonMatches,handleDanmaku} from
  "../labs/title-playback-danmaku.mjs";
 
 const record={title:"死神",originalTitle:"BLEACH",year:"2004"};
@@ -46,44 +46,99 @@ test("comments are bounded, timestamped and safe for textContent",()=>{
  assert.equal(data[2].text,"<script>alert(1)</script>");
  assert.equal(data[1].time,3);
 });
-test("the backend matches requested episode, then fetches only its comment endpoint",async()=>{
+test("one cached whole-series index resolves adjacent episodes without new match requests",async()=>{
  const urls=[];
- const response=data=>new Response(JSON.stringify(data),{status:200,headers:{"content-type":"application/json"}});
+ const response=data=>new Response(JSON.stringify(data),{status:200,
+   headers:{"content-type":"application/json"}});
+ const epResponse=()=>{
+  return response({success:true,animes:[
+   {animeId:10,animeTitle:"死神（港澳台）(2004)【TV动画】from bilibili&dandan",episodes:[
+    {episodeId:3910881,episodeTitle:"【bilibili】 第1集"},
+    {episodeId:3910882,episodeTitle:"【bilibili】 第2集"},
+    {episodeId:3910884,episodeTitle:"【bilibili】 第4话"}
+   ]},
+   {animeId:12,animeTitle:"死亡笔记(2006)",episodes:[
+    {episodeId:9911,episodeTitle:"第1集"},{episodeId:9912,episodeTitle:"第2集"}
+   ]}
+  ]});
+ };
+ const cacheEntries=new Map();
+ const cache={
+  async match(key){return cacheEntries.get(key.url)?.clone()||null},
+  async put(key,value){cacheEntries.set(key.url,value.clone())}
+ };
+ const fetcher=async url=>{
+  urls.push(url);
+  if(url.includes("/api/v2/search/episodes"))return epResponse();
+  const m=url.match(/\/api\/v2\/comment\/(\d+)/);
+  if(m)return response({comments:[{p:"1.2,1,16777215,[dandan]",m:"弹幕 "+m[1]}]});
+  throw Error("Unexpected request: "+url);
+ };
+ const first=await lookupDanmaku(record,"tv",1,1,{fetcher,cache,base:"https://example.test/token"});
+ assert.equal(first.status,"ready");
+ assert.equal(first.comments.length,1);
+ assert.equal(urls.filter(u=>u.includes("/search/episodes")).length,1);
+ assert.equal(urls.filter(u=>u.includes("/api/v2/match")).length,0);
+ const second=await lookupDanmaku(record,"tv",1,2,{fetcher,cache,base:"https://example.test/token"});
+ assert.equal(second.status,"ready");
+ assert.equal(urls.filter(u=>u.includes("/search/episodes")).length,1,
+    "Adjacent episodes must reuse the cached series index");
+ assert.ok(urls.at(-1).includes("/comment/3910882"));
+ const fourth=await lookupDanmaku(record,"tv",1,4,{fetcher,cache,base:"https://example.test/token"});
+ assert.equal(fourth.status,"ready");
+ assert.ok(urls.at(-1).includes("/comment/3910884"));
+});
+test("fallback match remains available if a source does not implement episode index",async()=>{
+ const urls=[],response=data=>new Response(JSON.stringify(data),{status:200});
  const fetcher=async (url,options)=>{
   urls.push(url);
+  if(url.includes("/search/episodes"))return new Response("Not supported",{status:404});
   if(url.endsWith("/api/v2/match")){
    assert.equal(options.method,"POST");
-   const body=JSON.parse(options.body);
-   assert.match(body.fileName,/死神 S01E04/);
-   return response({success:true,isMatched:true,matches:[
-    {animeTitle:"死神（港澳台）(2004)【TV动画】from bilibili&dandan",
-     episodeTitle:"【bilibili】第4集",episodeId:3910882,shift:0}]});
+   return response({isMatched:true,matches:[{animeTitle:"死神(2004)",
+    episodeTitle:"第4集",episodeId:3910884}]});
   }
-  if(url.includes("/api/v2/comment/3910882")){
-   return response({count:2,comments:[
-    {p:"1.2,1,25,16777215",m:"弹幕一"},{p:"4.5,5,25,65535",m:"弹幕二"}]});
-  }
+  if(url.includes("/comment/3910884"))return response({comments:[
+    {p:"1.2,1,16478873,[dandan]",m:"弹幕一"}]});
   throw Error("Unexpected URL");
  };
  const result=await lookupDanmaku(record,"tv",1,4,{fetcher,base:"https://example.test/token"});
  assert.equal(result.status,"ready");
- assert.equal(result.comments.length,2);
- assert.equal(urls.length,2);
- assert.ok(urls.every(u=>u.startsWith("https://example.test/token/api/v2/")));
+ assert.ok(urls.some(u=>u.endsWith("/api/v2/match")));
+ assert.equal(result.comments.length,1);
 });
-test("unrelated matches are never used to request comments",async()=>{
- const urls=[];
+test("unrelated episodes, spin-offs, and another season are never requested",async()=>{
+ const data={success:true,animes:[
+  {animeTitle:"死亡笔记(2006)",episodes:[{episodeId:99,episodeTitle:"第4集"}]},
+  {animeTitle:"死神 第二季(2005)",episodes:[{episodeId:98,episodeTitle:"第4集"}]},
+  {animeTitle:"死神(2004)",episodes:[{episodeId:97,episodeTitle:"第3集"}]}
+ ]};
+ const filtered=extractIndex(data,record,"tv",1);
+ assert.equal(filtered.some(x=>x.episodeId===99),false);
+ assert.equal(filtered.some(x=>x.episodeId===98),false);
+ assert.equal(filtered.some(x=>x.episodeId===97),true);
+ assert.equal(seasonMatches("死神 第二季(2005)",record,1),false);
+ assert.equal(seasonMatches("死神 第二季(2005)",record,2),true);
+ const requested=[];
  const fetcher=async(url)=>{
-  urls.push(url);
-  return new Response(JSON.stringify({isMatched:true,matches:[
-   {animeTitle:"死亡笔记(2006)",episodeTitle:"第4集",episodeId:99}]}),
-   {status:200,headers:{"content-type":"application/json"}});
+  requested.push(url);
+  return new Response(JSON.stringify(url.includes("/search/episodes")?data:
+    {isMatched:true,matches:[{animeTitle:"死亡笔记(2006)",episodeTitle:"第4集",episodeId:99}]}),
+   {status:200});
  };
  const result=await lookupDanmaku(record,"tv",1,4,{fetcher,base:"https://example.test/token"});
  assert.equal(result.status,"unavailable");
- assert.ok(urls.every(u=>u.endsWith("/api/v2/match")));
+ assert.ok(!requested.some(url=>url.includes("/comment/")),"Never request comments for wrong series/episodes");
 });
-
+test("rate limit ends this lookup without launching more origin requests",async()=>{
+ const requests=[],fetcher=async url=>{
+  requests.push(url);
+  return new Response(JSON.stringify({success:false,errorMessage:"too many requests"}),{status:429});
+ };
+ const result=await lookupDanmaku(record,"tv",1,2,{fetcher,base:"https://example.test/token"});
+ assert.equal(result.status,"unavailable");
+ assert.equal(requests.length,1);
+});
 test("availability check omits comment text and reuses the full-payload cache",async()=>{
  const previous=globalThis.caches;
  const stored={ok:true,status:"ready",workId:"tmdb-tv-30984",kind:"tv",
