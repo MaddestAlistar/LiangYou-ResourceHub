@@ -10,8 +10,9 @@ const number=(n)=>n==null?null:Number(n);
 function boundedSegment(value,type,duration){
  if(!value||typeof value!=="object")return null;
  const startMs=value.start_ms??value.startMs, endMs=value.end_ms??value.endMs;
- const start=number(startMs)==null?0:number(startMs)/1000;
- const end=number(endMs)==null?null:number(endMs)/1000;
+ const hasSeconds=value.start_sec!==undefined||value.end_sec!==undefined;
+ const start=hasSeconds?(number(value.start_sec)??0):(number(startMs)==null?0:number(startMs)/1000);
+ const end=hasSeconds?number(value.end_sec):(number(endMs)==null?null:number(endMs)/1000);
  if(!Number.isFinite(start)||start<0||start>86400||end!==null&&
     (!Number.isFinite(end)||end<=start||end>86400))return null;
  if(end!==null&&end-start<3)return null;
