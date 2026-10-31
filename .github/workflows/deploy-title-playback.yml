@@ -81,6 +81,9 @@ jobs:
                 sourceFamilies:d.coverage?.sourceFamilies??null,
                 extraCandidates:d.coverage?.extraCandidates??null,
                 aggregateProbed:d.coverage?.aggregateProbed??null,
+                primaryAvailable:d.coverage?.primaryAvailable??null,
+                jianpianAvailable:d.coverage?.jianpianAvailable??null,
+                aggregateAvailable:d.coverage?.aggregateAvailable??null,
                 error:d.error||null}));
             }catch(e){console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,error:String(e?.name||'network_error')}));}
           }
