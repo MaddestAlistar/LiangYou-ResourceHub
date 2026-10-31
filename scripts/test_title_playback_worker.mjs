@@ -4,7 +4,9 @@ import worker,{normalize,rank,availableEpisodes,selectEntry,fromHtml} from "../l
 
 test("strict identity prefers canonical title, rejects wrong film, seasons, and commentary",()=>{
  const titles=["名侦探柯南"];
- assert.equal(rank({vod_id:1,vod_name:"名侦探柯南",type_id:2,vod_year:1996},titles,"tv",1,"1996"),105);
+ assert.equal(rank({vod_id:1,vod_name:"名侦探柯南",type_id:2,vod_year:1996},titles,"tv",1,"1996"),135);
+ assert.ok(rank({vod_id:1,vod_name:"名侦探柯南",type_id:2,vod_year:1996},titles,"tv",1,"1996")>
+    rank({vod_id:9,vod_name:"名侦探柯南（国语）",type_id:2,vod_year:1996},titles,"tv",1,"1996"));
  assert.equal(rank({vod_id:2,vod_name:"名侦探柯南 第二季",type_id:2},titles,"tv",1,"1996"),0);
  assert.equal(rank({vod_id:3,vod_name:"名侦探柯南 第二季",type_id:2},titles,"tv",2,"1996"),100);
  assert.equal(rank({vod_id:4,vod_name:"名侦探柯南：解说",type_id:2},titles,"tv",1,"1996"),0);
