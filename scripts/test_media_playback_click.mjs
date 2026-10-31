@@ -20,11 +20,12 @@ function harness(body){
  const context={
   active:{title:"Example Series",kind:"tv",id:"bangumi-899",season:1,episode:1,episodes:[1]},
   card:()=>target,serial:0,controller:null,video:null,hls:null,
+  pendingSwitch:null,stallTimer:null,lastProgress:0,URL,clearTimeout,setTimeout,
   clearPlayback(){context.serial++;},
   boxAction(ready){button.disabled=!ready;},
   showStatus(message,state){history.push({message,state})},
   t:a=>a,
-  route:()=>"/api/play/work/bangumi-899?episode=1",
+  route:()=>"https://example.com/api/play/work/bangumi-899?episode=1",
   json:async()=>body,
   AbortController,
   sameIdentity:()=>true,
