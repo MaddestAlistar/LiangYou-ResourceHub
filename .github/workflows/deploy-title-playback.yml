@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - labs/title-playback-worker.mjs
+      - labs/playback-extra-sources.mjs
+      - scripts/test_playback_extra_sources.mjs
       - scripts/test_title_playback_worker.mjs
       - .github/workflows/deploy-title-playback.yml
   workflow_dispatch:
@@ -32,6 +34,8 @@ jobs:
       - name: Verify source matching tests and syntax
         run: |
           node --check labs/title-playback-worker.mjs
+          node --check labs/playback-extra-sources.mjs
+          node --test scripts/test_playback_extra_sources.mjs
           node --test scripts/test_title_playback_worker.mjs
       - name: Check existing Cloudflare credentials
         run: |
