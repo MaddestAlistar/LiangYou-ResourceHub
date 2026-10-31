@@ -177,3 +177,26 @@ jobs:
             console.log("INTRODB_SMOKE",JSON.stringify({error:String(e?.name||"network_error")}));
           }
           NODE
+
+      - name: Diagnose two consecutive episodes with matching IDs and request timing
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://liangyou-title-playback.maddestalistar.workers.dev/api/danmaku/work/tmdb-tv-30984';
+          for(const episode of [1,2]){
+            const url=new URL(base);
+            Object.entries({kind:'tv',title:'死神',original:'BLEACH',
+              year:'2004',season:'1',episode:String(episode),check:'1'})
+              .forEach(([key,value])=>url.searchParams.set(key,value));
+            const since=Date.now();
+            try{
+              const r=await fetch(url,{signal:AbortSignal.timeout(25000)});
+              const body=await r.json();
+              console.log('DANMAKU_ADJACENT_EPISODES_SMOKE',JSON.stringify({
+                episode,http:r.status,status:body.status||null,
+                available:body.available??null,count:body.count??null,
+                workIdMatches:body.workId==='tmdb-tv-30984',
+                milliseconds:Date.now()-since}));
+            }catch(e){console.log('DANMAKU_ADJACENT_EPISODES_SMOKE',JSON.stringify({
+              episode,error:String(e.name||'network_error'),milliseconds:Date.now()-since}));}
+          }
+          NODE
