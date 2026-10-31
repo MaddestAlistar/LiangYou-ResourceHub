@@ -21,6 +21,7 @@ function harness(body){
   active:{title:"Example Series",kind:"tv",id:"bangumi-899",season:1,episode:1,episodes:[1]},
   card:()=>target,serial:0,controller:null,video:null,hls:null,
   clearPlayback(){context.serial++;},
+  boxAction(ready){button.disabled=!ready;},
   showStatus(message,state){history.push({message,state})},
   t:a=>a,
   route:()=>"/api/play/work/bangumi-899?episode=1",
