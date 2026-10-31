@@ -16,6 +16,7 @@ on:
       - media-title-playback.css
       - labs/title-playback-worker.mjs
       - scripts/test_title_playback_worker.mjs
+      - scripts/test_media_playback_click.mjs
       - china-perf.js
       - media-toolkit.css
       - labs/streaming-availability-worker.mjs
@@ -37,6 +38,7 @@ jobs:
         run: |
           node --test scripts/test_media_insights.mjs
           node --test scripts/test_title_playback_worker.mjs
+          node --test scripts/test_media_playback_click.mjs
       - name: Validate JavaScript syntax and no public credentials
         run: |
           node --check media-intel.js
