@@ -253,3 +253,13 @@ test("local browser keeps only recently verified episodes, not arbitrary unknown
  now+=49*60*60*1000;
  assert.equal(apis.readVerified(one),false);
 });
+
+test("temporary comment-download failure preserves known-positive episode and retry controls",()=>{
+ assert.match(source,/else if\(body\?\.status==="empty"\)/);
+ assert.match(source,/state\.loadError=true;state\.statusReason="unavailable"/);
+ assert.match(source,/state\.status\.hidden=state\.available&&!state\.loadError/);
+ assert.match(source,/state\.retry\.hidden=state\.checking\|\|\(state\.available&&!state\.loadError\)/);
+ assert.match(source,/state\.available=readVerified\(info\)/);
+ assert.match(source,/if\(state\.entries\.length\)saveVerified\(state\.info,true\)/);
+ assert.doesNotMatch(source,/setTimeout\(\(\)=>\{if\(state===session&&state\.video\.isConnected\)probe\(state,1\);\},2700\)/);
+});
