@@ -77,3 +77,21 @@ jobs:
             }catch(e){console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,error:String(e?.name||'network_error')}));}
           }
           NODE
+
+      - name: Verify one resolved episode without printing source URLs
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://liangyou-title-playback.maddestalistar.workers.dev';
+          const url=base+'/api/play/work/bangumi-899?kind=tv&title='+encodeURIComponent('名侦探柯南')+
+            '&original='+encodeURIComponent('名探偵コナン')+'&year=1996&season=1&episode=1';
+          try{
+            const r=await fetch(url,{signal:AbortSignal.timeout(55000)});
+            const d=await r.json();
+            console.log('EPISODE_PLAYBACK_SMOKE',JSON.stringify({
+              http:r.status,ok:d.ok||false,status:d.status||null,kind:d.kind||null,
+              workId:d.workId||null,season:d.season??null,episode:d.episode??null,
+              mediaFormat:d.media?.format||null,mediaCors:d.media?.cors??null,
+              isHttps:typeof d.media?.url==='string'&&d.media.url.startsWith('https://'),
+              videoProxied:d.videoProxied??null}));
+          }catch(e){console.log('EPISODE_PLAYBACK_SMOKE',JSON.stringify({error:String(e?.name||'network_error')}));}
+          NODE
