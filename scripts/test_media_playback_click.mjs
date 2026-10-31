@@ -117,3 +117,52 @@ test("player keeps server-directed source IDs out of visible UI",()=>{
  assert.match(script,/setTimeout\(\(\)=>\{/);
  assert.match(script,/v\.currentTime=position/);
 });
+
+function episodeRenderHarness(isMobile,count=300,selected=243){
+ const sectionStart=script.indexOf("function episodesPerPage(){");
+ const sectionEnd=script.indexOf("function resetStage(){",sectionStart);
+ assert.ok(sectionStart>=0&&sectionEnd>sectionStart,"Responsive episode renderer not found");
+ const info={id:"bangumi-123",title:"Example TV",kind:"tv",season:1,episode:selected,page:0,
+  seasons:[],fixedSeason:false,episodes:Array.from({length:count},(_,i)=>i+1)};
+ const fields={controls:{},seasonRow:{},seasonSelect:{innerHTML:""},total:{textContent:""},
+  list:{innerHTML:""},nav:{innerHTML:""},now:{textContent:""}};
+ const selectors={
+  ".mtk-playback-controls":fields.controls,
+  ".mtk-playback-season-row":fields.seasonRow,
+  ".mtk-playback-season":fields.seasonSelect,
+  ".mtk-playback-episode-total":fields.total,
+  ".mtk-playback-episodes":fields.list,
+  ".mtk-playback-pages":fields.nav,
+  ".mtk-playback-now":fields.now
+ };
+ const context={active:info,window:{matchMedia:()=>({matches:isMobile})},
+  card:()=>({querySelector:sel=>selectors[sel]}),t:a=>a,episodeLabel:n=>"第 "+n+" 集",
+  boxAction(){},Math,Array,Set};
+ vm.createContext(context);
+ const funcs=vm.runInContext(script.slice(sectionStart,sectionEnd)+"\n({episodesPerPage,renderEpisodes})",context);
+ return {info,fields,...funcs};
+}
+test("mobile episode grid has exactly 12 readable items and correct long-series range navigation",()=>{
+ const h=episodeRenderHarness(true,300,243);
+ assert.equal(h.episodesPerPage(),12);
+ h.info.page=20;
+ h.renderEpisodes();
+ assert.equal((h.fields.list.innerHTML.match(/data-mtk-episode=/g)||[]).length,12);
+ assert.match(h.fields.list.innerHTML,/data-mtk-episode="241"/);
+ assert.match(h.fields.list.innerHTML,/data-mtk-episode="252"/);
+ assert.doesNotMatch(h.fields.list.innerHTML,/data-mtk-episode="253"/);
+ assert.match(h.fields.nav.innerHTML,/<select class="mtk-playback-page-select"/);
+ assert.match(h.fields.nav.innerHTML,/>241–252<\/option>/);
+ assert.match(h.fields.total.textContent,/300/);
+ assert.equal(h.fields.seasonRow.hidden,true,"Do not invent additional seasons");
+});
+test("desktop shows 24 episodes and preserves active episode when paging",()=>{
+ const h=episodeRenderHarness(false,280,243);
+ assert.equal(h.episodesPerPage(),24);
+ h.info.page=10;
+ h.renderEpisodes();
+ assert.equal((h.fields.list.innerHTML.match(/data-mtk-episode=/g)||[]).length,24);
+ assert.match(h.fields.list.innerHTML,/data-mtk-episode="241"/);
+ assert.match(h.fields.list.innerHTML,/data-mtk-episode="264"/);
+ assert.equal(h.info.episode,243);
+});
