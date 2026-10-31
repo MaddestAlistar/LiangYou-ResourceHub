@@ -13,6 +13,9 @@ on:
       - scripts/update_media_cn_news.py
       - media-toolkit.js
       - media-title-playback.js
+      - labs/title-playback-skips.mjs
+      - scripts/test_media_skip.mjs
+      - scripts/test_media_autonext.mjs
       - media-title-playback.css
       - labs/title-playback-worker.mjs
       - labs/title-playback-danmaku.mjs
@@ -49,6 +52,8 @@ jobs:
           node --test scripts/test_media_danmaku_ui.mjs
           node --test scripts/test_playback_extra_sources.mjs
           node --test scripts/test_media_playback_click.mjs
+          node --test scripts/test_media_skip.mjs
+          node --test scripts/test_media_autonext.mjs
       - name: Validate JavaScript syntax and no public credentials
         run: |
           node --check media-intel.js
@@ -57,6 +62,7 @@ jobs:
           python -m py_compile scripts/update_media_cn_news.py
           node --check media-toolkit.js
           node --check media-title-playback.js
+          node --check labs/title-playback-skips.mjs
           node --check media-title-danmaku.js
           node --check labs/title-playback-danmaku.mjs
           node --check labs/title-playback-worker.mjs
