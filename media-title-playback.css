@@ -1,0 +1,38 @@
+/* Per-title playback card: scoped to the media title dialog. */
+#media .mtk-playback{margin-top:12px;padding:14px;background:linear-gradient(145deg,#0c1b35,#0b1427 65%,#101b32);border:1px solid rgba(114,151,219,.3);border-radius:14px;box-shadow:0 12px 32px #0003;min-width:0}
+#media .mtk-playback-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+#media .mtk-playback-head h3{margin:0;color:#e5efff;font-size:15px;font-weight:750}
+#media .mtk-playback-identity{font-size:10px;color:#95b5e6}
+#media .mtk-playback-screen{width:100%;aspect-ratio:16/9;border-radius:10px;background:radial-gradient(circle at 50% 25%,#1c3058,#050a14 65%);overflow:hidden;display:grid;place-items:center;position:relative;border:1px solid #7797c72b}
+#media .mtk-playback-screen video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+#media .mtk-playback-placeholder{display:grid;place-items:center;gap:7px;padding:15px;max-width:100%;text-align:center;color:#d8e5fc}
+#media .mtk-playback-symbol{font-size:26px;color:#a7c4f6;border:1px solid #9ab8f36b;border-radius:50%;height:50px;width:50px;display:grid;place-items:center;padding-left:3px;background:#38599344}
+#media .mtk-playback-now{font-size:12px;max-width:100%;line-height:1.5;overflow-wrap:anywhere;font-weight:600}
+#media .mtk-playback-placeholder small{font-size:10px;color:#9caccc}
+#media .mtk-playback-controls{margin:12px 0 0;display:grid;gap:10px}
+#media .mtk-playback-controls[hidden],#media .mtk-playback-season-row[hidden]{display:none!important}
+#media .mtk-playback-season-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#bdceed}
+#media .mtk-playback-season{min-width:100px;max-width:175px;padding:8px 10px;border:1px solid #6487bf66;border-radius:9px;color:#edf4ff;background:#162844;font-size:12px}
+#media .mtk-playback-episode-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#media .mtk-playback-episode-head strong{font-size:12px;color:#e1eafc}
+#media .mtk-playback-pages{display:flex;align-items:center;gap:9px;font-size:11px;color:#bbceec}
+#media .mtk-playback-pages button{width:30px;height:26px;padding:0;background:#20365a;color:#edf4ff;border:1px solid #7796c669;border-radius:7px;cursor:pointer}
+#media .mtk-playback-episodes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;max-height:270px;overflow:auto}
+#media .mtk-playback-episodes button{min-width:0;padding:8px 3px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c4d5f1;border:1px solid #7896be45;background:#182843;border-radius:8px;cursor:pointer}
+#media .mtk-playback-episodes button[aria-pressed="true"]{color:#fff;border-color:#80aff9;background:linear-gradient(135deg,#244875,#345dad);font-weight:700}
+#media .mtk-playback-actions{display:flex;gap:8px;margin:12px 0 6px}
+#media .mtk-playback-start{padding:10px 17px;min-height:39px;background:linear-gradient(125deg,#3263ad,#4c7dc4);border:1px solid #85aef164;border-radius:9px;color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+#media .mtk-playback-start:disabled{opacity:.55;cursor:not-allowed}
+#media .mtk-playback-retry{padding:9px 11px;border:1px solid #6688be80;border-radius:9px;color:#dce9ff;background:#1d365b;font-size:12px;cursor:pointer}
+#media .mtk-playback-status{font-size:11px;line-height:1.6;color:#a9bddf;min-height:18px;margin:6px 0 0;overflow-wrap:anywhere}
+#media .mtk-playback-status[data-state="success"]{color:#abcdfd}
+#media .mtk-playback-status[data-state="error"]{color:#f2b8b8}
+#media .mtk-playback-status[data-state="empty"]{color:#b3bfd2}
+#media .mtk-playback button:focus-visible,#media .mtk-playback select:focus-visible{outline:2px solid #90bbff;outline-offset:2px}
+@media(max-width:650px){
+ #media .mtk-playback{padding:10px;margin-top:10px;border-radius:11px}
+ #media .mtk-playback-episodes{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ #media .mtk-playback-episodes button{padding:9px 2px;font-size:10px}
+ #media .mtk-playback-symbol{width:43px;height:43px;font-size:22px}
+ #media .mtk-playback-now{font-size:11px}
+}
