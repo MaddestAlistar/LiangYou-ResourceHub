@@ -6,6 +6,7 @@ const root=document.getElementById("media"),dialog=document.getElementById("medi
 if(!root||!dialog)return;
 const ENDPOINT="https://liangyou-title-playback.maddestalistar.workers.dev";
 let active=null,controller=null,serial=0,video=null,hls=null,jsHls=null;
+let pendingSwitch=null,stallTimer=null,lastProgress=0;
 const en=()=>document.documentElement.lang.toLowerCase().startsWith("en");
 const t=(a,b)=>en()?b:a;
 const tr=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
@@ -42,6 +43,7 @@ function sameIdentity(body,info){
 const inRange=(x,max)=>Number.isSafeInteger(Number(x))&&Number(x)>=1&&Number(x)<=max;
 function clearPlayback(){
  serial++;
+ if(stallTimer){clearTimeout(stallTimer);stallTimer=null;}
  controller?.abort();controller=null;
  if(video){video.pause();video.removeAttribute("src");video.load();video=null;}
  if(hls){try{hls.destroy();}catch{}hls=null;}
@@ -115,6 +117,7 @@ function renderEpisodes(){
  if(txt)txt.textContent=info.kind==="movie"?info.title:info.title+" · "+episodeLabel(info.episode);
 }
 function resetStage(){
+ pendingSwitch=null;lastProgress=0;
  const screen=card()?.querySelector(".mtk-playback-screen");
  if(!screen||!active)return;
  screen.innerHTML=playbackPlaceholder(active,t("点击画面中央的按钮播放","Tap the center play button"));
@@ -199,16 +202,35 @@ function safeStream(media){
   return u.href;
  }catch{return null;}
 }
+function tryInvisibleSwitch(key,token,playing,attempt,failed,why){
+ if(serial!==token||!active||attempt>=2)return false;
+ const category=["primary","jianpian","aggregate"].includes(key)?key:null;
+ if(!category)return false;
+ const seen=new Set(failed);
+ if(seen.has(category))return false;
+ seen.add(category);
+ const position=Number.isFinite(playing?.currentTime)?playing.currentTime:0;
+ pendingSwitch={attempt:attempt+1,failed:[...seen],resumeAt:Math.max(0,position,lastProgress||0)};
+ showStatus(t("当前线路不稳定，正在自动切换…","Stream unstable. Switching automatically…"));
+ // Do not reload the website or reveal any source-selection UI.
+ startPlayback();
+ return true;
+}
 async function startPlayback(){
  if(!active||!card()||!active.episodes.includes(active.episode))return;
  const info=active;
+ const plan=pendingSwitch||{attempt:0,failed:[],resumeAt:0};
+ pendingSwitch=null;
+ if(plan.attempt===0)lastProgress=0;
  clearPlayback();
  const ac=new AbortController();controller=ac;
  const token=++serial;
  const b=card().querySelector(".mtk-playback-start");
  if(b)b.disabled=true;
  showStatus(t("正在获取当前集的播放地址…","Resolving this episode’s stream…"));
- const url=route("play",info,info.episode);
+ const target=new URL(route("play",info,info.episode));
+ if(plan.failed.length)target.searchParams.set("skip",plan.failed.join(","));
+ const url=target.toString();
  try{
   const body=await json(url,ac.signal);
   if(ac.signal.aborted||serial!==token||active!==info||!card())return;
@@ -220,8 +242,33 @@ async function startPlayback(){
   screen.replaceChildren();
   const v=document.createElement("video");video=v;v.controls=true;v.playsInline=true;v.preload="metadata";
   v.setAttribute("webkit-playsinline","");v.setAttribute("aria-label",info.title+" "+episodeLabel(info.episode));
+  const sourceKey=body.media.sourceKey;
+  v.addEventListener("timeupdate",()=>{
+    if(serial===token&&v.currentTime>0)lastProgress=v.currentTime;
+  });
+  v.addEventListener("loadedmetadata",()=>{
+    if(serial!==token)return;
+    const position=Number(plan.resumeAt)||0;
+    if(position>0&&Number.isFinite(v.duration)&&v.duration>position+1){
+      try{v.currentTime=position;}catch{}
+    }
+  },{once:true});
+  v.addEventListener("waiting",()=>{
+    if(serial!==token||v.paused||v.seeking)return;
+    if(stallTimer)clearTimeout(stallTimer);
+    stallTimer=setTimeout(()=>{
+      stallTimer=null;
+      if(serial===token&&!v.paused&&!v.seeking&&v.readyState<3)
+        tryInvisibleSwitch(sourceKey,token,v,plan.attempt,plan.failed,"buffer");
+    },12000);
+  });
+  v.addEventListener("playing",()=>{
+    if(stallTimer){clearTimeout(stallTimer);stallTimer=null;}
+  });
   v.addEventListener("error",()=>{
-   if(serial===token)showStatus(t("视频加载失败，请尝试重新播放或切换集数。","Stream failed. Retry or switch episode."),"error");
+    if(serial!==token)return;
+    if(!tryInvisibleSwitch(sourceKey,token,v,plan.attempt,plan.failed,"video_error"))
+      showStatus(t("视频加载失败，已无法继续切换线路。","Playback failed and no further fallback is available."),"error");
   });
   screen.appendChild(v);
   if(body.media.format==="hls"&&!v.canPlayType("application/vnd.apple.mpegurl")){
@@ -230,7 +277,10 @@ async function startPlayback(){
    if(serial!==token||!v.isConnected)return;
    hls=new Hls({enableWorker:true,maxBufferLength:20});
    hls.on(Hls.Events.ERROR,(_,data)=>{
-    if(data?.fatal&&serial===token)showStatus(t("当前 HLS 视频播放失败，请更换集数。","This HLS stream could not play."),"error");
+    if(data?.fatal&&serial===token){
+      if(!tryInvisibleSwitch(sourceKey,token,v,plan.attempt,plan.failed,"hls_error"))
+        showStatus(t("当前视频线路不可用，请稍后重试。","Playback is unavailable. Please try again later."),"error");
+    }
    });
    hls.loadSource(src);hls.attachMedia(v);
   }else v.src=src;
@@ -244,7 +294,8 @@ async function startPlayback(){
   boxAction(info.episodes.includes(info.episode));
   const unavailable=e?.message==="no_verified_stream";
   showStatus(unavailable?
-    t("已找到作品和集数，但当前没有通过验证的可播放线路，请稍后重试。","Title and episode matched, but no playable stream passed verification. Try again later."):
+    t(plan.attempt>0?"已自动检查其他线路，暂时都不可播放。":"已找到作品和集数，但当前没有通过验证的可播放线路，请稍后重试。",
+      plan.attempt>0?"Alternate streams were also unavailable.":"Title and episode matched, but no playable stream passed verification. Try again later."):
     t("这集暂时无法播放，可能是线路、浏览器或网络限制。","This episode could not play due to a source, browser or network issue."),"error");
  }finally{if(serial===token&&b)b.disabled=false;}
 }
