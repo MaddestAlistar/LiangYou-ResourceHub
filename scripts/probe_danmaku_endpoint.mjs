@@ -30,6 +30,11 @@ for(let i=0;i<hosts.length;i++){
   if(r.status===200&&r.value){chosen=host;break;}
  }catch(e){console.log("SEARCH",JSON.stringify({transport:label,error:String(e.name||"request_failed")}));}
 }
+try{
+ const via=await grab("https://liangyou-title-playback.maddestalistar.workers.dev/api/danmaku/check");
+ console.log("CLOUDFLARE_PROBE",JSON.stringify({http:via.status,available:via.value?.available??null,
+  upstreamHttp:via.value?.upstreamHttp??null,reason:via.value?.reason??null,shape:via.value?.shape||[]}));
+}catch(e){console.log("CLOUDFLARE_PROBE",JSON.stringify({error:String(e?.name||"request_failed")}));}
 if(!chosen){console.log("SUMMARY",JSON.stringify({endpointReachable:false,reason:"Both transports unavailable"}));process.exit(0);}
 for(const fileName of ["死神 S01E04","名侦探柯南 S01E01"]){
  try{
