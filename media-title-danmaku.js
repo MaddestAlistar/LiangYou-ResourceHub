@@ -76,9 +76,11 @@ function setButton(state){
  state.controls.hidden=false;
  state.button.hidden=!state.available;
  state.gear.hidden=!state.available;
- state.status.hidden=state.available;
- state.retry.hidden=state.available||state.checking;
- if(!state.available)state.status.textContent=state.checking?
+ state.status.hidden=state.available&&!state.loadError;
+ state.retry.hidden=state.checking||(state.available&&!state.loadError);
+ if(state.loadError)state.status.textContent=
+   t("弹幕加载异常，可重试","Danmaku failed to load; retry");
+ else if(!state.available)state.status.textContent=state.checking?
    t("正在检测弹幕…","Checking danmaku…"):
    state.statusReason==="empty"?
     t("本集暂无弹幕","No danmaku for this episode"):
@@ -187,7 +189,7 @@ async function probe(state,attempt=0){
 }
 async function load(state){
  if(!state.enabled||!state.available||state.entries.length||state.loading)return;
- state.loading=true;setButton(state);
+ state.loadError=false;state.loading=true;setButton(state);
  const ac=new AbortController();state.abort=ac;
  try{
   const res=await fetch(pathFor(state.info),{mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
@@ -202,15 +204,17 @@ async function load(state){
    .slice(0,3000).sort((a,b)=>a.time-b.time):[];
   seek(state);
   if(state.entries.length)saveVerified(state.info,true);
-  else{
+  else if(body?.status==="empty"){
    state.available=false;state.statusReason="empty";
    saveVerified(state.info,false);
-   setButton(state);
+  }else{
+   // Missing comments due to upstream downtime are not proof of zero comments.
+   state.loadError=true;state.statusReason="unavailable";
   }
+  setButton(state);
  }catch(e){
   if(ac.signal.aborted||state!==session)return;
-  state.entries=[];
-  showText(state,t("弹幕暂不可用，可关闭后重试","Danmaku unavailable. Toggle off and retry."));
+  state.entries=[];state.loadError=true;state.statusReason="unavailable";
  }finally{
   if(state===session){state.loading=false;state.abort=null;setButton(state);}
  }
@@ -351,7 +355,7 @@ function mount(video,info){
   });
  };
  const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,status,retry,
-   enabled,available:readVerified(info),checking:false,statusReason:"unavailable",
+   enabled,available:readVerified(info),checking:false,loadError:false,statusReason:"unavailable",
    entries:[],cursor:0,lastTime:0,webFullscreen:false,
    options:{...settingsOptions},lane:0,lineTimes:[],
    live:[],loading:false,abort:null,probeAbort:null,hideTimer:null};
@@ -389,7 +393,12 @@ function mount(video,info){
   else if(!state.entries.length)load(state);else seek(state);
   setButton(state);
  });
- retry.addEventListener("click",()=>probe(state,1));
+ retry.addEventListener("click",()=>{
+  state.loadError=false;
+  if(state.available&&state.enabled){
+   state.entries=[];load(state);
+  }else probe(state,1);
+ });
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
  state.onScreenTap=event=>{
   if(!inWebFullscreen(state))return;
