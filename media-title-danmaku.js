@@ -77,7 +77,7 @@ function update(state){
  }
  state.lastTime=now;
 }
-async function probe(state){
+async function probe(state,attempt=0){
  const ac=new AbortController();state.probeAbort=ac;
  try{
   const res=await fetch(pathFor(state.info)+"&check=1",
@@ -89,6 +89,8 @@ async function probe(state){
     body?.season===state.info.season&&body?.episode===state.info.episode&&
     Number(body?.count)>0);
   state.controls.hidden=!state.available;
+  if(!state.available&&body?.status==="unavailable"&&attempt===0)
+   setTimeout(()=>{if(state===session&&state.video.isConnected)probe(state,1);},2700);
   if(state.available){
    // Prefer the web fullscreen button, which keeps the comment overlay visible.
    // iOS may ignore controlsList; native video fullscreen remains a platform limit.
@@ -97,7 +99,12 @@ async function probe(state){
   setButton(state);
   if(state.available&&state.enabled)load(state);
  }catch{
-  if(state===session){state.available=false;state.controls.hidden=true;setButton(state);}
+  if(state===session){
+   state.available=false;state.controls.hidden=true;setButton(state);
+   if(attempt===0)setTimeout(()=>{
+    if(state===session&&state.video.isConnected)probe(state,1);
+   },2700);
+  }
  }finally{if(state===session)state.probeAbort=null;}
 }
 async function load(state){
