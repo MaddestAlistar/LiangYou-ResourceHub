@@ -2,6 +2,7 @@
 // Uses an upstream user-provided Rex source for discovery; verifies TMDB title identity.
 // Browser obtains direct HTTPS media only after explicit selection.
 import {createHash,createCipheriv,randomBytes} from "node:crypto";
+import {discoverExtra} from "./playback-extra-sources.mjs";
 
 const ORIGIN="https://maddestalistar.github.io";
 const SOURCE_HOST="app2.dsx.ac";
@@ -206,6 +207,37 @@ async function validMedia(url,kind){
  if(!sig)return null;
  return {url:parsed.href,format:type,mime:type==="hls"?"application/vnd.apple.mpegurl":"video/mp4",cors:allowCors};
 }
+async function resolveExtras(extraLines,kind,episode,skip=""){
+ const candidates=extraLines.filter(x=>x.number===episode&&x.provider!==skip);
+ if(!candidates.length)return {media:null,latencyMs:null,considered:0};
+ const started=Date.now(),distinct=new Set(),selected=[];
+ for(const line of candidates){
+  if(selected.length>=12)break;
+  const key=line.provider+"|"+line.channel;
+  if(distinct.has(key))continue;distinct.add(key);selected.push(line);
+ }
+ // Rank based on real response time to a tiny Range request.
+ // This is server-side latency, not a guarantee of the viewer's throughput.
+ const out=await Promise.all(selected.map(async entry=>{
+  const t=Date.now();let media=null;
+  try{media=await validMedia(entry.url,kind);}catch{}
+  return media?{...media,sourceKey:entry.provider,latencyMs:Date.now()-t}:null;
+ }));
+ const valid=out.filter(Boolean).sort((a,b)=>a.latencyMs-b.latencyMs);
+ return {media:valid[0]||null,latencyMs:valid[0]?.latencyMs??null,considered:selected.length,
+   // one reserve line for same-provider errors when alternative provider absent
+   alternatives:valid.slice(1,4).map(x=>({sourceKey:x.sourceKey,latencyMs:x.latencyMs}))};
+}
+async function chooseVerifiedStream(primaryLines,extraLines,kind,episode,skip=""){
+ const races=[];
+ if(skip!=="primary"&&primaryLines.length)
+  races.push(resolve(primaryLines,kind,episode).then(x=>x.media?{...x.media,sourceKey:"primary"}:null));
+ if(extraLines?.length)
+  races.push(resolveExtras(extraLines,kind,episode,skip).then(x=>x.media||null));
+ if(!races.length)return null;
+ try{return await Promise.any(races.map(p=>p.then(x=>{if(!x)throw Error("no_media");return x;})));}
+ catch{return null;}
+}
 async function resolve(lines,kind,episode){
  // Prefer inexpensive parser metadata checks over historically failing direct HLS links.
  // Three bounded workers can verify different lines without one slow source starving others.
@@ -280,7 +312,7 @@ export default {
   const metadataUrl=new URL(u.origin+"/api/title/"+(w?"work/"+workId:kind+"/"+id));
   metadataUrl.searchParams.set("season",String(season));
   // Bust cached source selections when ranking rules change.
-  metadataUrl.searchParams.set("resolver","exact-edition-v3");
+  metadataUrl.searchParams.set("resolver","multi-sources-v1");
   if(w){metadataUrl.searchParams.set("kind",kind);metadataUrl.searchParams.set("title",workTitle);
     metadataUrl.searchParams.set("original",originalTitle);metadataUrl.searchParams.set("year",year);}
   const metadataKey=new Request(metadataUrl.href);
@@ -289,12 +321,20 @@ export default {
    if(cached)base=await cached.json();
    if(!base){
     const record=w?{title:workTitle,originalTitle,year,seasons:[]}:await tmdb(kind,id,env);
-    const found=await matchSource(kind,record,season);
+    // Three independent source families, one work identity. The VOD catalogue is
+    // sampled with a strict request budget to keep Cloudflare costs bounded.
+    const [found,extra]=await Promise.all([
+      matchSource(kind,record,season),
+      discoverExtra(record,kind,season,{siteLimit:8})
+    ]);
+    const mainEps=found.source?availableEpisodes(found.source.lines,kind):[];
+    const union=[...new Set([...mainEps,...extra.episodes])].sort((a,b)=>a-b).slice(0,3000);
+    const usable=found.status==="matched"||union.length>0;
     const result={ok:true,kind,tmdbId:id,workId,title:record.title,year:record.year,season,
       seasons:kind==="movie"?[]:record.seasons,
-      status:found.status,episodes:found.source?availableEpisodes(found.source.lines,kind):[],
-      matchedTitle:found.source?found.source.title:null};
-    base={...result,_lines:found.source?.lines||[]};
+      status:usable?"matched":found.status,episodes:union,
+      matchedTitle:found.source?found.source.title:union.length?record.title:null};
+    base={...result,_lines:found.source?.lines||[],_extraLines:extra.lines};
     // Keep successful work/episode mapping through brief upstream outages.
     // A failed upstream connection is not proof that a title has no source:
     // never negative-cache "unavailable".
@@ -303,14 +343,15 @@ export default {
         headers:{"cache-control":"public,max-age="+(found.status==="matched"?1800:120)}})));
     }
    }
-   if(mode==="title"){const {_lines,...pub}=base;return response(pub,200,base.status==="matched"?60:0);}
+   if(mode==="title"){const {_lines,_extraLines,...pub}=base;return response(pub,200,base.status==="matched"?60:0);}
    if(base.status!=="matched"||!base.episodes.includes(episode))
     return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
-   const resolved=await resolve(base._lines,kind,episode);
-   if(!resolved.media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,
-     season,episode,diagnostics:resolved.diagnostics.slice(0,14)});
+   const skip=["primary","jianpian","aggregate"].includes(u.searchParams.get("skip"))?
+     u.searchParams.get("skip"):"";
+   const media=await chooseVerifiedStream(base._lines||[],base._extraLines||[],kind,episode,skip);
+   if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,season,episode});
    return response({ok:true,status:"ready",kind,tmdbId:id,workId,season,episode,
-     media:resolved.media,videoProxied:false,verifiedTitle:base.matchedTitle},200);
+     media,videoProxied:false,verifiedTitle:base.matchedTitle},200);
   }catch(e){
    return response({ok:false,status:"unavailable",error:"source_not_ready",kind,tmdbId:id},502);
   }
