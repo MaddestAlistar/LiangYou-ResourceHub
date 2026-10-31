@@ -6,7 +6,8 @@ const root=document.getElementById("media"),dialog=document.getElementById("medi
 if(!root||!dialog)return;
 const ENDPOINT="https://liangyou-title-playback.maddestalistar.workers.dev";
 let active=null,controller=null,serial=0,video=null,hls=null,jsHls=null;
-let pendingSwitch=null,stallTimer=null,lastProgress=0;
+let pendingSwitch=null,stallTimer=null,lastProgress=0,skipAbort=null;
+const AUTO_SKIP=true,AUTO_NEXT=true;
 const en=()=>document.documentElement.lang.toLowerCase().startsWith("en");
 const t=(a,b)=>en()?b:a;
 const tr=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
@@ -43,6 +44,7 @@ function sameIdentity(body,info){
 const inRange=(x,max)=>Number.isSafeInteger(Number(x))&&Number(x)>=1&&Number(x)<=max;
 function clearPlayback(){
  serial++;
+ skipAbort?.abort();skipAbort=null;
  if(typeof CustomEvent!=="undefined"&&typeof document.dispatchEvent==="function")
   document.dispatchEvent(new CustomEvent("liangyou:player-stop"));
  if(stallTimer){clearTimeout(stallTimer);stallTimer=null;}
@@ -145,7 +147,7 @@ async function json(url,signal){
  if(!r.ok||!body)throw Error("unavailable");
  return body;
 }
-async function lookup(){
+async function lookup(autoStart=false){
  if(!active||!card())return;
  const info=active;
  clearPlayback();
@@ -168,6 +170,7 @@ async function lookup(){
   if(body.status==="matched"&&info.episodes.length){
    boxAction(true);
    showStatus(t("已匹配当前作品，点击画面中央的播放按钮。","Title matched. Tap the center play button."),"success");
+   if(autoStart)startPlayback();
   }else{
    boxAction(false);
    showStatus(body.status==="no_match"?t("暂未匹配到这部作品的播放资源。","No matching stream found for this title."):
@@ -234,6 +237,88 @@ function tryInvisibleSwitch(key,token,playing,attempt,failed,why){
  startPlayback();
  return true;
 }
+function validSkip(item,duration){
+ if(!item||!["intro","recap","outro","postCredits","preview"].includes(item.type))return false;
+ const start=Number(item.start),end=item.end==null?null:Number(item.end);
+ return Number.isFinite(start)&&start>=0&&start<duration&&
+   (end===null||Number.isFinite(end)&&end>start&&end<=duration+5);
+}
+function nextEpisode(auto=true){
+ if(!AUTO_NEXT||!active||active.kind!=="tv")return false;
+ const info=active,index=info.episodes.indexOf(info.episode);
+ if(index<0)return false;
+ if(index+1<info.episodes.length){
+  clearPlayback();
+  info.episode=info.episodes[index+1];
+  info.page=Math.floor((index+1)/episodesPerPage());
+  saveSelection();renderEpisodes();resetStage();
+  showStatus(t("正在自动播放下一集…","Starting next episode…"));
+  startPlayback();
+  return true;
+ }
+ // Only advance into a verified catalogue season, never invent episode numbers.
+ const season=info.seasons?.map(x=>x.number).filter(n=>n>info.season).sort((a,b)=>a-b)[0];
+ if(Number.isInteger(season)){
+  info.season=season;info.episode=1;info.page=0;info.episodes=[];
+  saveSelection();
+  lookup(true);
+  return true;
+ }
+ return false;
+}
+function configureSkip(video,info,token){
+ if(!AUTO_SKIP||!Number.isInteger(info.episode))return;
+ const tmdb=Number(info.tmdbId)||0,imdb=String(info.imdbId||"");
+ if(!tmdb&&!/^tt\d{5,12}$/.test(imdb))return;
+ const ac=new AbortController();skipAbort=ac;
+ const state={segments:[],skipped:new Set(),lastManualSeek:0,lastTime:0,
+   playingStartedAt:performance.now?.()||Date.now()};
+ const handleSeek=()=>{
+  state.lastManualSeek=Date.now();
+ };
+ const onTime=()=>{
+  if(serial!==token||ac.signal.aborted||video.paused||video.seeking)return;
+  const now=Number(video.currentTime),duration=Number(video.duration);
+  if(!Number.isFinite(now)||!Number.isFinite(duration)||Date.now()-state.lastManualSeek<2500)return;
+  if(Math.abs(now-state.lastTime)>10){state.lastTime=now;return;}
+  state.lastTime=now;
+  for(const [index,item] of state.segments.entries()){
+   if(state.skipped.has(index)||now<item.start||now>=item.end-0.4)continue;
+   if(now>item.start+5&&item.type!=="outro")continue;
+   if(item.type==="intro"||item.type==="recap"){
+    state.skipped.add(index);
+    try{video.currentTime=Math.min(item.end+.15,duration-.15);}catch{}
+    return;
+   }
+   // Never automatically cut off post-credit scenes or previews.
+   if(item.type==="outro"&&!state.segments.some(x=>x.type==="postCredits"||x.type==="preview")&&
+       duration-item.end<=8){
+    state.skipped.add(index);
+    if(!nextEpisode())try{video.currentTime=Math.min(duration-.15,item.end);}catch{}
+    return;
+   }
+  }
+ };
+ video.addEventListener("seeking",handleSeek);
+ video.addEventListener("timeupdate",onTime);
+ video.addEventListener("ended",()=>{if(serial===token)nextEpisode();},{once:true});
+ video.addEventListener("loadedmetadata",async()=>{
+  if(ac.signal.aborted||serial!==token)return;
+  const duration=Number(video.duration);
+  if(!Number.isFinite(duration)||duration<60||duration>86400)return;
+  const u=new URL(ENDPOINT+"/api/skip/work/"+encodeURIComponent(info.id));
+  for(const [k,v] of Object.entries({kind:info.kind,tmdb,imdb,season:info.season,
+      episode:info.episode,duration:Math.round(duration)}))u.searchParams.set(k,String(v));
+  try{
+   const result=await json(u.href,ac.signal);
+   if(ac.signal.aborted||serial!==token||info!==active||!video.isConnected||
+     result?.workId!==info.id||result?.kind!==info.kind||
+     result?.episode!==info.episode||result?.season!==info.season)return;
+   state.segments=Array.isArray(result.segments)?result.segments.filter(x=>validSkip(x,duration)): [];
+  }catch{}
+ },{once:true});
+}
+
 async function startPlayback(){
  if(!active||!card()||!active.episodes.includes(active.episode))return;
  const info=active;
@@ -289,6 +374,8 @@ async function startPlayback(){
       showStatus(t("视频加载失败，已无法继续切换线路。","Playback failed and no further fallback is available."),"error");
   });
   screen.appendChild(v);
+  configureSkip(v,{id:info.id,kind:info.kind,tmdbId:info.tmdbId,imdbId:info.imdbId,
+    season:info.season,episode:info.episode},token);
   if(typeof CustomEvent!=="undefined"&&typeof document.dispatchEvent==="function")
    document.dispatchEvent(new CustomEvent("liangyou:player-video",{
     detail:{video:v,info:{id:info.id,title:info.title,originalTitle:info.originalTitle,
@@ -334,7 +421,8 @@ function mount(info){
  const inferredSeason=seasonFromTitle(info.title);
  const fixedSeason=!canonicalId&&inferredSeason>1;
  active={id:String(info.id),title:String(info.title||""),originalTitle:String(info.originalTitle||""),
-  year:String(info.year||"").slice(0,4),kind,tmdbId:canonicalId?Number(canonicalId[2]):null,
+  year:String(info.year||"").slice(0,4),kind,imdbId:String(info.imdbId||""),
+  tmdbId:canonicalId?Number(canonicalId[2]):Number(info.tmdbId)||null,
   season:kind==="movie"?1:fixedSeason?inferredSeason:remembered.season,
   episode:kind==="movie"?1:remembered.episode,fixedSeason,
   episodes:[],seasons:[],page:0};
