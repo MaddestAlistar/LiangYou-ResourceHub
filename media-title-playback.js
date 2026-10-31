@@ -43,6 +43,8 @@ function sameIdentity(body,info){
 const inRange=(x,max)=>Number.isSafeInteger(Number(x))&&Number(x)>=1&&Number(x)<=max;
 function clearPlayback(){
  serial++;
+ if(typeof CustomEvent!=="undefined"&&typeof document.dispatchEvent==="function")
+  document.dispatchEvent(new CustomEvent("liangyou:player-stop"));
  if(stallTimer){clearTimeout(stallTimer);stallTimer=null;}
  controller?.abort();controller=null;
  if(video){video.pause();video.removeAttribute("src");video.load();video=null;}
@@ -287,6 +289,10 @@ async function startPlayback(){
       showStatus(t("视频加载失败，已无法继续切换线路。","Playback failed and no further fallback is available."),"error");
   });
   screen.appendChild(v);
+  if(typeof CustomEvent!=="undefined"&&typeof document.dispatchEvent==="function")
+   document.dispatchEvent(new CustomEvent("liangyou:player-video",{
+    detail:{video:v,info:{id:info.id,title:info.title,originalTitle:info.originalTitle,
+     year:info.year,kind:info.kind,season:info.season,episode:info.episode}}}));
   if(body.media.format==="hls"&&!v.canPlayType("application/vnd.apple.mpegurl")){
    if(body.media.cors!==true)throw Error("cors");
    const Hls=await loadHls();
