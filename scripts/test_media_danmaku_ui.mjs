@@ -84,16 +84,21 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  const classList=cs=>({
   add(x){cs.add(x)},remove(x){cs.delete(x)},contains(x){return cs.has(x)}
  });
- const controls={parentElement:null};
+ const controlClasses=new Set();
+ const controls={parentElement:null,classList:classList(controlClasses),hidden:false,inert:false};
  const screen={classList:classList(classes),
   appendChild(node){node.parentElement=this;},
   after(node){node.parentElement={tag:"toolbar-outside-video"};}};
  const state={available:true,screen,controls,
+  settings:{hidden:false},gear:{setAttribute(){}},
   fullscreen:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"⛶"},
-  webFullscreen:false};
- const context={session:state,navigator:{userAgent:"iPhone"},document:{
-  fullscreenElement:null,webkitFullscreenElement:null,
-  documentElement:{classList:classList(rootClasses)}
+  webFullscreen:false,hideTimer:null};
+ let callback=null;
+ const context={session:state,navigator:{userAgent:"iPhone"},
+  setTimeout(fn){callback=fn;return 1},clearTimeout(){callback=null},
+  document:{
+   fullscreenElement:null,webkitFullscreenElement:null,
+   documentElement:{classList:classList(rootClasses)}
  }};
  vm.createContext(context);
  const parts=vm.runInContext(source.slice(start,end)+
@@ -104,10 +109,20 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  assert.equal(controls.parentElement,screen);
  assert.ok(rootClasses.has("mtk-danmaku-page-expanded"));
  assert.equal(state.fullscreen.attrs["aria-pressed"],"true");
+ assert.equal(state.settings.hidden,true);
+ assert.equal(typeof callback,"function");
+ callback();
+ assert.equal(controls.inert,true);
+ assert.equal(controlClasses.has("mtk-danmaku-controls-hidden"),true);
+ parts.revealFullscreenControls(state);
+ assert.equal(controls.inert,false);
+ assert.equal(controlClasses.has("mtk-danmaku-controls-hidden"),false);
  await parts.toggleWebFullscreen(state);
  assert.equal(state.webFullscreen,false);
  assert.ok(!classes.has("mtk-danmaku-webfullscreen"));
  assert.equal(controls.parentElement.tag,"toolbar-outside-video");
+ assert.equal(controls.inert,false);
+ assert.equal(callback,null);
 });
 
 test("saved danmaku settings clamp row count and opacity and limit position choices",()=>{
@@ -135,4 +150,40 @@ test("normal playback tools render below the video while fullscreen retains cont
  assert.match(css,/#media \.mtk-danmaku-actions\{[\s\S]*position:relative/);
  assert.match(css,/#media \.mtk-danmaku-settings\[hidden\]\{display:none!important\}/);
  assert.match(css,/--mtk-danmaku-opacity/);
+});
+
+test("fullscreen controls auto-hide only in fullscreen; settings panel pauses the hide timer",()=>{
+ const start=source.indexOf("function exitWebFullscreen(state){");
+ const end=source.indexOf('document.addEventListener("fullscreenchange"',start);
+ assert.ok(start>=0&&end>start);
+ const classes=new Set();
+ const classList={
+   add(name){classes.add(name)},remove(name){classes.delete(name)},contains(name){return classes.has(name)}
+ };
+ let scheduled=null,ms=0;
+ const state={available:true,webFullscreen:true,controls:{
+   hidden:false,inert:false,classList},settings:{hidden:false},hideTimer:null,screen:{}};
+ const context={session:state,document:{fullscreenElement:null,webkitFullscreenElement:null},
+  setTimeout(fn,time){scheduled=fn;ms=time;return 9},
+  clearTimeout(){scheduled=null}};
+ vm.createContext(context);
+ const api=vm.runInContext(source.slice(start,end)+
+  "\n({revealFullscreenControls,hideFullscreenControls,clearFullscreenHide})",context);
+ api.revealFullscreenControls(state);
+ assert.equal(scheduled,null,"Do not hide controls while settings are expanded");
+ state.settings.hidden=true;
+ api.revealFullscreenControls(state);
+ assert.equal(ms,2800);
+ assert.equal(typeof scheduled,"function");
+ scheduled();
+ assert.ok(classes.has("mtk-danmaku-controls-hidden"));
+ assert.equal(state.controls.inert,true);
+ api.revealFullscreenControls(state);
+ assert.equal(state.controls.inert,false);
+ assert.ok(!classes.has("mtk-danmaku-controls-hidden"));
+ state.webFullscreen=false;
+ api.hideFullscreenControls(state);
+ assert.ok(!classes.has("mtk-danmaku-controls-hidden"),"Never hide toolbar under the normal video");
+ assert.match(css,/mtk-danmaku-controls-hidden/);
+ assert.match(source,/screen\.addEventListener\("pointerdown",state\.onScreenTap,true\)/);
 });
