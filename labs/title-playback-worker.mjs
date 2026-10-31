@@ -218,15 +218,17 @@ async function resolveExtras(extraLines,kind,episode,skipped=new Set()){
  }
  // Rank based on real response time to a tiny Range request.
  // This is server-side latency, not a guarantee of the viewer's throughput.
- const out=await Promise.all(selected.map(async entry=>{
-  const t=Date.now();let media=null;
-  try{media=await validMedia(entry.url,kind);}catch{}
-  return media?{...media,sourceKey:entry.provider,latencyMs:Date.now()-t}:null;
- }));
- const valid=out.filter(Boolean).sort((a,b)=>a.latencyMs-b.latencyMs);
- return {media:valid[0]||null,latencyMs:valid[0]?.latencyMs??null,considered:selected.length,
-   // one reserve line for same-provider errors when alternative provider absent
-   alternatives:valid.slice(1,4).map(x=>({sourceKey:x.sourceKey,latencyMs:x.latencyMs}))};
+ // First verified media response wins; do not wait for slower or failed endpoints.
+ // On-device buffering triggers the separate invisible fallback route when needed.
+ try{
+  const fast=await Promise.any(selected.map(async entry=>{
+   const t=Date.now();
+   const media=await validMedia(entry.url,kind);
+   if(!media)throw Error("invalid_media");
+   return {...media,sourceKey:entry.provider,latencyMs:Date.now()-t};
+  }));
+  return {media:fast,latencyMs:fast.latencyMs,considered:selected.length};
+ }catch{return {media:null,latencyMs:null,considered:selected.length};}
 }
 async function chooseVerifiedStream(primaryLines,extraLines,kind,episode,skip=[]){
  const skipped=new Set(skip);
