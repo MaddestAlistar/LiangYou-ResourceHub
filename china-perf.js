@@ -16,14 +16,14 @@
       extraStyles: [
         './media-toolkit.css?v=20261028.7',
         './media-title-playback.css?v=20261031-episodes12',
-        './media-title-danmaku.css?v=20261031-danmaku1',
+        './media-title-danmaku.css?v=20261031-danmaku-conditional-fullscreen2',
         './media-cn-enhance.css?v=20261029.newsvideo6',
         './media-boxoffice-rankings.css?v=20261029.1'
       ],
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
         './media-title-playback.js?v=20261031-episodes12',
-        './media-title-danmaku.js?v=20261031-danmaku1',
+        './media-title-danmaku.js?v=20261031-danmaku-conditional-fullscreen2',
         './media-title-news.js?v=20261029-multiplatform9',
         './media-insights.js?v=20261031.auditfix1',
         './media-cn-enhance.js?v=20261030.anime-unify2',
