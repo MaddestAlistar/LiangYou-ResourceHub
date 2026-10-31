@@ -89,6 +89,11 @@ async function probe(state){
     body?.season===state.info.season&&body?.episode===state.info.episode&&
     Number(body?.count)>0);
   state.controls.hidden=!state.available;
+  if(state.available){
+   // Prefer the web fullscreen button, which keeps the comment overlay visible.
+   // iOS may ignore controlsList; native video fullscreen remains a platform limit.
+   state.video.setAttribute("controlsList","nofullscreen");
+  }
   setButton(state);
   if(state.available&&state.enabled)load(state);
  }catch{
@@ -157,7 +162,7 @@ async function toggleWebFullscreen(state){
  document.documentElement.classList.add("mtk-danmaku-page-expanded");
 }
 document.addEventListener("fullscreenchange",()=>{
- if(session&&!document.fullscreenElement&&session.webFullscreen&&
+ if(session&&!document.fullscreenElement&&!document.webkitFullscreenElement&&session.webFullscreen&&
    !session.screen.classList.contains("mtk-danmaku-webfullscreen"))exitWebFullscreen(session);
 });
 document.addEventListener("keydown",e=>{
@@ -172,6 +177,7 @@ function destroy(){
  session.area.replaceChildren();
  session.controls.remove();
  session.area.remove();
+ session.video.removeAttribute("controlsList");
  session.video.removeEventListener("timeupdate",session.onTime);
  session.video.removeEventListener("seeked",session.onSeek);
  session.video.removeEventListener("pause",session.onPause);
