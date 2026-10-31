@@ -22,7 +22,7 @@
       ],
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
-        './media-title-playback.js?v=20261031-episodes12',
+        './media-title-playback.js?v=20261031-skip-next1',
         './media-title-danmaku.js?v=20261031-danmaku-conditional-fullscreen3',
         './media-title-news.js?v=20261029-multiplatform9',
         './media-insights.js?v=20261031.auditfix1',
