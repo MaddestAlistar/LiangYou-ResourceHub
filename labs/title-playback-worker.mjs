@@ -207,8 +207,8 @@ async function validMedia(url,kind){
  if(!sig)return null;
  return {url:parsed.href,format:type,mime:type==="hls"?"application/vnd.apple.mpegurl":"video/mp4",cors:allowCors};
 }
-async function resolveExtras(extraLines,kind,episode,skip=""){
- const candidates=extraLines.filter(x=>x.number===episode&&x.provider!==skip);
+async function resolveExtras(extraLines,kind,episode,skipped=new Set()){
+ const candidates=extraLines.filter(x=>x.number===episode&&!skipped.has(x.provider));
  if(!candidates.length)return {media:null,latencyMs:null,considered:0};
  const started=Date.now(),distinct=new Set(),selected=[];
  for(const line of candidates){
@@ -228,12 +228,13 @@ async function resolveExtras(extraLines,kind,episode,skip=""){
    // one reserve line for same-provider errors when alternative provider absent
    alternatives:valid.slice(1,4).map(x=>({sourceKey:x.sourceKey,latencyMs:x.latencyMs}))};
 }
-async function chooseVerifiedStream(primaryLines,extraLines,kind,episode,skip=""){
+async function chooseVerifiedStream(primaryLines,extraLines,kind,episode,skip=[]){
+ const skipped=new Set(skip);
  const races=[];
- if(skip!=="primary"&&primaryLines.length)
+ if(!skipped.has("primary")&&primaryLines.length)
   races.push(resolve(primaryLines,kind,episode).then(x=>x.media?{...x.media,sourceKey:"primary"}:null));
  if(extraLines?.length)
-  races.push(resolveExtras(extraLines,kind,episode,skip).then(x=>x.media||null));
+  races.push(resolveExtras(extraLines,kind,episode,skipped).then(x=>x.media||null));
  if(!races.length)return null;
  try{return await Promise.any(races.map(p=>p.then(x=>{if(!x)throw Error("no_media");return x;})));}
  catch{return null;}
@@ -346,8 +347,8 @@ export default {
    if(mode==="title"){const {_lines,_extraLines,...pub}=base;return response(pub,200,base.status==="matched"?60:0);}
    if(base.status!=="matched"||!base.episodes.includes(episode))
     return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
-   const skip=["primary","jianpian","aggregate"].includes(u.searchParams.get("skip"))?
-     u.searchParams.get("skip"):"";
+   const skip=String(u.searchParams.get("skip")||"").split(",")
+     .filter(x=>["primary","jianpian","aggregate"].includes(x)).slice(0,3);
    const media=await chooseVerifiedStream(base._lines||[],base._extraLines||[],kind,episode,skip);
    if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,season,episode});
    return response({ok:true,status:"ready",kind,tmdbId:id,workId,season,episode,
