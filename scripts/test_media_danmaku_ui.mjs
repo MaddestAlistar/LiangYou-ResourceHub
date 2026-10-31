@@ -84,7 +84,11 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  const classList=cs=>({
   add(x){cs.add(x)},remove(x){cs.delete(x)},contains(x){return cs.has(x)}
  });
- const state={available:true,screen:{classList:classList(classes)},
+ const controls={parentElement:null};
+ const screen={classList:classList(classes),
+  appendChild(node){node.parentElement=this;},
+  after(node){node.parentElement={tag:"toolbar-outside-video"};}};
+ const state={available:true,screen,controls,
   fullscreen:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"⛶"},
   webFullscreen:false};
  const context={session:state,navigator:{userAgent:"iPhone"},document:{
@@ -97,9 +101,38 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  await parts.toggleWebFullscreen(state);
  assert.equal(state.webFullscreen,true);
  assert.ok(classes.has("mtk-danmaku-webfullscreen"));
+ assert.equal(controls.parentElement,screen);
  assert.ok(rootClasses.has("mtk-danmaku-page-expanded"));
  assert.equal(state.fullscreen.attrs["aria-pressed"],"true");
  await parts.toggleWebFullscreen(state);
  assert.equal(state.webFullscreen,false);
  assert.ok(!classes.has("mtk-danmaku-webfullscreen"));
+ assert.equal(controls.parentElement.tag,"toolbar-outside-video");
+});
+
+test("saved danmaku settings clamp row count and opacity and limit position choices",()=>{
+ const start=source.indexOf("const DEFAULT_SETTINGS=");
+ const end=source.indexOf("let enabled=false",start);
+ assert.ok(start>=0&&end>start);
+ const ctx={};vm.createContext(ctx);
+ const fn=vm.runInContext(source.slice(start,end)+"\n sanitizeSettings",ctx);
+ assert.equal(fn(null).rows,4);
+ assert.equal(fn({rows:100,position:"not-valid",opacity:-5}).rows,8);
+ assert.equal(fn({rows:100,position:"not-valid",opacity:-5}).position,"top");
+ assert.equal(fn({rows:100,position:"not-valid",opacity:-5}).opacity,20);
+ assert.equal(fn({rows:2,position:"bottom",opacity:50}).rows,2);
+ assert.equal(fn({rows:2,position:"bottom",opacity:50}).opacity,50);
+});
+test("normal playback tools render below the video while fullscreen retains controls",()=>{
+ assert.match(source,/screen\.after\(controls\)/);
+ assert.match(source,/state\.screen\.appendChild\(state\.controls\)/);
+ assert.match(source,/state\.screen\.after\(state\.controls\)/);
+ assert.match(source,/mtk-danmaku-setting-row/);
+ assert.match(source,/\"rows\"/);
+ assert.match(source,/\"position\"/);
+ assert.match(source,/\"opacity\"/);
+ assert.match(source,/settingsOptions=sanitizeSettings/);
+ assert.match(css,/#media \.mtk-danmaku-actions\{[\s\S]*position:relative/);
+ assert.match(css,/#media \.mtk-danmaku-settings\[hidden\]\{display:none!important\}/);
+ assert.match(css,/--mtk-danmaku-opacity/);
 });
