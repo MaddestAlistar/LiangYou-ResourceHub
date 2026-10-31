@@ -40,3 +40,61 @@
 @media(prefers-reduced-motion:reduce){
  #media .mtk-danmaku-item{animation-duration:10s}
 }
+
+/* Only render either control after the exact episode has confirmed comments. */
+#media .mtk-danmaku-actions[hidden],#media .mtk-danmaku-toggle[hidden]{display:none!important}
+#media .mtk-danmaku-actions{
+ position:absolute;top:9px;right:9px;z-index:6;
+ display:flex;align-items:center;gap:7px;max-width:calc(100% - 22px)
+}
+#media .mtk-danmaku-actions .mtk-danmaku-toggle{
+ position:static;right:auto;top:auto;z-index:auto
+}
+#media .mtk-danmaku-expand{
+ display:grid;place-items:center;box-sizing:border-box;
+ width:36px;height:34px;flex:0 0 36px;padding:0;
+ border:1px solid rgba(147,181,235,.4);border-radius:9px;
+ background:rgba(8,18,40,.8);color:#e4efff;font-size:21px;
+ line-height:1;cursor:pointer;touch-action:manipulation;
+ backdrop-filter:blur(9px)
+}
+#media .mtk-danmaku-expand[aria-pressed="true"]{
+ background:rgba(38,85,148,.92);border-color:#92beff
+}
+#media .mtk-danmaku-expand:focus-visible{outline:2px solid #b5d5ff;outline-offset:2px}
+/* Native iPhone video fullscreen replaces web DOM, so keep a web-layer
+   fullscreen control instead. Hide the native fullscreen affordance where supported. */
+#media .mtk-playback-screen:has(.mtk-danmaku-actions:not([hidden])) video::-webkit-media-controls-fullscreen-button{display:none!important}
+#media .mi-dialog:has(.mtk-danmaku-webfullscreen){
+ width:100vw!important;max-width:100vw!important;height:100dvh!important;
+ max-height:100dvh!important;margin:0!important;padding:0!important;
+ border-radius:0!important;overflow:hidden!important
+}
+#media .mi-dialog:has(.mtk-danmaku-webfullscreen) .mi-dialog-top{
+ visibility:hidden!important;pointer-events:none!important
+}
+#media .mtk-playback-screen.mtk-danmaku-webfullscreen{
+ position:fixed!important;inset:0!important;top:0!important;left:0!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;
+ aspect-ratio:auto!important;z-index:1000000!important;background:#000!important;
+ border:0!important;border-radius:0!important;overflow:hidden!important
+}
+#media .mtk-playback-screen.mtk-danmaku-webfullscreen video{
+ position:absolute;inset:0;width:100%!important;height:100%!important;
+ object-fit:contain!important;background:#000
+}
+#media .mtk-playback-screen.mtk-danmaku-webfullscreen .mtk-danmaku-actions{
+ top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right))
+}
+#media .mtk-playback-screen:fullscreen,#media .mtk-playback-screen:-webkit-full-screen{
+ width:100vw!important;height:100dvh!important;aspect-ratio:auto!important;
+ background:#000!important;border-radius:0!important
+}
+#media .mtk-playback-screen:fullscreen video,#media .mtk-playback-screen:-webkit-full-screen video{
+ object-fit:contain!important;width:100%!important;height:100%!important
+}
+@media(max-width:650px){
+ #media .mtk-danmaku-actions{top:7px;right:7px;gap:6px}
+ #media .mtk-danmaku-actions .mtk-danmaku-toggle{top:auto;right:auto}
+ #media .mtk-danmaku-expand{width:34px;height:32px;flex-basis:34px}
+}
