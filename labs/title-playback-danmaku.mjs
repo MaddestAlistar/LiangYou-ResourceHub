@@ -116,17 +116,28 @@ async function handleDanmaku(req,env,ctx){
   year&&!/^(18|19|20)\d{2}$/.test(year)||!Number.isInteger(season)||season<1||season>60||
   !Number.isInteger(episode)||episode<1||episode>3000||
   kind==="movie"&&(season!==1||episode!==1))return json({ok:false,status:"bad_params"});
- const cacheKey=new Request(u.href,{method:"GET"});
+ // The availability endpoint returns only metadata, not hundreds of KB of comments.
+ // Both endpoints share the exact same full-payload cache key.
+ const checkOnly=u.searchParams.get("check")==="1";
+ const cacheUrl=new URL(u.href);cacheUrl.searchParams.delete("check");
+ const cacheKey=new Request(cacheUrl.href,{method:"GET"});
  const cached=await caches.default.match(cacheKey);
- if(cached)return cached;
+ if(cached){
+  if(!checkOnly)return cached;
+  const found=await cached.json();
+  return json({ok:true,status:found.status,workId:m[1],kind,season,episode,
+    available:found.status==="ready"&&found.count>0,count:found.count||0},60);
+ }
  const record={title,originalTitle,year};
  const data=await lookupDanmaku(record,kind,season,episode,{
   base:env.DANMAKU_API_BASE||DEFAULT_DANMAKU_BASE
  });
- const result=json({ok:true,status:data.status,workId:m[1],kind,season,episode,
-   count:data.comments.length,comments:data.comments},data.status==="ready"?1800:120);
- // Only useful to cache a valid match; avoid caching transient network failures.
- if(data.status==="ready")ctx?.waitUntil?.(caches.default.put(cacheKey,result.clone()));
- return result;
+ const count=data.comments.length,available=data.status==="ready"&&count>0;
+ const full=json({ok:true,status:data.status,workId:m[1],kind,season,episode,
+   count,comments:data.comments},available?1800:0);
+ if(available)ctx?.waitUntil?.(caches.default.put(cacheKey,full.clone()));
+ if(checkOnly)return json({ok:true,status:data.status,workId:m[1],kind,season,episode,
+   available,count},available?60:0);
+ return full;
 }
 export {lookupDanmaku,chooseMatch,exactTitle,episodeMatches,parseComments,handleDanmaku};
