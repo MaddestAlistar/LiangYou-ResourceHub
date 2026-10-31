@@ -202,3 +202,23 @@
 @media(prefers-reduced-motion:reduce){
  #media .mtk-playback-screen .mtk-danmaku-actions{transition:none!important}
 }
+
+/* Keep web fullscreen discoverable even when third-party danmaku matching fails.
+   The actual danmaku switch and its settings remain hidden until verified. */
+#media .mtk-danmaku-actions .mtk-danmaku-status{
+ font-size:11px;color:#9db3d5;line-height:1.5;white-space:nowrap;
+ max-width:min(42vw,220px);overflow:hidden;text-overflow:ellipsis
+}
+#media .mtk-danmaku-actions .mtk-danmaku-status[hidden],
+#media .mtk-danmaku-actions .mtk-danmaku-retry[hidden],
+#media .mtk-danmaku-actions .mtk-danmaku-gear[hidden]{display:none!important}
+#media .mtk-danmaku-actions .mtk-danmaku-retry{
+ display:grid;place-items:center;box-sizing:border-box;
+ width:33px;height:34px;min-width:33px;padding:0;
+ border:1px solid rgba(133,166,216,.38);border-radius:9px;
+ background:rgba(26,46,77,.78);color:#d9e9ff;cursor:pointer;
+ font-size:21px;line-height:1;touch-action:manipulation
+}
+#media .mtk-danmaku-actions .mtk-danmaku-retry:focus-visible{
+ outline:2px solid #b5d5ff;outline-offset:2px
+}
