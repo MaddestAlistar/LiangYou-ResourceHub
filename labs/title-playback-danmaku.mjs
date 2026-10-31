@@ -117,11 +117,14 @@ async function readSeriesIndex(record,kind,season,{fetcher,base,cache}={}){
  // DandanPlay-compatible results include animes[].episodes[] and episodeId.
  const names=[record.title,record.originalTitle].filter(Boolean).slice(0,2);
  let throttled=false;
+ const started=Date.now();
  for(const name of names){
+  if(Date.now()-started>7200)break;
   try{
    const q=new URL("api/v2/search/episodes",base);
    q.searchParams.set("anime",name);
-   const r=await jsonBounded(q.href,{headers:{"accept":"application/json"}},2500000,11000,fetcher);
+   const remaining=Math.min(6500,Math.max(1000,7400-(Date.now()-started)));
+   const r=await jsonBounded(q.href,{headers:{"accept":"application/json"}},2500000,remaining,fetcher);
    if(r.http===429){throttled=true;break;}
    if(r.value?.success!==true||!Array.isArray(r.value.animes))continue;
    const items=extractIndex(r.value,record,kind,season);
@@ -144,6 +147,7 @@ async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFA
  if(!["http:","https:"].includes(baseUrl.protocol))return {status:"unavailable",comments:[]};
  const seenIds=new Set();
  const candidates=[];
+ const started=Date.now();
  let throttled=false;
  // Prefer cached whole-series episode index: once indexed, adjacent episodes need
  // only ONE upstream request (comments), rather than match+comment each time.
@@ -160,12 +164,14 @@ async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFA
  if(!candidates.length&&!throttled){
   const names=[record.title,record.originalTitle].filter(Boolean).slice(0,2);
   for(const name of names){
+   if(Date.now()-started>13500)break;
    const nameString=kind==="movie"?name+" "+(record.year||""):
     name+" S"+String(season).padStart(2,"0")+"E"+String(episode).padStart(2,"0");
    try{
     const res=await jsonBounded(new URL("api/v2/match",baseUrl).href,{
      method:"POST",headers:{"content-type":"application/json","accept":"application/json"},
-     body:JSON.stringify({fileName:nameString})},160000,7500,fetcher);
+     body:JSON.stringify({fileName:nameString})},160000,
+       Math.min(5500,Math.max(1000,14000-(Date.now()-started))),fetcher);
     if(res.http===429){throttled=true;break;}
     if(res.value?.isMatched!==true)continue;
     const selected=chooseMatch(res.value.matches,record,kind,episode);
@@ -178,10 +184,12 @@ async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFA
  }
  let sawEmpty=false;
  for(const item of candidates){
+  if(Date.now()-started>15500)break;
   try{
    const result=await jsonBounded(new URL("api/v2/comment/"+
     encodeURIComponent(String(item.episodeId))+"?format=json",baseUrl).href,{
-     headers:{"accept":"application/json"}},3500000,10500,fetcher);
+     headers:{"accept":"application/json"}},3500000,
+       Math.min(7500,Math.max(1000,19000-(Date.now()-started))),fetcher);
    if(result.http===429){throttled=true;break;}
    if(result.value&&Array.isArray(result.value.comments)){
     const comments=parseComments(result.value,item.shift);
