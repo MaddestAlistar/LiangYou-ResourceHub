@@ -112,6 +112,24 @@ jobs:
           }catch(e){console.log('EPISODE_PLAYBACK_SMOKE',JSON.stringify({error:String(e?.name||'network_error')}));}
           NODE
 
+      - name: Verify small danmaku availability response without transferring comments
+        run: |
+          node --input-type=module <<'NODE'
+          const u=new URL('https://liangyou-title-playback.maddestalistar.workers.dev/api/danmaku/work/tmdb-tv-30984');
+          Object.entries({kind:'tv',title:'死神',original:'BLEACH',year:'2004',
+            season:'1',episode:'4',check:'1'}).forEach(([k,v])=>u.searchParams.set(k,v));
+          const r=await fetch(u,{signal:AbortSignal.timeout(26000)});
+          const raw=await r.text();
+          const data=JSON.parse(raw);
+          const valid=r.ok&&data.ok===true&&data.available===true&&data.count>0&&
+            data.workId==='tmdb-tv-30984'&&data.episode===4&&
+            !Object.hasOwn(data,'comments')&&raw.length<5000;
+          console.log('DANMAKU_AVAILABILITY_SMOKE',JSON.stringify({
+            http:r.status,available:data.available??false,
+            count:data.count||0,payloadBytes:raw.length,
+            containsComments:Object.hasOwn(data,'comments'),valid}));
+          if(!valid)process.exitCode=1;
+          NODE
       - name: Verify danmaku matching without logging messages
         run: |
           node --input-type=module <<'NODE'
