@@ -4,6 +4,7 @@
 import {createHash,createCipheriv,randomBytes} from "node:crypto";
 import {discoverExtra} from "./playback-extra-sources.mjs";
 import {handleDanmaku} from "./title-playback-danmaku.mjs";
+import {handleSkip} from "./title-playback-skips.mjs";
 
 const ORIGIN="https://maddestalistar.github.io";
 const SOURCE_HOST="app2.dsx.ac";
@@ -300,6 +301,7 @@ export default {
   if(req.method!=="GET")return response({ok:false,error:"method"},405);
   if(u.pathname==="/health")return response({ok:true,service:"title-playback-metadata",version:"1.0",videoProxy:false});
   if(u.pathname.startsWith("/api/danmaku/work/"))return handleDanmaku(req,env,ctx);
+  if(u.pathname.startsWith("/api/skip/work/"))return handleSkip(req,env,ctx);
   const m=u.pathname.match(/^\/api\/(title|play)\/(movie|tv)\/([1-9]\d{0,9})$/);
   const w=u.pathname.match(/^\/api\/(title|play)\/work\/([a-z][a-z0-9-]{2,90})$/);
   if(!m&&!w)return response({ok:false,error:"not_found"},404);
