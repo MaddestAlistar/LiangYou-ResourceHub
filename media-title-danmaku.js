@@ -6,6 +6,31 @@ const root=document.getElementById("media"),dialog=document.getElementById("medi
 if(!root||!dialog)return;
 const BASE="https://liangyou-title-playback.maddestalistar.workers.dev";
 const PREFERENCE="liangyou:media:danmaku-enabled";
+const POSITIVE_CACHE="liangyou:media:danmaku-verified-v2";
+const POSITIVE_TTL=48*60*60*1000;
+function verifiedKey(info){
+ return [info?.id,info?.kind,info?.title,info?.season,info?.episode].join("|");
+}
+function readVerified(info){
+ try{
+  const entries=JSON.parse(localStorage.getItem(POSITIVE_CACHE)||"{}");
+  const value=Number(entries[verifiedKey(info)]);
+  return Number.isFinite(value)&&value>0&&Date.now()-value<POSITIVE_TTL;
+ }catch{return false;}
+}
+function saveVerified(info,positive){
+ try{
+  const now=Date.now(),key=verifiedKey(info);
+  const entries=JSON.parse(localStorage.getItem(POSITIVE_CACHE)||"{}");
+  const current=entries&&typeof entries==="object"&&!Array.isArray(entries)?entries:{};
+  for(const [k,v] of Object.entries(current)){
+   if(!Number.isFinite(Number(v))||now-Number(v)>POSITIVE_TTL)delete current[k];
+  }
+  if(positive)current[key]=now;else delete current[key];
+  const trimmed=Object.entries(current).sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,100);
+  localStorage.setItem(POSITIVE_CACHE,JSON.stringify(Object.fromEntries(trimmed)));
+ }catch{}
+}
 const MAX_DISPLAY=120,SETTINGS_KEY="liangyou:media:danmaku-settings";
 const DEFAULT_SETTINGS={rows:4,position:"top",opacity:70};
 const allowedPositions=["top","middle","bottom"];
@@ -130,11 +155,17 @@ async function probe(state,attempt=0){
     {mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
   const body=await res.json();
   if(ac.signal.aborted||state!==session)return;
-  state.available=!!(res.ok&&body?.ok===true&&body?.status==="ready"&&
+  const verified=!!(res.ok&&body?.ok===true&&body?.status==="ready"&&
     body?.workId===state.info.id&&body?.kind===state.info.kind&&
     body?.season===state.info.season&&body?.episode===state.info.episode&&
     Number(body?.count)>0);
-  state.statusReason=body?.status==="empty"?"empty":"unavailable";
+  const definitelyEmpty=res.ok&&body?.ok===true&&body?.status==="empty"&&
+    body?.workId===state.info.id&&body?.kind===state.info.kind&&
+    body?.season===state.info.season&&body?.episode===state.info.episode;
+  if(verified){state.available=true;saveVerified(state.info,true);}
+  else if(definitelyEmpty){state.available=false;saveVerified(state.info,false);}
+  // A transient upstream failure must not erase a previously verified episode.
+  state.statusReason=definitelyEmpty?"empty":"unavailable";
   if(!state.available&&body?.status==="unavailable"&&attempt===0)
    setTimeout(()=>{if(state===session&&state.video.isConnected)probe(state,1);},2700);
   if(state.available){
@@ -173,8 +204,11 @@ async function load(state){
     Number.isInteger(x.color)&&typeof x.text==="string")
    .slice(0,3000).sort((a,b)=>a.time-b.time):[];
   seek(state);
-  if(!state.entries.length){
-   state.available=false;state.statusReason="empty";setButton(state);
+  if(state.entries.length)saveVerified(state.info,true);
+  else{
+   state.available=false;state.statusReason="empty";
+   saveVerified(state.info,false);
+   setButton(state);
   }
  }catch(e){
   if(ac.signal.aborted||state!==session)return;
@@ -320,7 +354,7 @@ function mount(video,info){
   });
  };
  const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,status,retry,
-   enabled,available:false,checking:false,statusReason:"unavailable",
+   enabled,available:readVerified(info),checking:false,statusReason:"unavailable",
    entries:[],cursor:0,lastTime:0,webFullscreen:false,
    options:{...settingsOptions},lane:0,lineTimes:[],
    live:[],loading:false,abort:null,probeAbort:null,hideTimer:null};
