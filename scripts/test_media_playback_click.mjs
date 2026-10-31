@@ -107,7 +107,9 @@ test("automatic recovery hides source choices and restores playback position",()
  assert.equal(sw("aggregate",7,{currentTime:29.1},1,["primary"],"buffer"),true);
  assert.deepEqual(JSON.parse(JSON.stringify(context.pendingSwitch.failed)),["primary","aggregate"]);
  assert.equal(sw("jianpian",7,{currentTime:30},2,["primary","aggregate"],"error"),false);
- assert.equal(context.called,2);
+ assert.equal(sw("aggregate:wolong",7,{currentTime:31},1,["primary"],"error"),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(context.pendingSwitch.failed)),["primary","aggregate:wolong"]);
+ assert.equal(context.called,3);
 });
 test("player keeps server-directed source IDs out of visible UI",()=>{
  assert.doesNotMatch(script,/class="(?:source-picker|source-selector|source-choice)"/);
