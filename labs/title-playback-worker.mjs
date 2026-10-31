@@ -298,6 +298,29 @@ export default {
    "access-control-allow-headers":"content-type","access-control-max-age":"86400"}});
   if(req.method!=="GET")return response({ok:false,error:"method"},405);
   if(u.pathname==="/health")return response({ok:true,service:"title-playback-metadata",version:"1.0",videoProxy:false});
+  // Temporary constrained diagnostic: verify whether Workers can reach the
+  // user-supplied danmaku host. Never proxy full content or expose the token.
+  if(u.pathname==="/api/danmaku/check"){
+   const endpoint="http://nl.jc.cd/87654321/api/v2/search/anime?keyword="+
+     encodeURIComponent("死神");
+   const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),6500);
+   try{
+    const r=await fetch(endpoint,{signal:ctl.signal,redirect:"manual",
+      headers:{"accept":"application/json"}});
+    const kind=r.headers.get("content-type")||"";
+    let parsed=null;
+    if(r.status===200&&kind.includes("json")){
+      const raw=await r.text();
+      if(raw.length<100000){try{parsed=JSON.parse(raw);}catch{}}
+    }else await r.body?.cancel();
+    return response({available:r.status===200&&!!parsed,upstreamHttp:r.status,
+      shape:parsed?Object.keys(parsed).slice(0,8):[],serverSide:true},200,120);
+   }catch(e){
+    return response({available:false,reason:e?.name==="AbortError"?"timeout":"network_failed",
+      serverSide:true},200,120);
+   }finally{clearTimeout(timer);}
+  }
+
   const m=u.pathname.match(/^\/api\/(title|play)\/(movie|tv)\/([1-9]\d{0,9})$/);
   const w=u.pathname.match(/^\/api\/(title|play)\/work\/([a-z][a-z0-9-]{2,90})$/);
   if(!m&&!w)return response({ok:false,error:"not_found"},404);
