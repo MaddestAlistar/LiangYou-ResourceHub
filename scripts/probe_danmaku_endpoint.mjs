@@ -17,6 +17,7 @@ function matchSummary(result){
    isMatched:result.value?.isMatched,matchCount:Array.isArray(m)?m.length:0,
    titles:Array.isArray(m)?m.slice(0,3).map(x=>String(x.animeTitle||"").slice(0,42)):[],
    episodeIds:Array.isArray(m)?m.slice(0,2).map(x=>x.episodeId):[],
+   episodeTitles:Array.isArray(m)?m.slice(0,3).map(x=>String(x.episodeTitle||"").slice(0,55)):[],
    contentType:result.contentType};
 }
 let chosen=null;
@@ -48,6 +49,9 @@ for(const fileName of ["死神 S01E04","名侦探柯南 S01E01"]){
    const comments=comment.value?.comments;
    console.log("COMMENT",JSON.stringify({requested:fileName,http:comment.status,bytes:comment.bytes,
     success:comment.value?.success,commentCount:Array.isArray(comments)?comments.length:null,
+    commentFields:Array.isArray(comments)&&comments.length?Object.keys(comments[0]).slice(0,8):[],
+    pShape:Array.isArray(comments)&&comments.length?String(comments[0].p||"").split(",").slice(0,4):[],
+    messageFieldType:Array.isArray(comments)&&comments.length?typeof comments[0].m:null,
     responseKeys:comment.value?Object.keys(comment.value).slice(0,8):[]}));
   }
  }catch(e){console.log("MATCH",JSON.stringify({requested:fileName,error:String(e.name||"request_failed")}));}
