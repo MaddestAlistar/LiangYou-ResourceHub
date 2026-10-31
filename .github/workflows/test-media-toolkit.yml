@@ -15,6 +15,10 @@ on:
       - media-title-playback.js
       - media-title-playback.css
       - labs/title-playback-worker.mjs
+      - labs/title-playback-danmaku.mjs
+      - media-title-danmaku.js
+      - media-title-danmaku.css
+      - scripts/test_media_danmaku.mjs
       - labs/playback-extra-sources.mjs
       - scripts/test_playback_extra_sources.mjs
       - scripts/test_title_playback_worker.mjs
@@ -40,6 +44,7 @@ jobs:
         run: |
           node --test scripts/test_media_insights.mjs
           node --test scripts/test_title_playback_worker.mjs
+          node --test scripts/test_media_danmaku.mjs
           node --test scripts/test_playback_extra_sources.mjs
           node --test scripts/test_media_playback_click.mjs
       - name: Validate JavaScript syntax and no public credentials
@@ -50,6 +55,8 @@ jobs:
           python -m py_compile scripts/update_media_cn_news.py
           node --check media-toolkit.js
           node --check media-title-playback.js
+          node --check media-title-danmaku.js
+          node --check labs/title-playback-danmaku.mjs
           node --check labs/title-playback-worker.mjs
           node --check labs/playback-extra-sources.mjs
           node --check labs/streaming-availability-worker.mjs
