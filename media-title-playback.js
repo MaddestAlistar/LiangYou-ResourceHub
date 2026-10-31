@@ -14,7 +14,10 @@ const idValid=info=>/^[a-z][a-z0-9-]{2,90}$/.test(String(info?.id||""))&&
 const canonical=info=>/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(String(info?.id||""));
 function seasonFromTitle(title){
  const m=String(title||"").match(/第\s*([一二三四五六七八九十\d]+)\s*季|\bseason\s*(\d+)\b/i);
- if(!m)return 1;
+ if(!m){
+  const trailing=String(title||"").match(/\s([2-9]|[1-5]\d)$/);
+  return trailing?Number(trailing[1]):1;
+ }
  const n=m[1]||m[2],zh={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10};
  return /^\d+$/.test(n)?Number(n):(zh[n]||1);
 }
