@@ -168,8 +168,8 @@
  left:auto!important;top:auto!important;
  right:max(12px,env(safe-area-inset-right))!important;
  bottom:max(18px,env(safe-area-inset-bottom))!important;
- display:grid!important;grid-template-columns:repeat(2,42px)!important;
- grid-auto-rows:42px;gap:7px!important;justify-items:center;
+ display:grid!important;grid-template-columns:repeat(2,64px)!important;
+ grid-auto-rows:38px;gap:6px!important;justify-items:center;
  align-items:center;justify-content:end!important;
  width:max-content!important;max-width:calc(100% - 24px)!important;
  min-height:0!important;height:auto!important;
@@ -299,15 +299,16 @@
  position:static!important;inset:auto!important;
  display:grid!important;place-items:center!important;
  box-sizing:border-box!important;
- width:42px!important;min-width:42px!important;max-width:42px!important;
- height:42px!important;min-height:42px!important;max-height:42px!important;
- flex:0 0 42px!important;padding:0!important;
- font-size:20px!important;line-height:1!important;
+ width:64px!important;min-width:64px!important;max-width:64px!important;
+ height:38px!important;min-height:38px!important;max-height:38px!important;
+ flex:0 0 64px!important;padding:0 3px!important;
+ font-size:12px!important;font-weight:700!important;line-height:1.15!important;
+ white-space:nowrap!important;
 }
 #media .mtk-playback-screen:fullscreen .mtk-danmaku-actions > .mtk-danmaku-toggle:not([hidden]),
 #media .mtk-playback-screen:-webkit-full-screen .mtk-danmaku-actions > .mtk-danmaku-toggle:not([hidden]),
 #media .mtk-playback-screen.mtk-danmaku-webfullscreen .mtk-danmaku-actions > .mtk-danmaku-toggle:not([hidden]){
- font-size:14px!important;font-weight:750!important;
+ font-size:12px!important;font-weight:750!important;
 }
 #media .mtk-playback-screen:fullscreen .mtk-danmaku-actions > .mtk-danmaku-status,
 #media .mtk-playback-screen:-webkit-full-screen .mtk-danmaku-actions > .mtk-danmaku-status,
@@ -326,4 +327,12 @@
  #media .mtk-danmaku-actions :is(
   .mtk-danmaku-toggle,.mtk-danmaku-gear,.mtk-danmaku-expand,
   .mtk-danmaku-rotate,.mtk-danmaku-retry){transition:none!important}
+}
+
+/* Readable text labels on individual liquid-glass buttons. */
+#media .mtk-danmaku-actions .mtk-danmaku-gear,
+#media .mtk-danmaku-actions .mtk-danmaku-expand,
+#media .mtk-danmaku-actions .mtk-danmaku-rotate,
+#media .mtk-danmaku-actions .mtk-danmaku-retry{
+ font:700 12px/1.15 system-ui,sans-serif;letter-spacing:0;
 }
