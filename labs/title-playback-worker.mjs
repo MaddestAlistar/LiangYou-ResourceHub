@@ -334,6 +334,11 @@ export default {
     const result={ok:true,kind,tmdbId:id,workId,title:record.title,year:record.year,season,
       seasons:kind==="movie"?[]:record.seasons,
       status:usable?"matched":found.status,episodes:union,
+      // Diagnostic counts only; never expose raw source URLs or source names in UI.
+      coverage:{sourceFamilies:(found.source?.lines?.length?1:0)+
+        (extra.lines.some(x=>x.provider==="jianpian")?1:0)+
+        (extra.lines.some(x=>x.provider==="aggregate")?1:0),
+        extraCandidates:extra.lines.length,aggregateProbed:extra.checked-1},
       matchedTitle:found.source?found.source.title:union.length?record.title:null};
     base={...result,_lines:found.source?.lines||[],_extraLines:extra.lines};
     // Keep successful work/episode mapping through brief upstream outages.
