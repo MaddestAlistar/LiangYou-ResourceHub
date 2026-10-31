@@ -204,7 +204,8 @@ function safeStream(media){
 }
 function tryInvisibleSwitch(key,token,playing,attempt,failed,why){
  if(serial!==token||!active||attempt>=2)return false;
- const category=["primary","jianpian","aggregate"].includes(key)?key:null;
+ const category=["primary","jianpian","aggregate"].includes(key)||
+  /^aggregate:[a-z0-9-]{1,28}$/.test(String(key||""))?key:null;
  if(!category)return false;
  const seen=new Set(failed);
  if(seen.has(category))return false;
