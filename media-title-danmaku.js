@@ -86,7 +86,7 @@ function setButton(state){
     t("本集暂无弹幕","No danmaku for this episode"):
     t("弹幕暂不可用","Danmaku unavailable");
  const on=state.enabled,loading=state.loading;
- state.button.textContent=t("弹幕 ","Danmaku ")+(on?t("开","On"):t("关","Off"));
+ state.button.textContent=inWebFullscreen(state)?t("弹","DM"):t("弹幕 ","Danmaku ")+(on?t("开","On"):t("关","Off"));
  state.button.setAttribute("aria-pressed",String(on));
  state.button.dataset.loading=loading?"true":"false";
  showText(state,loading?t("正在获取本集弹幕","Loading episode danmaku"):
@@ -232,6 +232,7 @@ function exitWebFullscreen(state){
  if(state.controls.parentElement===state.screen)state.screen.after(state.controls);
  state.webFullscreen=false;
  setLandscape(state,false);
+ setButton(state);
  state.fullscreen.setAttribute("aria-pressed","false");
  state.fullscreen.textContent="⛶";
  document.documentElement.classList.remove("mtk-danmaku-page-expanded");
@@ -262,7 +263,7 @@ function setLandscape(state,on){
  state.landscapeMode=!!on;
  state.screen.classList.toggle("mtk-danmaku-landscape",state.landscapeMode);
  state.rotate.setAttribute("aria-pressed",String(state.landscapeMode));
- state.rotate.textContent=t(state.landscapeMode?"还原":"横屏",state.landscapeMode?"Reset":"Rotate");
+ state.rotate.textContent=state.landscapeMode?"↶":"⤾";
  const label=t(state.landscapeMode?"恢复正常画面方向":"横屏观看",
    state.landscapeMode?"Restore normal viewing direction":"Watch in landscape");
  state.rotate.title=label;
@@ -294,6 +295,7 @@ async function toggleWebFullscreen(state,forceWeb=false){
    state.webFullscreen=true;
    state.fullscreen.setAttribute("aria-pressed","true");
    state.fullscreen.textContent="↙";
+   setButton(state);
    revealFullscreenControls(state);
    return;
   }catch{}
@@ -303,6 +305,7 @@ async function toggleWebFullscreen(state,forceWeb=false){
  state.fullscreen.setAttribute("aria-pressed","true");
  state.fullscreen.textContent="↙";
  document.documentElement.classList.add("mtk-danmaku-page-expanded");
+ setButton(state);
  revealFullscreenControls(state);
 }
 document.addEventListener("fullscreenchange",()=>{
@@ -349,12 +352,12 @@ function mount(video,info){
  fullscreen.setAttribute("aria-label",t("弹幕网页全屏","Fullscreen with danmaku"));
  const rotate=document.createElement("button");rotate.type="button";
  rotate.className="mtk-danmaku-rotate";
- rotate.textContent=t("横屏","Rotate");
+ rotate.textContent="⤾";
  rotate.title=t("横屏观看","Watch in landscape");
  rotate.setAttribute("aria-label",rotate.title);
  rotate.setAttribute("aria-pressed","false");
  const gear=document.createElement("button");gear.type="button";
- gear.className="mtk-danmaku-gear";gear.textContent="⚙";
+ gear.className="mtk-danmaku-gear";gear.textContent="⚙︎";
  gear.title=t("设置弹幕行数、位置和透明度","Danmaku display settings");
  gear.setAttribute("aria-label",gear.title);gear.setAttribute("aria-expanded","false");
  const settings=document.createElement("div");
