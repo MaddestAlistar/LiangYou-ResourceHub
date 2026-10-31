@@ -21,7 +21,7 @@
       ],
       extraUrls: [
         './media-toolkit.js?v=20261029.newsroom1',
-        './media-title-playback.js?v=20261031.titleplay1',
+        './media-title-playback.js?v=20261031.playclick2',
         './media-title-news.js?v=20261029-multiplatform9',
         './media-insights.js?v=20261031.auditfix1',
         './media-cn-enhance.js?v=20261030.anime-unify2',
