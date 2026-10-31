@@ -109,9 +109,9 @@ async function requestJson(url,fetcher=fetch,maxMs=7500){
  finally{clearTimeout(timer);}
 }
 async function queryJianpian(record,kind,season,fetcher=fetch){
- for(const host of JP_HOSTS){
-  // Preserve the unusual nested-query shape required by the user-supplied Rex module:
-  // ?key=keyword=<encoded title>&page=1 (not a percent-encoded whole query).
+ // Both supplied Jianpian endpoints are checked concurrently; avoid a 13-second
+ // waterfall when the primary host responds slowly or has no matching title.
+ const tasks=JP_HOSTS.map(async host=>{
   const query=host+"/api/v2/search/videoV2?key=keyword="+encodeURIComponent(record.title)+"&page=1";
   const result=await requestJson(query,fetcher,6500);
   const list=Array.isArray(result?.data)?result.data:Array.isArray(result?.data?.list)?
@@ -125,8 +125,9 @@ async function queryJianpian(record,kind,season,fetcher=fetch){
    const found=jianpianParts(data,kind);
    if(found.length)return found;
   }
- }
- return [];
+  throw Error("no_matched_episodes");
+ });
+ try{return await Promise.any(tasks);}catch{return [];}
 }
 async function queryVod(source,record,kind,season,fetcher=fetch){
  const [channel,url]=source;
