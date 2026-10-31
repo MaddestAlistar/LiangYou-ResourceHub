@@ -166,8 +166,8 @@ async function probe(state,attempt=0){
   else if(definitelyEmpty){state.available=false;saveVerified(state.info,false);}
   // A transient upstream failure must not erase a previously verified episode.
   state.statusReason=definitelyEmpty?"empty":"unavailable";
-  if(!state.available&&body?.status==="unavailable"&&attempt===0)
-   setTimeout(()=>{if(state===session&&state.video.isConnected)probe(state,1);},2700);
+  // Avoid immediate repeated requests: this upstream may rate-limit users.
+  // Keep the manual retry button available instead of hammering the service.
   if(state.available){
    // Prefer the web fullscreen button, which keeps the comment overlay visible.
    // iOS may ignore controlsList; native video fullscreen remains a platform limit.
@@ -178,9 +178,6 @@ async function probe(state,attempt=0){
  }catch{
   if(state===session&&!ac.signal.aborted){
    state.available=false;state.statusReason="unavailable";
-   if(attempt===0)setTimeout(()=>{
-    if(state===session&&state.video.isConnected)probe(state,1);
-   },2700);
   }
  }finally{
   if(state===session&&!ac.signal.aborted){
