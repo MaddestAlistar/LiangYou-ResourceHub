@@ -6,9 +6,21 @@ const root=document.getElementById("media"),dialog=document.getElementById("medi
 if(!root||!dialog)return;
 const BASE="https://liangyou-title-playback.maddestalistar.workers.dev";
 const PREFERENCE="liangyou:media:danmaku-enabled";
-const MAX_ACTIVE=16,MAX_DISPLAY=120;
-let enabled=false,session=null;
-try{enabled=localStorage.getItem(PREFERENCE)==="1";}catch{}
+const MAX_DISPLAY=120,SETTINGS_KEY="liangyou:media:danmaku-settings";
+const DEFAULT_SETTINGS={rows:4,position:"top",opacity:70};
+const allowedPositions=["top","middle","bottom"];
+const clamp=(n,min,max,fallback)=>Number.isFinite(Number(n))?
+  Math.max(min,Math.min(max,Math.round(Number(n)))):fallback;
+function sanitizeSettings(value){
+ return {rows:clamp(value?.rows,1,8,4),
+   position:allowedPositions.includes(value?.position)?value.position:"top",
+   opacity:clamp(value?.opacity,20,100,70)};
+}
+let enabled=false,session=null,settingsOptions={...DEFAULT_SETTINGS};
+try{
+ enabled=localStorage.getItem(PREFERENCE)==="1";
+ settingsOptions=sanitizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY)||"null"));
+}catch{}
 const en=()=>document.documentElement.lang.toLowerCase().startsWith("en");
 const t=(zh,english)=>en()?english:zh;
 function pathFor(info){
@@ -27,6 +39,8 @@ function indexNear(entries,time){
 function removeItems(state){
  state.area.replaceChildren();
  state.live=[];
+ state.lane=0;
+ state.lineTimes=[];
 }
 function showText(state,message){
  state.button.title=message;
@@ -45,20 +59,40 @@ function removeNode(state,node){
  node.remove();state.live=state.live.filter(x=>x!==node);
 }
 function renderItem(state,item){
- const video=state.video;
- if(!state.enabled||!video||!video.isConnected||state.live.length>=MAX_ACTIVE)return;
+ const video=state.video,opts=state.options;
+ const rows=opts.rows;
+ if(!state.enabled||!video||!video.isConnected||state.live.length>=Math.max(3,rows*3))return;
+ // Limit overlap in the same row without forcing every comment to render.
+ const now=performance.now?.()||Date.now(),interval=item.mode===1?2300:3800;
+ let lane=-1;
+ for(let n=0;n<rows;n++){
+  const index=(state.lane+n)%rows;
+  if(now-(state.lineTimes[index]??-Infinity)>=interval){lane=index;break;}
+ }
+ if(lane<0)return;
+ state.lane=(lane+1)%rows;
+ state.lineTimes[lane]=now;
  const span=document.createElement("span");
  span.className="mtk-danmaku-item "+(item.mode===4?"mtk-danmaku-bottom":item.mode===5?
    "mtk-danmaku-top":"mtk-danmaku-scroll");
  span.textContent=item.text;
  span.style.color="#"+Number(item.color).toString(16).padStart(6,"0");
- const lane=state.lane++%7;
- if(item.mode===1)span.style.top=(11+lane*10)+"%";
- else span.style[item.mode===4?"bottom":"top"]=(12+(lane%3)*7)+"%";
+ const spacing=7.2,height=(rows-1)*spacing;
+ const start=opts.position==="bottom"?84-height:
+   opts.position==="middle"?50-height/2:9;
+ span.style.top=(Math.max(4,start+lane*spacing))+"%";
  state.area.appendChild(span);state.live.push(span);
- // The CSS animation keeps controls responsive; never intercept pointer events.
  span.addEventListener("animationend",()=>removeNode(state,span),{once:true});
  if(item.mode!==1)setTimeout(()=>removeNode(state,span),4300);
+}
+function applySettings(state,persist){
+ state.options={...settingsOptions};
+ state.area.style.setProperty("--mtk-danmaku-opacity",String(state.options.opacity/100));
+ if(persist){
+  try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settingsOptions));}catch{}
+  // Clear old lanes, but preserve the selected episode and playback position.
+  seek(state);
+ }
 }
 function seek(state){
  removeItems(state);
@@ -141,6 +175,7 @@ function exitWebFullscreen(state){
   try{(document.exitFullscreen||document.webkitExitFullscreen)?.call(document);}catch{}
  }
  state.screen.classList.remove("mtk-danmaku-webfullscreen");
+ if(state.controls.parentElement===state.screen)state.screen.after(state.controls);
  state.webFullscreen=false;
  state.fullscreen.setAttribute("aria-pressed","false");
  state.fullscreen.textContent="⛶";
@@ -152,6 +187,8 @@ async function toggleWebFullscreen(state){
  // iPhone Safari's native *video* fullscreen cannot contain HTML overlays.
  // Use a viewport-filling web mode instead; tablet/desktop supports element fullscreen.
  const iphone=/iPhone|iPod/i.test(navigator.userAgent||"");
+ // The toolbar lives below the video in normal mode, inside the screen in fullscreen.
+ state.screen.appendChild(state.controls);
  if(!iphone&&(state.screen.requestFullscreen||state.screen.webkitRequestFullscreen)){
   try{
    await (state.screen.requestFullscreen||state.screen.webkitRequestFullscreen).call(state.screen);
@@ -209,11 +246,48 @@ function mount(video,info){
  fullscreen.title=t("网页全屏：保留弹幕，iPhone 原生全屏无法叠加网页弹幕",
   "Web fullscreen preserves comments; iPhone native fullscreen does not");
  fullscreen.setAttribute("aria-label",t("弹幕网页全屏","Fullscreen with danmaku"));
- controls.append(button,fullscreen);
- screen.append(area,controls);
- const state={video,screen,info:{...info},area,controls,button,fullscreen,enabled,
-   available:false,entries:[],cursor:0,lastTime:0,webFullscreen:false,
-   lane:0,live:[],loading:false,abort:null,probeAbort:null};
+ const gear=document.createElement("button");gear.type="button";
+ gear.className="mtk-danmaku-gear";gear.textContent="⚙";
+ gear.title=t("设置弹幕行数、位置和透明度","Danmaku display settings");
+ gear.setAttribute("aria-label",gear.title);gear.setAttribute("aria-expanded","false");
+ const settings=document.createElement("div");
+ settings.className="mtk-danmaku-settings";settings.hidden=true;
+ const createRange=(label,min,max,step,value,suffix,property)=>{
+  const row=document.createElement("label");row.className="mtk-danmaku-setting-row";
+  const caption=document.createElement("span");caption.textContent=label;
+  const count=document.createElement("output");count.textContent=value+suffix;
+  const slider=document.createElement("input");slider.type="range";
+  slider.min=String(min);slider.max=String(max);slider.step=String(step);slider.value=String(value);
+  slider.setAttribute("aria-label",label);
+  row.append(caption,slider,count);settings.appendChild(row);
+  slider.addEventListener("input",()=>{
+   const next=clamp(slider.value,min,max,value);count.textContent=next+suffix;
+   settingsOptions=sanitizeSettings({...settingsOptions,[property]:next});
+   applySettings(state,true);
+  });
+ };
+ const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,
+   enabled,available:false,entries:[],cursor:0,lastTime:0,webFullscreen:false,
+   options:{...settingsOptions},lane:0,lineTimes:[],
+   live:[],loading:false,abort:null,probeAbort:null};
+ createRange(t("显示行数","Rows"),1,8,1,state.options.rows,t(" 行",""),"rows");
+ const positionRow=document.createElement("label");positionRow.className="mtk-danmaku-setting-row";
+ const positionCaption=document.createElement("span");positionCaption.textContent=t("显示位置","Position");
+ const position=document.createElement("select");position.setAttribute("aria-label",positionCaption.textContent);
+ for(const [value,zh,english] of [["top","上方","Top"],["middle","中间","Middle"],["bottom","下方","Bottom"]]){
+  const option=document.createElement("option");option.value=value;option.textContent=t(zh,english);
+  option.selected=value===state.options.position;position.appendChild(option);
+ }
+ positionRow.append(positionCaption,position);settings.appendChild(positionRow);
+ position.addEventListener("change",()=>{
+  settingsOptions=sanitizeSettings({...settingsOptions,position:position.value});
+  applySettings(state,true);
+ });
+ createRange(t("弹幕透明度","Opacity"),20,100,10,state.options.opacity,"%", "opacity");
+ controls.append(button,gear,fullscreen,settings);
+ screen.appendChild(area);
+ screen.after(controls);
+ applySettings(state,false);
  state.onTime=()=>update(state);
  state.onSeek=()=>seek(state);
  state.onPause=()=>screen.classList.add("mtk-danmaku-paused");
@@ -231,6 +305,10 @@ function mount(video,info){
   setButton(state);
  });
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
+ gear.addEventListener("click",()=>{
+  settings.hidden=!settings.hidden;
+  gear.setAttribute("aria-expanded",String(!settings.hidden));
+ });
  session=state;setButton(state);
  probe(state);
 }
