@@ -92,6 +92,7 @@ jobs:
               workId:d.workId||null,season:d.season??null,episode:d.episode??null,
               mediaFormat:d.media?.format||null,mediaCors:d.media?.cors??null,
               isHttps:typeof d.media?.url==='string'&&d.media.url.startsWith('https://'),
-              videoProxied:d.videoProxied??null}));
+              videoProxied:d.videoProxied??null,
+              diagnostics:Array.isArray(d.diagnostics)?d.diagnostics.slice(0,12):null}));
           }catch(e){console.log('EPISODE_PLAYBACK_SMOKE',JSON.stringify({error:String(e?.name||'network_error')}));}
           NODE
