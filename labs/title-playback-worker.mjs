@@ -280,7 +280,7 @@ export default {
   const metadataUrl=new URL(u.origin+"/api/title/"+(w?"work/"+workId:kind+"/"+id));
   metadataUrl.searchParams.set("season",String(season));
   // Bust cached source selections when ranking rules change.
-  metadataUrl.searchParams.set("resolver","exact-edition-v2");
+  metadataUrl.searchParams.set("resolver","exact-edition-v3");
   if(w){metadataUrl.searchParams.set("kind",kind);metadataUrl.searchParams.set("title",workTitle);
     metadataUrl.searchParams.set("original",originalTitle);metadataUrl.searchParams.set("year",year);}
   const metadataKey=new Request(metadataUrl.href);
@@ -295,10 +295,15 @@ export default {
       status:found.status,episodes:found.source?availableEpisodes(found.source.lines,kind):[],
       matchedTitle:found.source?found.source.title:null};
     base={...result,_lines:found.source?.lines||[]};
-    ctx.waitUntil(caches.default.put(metadataKey,new Response(JSON.stringify(base),{
-      headers:{"cache-control":"public,max-age="+(found.status==="matched"?600:120)}})));
+    // Keep successful work/episode mapping through brief upstream outages.
+    // A failed upstream connection is not proof that a title has no source:
+    // never negative-cache "unavailable".
+    if(found.status!=="unavailable"){
+      ctx.waitUntil(caches.default.put(metadataKey,new Response(JSON.stringify(base),{
+        headers:{"cache-control":"public,max-age="+(found.status==="matched"?1800:120)}})));
+    }
    }
-   if(mode==="title"){const {_lines,...pub}=base;return response(pub,200,60);}
+   if(mode==="title"){const {_lines,...pub}=base;return response(pub,200,base.status==="matched"?60:0);}
    if(base.status!=="matched"||!base.episodes.includes(episode))
     return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
    const resolved=await resolve(base._lines,kind,episode);
