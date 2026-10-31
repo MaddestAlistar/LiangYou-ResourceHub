@@ -91,8 +91,11 @@ function rank(item,names,kind,season,year){
  if(!equal)return 0;
  const sourceYear=Number(item.vod_year),targetYear=Number(year);
  if(sourceYear>0&&targetYear>0&&Math.abs(sourceYear-targetYear)>1&&kind==="movie")return 0;
- // Source TV series may report year of the season, not the first broadcast.
- return 100+(sourceYear>0&&targetYear>0&&Math.abs(sourceYear-targetYear)<=1?5:0);
+ // Prefer the exact named work over dub editions, edits and other parenthetical variants.
+ // Keep qualifiers for this exact-match pass (normalize() strips them intentionally).
+ const preserve=name=>clean(name).toLowerCase().replace(/[《》\s·\-_:：,.，。!?！？]/g,"");
+ const exact=names.some(n=>preserve(n)===preserve(item.vod_name));
+ return (exact?130:100)+(sourceYear>0&&targetYear>0&&Math.abs(sourceYear-targetYear)<=1?5:0);
 }
 async function matchSource(kind,record,season){
  const names=[record.title,record.originalTitle].filter(s=>s&&s.length>1);
