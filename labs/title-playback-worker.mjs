@@ -17,7 +17,10 @@ const normalize=s=>clean(s).toLowerCase().replace(/【[^】]*】|\[[^\]]*\]|（[
 const removeSeason=s=>String(s).replace(/第\s*[一二三四五六七八九十两零\d]+\s*季|\bseason\s*\d+\b|\bs\d+\b/gi,"");
 function seasonIn(s){
  const m=String(s||"").match(/第\s*([一二三四五六七八九十两零\d]+)\s*季|\bseason\s*(\d+)\b|\bs(\d+)\b/i);
- if(!m)return 0;
+ if(!m){
+  const trailing=String(s||"").match(/\s([2-9]|[1-5]\d)$/);
+  return trailing?Number(trailing[1]):0;
+ }
  const n=m[1]||m[2]||m[3];if(/^\d+$/.test(n))return Number(n);
  const d={一:1,二:2,两:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10};
  if(n.includes("十")){const p=n.split("十");return (d[p[0]]||1)*10+(d[p[1]]||0);}
@@ -81,8 +84,10 @@ function rank(item,names,kind,season,year){
  if(kind==="tv"&&Number(item.type_id)===1)return 0;
  const s=seasonIn(item.vod_name);
  if(kind==="tv"&&(season>1?s!==season:s>1))return 0;
- const provided=normalize(removeSeason(item.vod_name));
- const equal=names.some(n=>normalize(removeSeason(n))===provided&&provided.length>=2);
+ const comparable=name=>normalize(kind==="tv"?
+   removeSeason(name).replace(/\s+\d{1,2}$/, ""):removeSeason(name));
+ const provided=comparable(item.vod_name);
+ const equal=names.some(n=>comparable(n)===provided&&provided.length>=2);
  if(!equal)return 0;
  const sourceYear=Number(item.vod_year),targetYear=Number(year);
  if(sourceYear>0&&targetYear>0&&Math.abs(sourceYear-targetYear)>1&&kind==="movie")return 0;
