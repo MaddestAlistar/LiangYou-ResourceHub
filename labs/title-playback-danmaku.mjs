@@ -29,7 +29,10 @@ function chooseMatch(matches,record,kind,episode){
 }
 function trimComment(x,shift=0){
  const p=String(x?.p||"").split(",");
- const time=Number(p[0])+shift,mode=Number(p[1]),color=Number(p[3]);
+ // DandanPlay JSON commonly has p="time,mode,color,source";
+ // Bilibili XML converted JSON may instead have p="time,mode,size,color,...".
+ const rawColor=p.length>=4&&/^\d+$/.test(p[3])?p[3]:p[2];
+ const time=Number(p[0])+shift,mode=Number(p[1]),color=Number(rawColor);
  const content=String(x?.m||"").replace(/[\u0000-\u001F\u007F]/g," ").trim().slice(0,120);
  if(!Number.isFinite(time)||time<0||time>86400||![1,4,5].includes(mode)||
   !Number.isInteger(color)||color<0||color>0xffffff||!content)return null;
@@ -87,7 +90,7 @@ async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFA
   try{
    const raw=await jsonBounded(new URL("api/v2/comment/"+
      encodeURIComponent(String(selected.episodeId))+"?format=json",baseUrl).href,{
-      headers:{"accept":"application/json"}},1400000,9500,fetcher);
+      headers:{"accept":"application/json"}},3500000,9500,fetcher);
    if(raw.value&&Array.isArray(raw.value.comments)){
     const comments=parseComments(raw.value,selected.shift);
     return {status:comments.length?"ready":"empty",comments};
