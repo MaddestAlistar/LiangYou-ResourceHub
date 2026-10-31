@@ -42,7 +42,7 @@ test("sorted danmaku captions seek to exact positions without drawing thousands 
  assert.equal(index(a,66),5);
 });
 
-test("unmatched episodes hide all danmaku buttons; confirmed episodes show the toggle",async()=>{
+test("unmatched episodes keep fullscreen and retry, but only confirmed comments show the switch",async()=>{
  const start=source.indexOf("async function probe(state,attempt=0){");
  const end=source.indexOf("async function load(state){",start);
  assert.ok(start>0&&end>start,"Availability check was not installed");
@@ -51,7 +51,8 @@ test("unmatched episodes hide all danmaku buttons; confirmed episodes show the t
  const state={
   info:{id:"tmdb-tv-30984",kind:"tv",season:1,episode:4},
   video:{setAttribute(name,value){this[name]=value}},
-  controls:{hidden:true},button:{},available:false,enabled:false,probeAbort:null
+  controls:{hidden:false},button:{},gear:{},retry:{},status:{},
+  available:false,enabled:false,probeAbort:null,checking:false
  };
  const context={
   AbortController,session:state,pathFor:()=>"https://example.test/api/danmaku/work/tmdb-tv-30984?episode=4",
@@ -59,19 +60,29 @@ test("unmatched episodes hide all danmaku buttons; confirmed episodes show the t
    assert.match(url,/check=1/);
    return {ok:true,json:async()=>answer};
   },
-  setButton(v){v.button.hidden=!v.available},load(){loaded++}
+  setButton(v){
+    v.controls.hidden=false;
+    v.button.hidden=!v.available;
+    v.gear.hidden=!v.available;
+    v.status.hidden=v.available;
+    v.retry.hidden=v.available||v.checking;
+  },load(){loaded++}
  };
  vm.createContext(context);
  const probe=vm.runInContext("("+source.slice(start,end).trim()+")",context);
  await probe(state);
  assert.equal(state.available,false);
  assert.equal(state.button.hidden,true);
- assert.equal(state.controls.hidden,true);
+ assert.equal(state.gear.hidden,true);
+ assert.equal(state.controls.hidden,false,"Fullscreen must not disappear when danmaku is unavailable");
+ assert.equal(state.retry.hidden,false,"Offer retry for an unverified episode");
  answer={...answer,status:"ready",count:1255};
  state.enabled=true;
  await probe(state);
  assert.equal(state.available,true);
  assert.equal(state.button.hidden,false);
+ assert.equal(state.gear.hidden,false);
+ assert.equal(state.retry.hidden,true);
  assert.equal(state.controls.hidden,false);
  assert.equal(state.video.controlsList,"nofullscreen");
  assert.equal(loaded,1);
@@ -186,4 +197,16 @@ test("fullscreen controls auto-hide only in fullscreen; settings panel pauses th
  assert.ok(!classes.has("mtk-danmaku-controls-hidden"),"Never hide toolbar under the normal video");
  assert.match(css,/mtk-danmaku-controls-hidden/);
  assert.match(source,/screen\.addEventListener\("pointerdown",state\.onScreenTap,true\)/);
+});
+
+test("fullscreen control is independent of danmaku availability and error states",()=>{
+ assert.match(source,/async function toggleWebFullscreen\(state\)\{\s*if\(state!==session\)return;/);
+ assert.doesNotMatch(source,/state\.controls\.hidden=!state\.available/);
+ assert.doesNotMatch(source,/state\.available=false;state\.controls\.hidden=true/);
+ assert.match(source,/controls\.append\(status,retry,button,gear,fullscreen,settings\)/);
+ assert.match(source,/retry\.addEventListener\("click",\(\)=>probe\(state,1\)\)/);
+ assert.match(source,/state\.button\.hidden=!state\.available/);
+ assert.match(source,/state\.gear\.hidden=!state\.available/);
+ assert.match(css,/mtk-danmaku-status/);
+ assert.match(css,/mtk-danmaku-retry/);
 });
