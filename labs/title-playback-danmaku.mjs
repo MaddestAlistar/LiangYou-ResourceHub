@@ -4,7 +4,7 @@ const DEFAULT_DANMAKU_BASE="http://nl.jc.cd/87654321";
 const ALLOWED_ORIGIN="https://maddestalistar.github.io";
 const shrink=s=>String(s??"").trim().slice(0,120);
 const normalized=s=>shrink(s).toLowerCase()
- .replace(/\s+from\s+.+$/i,"")
+ .replace(/\s*from\s+.+$/i,"")
  .replace(/（[^）]*）|\([^)]*\)|【[^】]*】|\[[^\]]*\]/g,"")
  .replace(/第\s*\d+\s*[季部]|\bseason\s*\d+\b|\bs\d+\b/gi,"")
  .replace(/[《》〈〉\s\-_:：·.,，。!?！？\/\\“”"'’]/g,"");
