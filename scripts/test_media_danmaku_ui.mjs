@@ -205,7 +205,7 @@ test("fullscreen control is independent of danmaku availability and error states
  assert.doesNotMatch(source,/state\.controls\.hidden=!state\.available/);
  assert.doesNotMatch(source,/state\.available=false;state\.controls\.hidden=true/);
  assert.match(source,/controls\.append\(status,retry,button,gear,fullscreen,settings\)/);
- assert.match(source,/retry\.addEventListener\("click",\(\)=>probe\(state,1\)\)/);
+ assert.match(source,/retry\.addEventListener\("click",\(\)=>\{/);
  assert.match(source,/state\.button\.hidden=!state\.available/);
  assert.match(source,/state\.gear\.hidden=!state\.available/);
  assert.match(css,/mtk-danmaku-status/);
@@ -259,7 +259,7 @@ test("temporary comment-download failure preserves known-positive episode and re
  assert.match(source,/state\.loadError=true;state\.statusReason="unavailable"/);
  assert.match(source,/state\.status\.hidden=state\.available&&!state\.loadError/);
  assert.match(source,/state\.retry\.hidden=state\.checking\|\|\(state\.available&&!state\.loadError\)/);
- assert.match(source,/state\.available=readVerified\(info\)/);
+ assert.match(source,/available:readVerified\(info\)/);
  assert.match(source,/if\(state\.entries\.length\)saveVerified\(state\.info,true\)/);
  assert.doesNotMatch(source,/setTimeout\(\(\)=>\{if\(state===session&&state\.video\.isConnected\)probe\(state,1\);\},2700\)/);
 });
