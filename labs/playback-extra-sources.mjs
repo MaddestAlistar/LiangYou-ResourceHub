@@ -110,9 +110,10 @@ async function requestJson(url,fetcher=fetch,maxMs=7500){
 }
 async function queryJianpian(record,kind,season,fetcher=fetch){
  for(const host of JP_HOSTS){
-  const query=new URL(host+"/api/v2/search/videoV2");
-  query.searchParams.set("key","keyword="+encodeURIComponent(record.title)+"&page=1");
-  const result=await requestJson(query.href,fetcher,6500);
+  // Preserve the unusual nested-query shape required by the user-supplied Rex module:
+  // ?key=keyword=<encoded title>&page=1 (not a percent-encoded whole query).
+  const query=host+"/api/v2/search/videoV2?key=keyword="+encodeURIComponent(record.title)+"&page=1";
+  const result=await requestJson(query,fetcher,6500);
   const list=Array.isArray(result?.data)?result.data:Array.isArray(result?.data?.list)?
     result.data.list:Array.isArray(result?.list)?result.list:[];
   const matches=list.filter(x=>x?.id&&identity(x.title||x.vod_name,record,kind,season,x.year)).slice(0,2);
