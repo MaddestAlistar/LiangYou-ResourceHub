@@ -43,7 +43,7 @@ test("sorted danmaku captions seek to exact positions without drawing thousands 
 });
 
 test("unmatched episodes hide all danmaku buttons; confirmed episodes show the toggle",async()=>{
- const start=source.indexOf("async function probe(state){");
+ const start=source.indexOf("async function probe(state,attempt=0){");
  const end=source.indexOf("async function load(state){",start);
  assert.ok(start>0&&end>start,"Availability check was not installed");
  let answer={ok:true,status:"empty",workId:"tmdb-tv-30984",kind:"tv",
