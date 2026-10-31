@@ -82,7 +82,8 @@ function playbackHtml(info){
     t("正在核对可用的视频资源","Checking available video resources"))+'</div>'+
   '<div class="mtk-playback-controls" hidden><label class="mtk-playback-season-row">'+t("选择季度","Season")+
   ' <select class="mtk-playback-season" aria-label="'+t("选择季度","Choose season")+'"></select></label>'+
-  '<div class="mtk-playback-episode-head"><strong>'+t("选集","Episodes")+'</strong>'+
+  '<div class="mtk-playback-episode-head"><div class="mtk-playback-episode-heading"><strong>'+t("选集","Episodes")+'</strong>'+
+  '<span class="mtk-playback-episode-total"></span></div>'+
   '<div class="mtk-playback-pages"></div></div><div class="mtk-playback-episodes" role="group" aria-label="'+t("选择集数","Select episode")+'"></div></div>'+
   '<div class="mtk-playback-actions" hidden><button type="button" class="mtk-playback-retry">'+
   t("重新匹配","Retry match")+'</button></div>'+
@@ -90,28 +91,42 @@ function playbackHtml(info){
   '</section>';
 }
 function episodeLabel(n){return t("第 "+n+" 集","Episode "+n);}
+function episodesPerPage(){
+ return window.matchMedia?.("(max-width:650px)")?.matches?12:24;
+}
 function renderEpisodes(){
  const box=card(),info=active;if(!box||!info)return;
  const controls=box.querySelector(".mtk-playback-controls");
  controls.hidden=info.kind==="movie"||!info.episodes.length;
  const seasonRow=box.querySelector(".mtk-playback-season-row"),seasonSelect=box.querySelector(".mtk-playback-season");
  if(info.kind==="tv"){
-  const options=info.seasons?.length?info.seasons:
-    info.fixedSeason?[{number:info.season}]:[{number:1},{number:2},{number:3},{number:4},{number:5}];
+  // Never invent seasons when the catalog does not provide actual season metadata.
+  const options=info.seasons?.length?info.seasons:[{number:info.season}];
   seasonSelect.innerHTML=options.map(s=>'<option value="'+s.number+'"'+(s.number===info.season?" selected":"")+">"+
     t("第 "+s.number+" 季","Season "+s.number)+"</option>").join("");
   seasonRow.hidden=options.length<2;
  }
- const count=info.episodes.length,pageCount=Math.ceil(count/48);
+ const count=info.episodes.length,perPage=episodesPerPage();
+ const pageCount=Math.ceil(count/perPage);
  info.page=Math.min(Math.max(0,info.page||0),Math.max(0,pageCount-1));
- const visible=info.episodes.slice(info.page*48,info.page*48+48);
+ const visible=info.episodes.slice(info.page*perPage,(info.page+1)*perPage);
+ const total=box.querySelector(".mtk-playback-episode-total");
+ if(total)total.textContent=t("共 "+count+" 集",count+" episodes");
  box.querySelector(".mtk-playback-episodes").innerHTML=visible.map(n=>
    '<button type="button" data-mtk-episode="'+n+'" aria-pressed="'+(n===info.episode)+'">'+
      (n===info.episode?"▶ ":"")+episodeLabel(n)+'</button>').join("");
  const nav=box.querySelector(".mtk-playback-pages");
- nav.innerHTML=pageCount<=1?"":'<button type="button" data-mtk-page="-1"'+(info.page===0?" disabled":"")+'>‹</button>'+
-  '<span>'+(info.page+1)+" / "+pageCount+'</span>'+
-  '<button type="button" data-mtk-page="1"'+(info.page>=pageCount-1?" disabled":"")+'>›</button>';
+ const ranges=Array.from({length:pageCount},(_,i)=>{
+   const first=info.episodes[i*perPage],last=info.episodes[Math.min(count-1,(i+1)*perPage-1)];
+   return '<option value="'+i+'"'+(i===info.page?" selected":"")+'>'+
+     first+"–"+last+'</option>';
+ }).join("");
+ nav.innerHTML=pageCount<=1?"":'<button type="button" data-mtk-page="-1" aria-label="'+
+  t("上一组选集","Previous episodes")+'"'+(info.page===0?" disabled":"")+'>‹</button>'+
+  '<select class="mtk-playback-page-select" aria-label="'+t("选择集数范围","Select episode range")+'">'+
+  ranges+'</select>'+
+  '<button type="button" data-mtk-page="1" aria-label="'+t("下一组选集","Next episodes")+'"'+
+  (info.page>=pageCount-1?" disabled":"")+'>›</button>';
  boxAction(info.episodes.includes(info.episode));
  const txt=box.querySelector(".mtk-playback-now");
  if(txt)txt.textContent=info.kind==="movie"?info.title:info.title+" · "+episodeLabel(info.episode);
@@ -146,7 +161,7 @@ async function lookup(){
   info.seasons=Array.isArray(body.seasons)?body.seasons.filter(s=>inRange(s?.number,60)).slice(0,45):[];
   info.episodes=Array.isArray(body.episodes)?[...new Set(body.episodes.filter(e=>inRange(e,3000)).map(Number))].sort((a,b)=>a-b):[];
   if(info.episodes.length&&!info.episodes.includes(info.episode))info.episode=info.episodes[0];
-  info.page=Math.max(0,Math.floor(Math.max(0,info.episodes.indexOf(info.episode))/48));
+  info.page=Math.max(0,Math.floor(Math.max(0,info.episodes.indexOf(info.episode))/episodesPerPage()));
   renderEpisodes();saveSelection();
   if(body.status==="matched"&&info.episodes.length){
    boxAction(true);
@@ -322,10 +337,25 @@ function mount(info){
  if(anchor)anchor.insertAdjacentElement("afterend",node);else toolkit.appendChild(node);
  lookup();
 }
+// Re-anchor the selected episode when switching between mobile and desktop layouts.
+const mobileSize=window.matchMedia?.("(max-width:650px)");
+mobileSize?.addEventListener?.("change",()=>{
+ if(!active||!card())return;
+ const selectedIndex=active.episodes.indexOf(active.episode);
+ active.page=Math.max(0,Math.floor(Math.max(0,selectedIndex)/episodesPerPage()));
+ renderEpisodes();
+});
 root.addEventListener("liangyou:media-detail",e=>mount(e.detail));
 dialog.addEventListener("close",()=>{clearPlayback();active=null;});
 dialog.addEventListener("change",e=>{
- if(!e.target.matches(".mtk-playback-season")||!active)return;
+ if(!active)return;
+ if(e.target.matches(".mtk-playback-page-select")){
+   const page=Number(e.target.value);
+   const max=Math.ceil(active.episodes.length/episodesPerPage());
+   if(Number.isInteger(page)&&page>=0&&page<max){active.page=page;renderEpisodes();}
+   return;
+ }
+ if(!e.target.matches(".mtk-playback-season"))return;
  const n=Number(e.target.value);if(!inRange(n,60)||n===active.season)return;
  active.season=n;active.episode=1;active.page=0;active.episodes=[];saveSelection();lookup();
 });
