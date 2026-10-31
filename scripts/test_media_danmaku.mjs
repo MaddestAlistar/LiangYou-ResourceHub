@@ -23,6 +23,16 @@ test("episode number is not confused with another episode or season",()=>{
  assert.equal(chooseMatch(candidates,record,"tv",4).episodeId,9902);
  assert.equal(chooseMatch(candidates,record,"tv",3),null);
 });
+test("real-world DandanPlay p format stores color in third field and source in fourth",()=>{
+ const xs=parseComments({comments:[
+  {cid:"1",p:"0.00,1,16478873,[dandan]",m:"测试滚动",t:0,like:4},
+  {cid:"2",p:"5.25,5,16777215,[bilibili1]",m:"测试顶部",t:0,like:1}
+ ]});
+ assert.equal(xs.length,2);
+ assert.equal(xs[0].color,16478873);
+ assert.equal(xs[1].color,16777215);
+ assert.equal(xs[1].mode,5);
+});
 test("comments are bounded, timestamped and safe for textContent",()=>{
  const data=parseComments({comments:[
   {p:"1.5,1,25,16777215,0,0,0,1",m:"早上好"},
