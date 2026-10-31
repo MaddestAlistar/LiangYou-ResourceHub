@@ -77,7 +77,11 @@ jobs:
               const d=await r.json();
               console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,http:r.status,ok:d.ok||false,status:d.status||null,
                 workId:d.workId||null,tmdbId:d.tmdbId??null,kind:d.kind||null,
-                matchTitle:d.matchedTitle||null,episodes:d.episodes?.length||0,error:d.error||null}));
+                matchTitle:d.matchedTitle||null,episodes:d.episodes?.length||0,
+                sourceFamilies:d.coverage?.sourceFamilies??null,
+                extraCandidates:d.coverage?.extraCandidates??null,
+                aggregateProbed:d.coverage?.aggregateProbed??null,
+                error:d.error||null}));
             }catch(e){console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,error:String(e?.name||'network_error')}));}
           }
           NODE
