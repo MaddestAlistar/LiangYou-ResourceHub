@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {exactTitle,episodeMatches,chooseMatch,parseComments,lookupDanmaku} from
+import {exactTitle,episodeMatches,chooseMatch,parseComments,lookupDanmaku,handleDanmaku} from
  "../labs/title-playback-danmaku.mjs";
 
 const record={title:"死神",originalTitle:"BLEACH",year:"2004"};
@@ -82,4 +82,39 @@ test("unrelated matches are never used to request comments",async()=>{
  const result=await lookupDanmaku(record,"tv",1,4,{fetcher,base:"https://example.test/token"});
  assert.equal(result.status,"unavailable");
  assert.ok(urls.every(u=>u.endsWith("/api/v2/match")));
+});
+
+test("availability check omits comment text and reuses the full-payload cache",async()=>{
+ const previous=globalThis.caches;
+ const stored={ok:true,status:"ready",workId:"tmdb-tv-30984",kind:"tv",
+  season:1,episode:4,count:1255,comments:[{time:1,mode:1,color:16777215,text:"private comment"}]};
+ let hits=0;
+ globalThis.caches={default:{async match(){hits++;return new Response(JSON.stringify(stored));}}};
+ const base="https://example.test/api/danmaku/work/tmdb-tv-30984?kind=tv&title="+
+  encodeURIComponent("死神")+"&original=BLEACH&year=2004&season=1&episode=4";
+ try{
+  const check=await handleDanmaku(new Request(base+"&check=1"),{},{waitUntil(){}});
+  const meta=await check.json();
+  assert.equal(meta.available,true);
+  assert.equal(meta.count,1255);
+  assert.equal(meta.comments,undefined,"do not send hundreds of comments to viewers who did not enable danmaku");
+  const full=await handleDanmaku(new Request(base),{},{waitUntil(){}});
+  assert.equal((await full.json()).comments[0].text,"private comment");
+  assert.equal(hits,2);
+ }finally{globalThis.caches=previous;}
+});
+test("empty episode cache does not advertise a danmaku toggle",async()=>{
+ const previous=globalThis.caches;
+ globalThis.caches={default:{async match(){return new Response(JSON.stringify({
+  ok:true,status:"empty",workId:"tmdb-tv-30984",kind:"tv",season:1,episode:4,
+  count:0,comments:[]}));}}};
+ try{
+  const url="https://example.test/api/danmaku/work/tmdb-tv-30984?"+
+   "kind=tv&title=%E6%AD%BB%E7%A5%9E&year=2004&season=1&episode=4&check=1";
+  const response=await handleDanmaku(new Request(url),{},{waitUntil(){}});
+  const meta=await response.json();
+  assert.equal(meta.available,false);
+  assert.equal(meta.count,0);
+  assert.equal(meta.comments,undefined);
+ }finally{globalThis.caches=previous;}
 });
