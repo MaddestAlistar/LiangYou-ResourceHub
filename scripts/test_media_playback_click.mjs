@@ -92,7 +92,7 @@ test("central circle becomes enabled only after the work has matching episodes",
 
 test("automatic recovery hides source choices and restores playback position",()=>{
  const start=script.indexOf("function tryInvisibleSwitch(");
- const end=script.indexOf("async function startPlayback(){",start);
+ const end=script.indexOf("function validSkip(",start);
  assert.ok(start>=0&&end>start,"Auto failover handler missing");
  const context={
   serial:7,active:{id:"bangumi-899"},lastProgress:13,pendingSwitch:null,
