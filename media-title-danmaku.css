@@ -184,3 +184,21 @@
  #media .mtk-danmaku-setting-row{grid-template-columns:69px minmax(0,1fr) 38px;gap:7px}
  #media .mtk-danmaku-setting-row:has(select){grid-template-columns:69px minmax(0,1fr)}
 }
+
+/* Fullscreen tools automatically fade away to keep subtitles visible.
+   A tap inside the video reveals them again, while opened settings remain visible. */
+#media .mtk-playback-screen:fullscreen .mtk-danmaku-actions,
+#media .mtk-playback-screen:-webkit-full-screen .mtk-danmaku-actions,
+#media .mtk-playback-screen.mtk-danmaku-webfullscreen .mtk-danmaku-actions{
+ transition:opacity .2s ease,visibility .2s ease,transform .2s ease;
+ opacity:1;visibility:visible
+}
+#media .mtk-playback-screen:fullscreen .mtk-danmaku-actions.mtk-danmaku-controls-hidden,
+#media .mtk-playback-screen:-webkit-full-screen .mtk-danmaku-actions.mtk-danmaku-controls-hidden,
+#media .mtk-playback-screen.mtk-danmaku-webfullscreen .mtk-danmaku-actions.mtk-danmaku-controls-hidden{
+ opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+ transform:translateY(9px)
+}
+@media(prefers-reduced-motion:reduce){
+ #media .mtk-playback-screen .mtk-danmaku-actions{transition:none!important}
+}
