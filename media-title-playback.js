@@ -190,7 +190,9 @@ function safeStream(media){
 async function startPlayback(){
  if(!active||!card()||!active.episodes.includes(active.episode))return;
  const info=active;
- clearPlayback();const ac=new AbortController();controller=ac,token=++serial;
+ clearPlayback();
+ const ac=new AbortController();controller=ac;
+ const token=++serial;
  const b=card().querySelector(".mtk-playback-start");
  if(b)b.disabled=true;
  showStatus(t("正在获取当前集的播放地址…","Resolving this episode’s stream…"));
