@@ -93,9 +93,9 @@ async function json(url,signal){
 }
 async function lookup(){
  if(!active||!card())return;
- const info=active,token=++serial;
- controller?.abort();const ac=new AbortController();controller=ac;
- clearPlayback(); // increments serial; preserve the post-cleanup serial below
+ const info=active;
+ clearPlayback();
+ const ac=new AbortController();controller=ac;
  const reqId=++serial;
  showStatus(t("正在匹配当前作品…","Matching this title…"));
  const stage=card()?.querySelector(".mtk-playback-screen");
@@ -203,6 +203,7 @@ async function startPlayback(){
 function mount(info){
  clearPlayback();
  document.querySelectorAll("#media-dialog .mtk-playback").forEach(x=>x.remove());
+ active=null;
  if(info?.section!=="watch"||!idValid(info))return;
  const toolkit=dialog.querySelector(".mi-toolkit");
  const anchor=toolkit?.querySelector(".mtk-details:last-of-type");
