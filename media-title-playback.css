@@ -36,3 +36,25 @@
  #media .mtk-playback-symbol{width:43px;height:43px;font-size:22px}
  #media .mtk-playback-now{font-size:11px}
 }
+
+/* The large centered icon is the only primary Play control. */
+#media .mtk-playback-screen .mtk-playback-start{
+ display:grid;place-items:center;flex:0 0 auto;
+ width:54px;height:54px;min-width:54px;min-height:54px;padding:0 0 0 3px;
+ border-radius:50%;border:1px solid rgba(165,195,252,.5);
+ color:#b9d0fb;background:rgba(54,85,149,.26);
+ box-shadow:0 0 0 1px rgba(113,151,216,.1),0 8px 28px rgba(0,0,0,.2);
+ font-size:26px;line-height:1;cursor:pointer;touch-action:manipulation;
+ transition:background .16s ease,transform .16s ease,border-color .16s ease;
+}
+#media .mtk-playback-screen .mtk-playback-start:not(:disabled):active{transform:scale(.95)}
+#media .mtk-playback-screen .mtk-playback-start:not(:disabled):hover{
+ background:rgba(76,124,213,.45);border-color:rgba(173,206,255,.84)
+}
+#media .mtk-playback-screen .mtk-playback-start:disabled{cursor:default;opacity:.45}
+#media .mtk-playback-actions[hidden]{display:none!important}
+@media(max-width:650px){
+ #media .mtk-playback-screen .mtk-playback-start{
+  width:48px;height:48px;min-width:48px;min-height:48px;font-size:23px
+ }
+}
