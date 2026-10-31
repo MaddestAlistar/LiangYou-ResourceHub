@@ -60,6 +60,7 @@ test("unmatched episodes keep fullscreen and retry, but only confirmed comments 
    assert.match(url,/check=1/);
    return {ok:true,json:async()=>answer};
   },
+  saveVerified(){},
   setButton(v){
     v.controls.hidden=false;
     v.button.hidden=!v.available;
@@ -209,4 +210,46 @@ test("fullscreen control is independent of danmaku availability and error states
  assert.match(source,/state\.gear\.hidden=!state\.available/);
  assert.match(css,/mtk-danmaku-status/);
  assert.match(css,/mtk-danmaku-retry/);
+});
+
+test("previously verified danmaku remains visible when an upstream refresh is unavailable",async()=>{
+ const start=source.indexOf("async function probe(state,attempt=0){"),
+   end=source.indexOf("async function load(state){",start);
+ assert.ok(start>0&&end>start);
+ const remembered=[],state={
+  info:{id:"tmdb-tv-30984",title:"死神",kind:"tv",season:1,episode:2},
+  video:{isConnected:true,setAttribute(){}},
+  controls:{hidden:false},button:{},gear:{},retry:{},status:{},
+  available:true,checking:false,enabled:false,probeAbort:null
+ };
+ const ctx={AbortController,session:state,pathFor:()=>"/api/danmaku?episode=2",
+  fetch:async()=>({ok:true,json:async()=>({ok:true,status:"unavailable",
+    workId:state.info.id,kind:"tv",season:1,episode:2,count:0})}),
+  saveVerified:(info,flag)=>remembered.push(flag),
+  setButton(v){v.button.hidden=!v.available;v.controls.hidden=false;v.gear.hidden=!v.available;},
+  setTimeout(){throw Error("Do not retry already-verified episodes");}};
+ vm.createContext(ctx);
+ const probe=vm.runInContext("("+source.slice(start,end).trim()+")",ctx);
+ await probe(state,0);
+ assert.equal(state.available,true);
+ assert.equal(state.button.hidden,false);
+ assert.deepEqual(remembered,[]);
+});
+test("local browser keeps only recently verified episodes, not arbitrary unknown ones",()=>{
+ const start=source.indexOf("const POSITIVE_CACHE="),
+   end=source.indexOf("const MAX_DISPLAY=",start);
+ assert.ok(start>0&&end>start);
+ let now=1000000;const map=new Map();
+ const ctx={localStorage:{getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)},
+  Date:{now:()=>now},JSON,Object,Number,Math};
+ vm.createContext(ctx);
+ const apis=vm.runInContext(source.slice(start,end)+"\n({readVerified,saveVerified})",ctx);
+ const one={id:"tmdb-tv-30984",title:"死神",kind:"tv",season:1,episode:1};
+ const two={...one,episode:2};
+ assert.equal(apis.readVerified(one),false);
+ apis.saveVerified(one,true);
+ assert.equal(apis.readVerified(one),true);
+ assert.equal(apis.readVerified(two),false);
+ now+=49*60*60*1000;
+ assert.equal(apis.readVerified(one),false);
 });
