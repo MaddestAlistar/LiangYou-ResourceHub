@@ -234,20 +234,33 @@ export default {
   if(req.method!=="GET")return response({ok:false,error:"method"},405);
   if(u.pathname==="/health")return response({ok:true,service:"title-playback-metadata",version:"1.0",videoProxy:false});
   const m=u.pathname.match(/^\/api\/(title|play)\/(movie|tv)\/([1-9]\d{0,9})$/);
-  if(!m)return response({ok:false,error:"not_found"},404);
-  const [,mode,kind,strId]=m,id=Number(strId);
+  const w=u.pathname.match(/^\/api\/(title|play)\/work\/([a-z][a-z0-9-]{2,90})$/);
+  if(!m&&!w)return response({ok:false,error:"not_found"},404);
+  const mode=m?m[1]:w[1],kind=m?m[2]:u.searchParams.get("kind");
+  const id=m?Number(m[3]):null,workId=w?w[2]:"tmdb-"+kind+"-"+id;
   const season=kind==="movie"?1:Number(u.searchParams.get("season")||1);
   const episode=kind==="movie"?1:Number(u.searchParams.get("episode")||1);
-  if(!Number.isSafeInteger(id)||id>1e10||!Number.isInteger(season)||season<1||season>60||
-    !Number.isInteger(episode)||episode<1||episode>3000)return response({ok:false,error:"bad_params"},400);
-  // Independent cache for individual titles and seasons. Never caches or serves video bytes.
-  const metadataKey=new Request(u.origin+"/api/title/"+kind+"/"+id+"?season="+season);
+  const workTitle=clean(u.searchParams.get("title")),originalTitle=clean(u.searchParams.get("original"));
+  const year=clean(u.searchParams.get("year")).slice(0,4);
+  if(!["movie","tv"].includes(kind)||m&&(id>1e10||!Number.isSafeInteger(id))||
+     !Number.isInteger(season)||season<1||season>60||
+     !Number.isInteger(episode)||episode<1||episode>3000||
+     w&&(workTitle.length<2||workTitle.length>90||originalTitle.length>90||
+       year&&!/^(18|19|20)\d\d$/.test(year)))return response({ok:false,error:"bad_params"},400);
+  // For titles without a TMDB ID, use their existing public catalog work identifier,
+  // original title, year and kind. No cross-title or global search UI.
+  const metadataUrl=new URL(u.origin+"/api/title/"+(w?"work/"+workId:kind+"/"+id));
+  metadataUrl.searchParams.set("season",String(season));
+  if(w){metadataUrl.searchParams.set("kind",kind);metadataUrl.searchParams.set("title",workTitle);
+    metadataUrl.searchParams.set("original",originalTitle);metadataUrl.searchParams.set("year",year);}
+  const metadataKey=new Request(metadataUrl.href);
   try{
    let cached=await caches.default.match(metadataKey),base=null;
    if(cached)base=await cached.json();
    if(!base){
-    const record=await tmdb(kind,id,env),found=await matchSource(kind,record,season);
-    const result={ok:true,kind,tmdbId:id,title:record.title,year:record.year,season,
+    const record=w?{title:workTitle,originalTitle,year,seasons:[]}:await tmdb(kind,id,env);
+    const found=await matchSource(kind,record,season);
+    const result={ok:true,kind,tmdbId:id,workId,title:record.title,year:record.year,season,
       seasons:kind==="movie"?[]:record.seasons,
       status:found.status,episodes:found.source?availableEpisodes(found.source.lines,kind):[],
       matchedTitle:found.source?found.source.title:null};
@@ -257,10 +270,10 @@ export default {
    }
    if(mode==="title"){const {_lines,...pub}=base;return response(pub,200,60);}
    if(base.status!=="matched"||!base.episodes.includes(episode))
-    return response({ok:false,status:"no_episode",kind,tmdbId:id,season,episode},404);
+    return response({ok:false,status:"no_episode",kind,tmdbId:id,workId,season,episode},404);
    const media=await resolve(base._lines,kind,episode);
-   if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,season,episode});
-   return response({ok:true,status:"ready",kind,tmdbId:id,season,episode,
+   if(!media)return response({ok:false,status:"no_verified_stream",kind,tmdbId:id,workId,season,episode});
+   return response({ok:true,status:"ready",kind,tmdbId:id,workId,season,episode,
      media,videoProxied:false,verifiedTitle:base.matchedTitle},200);
   }catch(e){
    return response({ok:false,status:"unavailable",error:"source_not_ready",kind,tmdbId:id},502);
