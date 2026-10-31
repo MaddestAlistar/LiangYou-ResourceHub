@@ -95,7 +95,8 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
  assert.ok(start>0&&end>start,"Web fullscreen implementation was not found");
  const classes=new Set(),rootClasses=new Set();
  const classList=cs=>({
-  add(x){cs.add(x)},remove(x){cs.delete(x)},contains(x){return cs.has(x)}
+  add(x){cs.add(x)},remove(x){cs.delete(x)},contains(x){return cs.has(x)},
+  toggle(x,force){const on=force===undefined?!cs.has(x):!!force;if(on)cs.add(x);else cs.delete(x);return on}
  });
  const controlClasses=new Set();
  const controls={parentElement:null,classList:classList(controlClasses),hidden:false,inert:false};
