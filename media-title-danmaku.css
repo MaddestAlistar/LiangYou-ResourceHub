@@ -1,0 +1,42 @@
+/* Optional synchronized danmaku. Buttons stay in the video frame; no extra card section. */
+#media .mtk-playback-screen{position:relative;isolation:isolate}
+#media .mtk-danmaku-overlay{
+ position:absolute;inset:0;overflow:hidden;z-index:2;pointer-events:none;
+ contain:layout paint;user-select:none
+}
+#media .mtk-danmaku-toggle{
+ position:absolute;right:9px;top:9px;z-index:4;display:flex;justify-content:center;align-items:center;
+ min-height:34px;min-width:76px;box-sizing:border-box;border-radius:9px;
+ border:1px solid rgba(147,181,235,.4);background:rgba(8,18,40,.77);
+ color:#d9e9ff;font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.2px;
+ cursor:pointer;touch-action:manipulation;padding:8px 10px;
+ -webkit-tap-highlight-color:transparent;backdrop-filter:blur(9px)
+}
+#media .mtk-danmaku-toggle[aria-pressed="true"]{
+ border-color:rgba(128,181,247,.9);background:rgba(38,85,148,.87);color:#fff
+}
+#media .mtk-danmaku-toggle[data-loading="true"]{opacity:.62}
+#media .mtk-danmaku-toggle:focus-visible{outline:2px solid #b5d5ff;outline-offset:2px}
+#media .mtk-danmaku-item{
+ position:absolute;z-index:1;width:max-content;max-width:90%;font-size:clamp(12px,2vw,19px);
+ font-weight:650;line-height:1.5;white-space:nowrap;pointer-events:none;
+ text-shadow:-1px -1px 1px #000,1px -1px 1px #000,-1px 1px 1px #000,
+  1px 1px 1px #000,0 2px 6px #000;will-change:transform;user-select:none
+}
+#media .mtk-danmaku-scroll{left:100%;animation:mtkDanmakuScroll 7.5s linear both}
+#media .mtk-danmaku-top,#media .mtk-danmaku-bottom{
+ left:50%;transform:translateX(-50%);animation:mtkDanmakuHold 4.3s linear both
+}
+#media .mtk-danmaku-paused .mtk-danmaku-item{animation-play-state:paused!important}
+@keyframes mtkDanmakuScroll{
+ from{transform:translateX(0)}
+ to{transform:translateX(calc(-100vw - 100%))}
+}
+@keyframes mtkDanmakuHold{0%,82%{opacity:1}100%{opacity:0}}
+@media(max-width:650px){
+ #media .mtk-danmaku-toggle{top:7px;right:7px;min-height:32px;min-width:70px;padding:7px 8px}
+ #media .mtk-danmaku-item{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ #media .mtk-danmaku-item{animation-duration:10s}
+}
