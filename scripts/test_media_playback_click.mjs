@@ -52,3 +52,37 @@ test("clicking Play actually reaches video element and starts verified MP4",asyn
  assert.equal(app.getPlayed(),1);
  assert.equal(app.button.disabled,false);
 });
+
+test("the central circle is the only Play control in each title card",()=>{
+ const start=script.indexOf("function playbackPlaceholder(");
+ const end=script.indexOf("function renderEpisodes(){",start);
+ assert.ok(start>=0&&end>start,"Playback markup helpers not found");
+ const context={tr:value=>String(value),t:value=>value};
+ vm.createContext(context);
+ const parts=vm.runInContext(script.slice(start,end)+"\n({playbackHtml,playbackPlaceholder})",context);
+ const html=parts.playbackHtml({id:"bangumi-899",kind:"tv",title:"名侦探柯南",episode:1});
+ assert.match(html,/<button[^>]+class="mtk-playback-start mtk-playback-symbol"/);
+ assert.equal((html.match(/class="mtk-playback-start/g)||[]).length,1);
+ assert.doesNotMatch(html,/站内播放|Play here/);
+ assert.match(html,/mtk-playback-actions" hidden/);
+ assert.match(script,/if\(e\.target\.closest\("\.mtk-playback-start"\)\)startPlayback\(\)/);
+});
+test("central circle becomes enabled only after the work has matching episodes",()=>{
+ const start=script.indexOf("function boxAction(ready){");
+ const end=script.indexOf("let hlsPromise=null;",start);
+ assert.ok(start>=0&&end>start,"Playback button control not found");
+ const play={disabled:true,setAttribute(key,value){this[key]=value}};
+ const actions={hidden:true},retry={hidden:true};
+ const context={card:()=>({querySelector(sel){return ({
+  ".mtk-playback-start":play,".mtk-playback-actions":actions,".mtk-playback-retry":retry
+ })[sel]}}),t:value=>value};
+ vm.createContext(context);
+ const boxAction=vm.runInContext("("+script.slice(start,end).trim()+")",context);
+ boxAction(true);
+ assert.equal(play.disabled,false);
+ assert.equal(actions.hidden,true);
+ boxAction(false);
+ assert.equal(play.disabled,true);
+ assert.equal(actions.hidden,false);
+ assert.equal(retry.hidden,false);
+});
