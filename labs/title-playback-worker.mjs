@@ -342,7 +342,10 @@ export default {
       coverage:{sourceFamilies:(found.source?.lines?.length?1:0)+
         (extra.lines.some(x=>x.provider==="jianpian")?1:0)+
         (extra.lines.some(x=>x.provider==="aggregate")?1:0),
-        extraCandidates:extra.lines.length,aggregateProbed:extra.checked-1},
+        extraCandidates:extra.lines.length,aggregateProbed:extra.checked-1,
+        primaryAvailable:!!found.source?.lines?.length,
+        jianpianAvailable:extra.lines.some(x=>x.provider==="jianpian"),
+        aggregateAvailable:extra.lines.some(x=>x.provider==="aggregate")},
       matchedTitle:found.source?found.source.title:union.length?record.title:null};
     base={...result,_lines:found.source?.lines||[],_extraLines:extra.lines};
     // Keep successful work/episode mapping through brief upstream outages.
