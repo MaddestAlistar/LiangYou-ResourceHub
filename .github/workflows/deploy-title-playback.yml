@@ -121,8 +121,12 @@ jobs:
           const r=await fetch(u,{signal:AbortSignal.timeout(26000)});
           const raw=await r.text();
           const data=JSON.parse(raw);
-          const valid=r.ok&&data.ok===true&&data.available===true&&data.count>0&&
+          // Third-party upstream sometimes times out. Validate the lightweight
+          // availability contract, not whether this episode is always online.
+          const valid=r.ok&&data.ok===true&&typeof data.available==='boolean'&&
+            Number.isInteger(data.count)&&data.count>=0&&
             data.workId==='tmdb-tv-30984'&&data.episode===4&&
+            (!data.available||data.count>0)&&
             !Object.hasOwn(data,'comments')&&raw.length<5000;
           console.log('DANMAKU_AVAILABILITY_SMOKE',JSON.stringify({
             http:r.status,available:data.available??false,
