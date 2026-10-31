@@ -222,3 +222,28 @@
 #media .mtk-danmaku-actions .mtk-danmaku-retry:focus-visible{
  outline:2px solid #b5d5ff;outline-offset:2px
 }
+
+/* In-page landscape: mobile Safari cannot lock the physical phone orientation.
+   Rotate the web player without replacing the video or losing danmaku. */
+#media .mtk-danmaku-actions .mtk-danmaku-rotate{
+ display:grid;place-items:center;box-sizing:border-box;
+ min-width:46px;height:34px;flex:0 0 46px;padding:0 7px;
+ border:1px solid rgba(133,166,216,.38);border-radius:9px;
+ background:rgba(26,46,77,.78);color:#d9e9ff;font:700 12px/1 system-ui,sans-serif;
+ cursor:pointer;touch-action:manipulation;white-space:nowrap
+}
+#media .mtk-danmaku-actions .mtk-danmaku-rotate[aria-pressed="true"]{
+ background:rgba(42,91,161,.92);border-color:#83b4f4;color:#fff
+}
+#media .mtk-danmaku-actions .mtk-danmaku-rotate:focus-visible{
+ outline:2px solid #b5d5ff;outline-offset:2px
+}
+/* Rotate a landscape-sized frame into the portrait viewport. If the user
+   physically turns the device, normal fullscreen sizing takes over. */
+@media (orientation:portrait) and (pointer:coarse){
+ #media .mtk-playback-screen.mtk-danmaku-webfullscreen.mtk-danmaku-landscape{
+  inset:auto!important;top:0!important;left:100vw!important;right:auto!important;bottom:auto!important;
+  width:100dvh!important;height:100vw!important;max-width:none!important;max-height:none!important;
+  transform-origin:top left!important;transform:rotate(90deg)!important
+ }
+}
