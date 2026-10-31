@@ -13,7 +13,7 @@ const response=(body,status=200,cache=0)=>new Response(JSON.stringify(body),{sta
   "x-content-type-options":"nosniff","vary":"Origin"}});
 const clean=s=>String(s??"").trim().slice(0,120);
 const normalize=s=>clean(s).toLowerCase().replace(/【[^】]*】|\[[^\]]*\]|（[^）]*）|\([^)]*\)/g,"")
-  .replace(/[\s\-_:：·,.，。!?！？\/\\“”"'’]/g,"");
+  .replace(/[《》〈〉\s\-_:：·,.，。!?！？\/\\“”"'’]/g,"");
 const removeSeason=s=>String(s).replace(/第\s*[一二三四五六七八九十两零\d]+\s*季|\bseason\s*\d+\b|\bs\d+\b/gi,"");
 function seasonIn(s){
  const m=String(s||"").match(/第\s*([一二三四五六七八九十两零\d]+)\s*季|\bseason\s*(\d+)\b|\bs(\d+)\b/i);
@@ -199,7 +199,13 @@ async function validMedia(url,kind){
  return {url:parsed.href,format:type,mime:type==="hls"?"application/vnd.apple.mpegurl":"video/mp4",cors:allowCors};
 }
 async function resolve(lines,kind,episode){
- for(const line of lines.slice(0,18)){
+ const started=Date.now();
+ // The UI should never hang while trying weak upstream parsers.
+ const ranked=lines.slice(0,18).sort((a,b)=>
+  Number(!b.parse_secret&&entries(b).some(e=>direct(e.url)))-
+  Number(!a.parse_secret&&entries(a).some(e=>direct(e.url))));
+ for(const line of ranked.slice(0,10)){
+  if(Date.now()-started>18000)break;
   const entry=selectEntry(line,kind,episode);if(!entry?.url)continue;
   const candidates=[];
   if(!line.parse_secret&&direct(entry.url))candidates.push(entry.url);
@@ -209,6 +215,7 @@ async function resolve(lines,kind,episode){
    }catch{}
   }else if(!direct(entry.url)){
    for(const url of parseCandidates(line,entry.url)){
+    if(Date.now()-started>18000)break;
     try{const output=await candidateUrl(url);if(output){candidates.push(output);break;}}catch{}
    }
   }
