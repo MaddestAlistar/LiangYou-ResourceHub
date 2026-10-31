@@ -19,8 +19,16 @@ function exactTitle(actual,record){
 function episodeMatches(label,kind,target){
  if(kind==="movie")return true;
  const text=String(label||"");
- const match=text.match(/(?:第\s*0*(\d{1,4})\s*[集话話期])|(?:\bE(?:P)?\s*0*(\d{1,4})\b)/i);
- return !!match&&Number(match[1]||match[2])===target;
+ const match=text.match(/(?:第\s*0*(\d{1,4})\s*[集话話期回])|(?:\bE(?:P)?\s*0*(\d{1,4})\b)|(?:^|[【\[\s])0*(\d{1,4})(?=[】\]\s]|$)/i);
+ return !!match&&Number(match[1]||match[2]||match[3])===target;
+}
+function seasonMatches(actual,record,season){
+ if(season===1)return !/(?:第\s*(?:[二三四五六七八九十]|[2-9])\s*季|\bS(?:eason)?\s*[2-9]\b)/i.test(actual||"");
+ const m=String(actual||"").match(/第\s*([一二三四五六七八九十\d]+)\s*季|\b(?:Season|S)\s*(\d+)\b/i);
+ if(!m)return false;
+ const zh={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10};
+ const val=m[1]||m[2];
+ return (zh[val]||Number(val))===season;
 }
 function chooseMatch(matches,record,kind,episode){
  if(!Array.isArray(matches))return null;
@@ -69,35 +77,120 @@ async function jsonBounded(url,options={},limit=900000,timeoutMs=9500,fetcher=fe
   return {http:r.status,value};
  }finally{clearTimeout(timer);}
 }
-async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFAULT_DANMAKU_BASE}={}){
- // Only host-configured upstream; callers cannot choose URLs.
- const baseUrl=new URL(base.replace(/\/$/,"")+"/");
- if(!["http:","https:"].includes(baseUrl.protocol))return {status:"unavailable",comments:[]};
- const names=[record.title,record.originalTitle].filter(Boolean).slice(0,2);
- for(const name of names){
-  const nameString=kind==="movie"?name+" "+(record.year||""):
-   name+" S"+String(season).padStart(2,"0")+"E"+String(episode).padStart(2,"0");
-  let matchData;
+function indexKey(record,kind,season){
+ const u=new URL("https://liangyou-title-playback.maddestalistar.workers.dev/api/danmaku/index");
+ u.searchParams.set("title",normalized(record.title));
+ u.searchParams.set("original",normalized(record.originalTitle));
+ u.searchParams.set("year",record.year||"");
+ u.searchParams.set("kind",kind);u.searchParams.set("season",String(season));
+ u.searchParams.set("version","2");
+ return new Request(u.href);
+}
+function extractIndex(data,record,kind,season){
+ const groups=Array.isArray(data?.animes)?data.animes:[];
+ const entries=[];
+ for(const group of groups.slice(0,150)){
+  if(!exactTitle(group.animeTitle,record)||!seasonMatches(group.animeTitle,record,season))continue;
+  for(const ep of (Array.isArray(group.episodes)?group.episodes:[]).slice(0,3000)){
+   const id=Number(ep?.episodeId);
+   if(!Number.isSafeInteger(id)||id<=0)continue;
+   entries.push({episodeId:id,animeTitle:shrink(group.animeTitle),
+    episodeTitle:shrink(ep.episodeTitle)});
+   if(entries.length>=3600)break;
+  }
+  if(entries.length>=3600)break;
+ }
+ return entries;
+}
+async function readSeriesIndex(record,kind,season,{fetcher,base,cache}={}){
+ const key=indexKey(record,kind,season);
+ if(cache){
   try{
-   const call=await jsonBounded(new URL("api/v2/match",baseUrl).href,{
-    method:"POST",headers:{"content-type":"application/json","accept":"application/json"},
-    body:JSON.stringify({fileName:nameString})},160000,8500,fetcher);
-   matchData=call.value;
-  }catch{continue;}
-  if(matchData?.isMatched!==true)continue;
-  const selected=chooseMatch(matchData.matches,record,kind,episode);
-  if(!selected)continue;
-  try{
-   const raw=await jsonBounded(new URL("api/v2/comment/"+
-     encodeURIComponent(String(selected.episodeId))+"?format=json",baseUrl).href,{
-      headers:{"accept":"application/json"}},3500000,9500,fetcher);
-   if(raw.value&&Array.isArray(raw.value.comments)){
-    const comments=parseComments(raw.value,selected.shift);
-    return {status:comments.length?"ready":"empty",comments};
+   const hit=await cache.match(key);
+   if(hit){
+    const data=await hit.json();
+    if(Array.isArray(data.items))return {items:data.items,cached:true,throttled:false};
    }
   }catch{}
  }
- return {status:"unavailable",comments:[]};
+ // A one-time series index is cheaper than calling /match for every episode.
+ // DandanPlay-compatible results include animes[].episodes[] and episodeId.
+ const names=[record.title,record.originalTitle].filter(Boolean).slice(0,2);
+ let throttled=false;
+ for(const name of names){
+  try{
+   const q=new URL("api/v2/search/episodes",base);
+   q.searchParams.set("anime",name);
+   const r=await jsonBounded(q.href,{headers:{"accept":"application/json"}},2500000,11000,fetcher);
+   if(r.http===429){throttled=true;break;}
+   if(r.value?.success!==true||!Array.isArray(r.value.animes))continue;
+   const items=extractIndex(r.value,record,kind,season);
+   if(!items.length)continue;
+   if(cache){
+    try{
+     const response=new Response(JSON.stringify({items}),{headers:{
+      "cache-control":"public,max-age=21600","content-type":"application/json"}});
+     // Cache only positive title indexes. Never turn a transient timeout into "no episodes".
+     await cache.put(key,response);
+    }catch{}
+   }
+   return {items,cached:false,throttled:false};
+  }catch{}
+ }
+ return {items:[],throttled};
+}
+async function lookupDanmaku(record,kind,season,episode,{fetcher=fetch,base=DEFAULT_DANMAKU_BASE,cache=null}={}){
+ const baseUrl=new URL(base.replace(/\/$/,"")+"/");
+ if(!["http:","https:"].includes(baseUrl.protocol))return {status:"unavailable",comments:[]};
+ const seenIds=new Set();
+ const candidates=[];
+ let throttled=false;
+ // Prefer cached whole-series episode index: once indexed, adjacent episodes need
+ // only ONE upstream request (comments), rather than match+comment each time.
+ const indexed=await readSeriesIndex(record,kind,season,{fetcher,base:baseUrl,cache});
+ throttled=indexed.throttled;
+ for(const item of indexed.items){
+  if(episodeMatches(item.episodeTitle,kind,episode)&&!seenIds.has(item.episodeId)){
+   candidates.push(item);seenIds.add(item.episodeId);
+   if(candidates.length>=4)break;
+  }
+ }
+ // Old deployments may not implement /search/episodes, so retain /match as fallback.
+ // A rate-limited response must not trigger a burst of more upstream requests.
+ if(!candidates.length&&!throttled){
+  const names=[record.title,record.originalTitle].filter(Boolean).slice(0,2);
+  for(const name of names){
+   const nameString=kind==="movie"?name+" "+(record.year||""):
+    name+" S"+String(season).padStart(2,"0")+"E"+String(episode).padStart(2,"0");
+   try{
+    const res=await jsonBounded(new URL("api/v2/match",baseUrl).href,{
+     method:"POST",headers:{"content-type":"application/json","accept":"application/json"},
+     body:JSON.stringify({fileName:nameString})},160000,7500,fetcher);
+    if(res.http===429){throttled=true;break;}
+    if(res.value?.isMatched!==true)continue;
+    const selected=chooseMatch(res.value.matches,record,kind,episode);
+    if(!selected||!seasonMatches(selected.animeTitle,record,season))continue;
+    const id=Number(selected.episodeId);
+    if(!seenIds.has(id)){candidates.push(selected);seenIds.add(id);}
+    break;
+   }catch{}
+  }
+ }
+ let sawEmpty=false;
+ for(const item of candidates){
+  try{
+   const result=await jsonBounded(new URL("api/v2/comment/"+
+    encodeURIComponent(String(item.episodeId))+"?format=json",baseUrl).href,{
+     headers:{"accept":"application/json"}},3500000,10500,fetcher);
+   if(result.http===429){throttled=true;break;}
+   if(result.value&&Array.isArray(result.value.comments)){
+    const comments=parseComments(result.value,item.shift);
+    if(comments.length)return {status:"ready",comments};
+    sawEmpty=true;
+   }
+  }catch{}
+ }
+ return {status:throttled?"unavailable":sawEmpty?"empty":"unavailable",comments:[]};
 }
 const json=(value,ttl=0)=>new Response(JSON.stringify(value),{status:200,headers:{
  "content-type":"application/json; charset=utf-8",
@@ -126,18 +219,19 @@ async function handleDanmaku(req,env,ctx){
   if(!checkOnly)return cached;
   const found=await cached.json();
   return json({ok:true,status:found.status,workId:m[1],kind,season,episode,
-    available:found.status==="ready"&&found.count>0,count:found.count||0},60);
+    available:found.status==="ready"&&found.count>0,count:found.count||0},180);
  }
  const record={title,originalTitle,year};
  const data=await lookupDanmaku(record,kind,season,episode,{
-  base:env.DANMAKU_API_BASE||DEFAULT_DANMAKU_BASE
+  base:env.DANMAKU_API_BASE||DEFAULT_DANMAKU_BASE,
+  cache:caches.default
  });
  const count=data.comments.length,available=data.status==="ready"&&count>0;
  const full=json({ok:true,status:data.status,workId:m[1],kind,season,episode,
-   count,comments:data.comments},available?1800:0);
+   count,comments:data.comments},available?21600:0);
  if(available)ctx?.waitUntil?.(caches.default.put(cacheKey,full.clone()));
  if(checkOnly)return json({ok:true,status:data.status,workId:m[1],kind,season,episode,
-   available,count},available?60:0);
+   available,count},available?180:0);
  return full;
 }
-export {lookupDanmaku,chooseMatch,exactTitle,episodeMatches,parseComments,handleDanmaku};
+export {lookupDanmaku,chooseMatch,exactTitle,episodeMatches,seasonMatches,extractIndex,readSeriesIndex,parseComments,handleDanmaku};
