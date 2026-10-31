@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - labs/title-playback-worker.mjs
+      - labs/title-playback-skips.mjs
+      - scripts/test_media_skip.mjs
       - labs/title-playback-danmaku.mjs
       - scripts/test_media_danmaku.mjs
       - labs/playback-extra-sources.mjs
@@ -36,6 +38,8 @@ jobs:
       - name: Verify source matching tests and syntax
         run: |
           node --check labs/title-playback-worker.mjs
+          node --check labs/title-playback-skips.mjs
+          node --test scripts/test_media_skip.mjs
           node --check labs/title-playback-danmaku.mjs
           node --test scripts/test_media_danmaku.mjs
           node --check labs/playback-extra-sources.mjs
@@ -151,5 +155,25 @@ jobs:
                 Number.isFinite(x.time)&&typeof x.text==='string'),videoProxied:false}));
           }catch(e){
             console.log('DANMAKU_SMOKE',JSON.stringify({error:String(e.name||'network_error')}));
+          }
+          NODE
+
+      - name: Smoke-check public intro timestamps without an API key
+        run: |
+          node --input-type=module <<'NODE'
+          const endpoint="https://liangyou-title-playback.maddestalistar.workers.dev/api/skip/work/tmdb-tv-1399";
+          const url=new URL(endpoint);
+          Object.entries({kind:"tv",tmdb:"1399",imdb:"tt0944947",season:"1",episode:"1",duration:"3600"})
+            .forEach(([k,v])=>url.searchParams.set(k,v));
+          try{
+            const r=await fetch(url,{signal:AbortSignal.timeout(24000)});
+            const d=await r.json();
+            const valid=r.ok&&d.ok===true&&d.workId==="tmdb-tv-1399"&&
+              ["ready","not_found","unavailable"].includes(d.status)&&Array.isArray(d.segments);
+            console.log("INTRODB_SMOKE",JSON.stringify({http:r.status,valid,status:d.status,
+              segmentCount:d.segments?.length||0}));
+            if(!valid)process.exitCode=1;
+          }catch(e){
+            console.log("INTRODB_SMOKE",JSON.stringify({error:String(e?.name||"network_error")}));
           }
           NODE
