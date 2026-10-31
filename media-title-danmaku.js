@@ -78,6 +78,7 @@ function setButton(state){
  state.gear.hidden=!state.available;
  state.status.hidden=state.available&&!state.loadError;
  state.retry.hidden=state.checking||(state.available&&!state.loadError);
+ state.retry.textContent=state.available?t("重试","Retry"):t("查弹幕","Check");
  if(state.loadError)state.status.textContent=
    t("弹幕加载异常，可重试","Danmaku failed to load; retry");
  else if(!state.available)state.status.textContent=state.checking?
@@ -86,7 +87,7 @@ function setButton(state){
     t("本集暂无弹幕","No danmaku for this episode"):
     t("弹幕暂不可用","Danmaku unavailable");
  const on=state.enabled,loading=state.loading;
- state.button.textContent=inWebFullscreen(state)?t("弹","DM"):t("弹幕 ","Danmaku ")+(on?t("开","On"):t("关","Off"));
+ state.button.textContent=t("弹幕","DM")+(on?t("开","On"):t("关","Off"));
  state.button.setAttribute("aria-pressed",String(on));
  state.button.dataset.loading=loading?"true":"false";
  showText(state,loading?t("正在获取本集弹幕","Loading episode danmaku"):
@@ -151,12 +152,13 @@ function update(state){
 async function probe(state,attempt=0){
  state.probeAbort?.abort();
  const ac=new AbortController();state.probeAbort=ac;
+ const timer=setTimeout(()=>ac.abort(),26000);
  state.checking=true;setButton(state);
  try{
   const res=await fetch(pathFor(state.info)+"&check=1",
-    {mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
+    {mode:"cors",credentials:"omit",cache:"no-store",signal:ac.signal});
   const body=await res.json();
-  if(ac.signal.aborted||state!==session)return;
+  if(ac.signal.aborted||state!==session||state.probeAbort!==ac)return;
   const verified=!!(res.ok&&body?.ok===true&&body?.status==="ready"&&
     body?.workId===state.info.id&&body?.kind===state.info.kind&&
     body?.season===state.info.season&&body?.episode===state.info.episode&&
@@ -178,11 +180,14 @@ async function probe(state,attempt=0){
   setButton(state);
   if(state.available&&state.enabled)load(state);
  }catch{
-  if(state===session&&!ac.signal.aborted){
-   state.available=false;state.statusReason="unavailable";
+  if(state===session&&state.probeAbort===ac){
+   // A failed availability check never invalidates a previously confirmed episode.
+   state.statusReason="unavailable";
+   if(state.available&&state.enabled&&!state.entries.length)load(state);
   }
  }finally{
-  if(state===session&&!ac.signal.aborted){
+  clearTimeout(timer);
+  if(state===session&&state.probeAbort===ac){
    state.probeAbort=null;state.checking=false;setButton(state);
   }
  }
@@ -191,10 +196,11 @@ async function load(state){
  if(!state.enabled||!state.available||state.entries.length||state.loading)return;
  state.loadError=false;state.loading=true;setButton(state);
  const ac=new AbortController();state.abort=ac;
+ const timer=setTimeout(()=>ac.abort(),26000);
  try{
-  const res=await fetch(pathFor(state.info),{mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
+  const res=await fetch(pathFor(state.info),{mode:"cors",credentials:"omit",cache:"no-store",signal:ac.signal});
   const body=await res.json();
-  if(ac.signal.aborted||state!==session)return;
+  if(ac.signal.aborted||state!==session||state.abort!==ac||!state.enabled)return;
   if(!res.ok||body?.ok!==true||body?.workId!==state.info.id||
      body?.kind!==state.info.kind||body?.season!==state.info.season||
      body?.episode!==state.info.episode)throw Error("invalid_danmaku");
@@ -213,10 +219,11 @@ async function load(state){
   }
   setButton(state);
  }catch(e){
-  if(ac.signal.aborted||state!==session)return;
+  if(state!==session||state.abort!==ac||!state.enabled)return;
   state.entries=[];state.loadError=true;state.statusReason="unavailable";
  }finally{
-  if(state===session){state.loading=false;state.abort=null;setButton(state);}
+  clearTimeout(timer);
+  if(state===session&&state.abort===ac){state.loading=false;state.abort=null;setButton(state);}
  }
 }
 function exitWebFullscreen(state){
@@ -234,7 +241,7 @@ function exitWebFullscreen(state){
  setLandscape(state,false);
  setButton(state);
  state.fullscreen.setAttribute("aria-pressed","false");
- state.fullscreen.textContent="⛶";
+ state.fullscreen.textContent=t("全屏","Full");
  document.documentElement.classList.remove("mtk-danmaku-page-expanded");
 }
 function inWebFullscreen(state){
@@ -263,7 +270,7 @@ function setLandscape(state,on){
  state.landscapeMode=!!on;
  state.screen.classList.toggle("mtk-danmaku-landscape",state.landscapeMode);
  state.rotate.setAttribute("aria-pressed",String(state.landscapeMode));
- state.rotate.textContent=state.landscapeMode?"↶":"⤾";
+ state.rotate.textContent=t(state.landscapeMode?"还原":"横屏",state.landscapeMode?"Reset":"Rotate");
  const label=t(state.landscapeMode?"恢复正常画面方向":"横屏观看",
    state.landscapeMode?"Restore normal viewing direction":"Watch in landscape");
  state.rotate.title=label;
@@ -294,7 +301,7 @@ async function toggleWebFullscreen(state,forceWeb=false){
    if(state!==session)return;
    state.webFullscreen=true;
    state.fullscreen.setAttribute("aria-pressed","true");
-   state.fullscreen.textContent="↙";
+   state.fullscreen.textContent=t("退出","Exit");
    setButton(state);
    revealFullscreenControls(state);
    return;
@@ -303,7 +310,7 @@ async function toggleWebFullscreen(state,forceWeb=false){
  state.screen.classList.add("mtk-danmaku-webfullscreen");
  state.webFullscreen=true;
  state.fullscreen.setAttribute("aria-pressed","true");
- state.fullscreen.textContent="↙";
+ state.fullscreen.textContent=t("退出","Exit");
  document.documentElement.classList.add("mtk-danmaku-page-expanded");
  setButton(state);
  revealFullscreenControls(state);
@@ -346,18 +353,18 @@ function mount(video,info){
  button.setAttribute("aria-label",t("开启弹幕","Turn on danmaku"));
  const fullscreen=document.createElement("button");fullscreen.type="button";
  fullscreen.className="mtk-danmaku-expand";
- fullscreen.textContent="⛶";
+ fullscreen.textContent=t("全屏","Full");
  fullscreen.title=t("网页全屏：保留弹幕，iPhone 原生全屏无法叠加网页弹幕",
   "Web fullscreen preserves comments; iPhone native fullscreen does not");
  fullscreen.setAttribute("aria-label",t("弹幕网页全屏","Fullscreen with danmaku"));
  const rotate=document.createElement("button");rotate.type="button";
  rotate.className="mtk-danmaku-rotate";
- rotate.textContent="⤾";
+ rotate.textContent=t("横屏","Rotate");
  rotate.title=t("横屏观看","Watch in landscape");
  rotate.setAttribute("aria-label",rotate.title);
  rotate.setAttribute("aria-pressed","false");
  const gear=document.createElement("button");gear.type="button";
- gear.className="mtk-danmaku-gear";gear.textContent="⚙︎";
+ gear.className="mtk-danmaku-gear";gear.textContent=t("设置","Settings");
  gear.title=t("设置弹幕行数、位置和透明度","Danmaku display settings");
  gear.setAttribute("aria-label",gear.title);gear.setAttribute("aria-expanded","false");
  const settings=document.createElement("div");
@@ -366,7 +373,7 @@ function mount(video,info){
  status.className="mtk-danmaku-status";status.setAttribute("role","status");
  const retry=document.createElement("button");retry.type="button";
  retry.className="mtk-danmaku-retry";
- retry.textContent="↻";
+ retry.textContent=t("查弹幕","Check");
  retry.title=t("重新检查当前集弹幕","Check this episode for danmaku again");
  retry.setAttribute("aria-label",retry.title);
  const createRange=(label,min,max,step,value,suffix,property)=>{
@@ -427,6 +434,7 @@ function mount(video,info){
   if(state.available&&state.enabled){
    state.entries=[];load(state);
   }else probe(state,1);
+  revealFullscreenControls(state);
  });
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
  rotate.addEventListener("click",()=>toggleLandscape(state));
