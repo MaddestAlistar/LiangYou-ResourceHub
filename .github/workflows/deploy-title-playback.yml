@@ -57,3 +57,23 @@ jobs:
             sleep 4
           done
           exit 1
+
+      - name: Diagnose real title matching without logging video URLs
+        run: |
+          node --input-type=module <<'NODE'
+          const base='https://liangyou-title-playback.maddestalistar.workers.dev';
+          const checks=[
+            ['TMDB Conan',base+'/api/title/tv/30983?season=1'],
+            ['Bangumi Conan',base+'/api/title/work/bangumi-899?kind=tv&title='+encodeURIComponent('名侦探柯南')+
+              '&original='+encodeURIComponent('名探偵コナン')+'&year=1996&season=1']
+          ];
+          for(const [name,url] of checks){
+            try{
+              const r=await fetch(url,{signal:AbortSignal.timeout(32000)});
+              const d=await r.json();
+              console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,http:r.status,ok:d.ok||false,status:d.status||null,
+                workId:d.workId||null,tmdbId:d.tmdbId??null,kind:d.kind||null,
+                matchTitle:d.matchedTitle||null,episodes:d.episodes?.length||0,error:d.error||null}));
+            }catch(e){console.log('TITLE_MATCH_SMOKE',JSON.stringify({name,error:String(e?.name||'network_error')}));}
+          }
+          NODE
