@@ -41,3 +41,65 @@ test("sorted danmaku captions seek to exact positions without drawing thousands 
  assert.equal(index(a,59.9),4);
  assert.equal(index(a,66),5);
 });
+
+test("unmatched episodes hide all danmaku buttons; confirmed episodes show the toggle",async()=>{
+ const start=source.indexOf("async function probe(state){");
+ const end=source.indexOf("async function load(state){",start);
+ assert.ok(start>0&&end>start,"Availability check was not installed");
+ let answer={ok:true,status:"empty",workId:"tmdb-tv-30984",kind:"tv",
+  season:1,episode:4,count:0},loaded=0;
+ const state={
+  info:{id:"tmdb-tv-30984",kind:"tv",season:1,episode:4},
+  video:{setAttribute(name,value){this[name]=value}},
+  controls:{hidden:true},button:{},available:false,enabled:false,probeAbort:null
+ };
+ const context={
+  AbortController,session:state,pathFor:()=>"https://example.test/api/danmaku/work/tmdb-tv-30984?episode=4",
+  fetch:async url=>{
+   assert.match(url,/check=1/);
+   return {ok:true,json:async()=>answer};
+  },
+  setButton(v){v.button.hidden=!v.available},load(){loaded++}
+ };
+ vm.createContext(context);
+ const probe=vm.runInContext("("+source.slice(start,end).trim()+")",context);
+ await probe(state);
+ assert.equal(state.available,false);
+ assert.equal(state.button.hidden,true);
+ assert.equal(state.controls.hidden,true);
+ answer={...answer,status:"ready",count:1255};
+ state.enabled=true;
+ await probe(state);
+ assert.equal(state.available,true);
+ assert.equal(state.button.hidden,false);
+ assert.equal(state.controls.hidden,false);
+ assert.equal(state.video.controlsList,"nofullscreen");
+ assert.equal(loaded,1);
+});
+test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async()=>{
+ const start=source.indexOf("function exitWebFullscreen(state){");
+ const end=source.indexOf("document.addEventListener(\"fullscreenchange\"",start);
+ assert.ok(start>0&&end>start,"Web fullscreen implementation was not found");
+ const classes=new Set(),rootClasses=new Set();
+ const classList=cs=>({
+  add(x){cs.add(x)},remove(x){cs.delete(x)},contains(x){return cs.has(x)}
+ });
+ const state={available:true,screen:{classList:classList(classes)},
+  fullscreen:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"⛶"},
+  webFullscreen:false};
+ const context={session:state,navigator:{userAgent:"iPhone"},document:{
+  fullscreenElement:null,webkitFullscreenElement:null,
+  documentElement:{classList:classList(rootClasses)}
+ }};
+ vm.createContext(context);
+ const parts=vm.runInContext(source.slice(start,end)+
+  "\n({exitWebFullscreen,toggleWebFullscreen})",context);
+ await parts.toggleWebFullscreen(state);
+ assert.equal(state.webFullscreen,true);
+ assert.ok(classes.has("mtk-danmaku-webfullscreen"));
+ assert.ok(rootClasses.has("mtk-danmaku-page-expanded"));
+ assert.equal(state.fullscreen.attrs["aria-pressed"],"true");
+ await parts.toggleWebFullscreen(state);
+ assert.equal(state.webFullscreen,false);
+ assert.ok(!classes.has("mtk-danmaku-webfullscreen"));
+});
