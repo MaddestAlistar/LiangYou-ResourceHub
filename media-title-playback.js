@@ -62,20 +62,27 @@ function restoreSelection(info){
   return {season:inRange(v?.season,60)?Number(v.season):1,episode:inRange(v?.episode,3000)?Number(v.episode):1};}
  catch{return {season:1,episode:1};}
 }
+function playbackPlaceholder(info,caption){
+ const title=String(info?.title||"");
+ const now=info?.kind==="movie"?title:title+" · "+episodeLabel(info?.episode||1);
+ return '<div class="mtk-playback-placeholder">'+
+  '<button type="button" class="mtk-playback-start mtk-playback-symbol" disabled aria-label="'+
+  tr(t("播放当前作品","Play this title"))+'" title="'+tr(t("点击播放","Tap to play"))+'">'+
+  '<span aria-hidden="true">▶</span></button>'+
+  '<span class="mtk-playback-now">'+tr(now)+'</span>'+
+  '<small>'+tr(caption)+'</small></div>';
+}
 function playbackHtml(info){
  return '<section class="mtk-playback mi-detail-block" data-mtk-playback-id="'+tr(info.id)+'">'+
   '<div class="mtk-playback-head"><h3>'+t("影视播放","Play this title")+'</h3>'+
   '<span class="mtk-playback-identity">'+t("自动匹配当前作品","Matched per title")+'</span></div>'+
-  '<div class="mtk-playback-screen"><div class="mtk-playback-placeholder">'+
-  '<span class="mtk-playback-symbol" aria-hidden="true">▶</span>'+
-  '<span class="mtk-playback-now">'+tr(info.title)+'</span>'+
-  '<small>'+t("正在核对可用的视频资源","Checking available video resources")+'</small></div></div>'+
+  '<div class="mtk-playback-screen">'+playbackPlaceholder(info,
+    t("正在核对可用的视频资源","Checking available video resources"))+'</div>'+
   '<div class="mtk-playback-controls" hidden><label class="mtk-playback-season-row">'+t("选择季度","Season")+
   ' <select class="mtk-playback-season" aria-label="'+t("选择季度","Choose season")+'"></select></label>'+
   '<div class="mtk-playback-episode-head"><strong>'+t("选集","Episodes")+'</strong>'+
   '<div class="mtk-playback-pages"></div></div><div class="mtk-playback-episodes" role="group" aria-label="'+t("选择集数","Select episode")+'"></div></div>'+
-  '<div class="mtk-playback-actions"><button type="button" class="mtk-playback-start" disabled>'+
-  '▶ '+t("站内播放","Play here")+'</button><button type="button" class="mtk-playback-retry" hidden>'+
+  '<div class="mtk-playback-actions" hidden><button type="button" class="mtk-playback-retry">'+
   t("重新匹配","Retry match")+'</button></div>'+
   '<p class="mtk-playback-status" role="status" aria-live="polite">'+t("正在查找本片对应的播放资源…","Finding this title’s stream…")+'</p>'+
   '</section>';
@@ -103,16 +110,14 @@ function renderEpisodes(){
  nav.innerHTML=pageCount<=1?"":'<button type="button" data-mtk-page="-1"'+(info.page===0?" disabled":"")+'>‹</button>'+
   '<span>'+(info.page+1)+" / "+pageCount+'</span>'+
   '<button type="button" data-mtk-page="1"'+(info.page>=pageCount-1?" disabled":"")+'>›</button>';
- box.querySelector(".mtk-playback-start").disabled=!info.episodes.includes(info.episode);
+ boxAction(info.episodes.includes(info.episode));
  const txt=box.querySelector(".mtk-playback-now");
  if(txt)txt.textContent=info.kind==="movie"?info.title:info.title+" · "+episodeLabel(info.episode);
 }
 function resetStage(){
  const screen=card()?.querySelector(".mtk-playback-screen");
  if(!screen||!active)return;
- screen.innerHTML='<div class="mtk-playback-placeholder"><span class="mtk-playback-symbol" aria-hidden="true">▶</span>'+
-  '<span class="mtk-playback-now">'+tr(active.title)+'</span>'+
-  '<small>'+t("选择集数后播放","Select an episode and press play")+'</small></div>';
+ screen.innerHTML=playbackPlaceholder(active,t("点击画面中央的按钮播放","Tap the center play button"));
 }
 async function json(url,signal){
  const r=await fetch(url,{signal,mode:"cors",credentials:"omit",cache:"no-store"});
@@ -142,7 +147,7 @@ async function lookup(){
   renderEpisodes();saveSelection();
   if(body.status==="matched"&&info.episodes.length){
    boxAction(true);
-   showStatus(t("已匹配当前作品，请选择集数后点击播放。","Title matched. Select an episode, then press play."),"success");
+   showStatus(t("已匹配当前作品，点击画面中央的播放按钮。","Title matched. Tap the center play button."),"success");
   }else{
    boxAction(false);
    showStatus(body.status==="no_match"?t("暂未匹配到这部作品的播放资源。","No matching stream found for this title."):
@@ -155,8 +160,15 @@ async function lookup(){
  }
 }
 function boxAction(ready){
- const b=card()?.querySelector(".mtk-playback-start"),retry=card()?.querySelector(".mtk-playback-retry");
- if(b)b.disabled=!ready;
+ const pane=card(),play=pane?.querySelector(".mtk-playback-start"),
+   actions=pane?.querySelector(".mtk-playback-actions"),retry=pane?.querySelector(".mtk-playback-retry");
+ if(play){
+  play.disabled=!ready;
+  play.setAttribute("aria-label",ready?
+    t("播放当前作品","Play this title"):
+    t("正在匹配播放资源","Checking playback availability"));
+ }
+ if(actions)actions.hidden=ready;
  if(retry)retry.hidden=ready;
 }
 let hlsPromise=null;
@@ -229,6 +241,7 @@ async function startPlayback(){
  }catch(e){
   if(ac.signal.aborted||serial!==token||active!==info)return;
   resetStage();
+  boxAction(info.episodes.includes(info.episode));
   const unavailable=e?.message==="no_verified_stream";
   showStatus(unavailable?
     t("已找到作品和集数，但当前没有通过验证的可播放线路，请稍后重试。","Title and episode matched, but no playable stream passed verification. Try again later."):
@@ -269,7 +282,8 @@ dialog.addEventListener("click",e=>{
  const ep=e.target.closest("[data-mtk-episode]");
  if(ep&&inRange(ep.dataset.mtkEpisode,3000)){
   clearPlayback();active.episode=Number(ep.dataset.mtkEpisode);saveSelection();renderEpisodes();resetStage();
-  showStatus(t("已选择对应集数，点击播放。","Episode selected. Press play."));return;
+  boxAction(true);
+  showStatus(t("已选好集数，点击画面中央的播放按钮。","Episode selected. Tap the center play button."));return;
  }
  const page=e.target.closest("[data-mtk-page]");
  if(page){const n=Number(page.dataset.mtkPage);active.page=Math.max(0,active.page+(n===1?1:-1));renderEpisodes();return;}
