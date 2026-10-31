@@ -200,6 +200,7 @@ async function startPlayback(){
  try{
   const body=await json(url,ac.signal);
   if(ac.signal.aborted||serial!==token||active!==info||!card())return;
+  if(body?.status==="no_verified_stream")throw Error("no_verified_stream");
   if(body.ok!==true||body.status!=="ready"||!sameIdentity(body,info)||
     body.season!==info.season||body.episode!==info.episode)throw Error("wrong_episode");
   const src=safeStream(body.media);if(!src)throw Error("bad_media");
@@ -228,7 +229,10 @@ async function startPlayback(){
  }catch(e){
   if(ac.signal.aborted||serial!==token||active!==info)return;
   resetStage();
-  showStatus(t("暂时无法播放这集，可能是线路失效或浏览器限制。","This episode is unavailable or blocked by the browser."),"error");
+  const unavailable=e?.message==="no_verified_stream";
+  showStatus(unavailable?
+    t("已找到作品和集数，但当前没有通过验证的可播放线路，请稍后重试。","Title and episode matched, but no playable stream passed verification. Try again later."):
+    t("这集暂时无法播放，可能是线路、浏览器或网络限制。","This episode could not play due to a source, browser or network issue."),"error");
  }finally{if(serial===token&&b)b.disabled=false;}
 }
 function mount(info){
