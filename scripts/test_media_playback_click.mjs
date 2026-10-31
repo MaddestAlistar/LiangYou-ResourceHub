@@ -88,3 +88,30 @@ test("central circle becomes enabled only after the work has matching episodes",
  assert.equal(actions.hidden,false);
  assert.equal(retry.hidden,false);
 });
+
+test("automatic recovery hides source choices and restores playback position",()=>{
+ const start=script.indexOf("function tryInvisibleSwitch(");
+ const end=script.indexOf("async function startPlayback(){",start);
+ assert.ok(start>=0&&end>start,"Auto failover handler missing");
+ const context={
+  serial:7,active:{id:"bangumi-899"},lastProgress:13,pendingSwitch:null,
+  showStatus(){},t:value=>value,called:0,startPlayback(){context.called++;}
+ };
+ vm.createContext(context);
+ const sw=vm.runInContext("("+script.slice(start,end).trim()+")",context);
+ assert.equal(sw("primary",7,{currentTime:28.5},0,[],"video_error"),true);
+ assert.equal(context.called,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(context.pendingSwitch.failed)),["primary"]);
+ assert.equal(context.pendingSwitch.resumeAt,28.5);
+ assert.equal(context.pendingSwitch.attempt,1);
+ assert.equal(sw("aggregate",7,{currentTime:29.1},1,["primary"],"buffer"),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(context.pendingSwitch.failed)),["primary","aggregate"]);
+ assert.equal(sw("jianpian",7,{currentTime:30},2,["primary","aggregate"],"error"),false);
+ assert.equal(context.called,2);
+});
+test("player keeps server-directed source IDs out of visible UI",()=>{
+ assert.doesNotMatch(script,/class="(?:source-picker|source-selector|source-choice)"/);
+ assert.match(script,/searchParams\.set\("skip",plan\.failed\.join\(","\)\)/);
+ assert.match(script,/setTimeout\(\(\)=>\{/);
+ assert.match(script,/v\.currentTime=position/);
+});
