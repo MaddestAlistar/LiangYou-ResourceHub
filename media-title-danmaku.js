@@ -47,7 +47,17 @@ function showText(state,message){
  state.button.setAttribute("aria-label",message);
 }
 function setButton(state){
+ // A failed or slow upstream check must never hide the entire player toolbar.
+ state.controls.hidden=false;
  state.button.hidden=!state.available;
+ state.gear.hidden=!state.available;
+ state.status.hidden=state.available;
+ state.retry.hidden=state.available||state.checking;
+ if(!state.available)state.status.textContent=state.checking?
+   t("正在检测弹幕…","Checking danmaku…"):
+   state.statusReason==="empty"?
+    t("本集暂无弹幕","No danmaku for this episode"):
+    t("弹幕暂不可用","Danmaku unavailable");
  const on=state.enabled,loading=state.loading;
  state.button.textContent=t("弹幕 ","Danmaku ")+(on?t("开","On"):t("关","Off"));
  state.button.setAttribute("aria-pressed",String(on));
@@ -112,7 +122,9 @@ function update(state){
  state.lastTime=now;
 }
 async function probe(state,attempt=0){
+ state.probeAbort?.abort();
  const ac=new AbortController();state.probeAbort=ac;
+ state.checking=true;setButton(state);
  try{
   const res=await fetch(pathFor(state.info)+"&check=1",
     {mode:"cors",credentials:"omit",cache:"default",signal:ac.signal});
@@ -122,7 +134,7 @@ async function probe(state,attempt=0){
     body?.workId===state.info.id&&body?.kind===state.info.kind&&
     body?.season===state.info.season&&body?.episode===state.info.episode&&
     Number(body?.count)>0);
-  state.controls.hidden=!state.available;
+  state.statusReason=body?.status==="empty"?"empty":"unavailable";
   if(!state.available&&body?.status==="unavailable"&&attempt===0)
    setTimeout(()=>{if(state===session&&state.video.isConnected)probe(state,1);},2700);
   if(state.available){
@@ -133,13 +145,17 @@ async function probe(state,attempt=0){
   setButton(state);
   if(state.available&&state.enabled)load(state);
  }catch{
-  if(state===session){
-   state.available=false;state.controls.hidden=true;setButton(state);
+  if(state===session&&!ac.signal.aborted){
+   state.available=false;state.statusReason="unavailable";
    if(attempt===0)setTimeout(()=>{
     if(state===session&&state.video.isConnected)probe(state,1);
    },2700);
   }
- }finally{if(state===session)state.probeAbort=null;}
+ }finally{
+  if(state===session&&!ac.signal.aborted){
+   state.probeAbort=null;state.checking=false;setButton(state);
+  }
+ }
 }
 async function load(state){
  if(!state.enabled||!state.available||state.entries.length||state.loading)return;
@@ -158,7 +174,7 @@ async function load(state){
    .slice(0,3000).sort((a,b)=>a.time-b.time):[];
   seek(state);
   if(!state.entries.length){
-   state.available=false;state.controls.hidden=true;setButton(state);
+   state.available=false;state.statusReason="empty";setButton(state);
   }
  }catch(e){
   if(ac.signal.aborted||state!==session)return;
@@ -193,7 +209,7 @@ function clearFullscreenHide(state){
 }
 function hideFullscreenControls(state){
  state.hideTimer=null;
- if(state!==session||!inWebFullscreen(state)||!state.available||
+ if(state!==session||!inWebFullscreen(state)||
     state.controls.hidden||!state.settings.hidden)return;
  state.controls.classList.add("mtk-danmaku-controls-hidden");
  state.controls.inert=true;
@@ -207,7 +223,7 @@ function revealFullscreenControls(state){
   state.hideTimer=setTimeout(()=>hideFullscreenControls(state),2800);
 }
 async function toggleWebFullscreen(state){
- if(state!==session||!state.available)return;
+ if(state!==session)return;
  if(state.webFullscreen){exitWebFullscreen(state);return;}
  state.settings.hidden=true;
  state.gear.setAttribute("aria-expanded","false");
@@ -266,7 +282,7 @@ function mount(video,info){
  const area=document.createElement("div");area.className="mtk-danmaku-overlay";
  area.setAttribute("aria-hidden","true");
  const controls=document.createElement("div");
- controls.className="mtk-danmaku-actions";controls.hidden=true;
+ controls.className="mtk-danmaku-actions";controls.hidden=false;
  const button=document.createElement("button");button.type="button";
  button.className="mtk-danmaku-toggle";
  button.setAttribute("aria-label",t("开启弹幕","Turn on danmaku"));
@@ -282,6 +298,13 @@ function mount(video,info){
  gear.setAttribute("aria-label",gear.title);gear.setAttribute("aria-expanded","false");
  const settings=document.createElement("div");
  settings.className="mtk-danmaku-settings";settings.hidden=true;
+ const status=document.createElement("span");
+ status.className="mtk-danmaku-status";status.setAttribute("role","status");
+ const retry=document.createElement("button");retry.type="button";
+ retry.className="mtk-danmaku-retry";
+ retry.textContent="↻";
+ retry.title=t("重新检查当前集弹幕","Check this episode for danmaku again");
+ retry.setAttribute("aria-label",retry.title);
  const createRange=(label,min,max,step,value,suffix,property)=>{
   const row=document.createElement("label");row.className="mtk-danmaku-setting-row";
   const caption=document.createElement("span");caption.textContent=label;
@@ -296,8 +319,9 @@ function mount(video,info){
    applySettings(state,true);
   });
  };
- const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,
-   enabled,available:false,entries:[],cursor:0,lastTime:0,webFullscreen:false,
+ const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,status,retry,
+   enabled,available:false,checking:false,statusReason:"unavailable",
+   entries:[],cursor:0,lastTime:0,webFullscreen:false,
    options:{...settingsOptions},lane:0,lineTimes:[],
    live:[],loading:false,abort:null,probeAbort:null,hideTimer:null};
  createRange(t("显示行数","Rows"),1,8,1,state.options.rows,t(" 行",""),"rows");
@@ -314,7 +338,7 @@ function mount(video,info){
   applySettings(state,true);
  });
  createRange(t("弹幕透明度","Opacity"),20,100,10,state.options.opacity,"%", "opacity");
- controls.append(button,gear,fullscreen,settings);
+ controls.append(status,retry,button,gear,fullscreen,settings);
  screen.appendChild(area);
  screen.after(controls);
  applySettings(state,false);
@@ -334,6 +358,7 @@ function mount(video,info){
   else if(!state.entries.length)load(state);else seek(state);
   setButton(state);
  });
+ retry.addEventListener("click",()=>probe(state,1));
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
  state.onScreenTap=event=>{
   if(!inWebFullscreen(state))return;
