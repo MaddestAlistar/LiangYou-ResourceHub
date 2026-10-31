@@ -2,15 +2,15 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-10-31T01:52:19Z",
+  "generated_at": "2026-10-31T08:57:25Z",
   "quota_month": "2026-10",
-  "monthly_credits": 20,
+  "monthly_credits": 23,
   "monthly_cap": 210,
-  "provider_remaining": 476,
+  "provider_remaining": 473,
   "last_checked": {
-    "basketball_nba": "2026-10-31T01:52:19Z",
-    "soccer_epl": "2026-10-30T18:23:08Z",
-    "soccer_uefa_champs_league": "2026-10-30T02:30:09Z"
+    "basketball_nba": "2026-10-31T08:57:25Z",
+    "soccer_epl": "2026-10-31T08:57:25Z",
+    "soccer_uefa_champs_league": "2026-10-31T08:57:25Z"
   },
   "sources": [
     {
@@ -20,58 +20,16 @@
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "recent",
-      "count": 10
+      "status": "ok",
+      "count": 11
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "recent",
-      "count": 0
+      "status": "ok",
+      "count": 18
     }
   ],
   "events": [
-    {
-      "id": "odds-9ae108f7a23e86e8102237053dd9e58d",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Phoenix Suns",
-      "away": "Denver Nuggets",
-      "start_time": "2026-10-31T02:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Denver Nuggets",
-          "decimal": 1.57
-        },
-        {
-          "name": "Phoenix Suns",
-          "decimal": 2.45
-        }
-      ],
-      "quote_at": "2026-10-31T01:52:06Z"
-    },
-    {
-      "id": "odds-761c15cdefb5a94e34f234e11d6e57ad",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Golden State Warriors",
-      "away": "Los Angeles Lakers",
-      "start_time": "2026-10-31T02:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Golden State Warriors",
-          "decimal": 2.24
-        },
-        {
-          "name": "Los Angeles Lakers",
-          "decimal": 1.68
-        }
-      ],
-      "quote_at": "2026-10-31T01:52:07Z"
-    },
     {
       "id": "odds-d47417c3b1a2cd427cce74c9d00f1046",
       "provider": "the-odds-api",
@@ -91,7 +49,28 @@
           "decimal": 2.94
         }
       ],
-      "quote_at": "2026-10-31T01:52:05Z"
+      "quote_at": "2026-10-31T08:56:50Z"
+    },
+    {
+      "id": "odds-067d97a124c10ea2d206546384500c5e",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Charlotte Hornets",
+      "away": "Philadelphia 76ers",
+      "start_time": "2026-10-31T22:10:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Charlotte Hornets",
+          "decimal": 2.02
+        },
+        {
+          "name": "Philadelphia 76ers",
+          "decimal": 1.83
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:50Z"
     },
     {
       "id": "odds-77270837bc694d198c10f42937690d75",
@@ -105,14 +84,14 @@
       "outcomes": [
         {
           "name": "Atlanta Hawks",
-          "decimal": 1.6
+          "decimal": 1.57
         },
         {
           "name": "New Orleans Pelicans",
-          "decimal": 2.4
+          "decimal": 2.48
         }
       ],
-      "quote_at": "2026-10-31T01:52:05Z"
+      "quote_at": "2026-10-31T08:56:50Z"
     },
     {
       "id": "odds-6d7e1e0af6d568f4435d35a1763a3622",
@@ -126,14 +105,14 @@
       "outcomes": [
         {
           "name": "Cleveland Cavaliers",
-          "decimal": 1.3
+          "decimal": 1.28
         },
         {
           "name": "Milwaukee Bucks",
-          "decimal": 3.65
+          "decimal": 3.85
         }
       ],
-      "quote_at": "2026-10-31T01:52:05Z"
+      "quote_at": "2026-10-31T08:56:50Z"
     },
     {
       "id": "odds-863ae1092be42c6b563b2c4f099a3eb3",
@@ -147,14 +126,14 @@
       "outcomes": [
         {
           "name": "Memphis Grizzlies",
-          "decimal": 1.23
+          "decimal": 1.21
         },
         {
           "name": "Sacramento Kings",
-          "decimal": 4.4
+          "decimal": 4.7
         }
       ],
-      "quote_at": "2026-10-31T01:52:05Z"
+      "quote_at": "2026-10-31T08:56:50Z"
     },
     {
       "id": "odds-06a03fb0ce0f81a970c6000fb71fdc6d",
@@ -168,14 +147,35 @@
       "outcomes": [
         {
           "name": "Minnesota Timberwolves",
-          "decimal": 5.1
+          "decimal": 5.4
         },
         {
           "name": "San Antonio Spurs",
-          "decimal": 1.18
+          "decimal": 1.17
         }
       ],
-      "quote_at": "2026-10-31T01:52:05Z"
+      "quote_at": "2026-10-31T08:56:50Z"
+    },
+    {
+      "id": "odds-c30d3bdf126e98ced5b9389db8617926",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Houston Rockets",
+      "away": "Oklahoma City Thunder",
+      "start_time": "2026-11-01T00:40:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Houston Rockets",
+          "decimal": 1.57
+        },
+        {
+          "name": "Oklahoma City Thunder",
+          "decimal": 2.46
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:50Z"
     },
     {
       "id": "odds-6601f69175a02f03fb7065aacb538e01",
@@ -189,7 +189,7 @@
       "outcomes": [
         {
           "name": "Chelsea",
-          "decimal": 1.99
+          "decimal": 1.98
         },
         {
           "name": "Manchester United",
@@ -197,10 +197,10 @@
         },
         {
           "name": "Draw",
-          "decimal": 3.7
+          "decimal": 3.75
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-a6c06eabdf4e6710354b6098d39449e7",
@@ -214,18 +214,18 @@
       "outcomes": [
         {
           "name": "Bournemouth",
-          "decimal": 2.07
+          "decimal": 2.06
         },
         {
           "name": "Leeds United",
-          "decimal": 3.44
+          "decimal": 3.5
         },
         {
           "name": "Draw",
-          "decimal": 3.48
+          "decimal": 3.44
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-b9254b648ca25ce7831988b53ed17c3c",
@@ -239,18 +239,18 @@
       "outcomes": [
         {
           "name": "Brentford",
-          "decimal": 2.03
+          "decimal": 2.09
         },
         {
           "name": "Nottingham Forest",
-          "decimal": 3.55
+          "decimal": 3.4
         },
         {
           "name": "Draw",
-          "decimal": 3.5
+          "decimal": 3.48
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-7df53f9af95d5a4e13b504882078dab8",
@@ -264,18 +264,18 @@
       "outcomes": [
         {
           "name": "Brighton and Hove Albion",
-          "decimal": 4.4
+          "decimal": 4.6
         },
         {
           "name": "Manchester City",
-          "decimal": 1.69
+          "decimal": 1.67
         },
         {
           "name": "Draw",
-          "decimal": 4.4
+          "decimal": 4.3
         }
       ],
-      "quote_at": "2026-10-30T18:23:08Z"
+      "quote_at": "2026-10-31T08:57:14Z"
     },
     {
       "id": "odds-d20fbb0cd5ad9369b8ed6f2c4a198619",
@@ -289,18 +289,18 @@
       "outcomes": [
         {
           "name": "Coventry City",
-          "decimal": 3.04
+          "decimal": 3.06
         },
         {
           "name": "Sunderland",
-          "decimal": 2.32
+          "decimal": 2.34
         },
         {
           "name": "Draw",
-          "decimal": 3.34
+          "decimal": 3.26
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-1ec76c009147b63859f68c6b5a1dd77b",
@@ -314,18 +314,18 @@
       "outcomes": [
         {
           "name": "Hull City",
-          "decimal": 2.6
+          "decimal": 2.83
         },
         {
           "name": "Ipswich Town",
-          "decimal": 2.64
+          "decimal": 2.45
         },
         {
           "name": "Draw",
-          "decimal": 3.38
+          "decimal": 3.34
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-01b17432a283eb27af86ae45602eb6dd",
@@ -339,18 +339,18 @@
       "outcomes": [
         {
           "name": "Crystal Palace",
-          "decimal": 5.3
+          "decimal": 5.0
         },
         {
           "name": "Tottenham Hotspur",
-          "decimal": 1.54
+          "decimal": 1.6
         },
         {
           "name": "Draw",
-          "decimal": 4.5
+          "decimal": 4.3
         }
       ],
-      "quote_at": "2026-10-30T18:22:22Z"
+      "quote_at": "2026-10-31T08:55:22Z"
     },
     {
       "id": "odds-640c52a86289f35698261b41987dd71e",
@@ -364,7 +364,7 @@
       "outcomes": [
         {
           "name": "Aston Villa",
-          "decimal": 1.95
+          "decimal": 2.0
         },
         {
           "name": "Fulham",
@@ -375,7 +375,7 @@
           "decimal": 3.6
         }
       ],
-      "quote_at": "2026-10-30T18:23:08Z"
+      "quote_at": "2026-10-31T08:57:14Z"
     },
     {
       "id": "odds-6a3819cdbe2ba2fe5a3d8f9b4b459965",
@@ -389,18 +389,18 @@
       "outcomes": [
         {
           "name": "Arsenal",
-          "decimal": 2.45
+          "decimal": 2.4
         },
         {
           "name": "Liverpool",
-          "decimal": 2.9
+          "decimal": 2.85
         },
         {
           "name": "Draw",
-          "decimal": 3.3
+          "decimal": 3.4
         }
       ],
-      "quote_at": "2026-10-30T18:23:08Z"
+      "quote_at": "2026-10-31T08:57:14Z"
     },
     {
       "id": "odds-0f552d9c6990c69474f50ff2fb54e9a3",
@@ -425,7 +425,482 @@
           "decimal": 3.4
         }
       ],
-      "quote_at": "2026-10-30T18:23:08Z"
+      "quote_at": "2026-10-31T08:57:14Z"
+    },
+    {
+      "id": "odds-586bec023ee8ac2f0645d963bd2c9d25",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Premier League",
+      "home": "Everton",
+      "away": "Coventry City",
+      "start_time": "2026-11-06T20:00:00Z",
+      "bookmaker": "MyBookie.ag",
+      "outcomes": [
+        {
+          "name": "Coventry City",
+          "decimal": 4.4
+        },
+        {
+          "name": "Everton",
+          "decimal": 1.69
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:55:22Z"
+    },
+    {
+      "id": "odds-9b8076d3ffa027df6f6cb3189de46706",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Galatasaray",
+      "away": "VfB Stuttgart",
+      "start_time": "2026-11-03T17:45:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Galatasaray",
+          "decimal": 2.2
+        },
+        {
+          "name": "VfB Stuttgart",
+          "decimal": 2.85
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.9
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-55e0f74a61f7d72defa7ea0c83532ea5",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Shakhtar Donetsk",
+      "away": "Sporting Lisbon",
+      "start_time": "2026-11-03T17:45:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Shakhtar Donetsk",
+          "decimal": 3.5
+        },
+        {
+          "name": "Sporting Lisbon",
+          "decimal": 1.95
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.7
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-bc0b6614c9714816038d5a0ff8963144",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Manchester United",
+      "away": "AS Roma",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "AS Roma",
+          "decimal": 2.7
+        },
+        {
+          "name": "Manchester United",
+          "decimal": 2.38
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-bd680c6ad693dae859030f86e1be2769",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Barcelona",
+      "away": "Aston Villa",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Aston Villa",
+          "decimal": 9.5
+        },
+        {
+          "name": "Barcelona",
+          "decimal": 1.25
+        },
+        {
+          "name": "Draw",
+          "decimal": 6.75
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-61b42fd619617a7a2a3770c2444e8a40",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Atlético Madrid",
+      "away": "Bayern Munich",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Atlético Madrid",
+          "decimal": 3.2
+        },
+        {
+          "name": "Bayern Munich",
+          "decimal": 2.0
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.1
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-1a5a84045050d0d7baf1301909d3b465",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Bodø/Glimt",
+      "away": "Lille",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Bodø/Glimt",
+          "decimal": 1.89
+        },
+        {
+          "name": "Lille",
+          "decimal": 3.6
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.9
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-f6f3cf01c2b20b7f746b5a06097a0569",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Feyenoord",
+      "away": "Inter Milan",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Feyenoord",
+          "decimal": 4.2
+        },
+        {
+          "name": "Inter Milan",
+          "decimal": 1.69
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.33
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-adf608a0e9be02eb1d8b0a6f464a12b1",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "LASK",
+      "away": "ŠK Slovan Bratislava",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "LASK",
+          "decimal": 1.45
+        },
+        {
+          "name": "ŠK Slovan Bratislava",
+          "decimal": 6.25
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-a341241606cb5b1b59e425d00be64883",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Villarreal",
+      "away": "Paris Saint Germain",
+      "start_time": "2026-11-03T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Paris Saint Germain",
+          "decimal": 1.56
+        },
+        {
+          "name": "Villarreal",
+          "decimal": 4.8
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.6
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-f43ef699c987e112e115f7035114854e",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "AEK Athens",
+      "away": "Real Madrid",
+      "start_time": "2026-11-04T17:45:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "AEK Athens",
+          "decimal": 8.0
+        },
+        {
+          "name": "Real Madrid",
+          "decimal": 1.29
+        },
+        {
+          "name": "Draw",
+          "decimal": 5.9
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-e901dbcdd6e2255fb24d84032b9d437a",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Fenerbahce",
+      "away": "Liverpool",
+      "start_time": "2026-11-04T17:45:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Fenerbahce",
+          "decimal": 4.8
+        },
+        {
+          "name": "Liverpool",
+          "decimal": 1.62
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.33
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-a5910ae3b314876faea7f5c03b8aeaad",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Slavia Praha",
+      "away": "Arsenal",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Arsenal",
+          "decimal": 1.33
+        },
+        {
+          "name": "Slavia Praha",
+          "decimal": 8.75
+        },
+        {
+          "name": "Draw",
+          "decimal": 5.5
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-6d386ed81fabf67aa19fbd442c0d8c60",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Borussia Dortmund",
+      "away": "Real Betis",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "BetMGM",
+      "outcomes": [
+        {
+          "name": "Borussia Dortmund",
+          "decimal": 1.8
+        },
+        {
+          "name": "Real Betis",
+          "decimal": 4.0
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.0
+        }
+      ],
+      "quote_at": "2026-10-31T08:56:55Z"
+    },
+    {
+      "id": "odds-449d718632202f0e5997d2e4b7273483",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "PSV Eindhoven",
+      "away": "Club Brugge",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Club Brugge",
+          "decimal": 3.0
+        },
+        {
+          "name": "PSV Eindhoven",
+          "decimal": 2.05
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.1
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-013cecbf40f5b4530342632a80f35b00",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "RC Lens",
+      "away": "Como",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Como",
+          "decimal": 2.2
+        },
+        {
+          "name": "RC Lens",
+          "decimal": 2.85
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-df7d2d81b9e2f3f11c6aeddaee6b7085",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "RB Leipzig",
+      "away": "Manchester City",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Manchester City",
+          "decimal": 1.48
+        },
+        {
+          "name": "RB Leipzig",
+          "decimal": 5.4
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-ba82ee37f64a66a30d85f8b90082ec2f",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Porto",
+      "away": "Napoli",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Napoli",
+          "decimal": 3.1
+        },
+        {
+          "name": "Porto",
+          "decimal": 2.15
+        },
+        {
+          "name": "Draw",
+          "decimal": 3.6
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
+    },
+    {
+      "id": "odds-6277e639c064e641265fcb98a0e200b9",
+      "provider": "the-odds-api",
+      "sport": "football",
+      "league": "Champions League",
+      "home": "Viking FK",
+      "away": "Sabah FK",
+      "start_time": "2026-11-04T20:00:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Sabah FK",
+          "decimal": 5.9
+        },
+        {
+          "name": "Viking FK",
+          "decimal": 1.43
+        },
+        {
+          "name": "Draw",
+          "decimal": 4.8
+        }
+      ],
+      "quote_at": "2026-10-31T08:57:20Z"
     }
   ]
 }
