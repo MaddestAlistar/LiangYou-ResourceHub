@@ -1,0 +1,59 @@
+name: Deploy title-specific playback metadata adapter
+on:
+  push:
+    branches: [main]
+    paths:
+      - labs/title-playback-worker.mjs
+      - scripts/test_title_playback_worker.mjs
+      - .github/workflows/deploy-title-playback.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-liangyou-title-playback
+  cancel-in-progress: false
+
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TMDB_READ_ACCESS_TOKEN: ${{ secrets.TMDB_READ_ACCESS_TOKEN || secrets.TMDB_ACCESS_TOKEN || secrets.TMDB_API_TOKEN || secrets.TMDB_TOKEN }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY || vars.TMDB_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source matching tests and syntax
+        run: |
+          node --check labs/title-playback-worker.mjs
+          node --test scripts/test_title_playback_worker.mjs
+      - name: Check existing Cloudflare credentials
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$TMDB_READ_ACCESS_TOKEN" || test -n "$TMDB_API_KEY"
+      - name: Deploy metadata-only Worker (video never proxied)
+        run: npx --yes wrangler@4 deploy labs/title-playback-worker.mjs --name liangyou-title-playback --compatibility-date 2026-10-20 --compatibility-flags nodejs_compat
+      - name: Install private TMDB credential
+        run: |
+          if [ -n "$TMDB_READ_ACCESS_TOKEN" ]; then
+            printf '%s' "$TMDB_READ_ACCESS_TOKEN" | npx --yes wrangler@4 secret put TMDB_READ_ACCESS_TOKEN --name liangyou-title-playback
+          else
+            printf '%s' "$TMDB_API_KEY" | npx --yes wrangler@4 secret put TMDB_API_KEY --name liangyou-title-playback
+          fi
+      - name: Smoke-check new Worker
+        run: |
+          for n in 1 2 3 4 5; do
+            if curl -fsS --max-time 10 "https://liangyou-title-playback.maddestalistar.workers.dev/health" | grep -q '"videoProxy":false'; then
+              echo "Playback metadata Worker online; video bytes are not relayed."
+              exit 0
+            fi
+            sleep 4
+          done
+          exit 1
