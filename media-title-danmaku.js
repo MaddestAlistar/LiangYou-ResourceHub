@@ -231,6 +231,7 @@ function exitWebFullscreen(state){
  state.screen.classList.remove("mtk-danmaku-webfullscreen");
  if(state.controls.parentElement===state.screen)state.screen.after(state.controls);
  state.webFullscreen=false;
+ setLandscape(state,false);
  state.fullscreen.setAttribute("aria-pressed","false");
  state.fullscreen.textContent="⛶";
  document.documentElement.classList.remove("mtk-danmaku-page-expanded");
@@ -257,7 +258,26 @@ function revealFullscreenControls(state){
  if(inWebFullscreen(state)&&state.settings.hidden&&!state.controls.hidden)
   state.hideTimer=setTimeout(()=>hideFullscreenControls(state),2800);
 }
-async function toggleWebFullscreen(state){
+function setLandscape(state,on){
+ state.landscapeMode=!!on;
+ state.screen.classList.toggle("mtk-danmaku-landscape",state.landscapeMode);
+ state.rotate.setAttribute("aria-pressed",String(state.landscapeMode));
+ state.rotate.textContent=t(state.landscapeMode?"还原":"横屏",state.landscapeMode?"Reset":"Rotate");
+ const label=t(state.landscapeMode?"恢复正常画面方向":"横屏观看",
+   state.landscapeMode?"Restore normal viewing direction":"Watch in landscape");
+ state.rotate.title=label;
+ state.rotate.setAttribute("aria-label",label);
+ revealFullscreenControls(state);
+}
+async function toggleLandscape(state){
+ if(state!==session)return;
+ if(state.landscapeMode){setLandscape(state,false);return;}
+ // Keep the video, captions and danmaku in the DOM on mobile Safari.
+ if(!inWebFullscreen(state))await toggleWebFullscreen(state,true);
+ if(state!==session||!inWebFullscreen(state))return;
+ setLandscape(state,true);
+}
+async function toggleWebFullscreen(state,forceWeb=false){
  if(state!==session)return;
  if(state.webFullscreen){exitWebFullscreen(state);return;}
  state.settings.hidden=true;
@@ -267,7 +287,7 @@ async function toggleWebFullscreen(state){
  const iphone=/iPhone|iPod/i.test(navigator.userAgent||"");
  // The toolbar lives below the video in normal mode, inside the screen in fullscreen.
  state.screen.appendChild(state.controls);
- if(!iphone&&(state.screen.requestFullscreen||state.screen.webkitRequestFullscreen)){
+ if(!forceWeb&&!iphone&&(state.screen.requestFullscreen||state.screen.webkitRequestFullscreen)){
   try{
    await (state.screen.requestFullscreen||state.screen.webkitRequestFullscreen).call(state.screen);
    if(state!==session)return;
@@ -327,6 +347,12 @@ function mount(video,info){
  fullscreen.title=t("网页全屏：保留弹幕，iPhone 原生全屏无法叠加网页弹幕",
   "Web fullscreen preserves comments; iPhone native fullscreen does not");
  fullscreen.setAttribute("aria-label",t("弹幕网页全屏","Fullscreen with danmaku"));
+ const rotate=document.createElement("button");rotate.type="button";
+ rotate.className="mtk-danmaku-rotate";
+ rotate.textContent=t("横屏","Rotate");
+ rotate.title=t("横屏观看","Watch in landscape");
+ rotate.setAttribute("aria-label",rotate.title);
+ rotate.setAttribute("aria-pressed","false");
  const gear=document.createElement("button");gear.type="button";
  gear.className="mtk-danmaku-gear";gear.textContent="⚙";
  gear.title=t("设置弹幕行数、位置和透明度","Danmaku display settings");
@@ -354,9 +380,9 @@ function mount(video,info){
    applySettings(state,true);
   });
  };
- const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,status,retry,
+ const state={video,screen,info:{...info},area,controls,button,fullscreen,rotate,gear,settings,status,retry,
    enabled,available:readVerified(info),checking:false,loadError:false,statusReason:"unavailable",
-   entries:[],cursor:0,lastTime:0,webFullscreen:false,
+   entries:[],cursor:0,lastTime:0,webFullscreen:false,landscapeMode:false,
    options:{...settingsOptions},lane:0,lineTimes:[],
    live:[],loading:false,abort:null,probeAbort:null,hideTimer:null};
  createRange(t("显示行数","Rows"),1,8,1,state.options.rows,t(" 行",""),"rows");
@@ -373,7 +399,7 @@ function mount(video,info){
   applySettings(state,true);
  });
  createRange(t("弹幕透明度","Opacity"),20,100,10,state.options.opacity,"%", "opacity");
- controls.append(status,retry,button,gear,fullscreen,settings);
+ controls.append(status,retry,button,gear,fullscreen,rotate,settings);
  screen.appendChild(area);
  screen.after(controls);
  applySettings(state,false);
@@ -400,6 +426,7 @@ function mount(video,info){
   }else probe(state,1);
  });
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
+ rotate.addEventListener("click",()=>toggleLandscape(state));
  state.onScreenTap=event=>{
   if(!inWebFullscreen(state))return;
   // Tapping the video reveals controls; touching the toolbar extends visibility.
