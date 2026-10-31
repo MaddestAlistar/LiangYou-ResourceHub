@@ -30,7 +30,7 @@ test("next season is queried only when catalogue verified a season number",()=>{
  assert.equal(next(),true);
  assert.equal(info.season,2);
  assert.equal(info.episode,1);
- assert.deepEqual(info.episodes,[]);
+ assert.equal(info.episodes.length,0);
  assert.equal(context.didCall,true);
 });
 test("unknown identifiers do not skip arbitrary seconds but next-episode still listens for ended",()=>{
