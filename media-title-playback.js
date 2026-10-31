@@ -9,8 +9,33 @@ let active=null,controller=null,serial=0,video=null,hls=null,jsHls=null;
 const en=()=>document.documentElement.lang.toLowerCase().startsWith("en");
 const t=(a,b)=>en()?b:a;
 const tr=s=>String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
-const idValid=info=>["movie","tv"].includes(info?.kind)&&Number.isSafeInteger(Number(info?.tmdbId))&&
- Number(info.tmdbId)>0&&/^tmdb-(?:movie|tv)-[1-9]\d{0,9}$/.test(String(info.id||""));
+const idValid=info=>/^[a-z][a-z0-9-]{2,90}$/.test(String(info?.id||""))&&
+ String(info?.title||"").trim().length>=2&&["movie","tv","anime"].includes(info?.kind);
+const canonical=info=>/^tmdb-(movie|tv)-([1-9]\d{0,9})$/.exec(String(info?.id||""));
+function seasonFromTitle(title){
+ const m=String(title||"").match(/第\s*([一二三四五六七八九十\d]+)\s*季|\bseason\s*(\d+)\b/i);
+ if(!m)return 1;
+ const n=m[1]||m[2],zh={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10};
+ return /^\d+$/.test(n)?Number(n):(zh[n]||1);
+}
+function route(mode,info,episode){
+ const m=canonical(info);
+ const url=new URL(ENDPOINT+(m?"/api/"+mode+"/"+m[1]+"/"+m[2]:
+   "/api/"+mode+"/work/"+encodeURIComponent(info.id)));
+ url.searchParams.set("season",String(info.season));
+ if(episode!=null)url.searchParams.set("episode",String(episode));
+ if(!m){
+   url.searchParams.set("kind",info.kind);
+   url.searchParams.set("title",info.title);
+   url.searchParams.set("original",info.originalTitle||"");
+   url.searchParams.set("year",info.year||"");
+ }
+ return url.toString();
+}
+function sameIdentity(body,info){
+ return body?.kind===info.kind&&body?.workId===info.id&&
+  (canonical(info)?Number(body.tmdbId)===Number(info.tmdbId):body.tmdbId===null);
+}
 const inRange=(x,max)=>Number.isSafeInteger(Number(x))&&Number(x)>=1&&Number(x)<=max;
 function clearPlayback(){
  serial++;
@@ -59,7 +84,8 @@ function renderEpisodes(){
  controls.hidden=info.kind==="movie"||!info.episodes.length;
  const seasonRow=box.querySelector(".mtk-playback-season-row"),seasonSelect=box.querySelector(".mtk-playback-season");
  if(info.kind==="tv"){
-  const options=info.seasons?.length?info.seasons:[{number:info.season}];
+  const options=info.seasons?.length?info.seasons:
+    info.fixedSeason?[{number:info.season}]:[{number:1},{number:2},{number:3},{number:4},{number:5}];
   seasonSelect.innerHTML=options.map(s=>'<option value="'+s.number+'"'+(s.number===info.season?" selected":"")+">"+
     t("第 "+s.number+" 季","Season "+s.number)+"</option>").join("");
   seasonRow.hidden=options.length<2;
@@ -100,11 +126,11 @@ async function lookup(){
  showStatus(t("正在匹配当前作品…","Matching this title…"));
  const stage=card()?.querySelector(".mtk-playback-screen");
  if(stage)resetStage();
- const url=ENDPOINT+"/api/title/"+info.kind+"/"+info.tmdbId+"?season="+info.season;
+ const url=route("title",info);
  try{
   const body=await json(url,ac.signal);
   if(!active||active!==info||serial!==reqId||!card())return;
-  if(body.ok!==true||body.kind!==info.kind||body.tmdbId!==info.tmdbId||body.season!==info.season)
+  if(body.ok!==true||!sameIdentity(body,info)||body.season!==info.season)
    throw Error("identity_mismatch");
   info.seasons=Array.isArray(body.seasons)?body.seasons.filter(s=>inRange(s?.number,60)).slice(0,45):[];
   info.episodes=Array.isArray(body.episodes)?[...new Set(body.episodes.filter(e=>inRange(e,3000)).map(Number))].sort((a,b)=>a-b):[];
@@ -165,12 +191,12 @@ async function startPlayback(){
  const b=card().querySelector(".mtk-playback-start");
  if(b)b.disabled=true;
  showStatus(t("正在获取当前集的播放地址…","Resolving this episode’s stream…"));
- const url=ENDPOINT+"/api/play/"+info.kind+"/"+info.tmdbId+"?season="+info.season+"&episode="+info.episode;
+ const url=route("play",info,info.episode);
  try{
   const body=await json(url,ac.signal);
   if(ac.signal.aborted||serial!==token||active!==info||!card())return;
-  if(body.ok!==true||body.status!=="ready"||body.kind!==info.kind||
-    body.tmdbId!==info.tmdbId||body.season!==info.season||body.episode!==info.episode)throw Error("wrong_episode");
+  if(body.ok!==true||body.status!=="ready"||!sameIdentity(body,info)||
+    body.season!==info.season||body.episode!==info.episode)throw Error("wrong_episode");
   const src=safeStream(body.media);if(!src)throw Error("bad_media");
   const screen=card().querySelector(".mtk-playback-screen");
   screen.replaceChildren();
@@ -209,8 +235,13 @@ function mount(info){
  const anchor=toolkit?.querySelector(".mtk-details:last-of-type");
  if(!toolkit)return;
  const remembered=restoreSelection(info);
- active={id:String(info.id),title:String(info.title||""),kind:info.kind,tmdbId:Number(info.tmdbId),
-  season:info.kind==="movie"?1:remembered.season,episode:info.kind==="movie"?1:remembered.episode,
+ const canonicalId=canonical(info),kind=canonicalId?canonicalId[1]:info.kind==="movie"?"movie":"tv";
+ const inferredSeason=seasonFromTitle(info.title);
+ const fixedSeason=!canonicalId&&inferredSeason>1;
+ active={id:String(info.id),title:String(info.title||""),originalTitle:String(info.originalTitle||""),
+  year:String(info.year||"").slice(0,4),kind,tmdbId:canonicalId?Number(canonicalId[2]):null,
+  season:kind==="movie"?1:fixedSeason?inferredSeason:remembered.season,
+  episode:kind==="movie"?1:remembered.episode,fixedSeason,
   episodes:[],seasons:[],page:0};
  const wrap=document.createElement("div");wrap.innerHTML=playbackHtml(active);
  const node=wrap.firstElementChild;
