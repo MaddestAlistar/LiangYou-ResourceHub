@@ -24,7 +24,7 @@ test("next available episode is selected from actual numbered list, saved and pl
 test("next season is queried only when catalogue verified a season number",()=>{
  const start=code.indexOf("function nextEpisode(auto=true){"),end=code.indexOf("function configureSkip(",start);
  const info={kind:"tv",season:1,episode:12,episodes:[12],seasons:[{number:1},{number:2}],page:0};
- const context={active:info,AUTO_NEXT:true,saveSelection(){},lookup(shouldPlay){this.didCall=shouldPlay;}};
+ const context={active:info,AUTO_NEXT:true,saveSelection(){},lookup(shouldPlay){context.didCall=shouldPlay;}};
  vm.createContext(context);
  const next=vm.runInContext("("+code.slice(start,end).trim()+")",context);
  assert.equal(next(),true);
