@@ -170,6 +170,9 @@ async function load(state){
 }
 function exitWebFullscreen(state){
  if(!state)return;
+ clearFullscreenHide(state);
+ state.controls.classList.remove("mtk-danmaku-controls-hidden");
+ state.controls.inert=false;
  const fullscreenElement=document.fullscreenElement||document.webkitFullscreenElement;
  if(fullscreenElement===state.screen){
   try{(document.exitFullscreen||document.webkitExitFullscreen)?.call(document);}catch{}
@@ -181,9 +184,33 @@ function exitWebFullscreen(state){
  state.fullscreen.textContent="⛶";
  document.documentElement.classList.remove("mtk-danmaku-page-expanded");
 }
+function inWebFullscreen(state){
+ return !!(state&&(state.webFullscreen||
+   document.fullscreenElement===state.screen||document.webkitFullscreenElement===state.screen));
+}
+function clearFullscreenHide(state){
+ if(state?.hideTimer!=null){clearTimeout(state.hideTimer);state.hideTimer=null;}
+}
+function hideFullscreenControls(state){
+ state.hideTimer=null;
+ if(state!==session||!inWebFullscreen(state)||!state.available||
+    state.controls.hidden||!state.settings.hidden)return;
+ state.controls.classList.add("mtk-danmaku-controls-hidden");
+ state.controls.inert=true;
+}
+function revealFullscreenControls(state){
+ if(state!==session)return;
+ clearFullscreenHide(state);
+ state.controls.classList.remove("mtk-danmaku-controls-hidden");
+ state.controls.inert=false;
+ if(inWebFullscreen(state)&&state.settings.hidden&&!state.controls.hidden)
+  state.hideTimer=setTimeout(()=>hideFullscreenControls(state),2800);
+}
 async function toggleWebFullscreen(state){
  if(state!==session||!state.available)return;
  if(state.webFullscreen){exitWebFullscreen(state);return;}
+ state.settings.hidden=true;
+ state.gear.setAttribute("aria-expanded","false");
  // iPhone Safari's native *video* fullscreen cannot contain HTML overlays.
  // Use a viewport-filling web mode instead; tablet/desktop supports element fullscreen.
  const iphone=/iPhone|iPod/i.test(navigator.userAgent||"");
@@ -196,6 +223,7 @@ async function toggleWebFullscreen(state){
    state.webFullscreen=true;
    state.fullscreen.setAttribute("aria-pressed","true");
    state.fullscreen.textContent="↙";
+   revealFullscreenControls(state);
    return;
   }catch{}
  }
@@ -204,6 +232,7 @@ async function toggleWebFullscreen(state){
  state.fullscreen.setAttribute("aria-pressed","true");
  state.fullscreen.textContent="↙";
  document.documentElement.classList.add("mtk-danmaku-page-expanded");
+ revealFullscreenControls(state);
 }
 document.addEventListener("fullscreenchange",()=>{
  if(session&&!document.fullscreenElement&&!document.webkitFullscreenElement&&session.webFullscreen&&
@@ -215,6 +244,7 @@ document.addEventListener("keydown",e=>{
 });
 function destroy(){
  if(!session)return;
+ session.screen.removeEventListener("pointerdown",session.onScreenTap,true);
  exitWebFullscreen(session);
  session.probeAbort?.abort();
  session.abort?.abort();
@@ -269,7 +299,7 @@ function mount(video,info){
  const state={video,screen,info:{...info},area,controls,button,fullscreen,gear,settings,
    enabled,available:false,entries:[],cursor:0,lastTime:0,webFullscreen:false,
    options:{...settingsOptions},lane:0,lineTimes:[],
-   live:[],loading:false,abort:null,probeAbort:null};
+   live:[],loading:false,abort:null,probeAbort:null,hideTimer:null};
  createRange(t("显示行数","Rows"),1,8,1,state.options.rows,t(" 行",""),"rows");
  const positionRow=document.createElement("label");positionRow.className="mtk-danmaku-setting-row";
  const positionCaption=document.createElement("span");positionCaption.textContent=t("显示位置","Position");
@@ -305,9 +335,17 @@ function mount(video,info){
   setButton(state);
  });
  fullscreen.addEventListener("click",()=>toggleWebFullscreen(state));
+ state.onScreenTap=event=>{
+  if(!inWebFullscreen(state))return;
+  // Tapping the video reveals controls; touching the toolbar extends visibility.
+  revealFullscreenControls(state);
+ };
+ screen.addEventListener("pointerdown",state.onScreenTap,true);
+ controls.addEventListener("pointerdown",()=>revealFullscreenControls(state));
  gear.addEventListener("click",()=>{
   settings.hidden=!settings.hidden;
   gear.setAttribute("aria-expanded",String(!settings.hidden));
+  revealFullscreenControls(state);
  });
  session=state;setButton(state);
  probe(state);
