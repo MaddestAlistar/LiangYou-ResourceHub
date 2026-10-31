@@ -279,6 +279,8 @@ export default {
   // original title, year and kind. No cross-title or global search UI.
   const metadataUrl=new URL(u.origin+"/api/title/"+(w?"work/"+workId:kind+"/"+id));
   metadataUrl.searchParams.set("season",String(season));
+  // Bust cached source selections when ranking rules change.
+  metadataUrl.searchParams.set("resolver","exact-edition-v2");
   if(w){metadataUrl.searchParams.set("kind",kind);metadataUrl.searchParams.set("title",workTitle);
     metadataUrl.searchParams.set("original",originalTitle);metadataUrl.searchParams.set("year",year);}
   const metadataKey=new Request(metadataUrl.href);
