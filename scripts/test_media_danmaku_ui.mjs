@@ -55,7 +55,8 @@ test("unmatched episodes keep fullscreen and retry, but only confirmed comments 
   available:false,enabled:false,probeAbort:null,checking:false
  };
  const context={
-  AbortController,session:state,pathFor:()=>"https://example.test/api/danmaku/work/tmdb-tv-30984?episode=4",
+  AbortController,setTimeout:()=>1,clearTimeout(){},session:state,
+  pathFor:()=>"https://example.test/api/danmaku/work/tmdb-tv-30984?episode=4",
   fetch:async url=>{
    assert.match(url,/check=1/);
    return {ok:true,json:async()=>answer};
@@ -103,10 +104,11 @@ test("iPhone web fullscreen keeps the video and overlay in one DOM layer",async(
   after(node){node.parentElement={tag:"toolbar-outside-video"};}};
  const state={available:true,screen,controls,
   settings:{hidden:false},gear:{setAttribute(){}},
-  fullscreen:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"⛶"},
+  fullscreen:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"全屏"},
+  rotate:{attrs:{},setAttribute(k,v){this.attrs[k]=v},textContent:"横屏"},
   webFullscreen:false,hideTimer:null};
  let callback=null;
- const context={session:state,navigator:{userAgent:"iPhone"},
+ const context={session:state,navigator:{userAgent:"iPhone"},t:(zh)=>zh,setButton(){},
   setTimeout(fn){callback=fn;return 1},clearTimeout(){callback=null},
   document:{
    fullscreenElement:null,webkitFullscreenElement:null,
@@ -201,10 +203,10 @@ test("fullscreen controls auto-hide only in fullscreen; settings panel pauses th
 });
 
 test("fullscreen control is independent of danmaku availability and error states",()=>{
- assert.match(source,/async function toggleWebFullscreen\(state\)\{\s*if\(state!==session\)return;/);
+ assert.match(source,/async function toggleWebFullscreen\(state,forceWeb=false\)\{\s*if\(state!==session\)return;/);
  assert.doesNotMatch(source,/state\.controls\.hidden=!state\.available/);
  assert.doesNotMatch(source,/state\.available=false;state\.controls\.hidden=true/);
- assert.match(source,/controls\.append\(status,retry,button,gear,fullscreen,settings\)/);
+ assert.match(source,/controls\.append\(status,retry,button,gear,fullscreen,rotate,settings\)/);
  assert.match(source,/retry\.addEventListener\("click",\(\)=>\{/);
  assert.match(source,/state\.button\.hidden=!state\.available/);
  assert.match(source,/state\.gear\.hidden=!state\.available/);
@@ -227,7 +229,7 @@ test("previously verified danmaku remains visible when an upstream refresh is un
     workId:state.info.id,kind:"tv",season:1,episode:2,count:0})}),
   saveVerified:(info,flag)=>remembered.push(flag),
   setButton(v){v.button.hidden=!v.available;v.controls.hidden=false;v.gear.hidden=!v.available;},
-  setTimeout(){throw Error("Do not retry already-verified episodes");}};
+  setTimeout(){return 1},clearTimeout(){}};
  vm.createContext(ctx);
  const probe=vm.runInContext("("+source.slice(start,end).trim()+")",ctx);
  await probe(state,0);
@@ -262,4 +264,16 @@ test("temporary comment-download failure preserves known-positive episode and re
  assert.match(source,/available:readVerified\(info\)/);
  assert.match(source,/if\(state\.entries\.length\)saveVerified\(state\.info,true\)/);
  assert.doesNotMatch(source,/setTimeout\(\(\)=>\{if\(state===session&&state\.video\.isConnected\)probe\(state,1\);\},2700\)/);
+});
+
+test("liquid-glass controls retain text and danmaku checks recover from timeouts",()=>{
+ assert.match(source,/state\.button\.textContent=t\("弹幕","DM"\)/);
+ assert.match(source,/state\.rotate\.textContent=t\(state\.landscapeMode\?"还原":"横屏"/);
+ assert.match(source,/gear\.textContent=t\("设置","Settings"\)/);
+ assert.match(source,/fullscreen\.textContent=t\("全屏","Full"\)/);
+ assert.match(source,/const timer=setTimeout\(\(\)=>ac\.abort\(\),26000\)/);
+ assert.match(source,/clearTimeout\(timer\)/);
+ assert.doesNotMatch(source,/state\.available=false;state\.statusReason="unavailable"/);
+ assert.match(css,/grid-template-columns:repeat\(2,64px\)/);
+ assert.match(css,/background:transparent!important/);
 });
