@@ -19,9 +19,14 @@ test('Ranma 2026 keeps verified Bangumi data when optional MAL/AniList records a
   assert.ok(source);
   assert.equal(source.title,'乱马1/2 第三季');
   assert.ok(source.ratings.some(x=>x.source==='Bangumi'&&x.value===7.5));
-  // Do not claim linked scores or aliases that the latest fetched catalog lacks.
-  if(!d.works['mal-63801'])assert.equal(current.aliases['mal-63801'],undefined);
-  if(!d.works['anilist-209872'])assert.equal(current.aliases['anilist-209872'],undefined);
+  // A verified provider ID can resolve to the Bangumi record without a
+  // separate MAL/AniList work card. Never create a second work for that ID.
+  for(const id of ['mal-63801','anilist-209872']){
+    if(!d.works[id]){
+      assert.equal(current.works[id],undefined);
+      assert.equal(current.aliases[id],d.aliases[id]);
+    }
+  }
 });
 
 test('Ranma 2026 merges additional MAL/AniList scores only with matching season identity',()=>{
