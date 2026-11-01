@@ -2,13 +2,13 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-01T14:54:15Z",
+  "generated_at": "2026-11-01T21:22:48Z",
   "quota_month": "2026-11",
-  "monthly_credits": 4,
+  "monthly_credits": 5,
   "monthly_cap": 210,
-  "provider_remaining": 495,
+  "provider_remaining": 494,
   "last_checked": {
-    "basketball_nba": "2026-11-01T14:54:15Z",
+    "basketball_nba": "2026-11-01T21:22:48Z",
     "soccer_epl": "2026-11-01T14:54:15Z",
     "soccer_uefa_champs_league": "2026-11-01T14:54:15Z"
   },
@@ -16,41 +16,20 @@
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 4
+      "count": 3
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "ok",
-      "count": 11
+      "status": "recent",
+      "count": 10
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "ok",
+      "status": "recent",
       "count": 18
     }
   ],
   "events": [
-    {
-      "id": "odds-e8559eaac12af915cfe6597644620c13",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Orlando Magic",
-      "away": "Boston Celtics",
-      "start_time": "2026-11-01T20:40:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Boston Celtics",
-          "decimal": 1.39
-        },
-        {
-          "name": "Orlando Magic",
-          "decimal": 3.1
-        }
-      ],
-      "quote_at": "2026-11-01T14:53:33Z"
-    },
     {
       "id": "odds-fc3e945a5be88d3f933456bc512c956d",
       "provider": "the-odds-api",
@@ -63,14 +42,14 @@
       "outcomes": [
         {
           "name": "Brooklyn Nets",
-          "decimal": 2.42
+          "decimal": 2.36
         },
         {
           "name": "Indiana Pacers",
-          "decimal": 1.59
+          "decimal": 1.62
         }
       ],
-      "quote_at": "2026-11-01T14:53:33Z"
+      "quote_at": "2026-11-01T21:22:07Z"
     },
     {
       "id": "odds-094b083ace229ca31ff360a80e35a1a8",
@@ -84,14 +63,14 @@
       "outcomes": [
         {
           "name": "Golden State Warriors",
-          "decimal": 1.76
+          "decimal": 1.75
         },
         {
           "name": "Los Angeles Clippers",
-          "decimal": 2.12
+          "decimal": 2.14
         }
       ],
-      "quote_at": "2026-11-01T14:53:40Z"
+      "quote_at": "2026-11-01T21:22:31Z"
     },
     {
       "id": "odds-31fc89cbf3846e545e8e41a543a71d24",
@@ -112,32 +91,7 @@
           "decimal": 2.24
         }
       ],
-      "quote_at": "2026-11-01T14:53:33Z"
-    },
-    {
-      "id": "odds-6a3819cdbe2ba2fe5a3d8f9b4b459965",
-      "provider": "the-odds-api",
-      "sport": "football",
-      "league": "Premier League",
-      "home": "Liverpool",
-      "away": "Arsenal",
-      "start_time": "2026-11-01T16:30:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Arsenal",
-          "decimal": 2.5
-        },
-        {
-          "name": "Liverpool",
-          "decimal": 2.8
-        },
-        {
-          "name": "Draw",
-          "decimal": 3.4
-        }
-      ],
-      "quote_at": "2026-11-01T14:53:57Z"
+      "quote_at": "2026-11-01T21:22:07Z"
     },
     {
       "id": "odds-0f552d9c6990c69474f50ff2fb54e9a3",
