@@ -131,6 +131,44 @@ class MediaTests(unittest.TestCase):
         self.assertEqual(m.assrt_results({'status':0,'sub':{'subs':None}}),[])
         data={'sub':{'subs':[{'id':123,'native_name':'Example','lang':'简体'}]}}
         self.assertEqual(m.assrt_results(data)[0]['language'],'简体')
+    def test_assrt_throttles_and_preserves_earlier_results_on_http509(self):
+        movies=[{'id':'tmdb-movie-'+str(i),'title':'Movie '+name,'date':'2026'}
+                for i,name in enumerate(('Alpha','Beta','Gamma'),1)]
+        good={'status':0,'sub':{'subs':[{'id':123456,
+            'native_name':'Movie Alpha (2026)','lang':{'desc':'简体'}}]}}
+        empty={'status':0,'sub':{'subs':[]}}
+        with (patch.object(m,'key',return_value='unit-token'),
+              patch.object(m,'get',side_effect=[good,empty,m.FeedError('http_509')]) as get,
+              patch.object(m.time,'sleep') as sleep):
+            rows=m.enrich('assrt',movies)
+        self.assertEqual(get.call_count,3)
+        self.assertEqual(sleep.call_count,2)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list],[15.5,15.5])
+        self.assertEqual(len(rows),2)
+        self.assertEqual(rows.failures,1)
+        self.assertEqual(rows[0]['results'][0]['title'],'Movie Alpha (2026)')
+        self.assertEqual(rows[1]['results'],[])
+        old={'status':'ok','items':[{'target_id':'tmdb-movie-99','results':[]}],
+             'updated_at':'2026-10-28T00:00:00Z'}
+        snapshot=m.refresh_source('assrt',old,lambda:rows)
+        self.assertEqual(snapshot['status'],'partial')
+        self.assertEqual(len(snapshot['items']),3)
+        self.assertIn('tmdb-movie-99',{r['target_id'] for r in snapshot['items']})
+
+    def test_assrt_first_request_error_keeps_existing_snapshot(self):
+        movie={'id':'tmdb-movie-1','title':'Movie Alpha'}
+        with (patch.object(m,'key',return_value='unit-token'),
+              patch.object(m,'get',side_effect=m.FeedError('http_509')),
+              patch.object(m.time,'sleep') as sleep):
+            with self.assertRaises(m.FeedError):
+                m.enrich('assrt',[movie])
+        sleep.assert_not_called()
+        old={'status':'ok','items':[{'target_id':'tmdb-movie-1','results':[]}],
+             'updated_at':'2026-10-28T00:00:00Z'}
+        snapshot=m.refresh_source('assrt',old,lambda:(_ for _ in ()).throw(m.FeedError('http_509')))
+        self.assertEqual(snapshot['status'],'stale')
+        self.assertEqual(snapshot['items'],old['items'])
+
     def test_omdb_fields_are_complete_and_deduplicated(self):
         data={'imdbRating':'8.8','Metascore':'67','Ratings':[{'Source':'Internet Movie Database','Value':'8.8/10'},{'Source':'Rotten Tomatoes','Value':'81%'}]}
         ratings=m.omdb_ratings(data)
