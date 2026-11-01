@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from zoneinfo import ZoneInfo
 from feed_common import ROOT, now, iso, date, read_json, write_json
-from media_catalog import build_catalog, normalized_ratings
+from media_catalog import build_catalog, normalized_ratings, apply_verified_anime_video_links
 
 UA = 'LiangYouResourceHub/1.0 (https://github.com/MaddestAlistar/LiangYou-ResourceHub)'
 PATH = ROOT / 'data/media-intel.json'
@@ -501,6 +501,10 @@ def main():
     sources['mdblist']=refresh_source('mdblist',sources.get('mdblist'),lambda:enrich('mdblist',rating_candidates))
     localize_images(sources)
     works,aliases=build_catalog(sources)
+    # Keep independently verified edition IDs even if an upstream discovery
+    # feed temporarily omits that MAL/AniList record.
+    video_items=(read_json(ROOT/'data/media-anime-videos.json').get('items') or {})
+    apply_verified_anime_video_links(works,aliases,video_items)
     output={'schema':1,'media_source_version':5,'classification_source_version':1,'checked_at':iso(),'timezone':'Asia/Shanghai','sources':sources,'works':works,'aliases':aliases}
     # Cache is public metadata only; credentials/URLs with credential query strings never saved.
     CACHE={k:v for k,v in CACHE.items() if date(v.get('checked_at')) and now()-date(v['checked_at'])<timedelta(days=30)}
