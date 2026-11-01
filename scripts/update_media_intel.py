@@ -3,7 +3,7 @@
 Per-source caches survive failures. Watchmode: <= 4 searches + 4 sources/day.
 """
 from __future__ import annotations
-import hashlib, html, io, json, os, re, sys
+import hashlib, html, io, json, os, re, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import zip_longest
 from datetime import datetime, timedelta, timezone
@@ -332,7 +332,7 @@ def collect_simkl():
     return items
 
 def enrich(source,candidates):
-    token=key(source); out=CollectedItems();consecutive=0;last_error='no_matching_titles'
+    token=key(source); out=CollectedItems();consecutive=0;last_error='no_matching_titles';assrt_requests=0
     limit={'omdb':12,'mdblist':32,'watchmode':4,'opensubtitles':6,'assrt':6}[source]
     for item in candidates[:limit]:
         imdb=item.get('imdb_id',''); ident=item['id']
@@ -377,9 +377,27 @@ def enrich(source,candidates):
         else:
             q=item.get('original_title') or item['title']
             if len(q)<3: continue
-            x=get('https://api.assrt.net/v1/sub/search',{'q':q,'cnt':5},{'Authorization':'Bearer '+token})
-            if x.get('status')!=0: raise FeedError('api_error')
-            entry['results']=assrt_results(x,item)
+            # ASSRT has documented per-token AND per-IP quotas. Some accounts
+            # report only 5 searches/min despite the older 20/min API guide.
+            # Use a conservative four-per-minute pace, and do not work around
+            # a throttle with extra credentials or alternate API hosts.
+            if assrt_requests:
+                time.sleep(15.5)
+            assrt_requests+=1
+            try:
+                x=get('https://api.assrt.net/v1/sub/search',{'q':q,'cnt':5},{'Authorization':'Bearer '+token})
+                if x.get('status')!=0:
+                    raise FeedError('quota_exceeded' if x.get('status')==30900 else 'api_error')
+                entry['results']=assrt_results(x,item)
+            except FeedError as exc:
+                # Keep successful searches rather than losing the whole batch
+                # when a later request gets HTTP 509/429 or another error.
+                out.failures+=1
+                last_error=str(exc)
+                print(f'assrt: stopped after {assrt_requests} requests: {last_error}',flush=True)
+                if not out:
+                    raise
+                break
         out.append(entry)
     if not out: raise FeedError(last_error)
     return out
