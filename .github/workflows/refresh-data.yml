@@ -115,13 +115,25 @@ jobs:
           else
             git commit -m "Refresh verified feeds and check health [skip ci]"
             for attempt in 1 2 3; do
-              git pull --rebase origin main
-              if git push origin HEAD:main; then
-                echo "changed=true" >> "$GITHUB_OUTPUT"
-                echo "FEED_SNAPSHOTS_PUBLISHED"
-                break
+              # In a rebase, "ours" is the newer upstream main branch. When
+              # a concurrent verified publisher changes the same JSON lines,
+              # retain that published version rather than failing on a
+              # textual conflict or overwriting it with an older snapshot.
+              if git pull --rebase -X ours origin main; then
+                # Check the rebased, combined snapshots before publishing.
+                node scripts/validate.mjs
+                if git push origin HEAD:main; then
+                  echo "changed=true" >> "$GITHUB_OUTPUT"
+                  echo "FEED_SNAPSHOTS_PUBLISHED"
+                  break
+                fi
+              else
+                git rebase --abort || true
               fi
-              if [ "$attempt" = 3 ]; then exit 1; fi
+              if [ "$attempt" = 3 ]; then
+                echo "Unable to publish verified feeds after three retries" >&2
+                exit 1
+              fi
             done
           fi
       - name: Publish bot updates to the existing Pages site
