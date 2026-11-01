@@ -20,8 +20,8 @@
   const statusName=s=>({want:text('想看','Want to watch'),watching:text('在看','Watching'),watched:text('看完','Watched')})[s]||'';
   const workFor=i=>cat.works[cat.aliases[i.work_id||i.id]||i.work_id||i.id]||i;
   const activeWork=()=>cat.works[activeId]||saved(activeId)?.work;
-  const tabs=[['movies','热门电影','Movies'],['series','热门剧集','Series'],['calendar','追剧日历','Calendar'],['anime','动漫新番','Anime'],['upcoming','即将上映','Coming soon'],['library','我的片单','My list']];
-  const choices=()=>tab==='calendar'?['tvmaze']:tab==='anime'?['all','bangumi','anilist','simkl']:tab==='upcoming'?['tmdb']:['all','tmdb','trakt','simkl'];
+  const tabs=[['movies','热门电影','Movies'],['series','热门剧集','Series'],['calendar','追剧日历','Calendar'],['drama','短剧热播','Short dramas'],['anime','动漫新番','Anime'],['upcoming','即将上映','Coming soon'],['library','我的片单','My list'],['reserved','敬请期待','Coming soon']];
+  const choices=()=>tab==='drama'?['all']:tab==='calendar'?['tvmaze']:tab==='anime'?['all','bangumi','anilist','simkl']:tab==='upcoming'?['tmdb']:['all','tmdb','trakt','simkl'];
   const stale=s=>s.status!=='ok'||!s.updated_at||Date.now()-Date.parse(s.updated_at)>(s.interval_hours||6)*7200000;
   const poster=i=>`<div class="mi-poster">${i.poster?`<img src="${url(i.poster)}" alt="${esc(title(i))}" loading="lazy" decoding="async" width="342" height="513">`:'<span aria-hidden="true">✦</span>'}</div>`;
   const scoreValue=r=>Number.isFinite(r.value)&&r.scale ? `${r.source==='MyAnimeList'?r.value.toFixed(2):r.scale<=10?r.value.toFixed(1):r.value}${['Rotten Tomatoes','RT Audience'].includes(r.source)?'%':'/'+r.scale}` : r.display||'—';
@@ -137,7 +137,21 @@
     $('#media-tabs').setAttribute('aria-label',text('影视分类','Film categories'));$('#media-sources').setAttribute('aria-label',text('选择数据来源或片单状态','Choose source or list status'));
     $('#media-search').placeholder=tab==='library'?text('搜索我的片单…','Search my list…'):text('搜索当前分类的片名…','Search titles in this category…');
     $('#media-search').setAttribute('aria-label',text('搜索影视作品','Search film titles'));
-    $('#media-tabs').innerHTML=tabs.map(([id,zh,en])=>`<button type="button" data-mi-tab="${id}" aria-pressed="${tab===id}">${text(zh,en)}${id==='library'?` <span class="mi-tab-count">${list.length}</span>`:''}</button>`).join('');
+    $('#media-tabs').innerHTML=tabs.map(([id,zh,en])=>`<button type="button" data-mi-tab="${id}" aria-pressed="${tab===id}" ${id==='reserved'?'disabled aria-disabled="true" title="预留扩展位置"':''}>${text(zh,en)}${id==='library'?` <span class="mi-tab-count">${list.length}</span>`:''}</button>`).join('');
+    if(tab==='drama'){
+      $('#media-library-tools').hidden=true;
+      $('#media-days').hidden=true;
+      root.querySelector('.mi-health').hidden=true;
+      $('#media-search').placeholder=text('搜索已收录的短剧…','Search collected dramas…');
+      $('#media-sources').innerHTML=[['all','热播榜','Trending'],['new','最新上新','New'],['real','真人短剧','Live action'],['ai','AI 短剧','AI dramas'],['comic','漫剧','Animated']].map(([id,zh,en])=>`<button type="button" data-mi-source="${id}" aria-pressed="${source===id}">${text(zh,en)}</button>`).join('');
+      $('#media-scope').textContent=text('短剧精选 · 热门排行 · 题材分类 · 上新动态','Short drama charts · genres · new arrivals');
+      $('#media-source-status').textContent='';
+      $('#media-attribution').innerHTML='';
+      $('#media-pagination').hidden=true;
+      root.dispatchEvent(new CustomEvent('liangyou:drama-render',{detail:{source,page,query,language}}));
+      return;
+    }
+    root.querySelector('.mi-health').hidden=false;
     $('#media-sources').innerHTML=tab==='library'?['all',...core.statuses].map(s=>`<button type="button" data-mi-filter="${s}" aria-pressed="${listFilter===s}">${s==='all'?text('全部','All'):statusName(s)} <span>${list.filter(e=>s==='all'||e.status===s).length}</span></button>`).join(''):choices().map(s=>`<button type="button" data-mi-source="${s}" aria-pressed="${source===s}">${s==='all'?text('汇总','All sources'):esc(data?.sources?.[s]?.name||s)}</button>`).join('');
     $('#media-library-tools').hidden=tab!=='library';
     $('#media-library-note').textContent=text('仅保存在当前浏览器。导出 JSON 可备份，导入会合并片单并保留较新的状态。','Saved only in this browser. Export JSON for backup; imports merge lists and retain the newer status.');
