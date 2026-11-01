@@ -135,3 +135,50 @@ def build_catalog(sources):
                 scores[score['source']]=score
         work['ratings']=list(scores.values())
     return works,aliases
+
+def apply_verified_anime_video_links(works, aliases, video_items):
+    """Preserve provider IDs verified by an exact-edition anime video lookup.
+
+    A catalog feed can omit an AniList/MAL edition even though the video
+    snapshot has already checked it. Never bridge by franchise title alone.
+    Existing IDs belonging to another work take precedence.
+    """
+    def title_key(value):
+        raw = unicodedata.normalize('NFKC', str(value or '')).casefold()
+        return ''.join(ch for ch in raw if ch.isalnum())
+
+    if not isinstance(video_items, dict):
+        return
+    for source_id, video in video_items.items():
+        if not isinstance(video, dict) or video.get('kind') != 'anime':
+            continue
+        if video.get('workId') != source_id:
+            continue
+        canonical = aliases.get(source_id, source_id)
+        work = works.get(canonical)
+        if not isinstance(work, dict) or work.get('kind') != 'anime':
+            continue
+        year = str(work.get('date') or '')[:4]
+        if not year.isdigit() or str(video.get('year') or '') != year:
+            continue
+        valid_titles = {title_key(work.get(field)) for field in
+                        ('title', 'original_title', 'english_title')}
+        video_title = title_key(video.get('title'))
+        if not video_title or video_title not in valid_titles:
+            continue
+        mal = str(video.get('malId') or '')
+        known_mal = str(work.get('mal_id') or '')
+        if known_mal and mal.isdigit() and known_mal != mal:
+            continue
+        for prefix, ident in (('mal', mal), ('anilist', str(video.get('anilistId') or ''))):
+            if not ident.isdigit() or int(ident) <= 0:
+                continue
+            external = prefix + '-' + ident
+            if (external in works and external != canonical) or (
+                    external in aliases and aliases[external] != canonical):
+                continue
+            aliases[external] = canonical
+            if external not in work.setdefault('aliases', []):
+                work['aliases'].append(external)
+            if prefix == 'mal' and not work.get('mal_id'):
+                work['mal_id'] = int(ident)
