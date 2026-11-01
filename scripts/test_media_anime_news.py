@@ -1,6 +1,8 @@
 """Offline regression checks for edition-scoped anime headlines."""
 import unittest
 
+from scripts.media_catalog import apply_verified_anime_video_links
+
 from scripts.refresh_media_anime_news import (
     catalog, merge, search_names, season, verified_headline,
 )
@@ -45,6 +47,35 @@ class AnimeNewsMatchingTests(unittest.TestCase):
         if "mal-61323" in works:
             self.assertEqual(works["mal-61323"]["season"], 2)
             self.assertIn("蓝箱 第二季", works["mal-61323"]["aliases"])
+
+    def test_verified_video_ids_bridge_only_the_same_anime_edition(self):
+        works = {
+            "bangumi-11": {"kind": "anime", "date": "2026-10-04",
+                           "title": "蓝箱 第二季", "aliases": ["bangumi-11"]},
+            "bangumi-12": {"kind": "anime", "date": "2025-10-04",
+                           "title": "蓝箱 第一季", "aliases": ["bangumi-12"]},
+        }
+        aliases = {"bangumi-11": "bangumi-11", "bangumi-12": "bangumi-12"}
+        videos = {
+            "bangumi-11": {"workId": "bangumi-11", "kind": "anime",
+                           "title": "蓝箱 第二季", "year": 2026,
+                           "malId": 61323, "anilistId": 189123},
+            "bangumi-12": {"workId": "bangumi-12", "kind": "anime",
+                           "title": "蓝箱 第一季", "year": 2025,
+                           "malId": 61323, "anilistId": 189123},
+        }
+        apply_verified_anime_video_links(works, aliases, videos)
+        self.assertEqual(aliases["mal-61323"], "bangumi-11")
+        self.assertEqual(aliases["anilist-189123"], "bangumi-11")
+        self.assertIn("mal-61323", works["bangumi-11"]["aliases"])
+        self.assertNotIn("mal-61323", works["bangumi-12"]["aliases"])
+        self.assertEqual(works["bangumi-11"]["mal_id"], 61323)
+        # Titles and years from stale cache rows are not sufficient to
+        # change an existing provider ID into a different series.
+        videos["bangumi-11"]["title"] = "蓝箱 第一季"
+        videos["bangumi-11"]["malId"] = 777
+        apply_verified_anime_video_links(works, aliases, videos)
+        self.assertNotIn("mal-777", aliases)
 
     def test_stale_unverified_rows_cannot_survive_refresh(self):
         work = {"season": 2, "aliases": ["蓝箱 第二季"]}
