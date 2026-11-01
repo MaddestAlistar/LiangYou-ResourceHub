@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-01T06:35:57Z",
+  "generated_at": "2026-11-01T14:54:06Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-01T06:35:57Z"
+      "verified_at": "2026-11-01T14:54:06Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 190,
       "standings": 5,
-      "verified_at": "2026-11-01T06:35:57Z"
+      "verified_at": "2026-11-01T14:54:06Z"
     }
   ],
   "status": "ok",
@@ -766,12 +766,12 @@
       "league": "Eredivisie",
       "stage": "Regular Season",
       "start_time": "2026-11-01T11:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "PEC Zwolle",
       "away": "ADO Den Haag",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -784,12 +784,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-01T11:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Como 1907",
       "away": "Venezia FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -802,12 +802,12 @@
       "league": "La Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-01T13:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Getafe CF",
       "away": "Sevilla FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -820,12 +820,12 @@
       "league": "Eredivisie",
       "stage": "Regular Season",
       "start_time": "2026-11-01T13:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "SBV Excelsior",
       "away": "FC Twente '65",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 6,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -838,12 +838,12 @@
       "league": "Eredivisie",
       "stage": "Regular Season",
       "start_time": "2026-11-01T13:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Telstar 1963",
       "away": "FC Utrecht",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 4,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -856,12 +856,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-01T14:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Frosinone Calcio",
       "away": "Torino FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -874,12 +874,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-01T14:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "SS Lazio",
       "away": "Cagliari Calcio",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -892,12 +892,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-11-01T14:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "RC Strasbourg Alsace",
       "away": "AJ Auxerre",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -910,12 +910,12 @@
       "league": "Bundesliga",
       "stage": "Regular Season",
       "start_time": "2026-11-01T14:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "1. FC Union Berlin",
       "away": "1. FC Köln",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -3453,20 +3453,29 @@
         {
           "team": "Memphis Grizzlies",
           "group": "Western Conference",
-          "wins": 5,
+          "wins": 6,
           "losses": 0,
-          "played": 5,
+          "played": 6,
           "win_pct": 1.0,
           "rank": 1
         },
         {
           "team": "Houston Rockets",
           "group": "Western Conference",
-          "wins": 5,
+          "wins": 6,
           "losses": 1,
-          "played": 6,
-          "win_pct": 0.8333,
+          "played": 7,
+          "win_pct": 0.8571,
           "rank": 2
+        },
+        {
+          "team": "Philadelphia 76ers",
+          "group": "Eastern Conference",
+          "wins": 6,
+          "losses": 1,
+          "played": 7,
+          "win_pct": 0.8571,
+          "rank": 1
         },
         {
           "team": "Detroit Pistons",
@@ -3475,16 +3484,16 @@
           "losses": 1,
           "played": 6,
           "win_pct": 0.8333,
-          "rank": 1
+          "rank": 2
         },
         {
-          "team": "Philadelphia 76ers",
-          "group": "Eastern Conference",
-          "wins": 5,
+          "team": "Portland Trail Blazers",
+          "group": "Western Conference",
+          "wins": 4,
           "losses": 1,
-          "played": 6,
-          "win_pct": 0.8333,
-          "rank": 1
+          "played": 5,
+          "win_pct": 0.8,
+          "rank": 3
         },
         {
           "team": "Boston Celtics",
@@ -3496,31 +3505,13 @@
           "rank": 3
         },
         {
-          "team": "Oklahoma City Thunder",
-          "group": "Western Conference",
-          "wins": 4,
-          "losses": 1,
-          "played": 5,
-          "win_pct": 0.8,
-          "rank": 3
-        },
-        {
-          "team": "Portland Trail Blazers",
-          "group": "Western Conference",
-          "wins": 3,
-          "losses": 1,
-          "played": 4,
-          "win_pct": 0.75,
-          "rank": 4
-        },
-        {
-          "team": "Minnesota Timberwolves",
+          "team": "San Antonio Spurs",
           "group": "Western Conference",
           "wins": 4,
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 5
+          "rank": 4
         },
         {
           "team": "Los Angeles Lakers",
@@ -3529,7 +3520,16 @@
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 5
+          "rank": 4
+        },
+        {
+          "team": "Cleveland Cavaliers",
+          "group": "Eastern Conference",
+          "wins": 4,
+          "losses": 2,
+          "played": 6,
+          "win_pct": 0.6667,
+          "rank": 4
         },
         {
           "team": "Dallas Mavericks",
@@ -3538,7 +3538,16 @@
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 5
+          "rank": 4
+        },
+        {
+          "team": "Oklahoma City Thunder",
+          "group": "Western Conference",
+          "wins": 4,
+          "losses": 2,
+          "played": 6,
+          "win_pct": 0.6667,
+          "rank": 4
         },
         {
           "team": "Toronto Raptors",
@@ -3547,25 +3556,7 @@
           "losses": 2,
           "played": 5,
           "win_pct": 0.6,
-          "rank": 4
-        },
-        {
-          "team": "San Antonio Spurs",
-          "group": "Western Conference",
-          "wins": 3,
-          "losses": 2,
-          "played": 5,
-          "win_pct": 0.6,
-          "rank": 8
-        },
-        {
-          "team": "Cleveland Cavaliers",
-          "group": "Eastern Conference",
-          "wins": 3,
-          "losses": 2,
-          "played": 5,
-          "win_pct": 0.6,
-          "rank": 4
+          "rank": 5
         },
         {
           "team": "Denver Nuggets",
@@ -3577,13 +3568,13 @@
           "rank": 8
         },
         {
-          "team": "Atlanta Hawks",
-          "group": "Eastern Conference",
-          "wins": 3,
+          "team": "Minnesota Timberwolves",
+          "group": "Western Conference",
+          "wins": 4,
           "losses": 3,
-          "played": 6,
-          "win_pct": 0.5,
-          "rank": 6
+          "played": 7,
+          "win_pct": 0.5714,
+          "rank": 9
         },
         {
           "team": "Golden State Warriors",
@@ -3604,13 +3595,22 @@
           "rank": 6
         },
         {
+          "team": "Atlanta Hawks",
+          "group": "Eastern Conference",
+          "wins": 3,
+          "losses": 4,
+          "played": 7,
+          "win_pct": 0.4286,
+          "rank": 7
+        },
+        {
           "team": "Charlotte Hornets",
           "group": "Eastern Conference",
           "wins": 3,
-          "losses": 3,
-          "played": 6,
-          "win_pct": 0.5,
-          "rank": 6
+          "losses": 4,
+          "played": 7,
+          "win_pct": 0.4286,
+          "rank": 7
         },
         {
           "team": "Orlando Magic",
@@ -3620,6 +3620,15 @@
           "played": 5,
           "win_pct": 0.4,
           "rank": 9
+        },
+        {
+          "team": "New Orleans Pelicans",
+          "group": "Western Conference",
+          "wins": 2,
+          "losses": 4,
+          "played": 6,
+          "win_pct": 0.3333,
+          "rank": 11
         },
         {
           "team": "New York Knicks",
@@ -3655,15 +3664,6 @@
           "losses": 3,
           "played": 4,
           "win_pct": 0.25,
-          "rank": 11
-        },
-        {
-          "team": "New Orleans Pelicans",
-          "group": "Western Conference",
-          "wins": 1,
-          "losses": 4,
-          "played": 5,
-          "win_pct": 0.2,
           "rank": 12
         },
         {
@@ -3673,24 +3673,24 @@
           "losses": 4,
           "played": 5,
           "win_pct": 0.2,
-          "rank": 12
+          "rank": 13
         },
         {
           "team": "Utah Jazz",
           "group": "Western Conference",
           "wins": 1,
-          "losses": 4,
-          "played": 5,
-          "win_pct": 0.2,
-          "rank": 12
+          "losses": 5,
+          "played": 6,
+          "win_pct": 0.1667,
+          "rank": 14
         },
         {
           "team": "Milwaukee Bucks",
           "group": "Eastern Conference",
           "wins": 1,
-          "losses": 4,
-          "played": 5,
-          "win_pct": 0.2,
+          "losses": 5,
+          "played": 6,
+          "win_pct": 0.1667,
           "rank": 13
         },
         {
@@ -3700,7 +3700,7 @@
           "losses": 5,
           "played": 6,
           "win_pct": 0.1667,
-          "rank": 14
+          "rank": 13
         },
         {
           "team": "Brooklyn Nets",
@@ -3715,15 +3715,15 @@
           "team": "Sacramento Kings",
           "group": "Western Conference",
           "wins": 0,
-          "losses": 5,
-          "played": 5,
+          "losses": 6,
+          "played": 6,
           "win_pct": 0.0,
           "rank": 15
         }
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     },
     {
@@ -3935,7 +3935,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     },
     {
@@ -3999,10 +3999,10 @@
           "rank": 6,
           "team": "Sevilla FC",
           "wins": 5,
-          "losses": 3,
+          "losses": 4,
           "draws": 2,
           "points": 17,
-          "played": 10,
+          "played": 11,
           "group": ""
         },
         {
@@ -4057,6 +4057,16 @@
         },
         {
           "rank": 12,
+          "team": "Getafe CF",
+          "wins": 3,
+          "losses": 5,
+          "draws": 3,
+          "points": 12,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 13,
           "team": "RC Deportivo La Coruña",
           "wins": 2,
           "losses": 3,
@@ -4066,7 +4076,7 @@
           "group": ""
         },
         {
-          "rank": 13,
+          "rank": 14,
           "team": "RCD Espanyol de Barcelona",
           "wins": 3,
           "losses": 6,
@@ -4076,7 +4086,7 @@
           "group": ""
         },
         {
-          "rank": 14,
+          "rank": 15,
           "team": "CA Osasuna",
           "wins": 3,
           "losses": 5,
@@ -4086,7 +4096,7 @@
           "group": ""
         },
         {
-          "rank": 15,
+          "rank": 16,
           "team": "Real Racing Club de Santander",
           "wins": 3,
           "losses": 5,
@@ -4096,7 +4106,7 @@
           "group": ""
         },
         {
-          "rank": 16,
+          "rank": 17,
           "team": "Elche CF",
           "wins": 2,
           "losses": 4,
@@ -4106,23 +4116,13 @@
           "group": ""
         },
         {
-          "rank": 17,
+          "rank": 18,
           "team": "Levante UD",
           "wins": 2,
           "losses": 5,
           "draws": 4,
           "points": 10,
           "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 18,
-          "team": "Getafe CF",
-          "wins": 2,
-          "losses": 5,
-          "draws": 3,
-          "points": 9,
-          "played": 10,
           "group": ""
         },
         {
@@ -4147,7 +4147,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     },
     {
@@ -4289,16 +4289,26 @@
         },
         {
           "rank": 14,
-          "team": "1. FC Köln",
+          "team": "1. FC Union Berlin",
           "wins": 2,
           "losses": 3,
-          "draws": 2,
-          "points": 8,
-          "played": 7,
+          "draws": 3,
+          "points": 9,
+          "played": 8,
           "group": ""
         },
         {
           "rank": 15,
+          "team": "1. FC Köln",
+          "wins": 2,
+          "losses": 4,
+          "draws": 2,
+          "points": 8,
+          "played": 8,
+          "group": ""
+        },
+        {
+          "rank": 16,
           "team": "Eintracht Frankfurt",
           "wins": 2,
           "losses": 3,
@@ -4308,23 +4318,13 @@
           "group": ""
         },
         {
-          "rank": 16,
+          "rank": 17,
           "team": "FC Schalke 04",
           "wins": 1,
           "losses": 4,
           "draws": 3,
           "points": 6,
           "played": 8,
-          "group": ""
-        },
-        {
-          "rank": 17,
-          "team": "1. FC Union Berlin",
-          "wins": 1,
-          "losses": 3,
-          "draws": 3,
-          "points": 6,
-          "played": 7,
           "group": ""
         },
         {
@@ -4339,7 +4339,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     },
     {
@@ -4354,9 +4354,9 @@
           "team": "SS Lazio",
           "wins": 8,
           "losses": 0,
-          "draws": 1,
-          "points": 25,
-          "played": 9,
+          "draws": 2,
+          "points": 26,
+          "played": 10,
           "group": ""
         },
         {
@@ -4381,6 +4381,16 @@
         },
         {
           "rank": 4,
+          "team": "Como 1907",
+          "wins": 7,
+          "losses": 1,
+          "draws": 2,
+          "points": 23,
+          "played": 10,
+          "group": ""
+        },
+        {
+          "rank": 5,
           "team": "AC Milan",
           "wins": 6,
           "losses": 1,
@@ -4390,23 +4400,13 @@
           "group": ""
         },
         {
-          "rank": 5,
-          "team": "Como 1907",
-          "wins": 6,
-          "losses": 1,
-          "draws": 2,
-          "points": 20,
-          "played": 9,
-          "group": ""
-        },
-        {
           "rank": 6,
           "team": "Frosinone Calcio",
           "wins": 5,
           "losses": 2,
-          "draws": 2,
-          "points": 17,
-          "played": 9,
+          "draws": 3,
+          "points": 18,
+          "played": 10,
           "group": ""
         },
         {
@@ -4444,9 +4444,9 @@
           "team": "Torino FC",
           "wins": 4,
           "losses": 4,
-          "draws": 1,
-          "points": 13,
-          "played": 9,
+          "draws": 2,
+          "points": 14,
+          "played": 10,
           "group": ""
         },
         {
@@ -4454,9 +4454,9 @@
           "team": "Cagliari Calcio",
           "wins": 4,
           "losses": 4,
-          "draws": 1,
-          "points": 13,
-          "played": 9,
+          "draws": 2,
+          "points": 14,
+          "played": 10,
           "group": ""
         },
         {
@@ -4543,15 +4543,15 @@
           "rank": 20,
           "team": "Venezia FC",
           "wins": 1,
-          "losses": 8,
+          "losses": 9,
           "draws": 0,
           "points": 3,
-          "played": 9,
+          "played": 10,
           "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     },
     {
@@ -4673,16 +4673,26 @@
         },
         {
           "rank": 12,
-          "team": "AJ Auxerre",
+          "team": "RC Strasbourg Alsace",
           "wins": 3,
-          "losses": 4,
+          "losses": 5,
           "draws": 1,
           "points": 10,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 13,
+          "team": "AJ Auxerre",
+          "wins": 3,
+          "losses": 5,
+          "draws": 1,
+          "points": 10,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 14,
           "team": "Stade Brestois 29",
           "wins": 2,
           "losses": 3,
@@ -4692,7 +4702,7 @@
           "group": ""
         },
         {
-          "rank": 14,
+          "rank": 15,
           "team": "Angers SCO",
           "wins": 2,
           "losses": 4,
@@ -4702,23 +4712,13 @@
           "group": ""
         },
         {
-          "rank": 15,
+          "rank": 16,
           "team": "ES Troyes AC",
           "wins": 2,
           "losses": 5,
           "draws": 2,
           "points": 8,
           "played": 9,
-          "group": ""
-        },
-        {
-          "rank": 16,
-          "team": "RC Strasbourg Alsace",
-          "wins": 2,
-          "losses": 5,
-          "draws": 1,
-          "points": 7,
-          "played": 8,
           "group": ""
         },
         {
@@ -4743,7 +4743,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-01T06:35:57Z",
+      "verified_at": "2026-11-01T14:54:06Z",
       "status": "ok"
     }
   ],
