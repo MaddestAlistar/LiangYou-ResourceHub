@@ -1,0 +1,54 @@
+name: Refresh MDJ Hub short drama listings
+on:
+  schedule:
+    # 05:23 and 17:23 UTC = 13:23 and 01:23 Beijing time
+    - cron: '23 5,17 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_short_drama.py'
+      - '.github/workflows/refresh-short-drama.yml'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: refresh-short-drama
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate collector
+        run: python -m py_compile scripts/refresh_short_drama.py
+      - name: Query configured MDJ Hub endpoint
+        env:
+          MDJHUB_API_KEY: ${{ secrets.MDJHUB_API_KEY }}
+          MDJHUB_API_URL: ${{ vars.MDJHUB_API_URL }}
+          MDJHUB_AUTH_MODE: ${{ vars.MDJHUB_AUTH_MODE || 'bearer' }}
+        run: python scripts/refresh_short_drama.py
+      - name: Publish only verified public records
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/media-short-dramas.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh verified MDJ Hub short dramas [skip ci]"
+            for attempt in 1 2 3; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              if [ "$attempt" = "3" ]; then exit 1; fi
+            done
+          fi
+      - name: Publish updated snapshot to GitHub Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/publish_pages.py
