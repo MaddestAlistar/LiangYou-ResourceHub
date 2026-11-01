@@ -79,8 +79,12 @@ test('Blue Box season 2 bridges Bangumi and MAL without linking season 1',()=>{
 
 test('Anime news coverage is bound to the correct Conan and Blue Box season identities',()=>{
   const news=JSON.parse(readFileSync(new URL('../data/media-anime-news.json',import.meta.url),'utf8'));
+  const merged=core.mergeAnimeCatalog(core.catalog(d));
   for(const id of ['bangumi-899','bangumi-548156','mal-61323']){
-    const rows=news.items[id]?.articles||[];
+    // An alias is not a separate work or news archive. Check canonical news.
+    const canonical=merged.aliases[id]||id;
+    assert.ok(merged.works[canonical],id+' canonical work');
+    const rows=news.items[canonical]?.articles||[];
     assert.ok(rows.some(x=>x.language==='zh'&&x.titleMatchVerified===true),id+' zh');
     assert.ok(rows.some(x=>x.language!=='zh'&&x.titleMatchVerified===true),id+' international');
     assert.ok(rows.every(x=>x.url.startsWith('https://')&&x.titleMatchVerified===true));
