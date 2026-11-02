@@ -404,3 +404,71 @@
   #media .mi-drama-rating strong small{font-size:9px}
   #media .mi-drama-rating>span{font-size:9px}
 }
+
+/* Short dramas: line up every content row even when adjacent titles differ in length.
+   The slots remain present for missing platform/date data, so the next row never jumps. */
+#media .mi-grid:has(> .mi-drama-card){align-items:stretch}
+#media .mi-drama-card{height:100%;box-sizing:border-box}
+#media .mi-drama-poster{min-width:0}
+#media .mi-drama-copy{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:42px 48px 20px 58px 20px 20px 45px minmax(21px,1fr);
+  row-gap:8px;
+  align-content:stretch;
+  min-width:0;
+}
+#media .mi-drama-copy > *{min-width:0;margin-block:0}
+#media .mi-drama-copy h3{
+  height:100%;min-height:0;margin:0;
+  line-height:1.5;
+  -webkit-line-clamp:2;
+  overflow-wrap:anywhere;
+}
+#media .mi-drama-rating{
+  box-sizing:border-box;
+  height:100%;min-height:0;
+  align-content:center;align-items:center;
+  overflow:hidden;
+}
+#media .mi-drama-line{
+  display:block;
+  line-height:20px;height:20px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#media .mi-drama-stats{
+  box-sizing:border-box;
+  min-height:0;height:100%;
+  display:flex;flex-wrap:wrap;
+  gap:5px;align-content:flex-start;align-items:flex-start;
+  overflow:hidden;
+}
+#media .mi-drama-platform{
+  display:block;height:20px;line-height:20px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+#media .mi-drama-tags{
+  box-sizing:border-box;
+  height:45px;min-height:0;
+  display:flex;flex-wrap:wrap;
+  align-content:flex-start;align-items:flex-start;
+  gap:5px;overflow:hidden;
+}
+#media .mi-drama-overview{
+  align-self:end;
+  min-height:21px;
+  margin-top:0;
+}
+#media .mi-drama-overview-empty{line-height:1.7}
+@media(max-width:760px){
+  #media .mi-drama-copy{
+    grid-template-rows:36px 46px 18px 55px 18px 18px 43px minmax(20px,1fr);
+    row-gap:7px;
+  }
+  #media .mi-drama-copy h3{line-height:1.5}
+  #media .mi-drama-rating{gap:4px 7px}
+  #media .mi-drama-line{height:18px;line-height:18px}
+  #media .mi-drama-stats{gap:4px}
+  #media .mi-drama-platform{height:18px;line-height:18px}
+  #media .mi-drama-tags{height:43px;gap:4px}
+}
