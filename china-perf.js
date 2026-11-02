@@ -7,12 +7,11 @@
     {
       id: 'media',
       // The essential catalogue is usable after these two scripts and one CSS.
-      styles: ['./media-intel.css?v=20261102-nodemo2'],
+      styles: ['./media-intel.css?v=20261102-notest3'],
       urls: [
         './media-core.js?v=20261030.anime-unify2',
         './media-intel.js?v=20261102-djhub2',
-        './media-shortdrama.js?v=20261102-authorized2',
-        './media-shortdrama-player.js?v=20261102-nodemo2'
+        './media-shortdrama.js?v=20261102-notest3'
       ],
       // Optional film detail modules hydrate after the catalogue is responsive.
       extraStyles: [
