@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-02T08:24:20Z",
+  "generated_at": "2026-11-02T17:51:47Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-02T08:24:20Z"
+      "verified_at": "2026-11-02T17:51:47Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 149,
       "standings": 5,
-      "verified_at": "2026-11-02T08:24:20Z"
+      "verified_at": "2026-11-02T17:51:47Z"
     }
   ],
   "status": "ok",
@@ -460,12 +460,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-02T17:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "US Sassuolo Calcio",
       "away": "ACF Fiorentina",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -2740,6 +2740,15 @@
           "rank": 1
         },
         {
+          "team": "Boston Celtics",
+          "group": "Eastern Conference",
+          "wins": 5,
+          "losses": 1,
+          "played": 6,
+          "win_pct": 0.8333,
+          "rank": 2
+        },
+        {
           "team": "Detroit Pistons",
           "group": "Eastern Conference",
           "wins": 5,
@@ -2758,13 +2767,13 @@
           "rank": 3
         },
         {
-          "team": "Boston Celtics",
-          "group": "Eastern Conference",
-          "wins": 4,
-          "losses": 1,
-          "played": 5,
-          "win_pct": 0.8,
-          "rank": 3
+          "team": "Los Angeles Lakers",
+          "group": "Western Conference",
+          "wins": 5,
+          "losses": 2,
+          "played": 7,
+          "win_pct": 0.7143,
+          "rank": 4
         },
         {
           "team": "San Antonio Spurs",
@@ -2773,16 +2782,7 @@
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 4
-        },
-        {
-          "team": "Los Angeles Lakers",
-          "group": "Western Conference",
-          "wins": 4,
-          "losses": 2,
-          "played": 6,
-          "win_pct": 0.6667,
-          "rank": 4
+          "rank": 5
         },
         {
           "team": "Cleveland Cavaliers",
@@ -2800,7 +2800,7 @@
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 4
+          "rank": 5
         },
         {
           "team": "Oklahoma City Thunder",
@@ -2809,15 +2809,6 @@
           "losses": 2,
           "played": 6,
           "win_pct": 0.6667,
-          "rank": 4
-        },
-        {
-          "team": "Toronto Raptors",
-          "group": "Eastern Conference",
-          "wins": 3,
-          "losses": 2,
-          "played": 5,
-          "win_pct": 0.6,
           "rank": 5
         },
         {
@@ -2841,11 +2832,20 @@
         {
           "team": "Golden State Warriors",
           "group": "Western Conference",
+          "wins": 4,
+          "losses": 3,
+          "played": 7,
+          "win_pct": 0.5714,
+          "rank": 9
+        },
+        {
+          "team": "Toronto Raptors",
+          "group": "Eastern Conference",
           "wins": 3,
           "losses": 3,
           "played": 6,
           "win_pct": 0.5,
-          "rank": 10
+          "rank": 5
         },
         {
           "team": "Washington Wizards",
@@ -2854,7 +2854,7 @@
           "losses": 3,
           "played": 6,
           "win_pct": 0.5,
-          "rank": 6
+          "rank": 5
         },
         {
           "team": "Atlanta Hawks",
@@ -2875,15 +2875,6 @@
           "rank": 7
         },
         {
-          "team": "Orlando Magic",
-          "group": "Eastern Conference",
-          "wins": 2,
-          "losses": 3,
-          "played": 5,
-          "win_pct": 0.4,
-          "rank": 9
-        },
-        {
           "team": "New Orleans Pelicans",
           "group": "Western Conference",
           "wins": 2,
@@ -2899,7 +2890,7 @@
           "losses": 4,
           "played": 6,
           "win_pct": 0.3333,
-          "rank": 10
+          "rank": 9
         },
         {
           "team": "Miami Heat",
@@ -2908,16 +2899,25 @@
           "losses": 4,
           "played": 6,
           "win_pct": 0.3333,
-          "rank": 10
+          "rank": 9
         },
         {
-          "team": "Indiana Pacers",
+          "team": "Orlando Magic",
           "group": "Eastern Conference",
           "wins": 2,
           "losses": 4,
           "played": 6,
           "win_pct": 0.3333,
-          "rank": 10
+          "rank": 9
+        },
+        {
+          "team": "Indiana Pacers",
+          "group": "Eastern Conference",
+          "wins": 2,
+          "losses": 5,
+          "played": 7,
+          "win_pct": 0.2857,
+          "rank": 12
         },
         {
           "team": "Phoenix Suns",
@@ -2932,9 +2932,18 @@
           "team": "LA Clippers",
           "group": "Western Conference",
           "wins": 1,
-          "losses": 4,
-          "played": 5,
-          "win_pct": 0.2,
+          "losses": 5,
+          "played": 6,
+          "win_pct": 0.1667,
+          "rank": 13
+        },
+        {
+          "team": "Brooklyn Nets",
+          "group": "Eastern Conference",
+          "wins": 1,
+          "losses": 5,
+          "played": 6,
+          "win_pct": 0.1667,
           "rank": 13
         },
         {
@@ -2944,7 +2953,7 @@
           "losses": 5,
           "played": 6,
           "win_pct": 0.1667,
-          "rank": 14
+          "rank": 13
         },
         {
           "team": "Milwaukee Bucks",
@@ -2965,15 +2974,6 @@
           "rank": 13
         },
         {
-          "team": "Brooklyn Nets",
-          "group": "Eastern Conference",
-          "wins": 0,
-          "losses": 5,
-          "played": 5,
-          "win_pct": 0.0,
-          "rank": 15
-        },
-        {
           "team": "Sacramento Kings",
           "group": "Western Conference",
           "wins": 0,
@@ -2985,7 +2985,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     },
     {
@@ -3197,7 +3197,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     },
     {
@@ -3409,7 +3409,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     },
     {
@@ -3601,7 +3601,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     },
     {
@@ -3743,22 +3743,22 @@
         },
         {
           "rank": 14,
-          "team": "US Lecce",
-          "wins": 3,
-          "losses": 7,
-          "draws": 0,
+          "team": "US Sassuolo Calcio",
+          "wins": 2,
+          "losses": 5,
+          "draws": 3,
           "points": 9,
           "played": 10,
           "group": ""
         },
         {
           "rank": 15,
-          "team": "US Sassuolo Calcio",
-          "wins": 2,
-          "losses": 5,
-          "draws": 2,
-          "points": 8,
-          "played": 9,
+          "team": "US Lecce",
+          "wins": 3,
+          "losses": 7,
+          "draws": 0,
+          "points": 9,
+          "played": 10,
           "group": ""
         },
         {
@@ -3776,9 +3776,9 @@
           "team": "ACF Fiorentina",
           "wins": 1,
           "losses": 6,
-          "draws": 2,
-          "points": 5,
-          "played": 9,
+          "draws": 3,
+          "points": 6,
+          "played": 10,
           "group": ""
         },
         {
@@ -3813,7 +3813,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     },
     {
@@ -4005,7 +4005,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T08:24:20Z",
+      "verified_at": "2026-11-02T17:51:47Z",
       "status": "ok"
     }
   ],
