@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/refresh_short_drama.py'
+      - 'scripts/test_short_drama.py'
       - '.github/workflows/refresh-short-drama.yml'
 permissions:
   contents: write
@@ -27,13 +28,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate collector
-        run: python -m py_compile scripts/refresh_short_drama.py
+      - name: Validate collector and normalization tests
+        run: |
+          python -m py_compile scripts/refresh_short_drama.py
+          python scripts/test_short_drama.py
       - name: Query configured MDJ Hub endpoint
         env:
           MDJHUB_API_KEY: ${{ secrets.MDJHUB_API_KEY }}
-          MDJHUB_API_URL: ${{ vars.MDJHUB_API_URL }}
-          MDJHUB_AUTH_MODE: ${{ vars.MDJHUB_AUTH_MODE || 'bearer' }}
         run: python scripts/refresh_short_drama.py
       - name: Publish only verified public records
         run: |
