@@ -55,12 +55,17 @@
       translations('仅展示已核实的数据','Only verified records are shown');
     $('#media-source-status').classList.toggle('mi-stale',loaded&&Boolean(snapshot.checked_at)&&Date.now()-Date.parse(snapshot.checked_at)>48*3600000);
     $('#media-grid').innerHTML=filtered.length?filtered.slice(page*size,page*size+size).map((item,index)=>{
-      const title=esc(item.title),poster=safeURL(item.poster),link=safeURL(item.url);
+      const title=esc(item.title),poster=safeURL(item.poster);
       const tags=(Array.isArray(item.tags)?item.tags:[]).filter(v=>typeof v==='string').slice(0,3);
       const ep=Number.isInteger(item.episodes)&&item.episodes>0?item.episodes:null;
       const rank=Number.isInteger(item.rank)&&item.rank>0?item.rank:null;
       const heat=heatLabel(item.heat);
       const rating=typeof item.rating==='number'&&item.rating>0&&item.rating<=10?item.rating.toFixed(1):'';
+      const ratingType=['user','source','ai','reference'].includes(item.rating_type)?item.rating_type:
+        rating?'reference':'none';
+      const ratingLabel={user:translations('用户评分','User rating'),source:translations('来源评分','Source rating'),
+        ai:translations('AI参考分','AI reference score'),reference:translations('参考评分','Reference score'),
+        none:translations('暂无评分','Not rated')}[ratingType];
       const published=Number(item.published_episodes);
       const status=String(item.status||'').slice(0,28);
       const platform=String(item.platform||'').slice(0,25);
@@ -74,10 +79,13 @@
         </div>
         <div class="mi-drama-copy">
           <h3>${title}</h3>
+          <div class="mi-drama-rating mi-drama-rating-${esc(ratingType)}" aria-label="${esc(ratingLabel)}${rating?' '+esc(rating)+'/10':''}">
+            ${rating?'<strong aria-hidden="true">★ '+esc(rating)+'<small> / 10</small></strong>':'<strong aria-hidden="true">—</strong>'}
+            <span>${esc(ratingLabel)}</span>
+          </div>
           <p class="mi-drama-line">${esc(item.kind_label||kind)}${ep?' · '+ep+translations(' 集',' eps'):''}</p>
           <div class="mi-drama-stats">
             ${heat?'<span>'+translations('站内热度 ','Popularity ')+esc(heat)+'</span>':''}
-            ${rating?'<span>'+translations('用户评分 ','User score ')+esc(rating)+'</span>':''}
             ${status?'<span>'+esc(status)+'</span>':''}
             ${ep&&Number.isInteger(published)&&published>0&&published<ep?'<span>'+translations('更新至 ','Updated through ')+published+'/'+ep+'</span>':''}
           </div>
@@ -85,7 +93,6 @@
           ${release?'<p class="mi-drama-platform">'+translations('首播日期：','Release: ')+esc(release)+'</p>':''}
           <div class="mi-drama-tags">${tags.map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>
           ${item.intro?`<details class="mi-drama-overview"><summary>${translations('剧情简介','Synopsis')}</summary><p>${esc(item.intro)}</p></details>`:''}
-          ${link?`<a class="mi-drama-link" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${translations('查看作品来源','Open source')} ↗</a>`:''}
         </div>
       </article>`;
     }).join(''):
