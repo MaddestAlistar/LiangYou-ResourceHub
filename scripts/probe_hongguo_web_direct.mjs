@@ -97,7 +97,8 @@ async function browserTest(name,launcher){
       const playResult=await v.play().then(()=> 'playing').catch(e=>'blocked: '+e.name);
       if(playResult==='playing')await new Promise(r=>setTimeout(r,1400));
       return {event:last,playResult,readyState:v.readyState,videoWidth:v.videoWidth,
-        videoHeight:v.videoHeight,currentTime:v.currentTime,currentSrc:new URL(v.currentSrc||v.src).hostname,
+        videoHeight:v.videoHeight,currentTime:v.currentTime,duration:Number.isFinite(v.duration)?v.duration:null,
+        seekableRanges:v.seekable?.length||0,currentSrc:new URL(v.currentSrc||v.src).hostname,
         videoError:v.error?.code||null,networkState:v.networkState};
     });
     console.log('BROWSER_'+name,JSON.stringify({...outcome,requests:requests.slice(0,15),failures:failures.slice(0,6)}));
