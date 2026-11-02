@@ -25,6 +25,19 @@ test('playback modal is lazy, closable and mobile-native',()=>{
   assert.match(css,/\.mi-dpt-dialog::backdrop/);
 });
 
+test('public sample media is direct from third-party CDN and clearly not a drama episode',()=>{
+  assert.match(player,/data-demo-stream="mp4"/);
+  assert.match(player,/data-demo-stream="hls"/);
+  assert.match(player,/test-videos\\.co\\.uk\\/vids\\/bigbuckbunny/);
+  assert.match(player,/test-streams\\.mux\\.dev\\/x36xhzz/);
+  assert.match(player,/非当前短剧正片/);
+  assert.match(player,/2008 Blender Foundation · CC BY 3\\.0/);
+  assert.match(player,/video\\.addEventListener\\('playing'/);
+  assert.match(css,/\\.mi-dpt-demo-button/);
+  assert.match(player,/await video\\.play\\(\\)/);
+  assert.doesNotMatch(player,/\.workers\\.dev\\/.*\\.mp4/);
+});
+
 test('no obfuscated worker is executed in site, and unavailable streams are not faked',()=>{
   assert.equal(config.schema,1);
   assert.equal(config.enabled,true);
