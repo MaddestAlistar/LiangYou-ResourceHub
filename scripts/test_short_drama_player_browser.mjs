@@ -4,6 +4,10 @@ import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 try{
   const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,deviceScaleFactor:1});
+  await page.route('https://liangyou-short-drama-playback.maddestalistar.workers.dev/api/resolve?*',route=>
+    route.fulfill({status:503,contentType:'application/json',
+      headers:{'Access-Control-Allow-Origin':'*'},
+      body:JSON.stringify({error:'not_configured',episodes:[]})}));
   await page.goto('http://127.0.0.1:8765/#media',{waitUntil:'domcontentloaded',timeout:30000});
   await page.locator('#media .mi-tabs button[data-mi-tab="drama"]').waitFor({timeout:30000});
   await page.locator('#media .mi-tabs button[data-mi-tab="drama"]').click();
@@ -21,7 +25,7 @@ try{
   assert.equal(await dialog.locator('video[playsinline]').count(),1);
   await page.waitForFunction(()=>{
     const text=document.querySelector('.mi-dpt-status')?.textContent||'';
-    return text.includes('需要将视频接口部署')||text.includes('暂未部署')||text.includes('暂无可播放流');
+    return text.includes('播放服务已连接')||text.includes('尚未配置可合法使用的视频地址');
   },null,{timeout:12000});
   assert.equal(await dialog.locator('.mi-dpt-episodes').isVisible(),false);
   await dialog.locator('.mi-dpt-close').click();
