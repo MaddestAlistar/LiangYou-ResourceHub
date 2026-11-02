@@ -10,37 +10,53 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
-      - name: Inspect public API docs paths without credentials
+      - name: Inspect public API docs and response schema without credentials
         run: |
           python - <<'PY'
-          import re,urllib.request,urllib.error,html
+          import re,urllib.request,urllib.error,json,html
           from html.parser import HTMLParser
-          urls=['https://themdjhub.org/docs/api','https://themdjhub.org/app.min.js?v=20261101a2','https://themdjhub.org/i18n.js?v=20261101a1']
+          class Plain(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.out=[]
+              def handle_data(self,s):
+                  s=html.unescape(s.strip())
+                  if s:self.out.append(s)
+          urls=[
+            'https://themdjhub.org/api-docs?v=20261102a1',
+            'https://themdjhub.org/api/v1/dramas?limit=2&sort=popular',
+            'https://themdjhub.org/api/v1/rankings?type=popular&limit=2',
+            'https://themdjhub.org/openapi/v1/dramas?limit=2&sort=popular'
+          ]
           for url in urls:
               try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/javascript'})
-                  with urllib.request.urlopen(req,timeout=15) as r:
-                      body=r.read(1800000).decode('utf-8','replace')
-                      print('RESPONSE',url,r.status,r.headers.get('Content-Type'),'size',len(body))
-                  if '/app.min.js' in url:
-                      matches=[]
-                      patterns=[r'/(?:api|v1|v2|docs|developer)[a-zA-Z0-9_/?&=.-]{2,160}',
-                                r'(?i)(?:api.?key|authorization|bearer|ranking|hotrank|drama|short.?drama|requestAPI|apiDocs|openapi|timestamp)']
-                      for pattern in patterns:
-                          for m in re.finditer(pattern,body):
-                              start=max(0,m.start()-125);end=min(len(body),m.end()+170)
-                              fragment=body[start:end].replace('\n',' ')[:380]
-                              if fragment not in matches:
-                                  matches.append(fragment)
-                              if len(matches)>=95:break
-                          if len(matches)>=95:break
-                      for snippet in matches:print('JS_CONTEXT',snippet)
-                  else:
-                      for match in re.finditer(r'/(?:api|v1|v2|docs)[a-zA-Z0-9_/?&=.-]{2,100}',body):
-                          print('PATH',match.group(0))
-                          if match.start()>200000:break
-                      print('BODY_TAIL',re.sub(r'\s+',' ',body[-900:])[:400])
-              except Exception as e:print('REQUEST_FAILED',url,type(e).__name__,str(e)[:160])
+                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json,text/html'})
+                  with urllib.request.urlopen(req,timeout=17) as r:
+                      body=r.read(600000).decode('utf-8','replace')
+                      print('HTTP',url,r.status,r.headers.get('Content-Type'),'bytes',len(body))
+              except urllib.error.HTTPError as e:
+                  print('HTTP_ERROR',url,e.code,e.read(200).decode('utf-8','replace'))
+                  continue
+              except Exception as e:
+                  print('ERROR',url,type(e).__name__,str(e)[:130]);continue
+              if '/api-docs' in url:
+                  doc=Plain();doc.feed(body)
+                  print('DOC_LINES',len(doc.out))
+                  for i,line in enumerate(doc.out):
+                      if any(word in line.lower() for word in ('openapi','x-api-key','limit','sort','q=','dramas','rank','content_type','episodes','price','rating','page','response')):
+                          print('DOC',i,line[:260])
+                  print('DOC_EXCERPT',' | '.join(doc.out[:80])[:3200])
+              else:
+                  try:
+                      obj=json.loads(body)
+                      print('JSON_TOP_KEYS',list(obj.keys()) if isinstance(obj,dict) else 'array')
+                      d=obj.get('data',obj) if isinstance(obj,dict) else obj
+                      print('JSON_DATA_TYPE',type(d).__name__)
+                      if isinstance(d,list): print('JSON_SAMPLE',json.dumps(d[:2],ensure_ascii=False)[:5500])
+                      elif isinstance(d,dict):
+                          print('JSON_DATA_KEYS',list(d.keys())[:30])
+                          for key in ('items','results','list','dramas','records'):
+                              if isinstance(d.get(key),list):print('JSON_ITEMS',key,json.dumps(d[key][:2],ensure_ascii=False)[:5500])
+                  except Exception: print('NON_JSON',body[:250])
           PY
