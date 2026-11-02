@@ -39,8 +39,43 @@ class ShortDramaTests(unittest.TestCase):
         self.assertEqual(item["poster"], SAMPLE["poster"])
         self.assertTrue(item["url"].endswith("/drama/mc-a8a2faa1715c96aa4f6a"))
 
-    def test_unverified_ai_score_not_presented(self):
-        self.assertIsNone(normalize(SAMPLE, group="popular", rank=1)["rating"])
+    def test_ai_seed_score_is_labeled_not_claimed_as_user_rating(self):
+        item = normalize(SAMPLE, group="popular", rank=1)
+        self.assertEqual(item["rating"], 7.5)
+        self.assertEqual(item["rating_type"], "ai")
+        self.assertEqual(item["rating_votes"], 0)
+
+    def test_real_user_score_takes_priority_over_ai_seed(self):
+        sample = {**SAMPLE, "ratingCount": 11, "communityScore": 9.1}
+        item = normalize(sample, group="popular", rank=1)
+        self.assertEqual(item["rating"], 9.1)
+        self.assertEqual(item["rating_type"], "user")
+        self.assertEqual(item["rating_votes"], 11)
+
+    def test_platform_rating_retains_explicit_source(self):
+        sample = {**SAMPLE, "sourceRating": 8.2,
+                  "sourceRatingSource": "example_provider"}
+        item = normalize(sample, group="popular", rank=1)
+        self.assertEqual(item["rating"], 8.2)
+        self.assertEqual(item["rating_type"], "source")
+
+    def test_unclassified_score_is_not_called_audience_rating(self):
+        sample = {**SAMPLE, "score": 6.6, "scoreSource": "",
+                  "aiScore": None}
+        item = normalize(sample, group="popular", rank=1)
+        self.assertEqual(item["rating"], 6.6)
+        self.assertEqual(item["rating_type"], "reference")
+
+    def test_no_score_stays_unavailable(self):
+        sample = {**SAMPLE, "score": None, "aiScore": None}
+        item = normalize(sample, group="popular", rank=1)
+        self.assertIsNone(item["rating"])
+        self.assertIsNone(item["rating_type"])
+
+    def test_invalid_nan_and_infinite_scores_not_published(self):
+        sample = {**SAMPLE, "score": float("nan"), "aiScore": float("inf")}
+        item = normalize(sample, group="popular", rank=1)
+        self.assertIsNone(item["rating"])
 
     def test_ai_and_comics_use_source_classification(self):
         self.assertEqual(infer_kind({"contentType": "ai_drama"}), "ai")
