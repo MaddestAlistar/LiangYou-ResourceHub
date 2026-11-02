@@ -65,5 +65,13 @@ jobs:
           const forbidden=await fetch(host+'/api/resolve?workId=mc-test001&title=Test',{
             headers:{Origin:'https://attacker.invalid'},signal:AbortSignal.timeout(12000)});
           if(forbidden.status!==403)throw Error('Cross-origin access-control regression');
+          const authorized=await fetch(host+'/api/resolve?workId=mc-test001&title=Short+drama+test',{
+            headers:{Origin:'https://maddestalistar.github.io'},signal:AbortSignal.timeout(12000)});
+          const availability=await authorized.json();
+          if(![404,503].includes(authorized.status) ||
+             !['not_configured','no_authorized_episodes'].includes(availability.error) ||
+             authorized.headers.get('Access-Control-Allow-Origin')!=='https://maddestalistar.github.io'){
+            throw Error('Authorized-origin response or empty-catalog contract failed');
+          }
           console.log('Authorized short-drama Worker online: metadata-only, no video proxy, restricted origin');
           NODE
