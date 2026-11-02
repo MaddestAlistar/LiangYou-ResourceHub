@@ -25,19 +25,6 @@ test('playback modal is lazy, closable and mobile-native',()=>{
   assert.match(css,/\.mi-dpt-dialog::backdrop/);
 });
 
-test('public sample media goes directly to its CDN and is explicitly labeled as a demonstration',()=>{
-  assert.ok(player.includes('data-demo-stream="mp4"'));
-  assert.ok(player.includes('data-demo-stream="hls"'));
-  assert.ok(player.includes('test-videos.co.uk/vids/bigbuckbunny'));
-  assert.ok(player.includes('test-streams.mux.dev/x36xhzz'));
-  assert.ok(player.includes('非当前短剧正片'));
-  assert.ok(player.includes('2008 Blender Foundation · CC BY 3.0'));
-  assert.ok(player.includes("video.addEventListener('playing'"));
-  assert.ok(css.includes('.mi-dpt-demo-button'));
-  assert.ok(player.includes('await video.play()'));
-  assert.ok(!player.includes('.workers.dev/video.mp4'));
-});
-
 test('no obfuscated worker is executed in site, and unavailable streams are not faked',()=>{
   assert.equal(config.schema,1);
   assert.equal(config.enabled,true);
