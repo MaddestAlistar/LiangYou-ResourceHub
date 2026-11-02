@@ -12,39 +12,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Check official documentation publicly without API credentials
+      - name: Inspect public API docs paths without credentials
         run: |
           python - <<'PY'
-          import html
-          import re
-          import urllib.error
-          import urllib.request
+          import re,urllib.request,urllib.error,html
           from html.parser import HTMLParser
-          class Text(HTMLParser):
-              def __init__(self):
-                  super().__init__()
-                  self.out=[]
-                  self.scripts=[]
-              def handle_data(self, data):
-                  value=html.unescape(data).strip()
-                  if value: self.out.append(value)
-              def handle_starttag(self, tag,attrs):
-                  if tag=='script':
-                      d=dict(attrs)
-                      if d.get('src'): self.scripts.append(d['src'])
-          for url in ('https://themdjhub.org/docs','https://themdjhub.org/developer/apply'):
+          urls=['https://themdjhub.org/docs/api','https://themdjhub.org/app.min.js?v=20261101a2','https://themdjhub.org/i18n.js?v=20261101a1']
+          for url in urls:
               try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html'})
-                  with urllib.request.urlopen(req,timeout=14) as resp:
-                      content=resp.read(240000).decode('utf-8','replace')
-                      print('DOC_HTTP',url,resp.status,'bytes',len(content))
-                  text=Text()
-                  text.feed(content)
-                  for line in text.out:
-                      if re.search(r'API|密钥|鉴权|签名|Bearer|Authorization|endpoint|接口|短剧|排行|app_id',line,re.I):
-                          if len(line)<350: print('PUBLIC_DOC_TEXT',line[:230])
-                  print('SCRIPT_PATHS',text.scripts[:12])
-                  print('PATH_HINTS',list(dict.fromkeys(re.findall(r'/(?:api|docs|openapi|swagger)[a-z0-9/._-]{0,110}',content,re.I)))[:40])
-              except Exception as error:
-                  print('DOC_REQUEST_FAILED',url,type(error).__name__,str(error)[:160])
+                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/javascript'})
+                  with urllib.request.urlopen(req,timeout=15) as r:
+                      body=r.read(1800000).decode('utf-8','replace')
+                      print('RESPONSE',url,r.status,r.headers.get('Content-Type'),'size',len(body))
+                  if '/app.min.js' in url:
+                      matches=[]
+                      patterns=[r'/(?:api|v1|v2|docs|developer)[a-zA-Z0-9_/?&=.-]{2,160}',
+                                r'(?i)(?:api.?key|authorization|bearer|ranking|hotrank|drama|short.?drama|requestAPI|apiDocs|openapi|timestamp)']
+                      for pattern in patterns:
+                          for m in re.finditer(pattern,body):
+                              start=max(0,m.start()-125);end=min(len(body),m.end()+170)
+                              fragment=body[start:end].replace('\n',' ')[:380]
+                              if fragment not in matches:
+                                  matches.append(fragment)
+                              if len(matches)>=95:break
+                          if len(matches)>=95:break
+                      for snippet in matches:print('JS_CONTEXT',snippet)
+                  else:
+                      for match in re.finditer(r'/(?:api|v1|v2|docs)[a-zA-Z0-9_/?&=.-]{2,100}',body):
+                          print('PATH',match.group(0))
+                          if match.start()>200000:break
+                      print('BODY_TAIL',re.sub(r'\s+',' ',body[-900:])[:400])
+              except Exception as e:print('REQUEST_FAILED',url,type(e).__name__,str(e)[:160])
           PY
