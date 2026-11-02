@@ -223,7 +223,6 @@ def collect(key):
         ("new", "new", None, 55),
         ("ai", "popular", "ai_drama", 30),
         ("comic", "popular", "motion_comic", 30),
-        ("comic", "popular", "comic", 20),
     ]
     successes = []
     for group, sort, kind, limit in feeds:
