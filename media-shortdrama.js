@@ -89,10 +89,10 @@
             ${status?'<span>'+esc(status)+'</span>':''}
             ${ep&&Number.isInteger(published)&&published>0&&published<ep?'<span>'+translations('更新至 ','Updated through ')+published+'/'+ep+'</span>':''}
           </div>
-          ${platform?'<p class="mi-drama-platform">'+translations('收录平台：','Platform: ')+esc(platform)+'</p>':''}
-          ${release?'<p class="mi-drama-platform">'+translations('首播日期：','Release: ')+esc(release)+'</p>':''}
+          <p class="mi-drama-platform" ${platform?'':'aria-label="'+esc(translations('收录平台暂未收录','Platform unavailable'))+'"'}>${platform?translations('收录平台：','Platform: ')+esc(platform):esc(translations('收录平台待补充','Platform unavailable'))}</p>
+          <p class="mi-drama-platform">${release?translations('首播日期：','Release: ')+esc(release):esc(translations('首播日期待定','Release date TBA'))}</p>
           <div class="mi-drama-tags">${tags.map(tag=>`<span>${esc(tag)}</span>`).join('')}</div>
-          ${item.intro?`<details class="mi-drama-overview"><summary>${translations('剧情简介','Synopsis')}</summary><p>${esc(item.intro)}</p></details>`:''}
+          ${item.intro?`<details class="mi-drama-overview"><summary>${translations('剧情简介','Synopsis')}</summary><p>${esc(item.intro)}</p></details>`:'<p class="mi-drama-overview mi-drama-overview-empty">'+translations('暂无剧情简介','No synopsis available')+'</p>'}
         </div>
       </article>`;
     }).join(''):
