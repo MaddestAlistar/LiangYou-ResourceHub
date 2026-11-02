@@ -1,36 +1,58 @@
-# 短剧站内测试播放（隔离实验）
+# 短剧站内测试播放：独立服务接入与安全说明
 
-测试入口位于「影视情报中心 → 短剧热播」的每张卡片标签区右侧。点击「测试」打开站内弹窗，支持 `<video playsinline>`、关闭时停止播放、选集、Safari 原生 HLS 和其他可用浏览器的 HLS.js 降级播放。弹窗不显示视频提供方名称或跳转来源入口。
+页面入口：影视情报中心 → 短剧热播 → 每张卡片标签区右侧「测试」。弹窗不显示视频来源名称，支持选集、iPhone Safari 原生 HLS、非原生浏览器的 HLS.js 以及点击关闭停止播放。
 
-## 当前状态
+## 已上线的独立 Cloudflare Worker
 
-用户提供的 `hongguo-native.obfuscated.js`（约 443 KB）经静态检查包含 `createHandler`、`fetch` 和 `/v1/episodes/:id/stream` 等服务端处理路径，输出为 Worker 的请求处理程序，不是视频文件或可放在 GitHub Pages 直接执行的浏览器播放器。它还含有混淆的网络与签名/解密逻辑，未经功能和安全审核不能直接放进公开网页，也不能据此推断具体剧集有播放权限。
+- 服务：`liangyou-short-drama-playback`
+- 健康检查：`https://liangyou-short-drama-playback.maddestalistar.workers.dev/health`
+- 作品解析：`GET https://liangyou-short-drama-playback.maddestalistar.workers.dev/api/resolve?workId=<DJHUB_ID>&title=<作品标题>`
+- 代码：`labs/short-drama-playback-worker.mjs`
+- 部署与冒烟：`.github/workflows/deploy-short-drama-playback.yml`
+- 安全测试：`scripts/test_short_drama_playback_worker.mjs`
+- 前端配置：`data/short-drama-playback-test.json`，`enabled=true`，指向上述独立 Worker。
 
-当前只提交了安全的前端弹窗与播放适配层；**没有**上传、执行或发布这份混淆源文件，也没有伪造视频资源。没有经过验证的服务端可播放地址，播放器会明确提示未配置服务，而不会伪装播放成功。
+部署时先跑测试，必须通过 Cloudflare 账号密钥、健康检查和跨域访问拒绝检查。仅公开 JSON **元数据**，绝不代理视频流或存放视频。入口已连接 Worker；未配置正式的已授权剧集时，作品弹窗会显示「播放服务已连接，但尚未配置可合法使用的视频地址」，这不代表已经可以播放正片。
 
-## 适配协议（将来对接独立、经过审核的 Worker）
+## 如何配置你拥有播放授权的视频链接
 
-仓库公开文件 `data/short-drama-playback-test.json` 为：
-```json
-{"schema":1,"enabled":false,"resolveEndpoint":""}
-```
-只有后台服务真实上线、合法可用并经过测试时，将 `enabled` 设为 `true`，把 `resolveEndpoint` 填为独立服务的**完整 HTTPS 查询 URL**。**不要**把任何 API 密钥、签名或私密令牌写进这份公开 JSON。
+需要合法可嵌入、可直接访问的 HTTPS MP4 或 M3U8，且分片服务器允许浏览器跨域请求。DJHUB Key 仅用于作品资料与评分，**不会自动获得视频播放权限**。
 
-用户点击后，浏览器以 GET 方式请求 `resolveEndpoint?workId=<DJHUB id>&title=<作品标题>`，接受以下响应：
+在 GitHub 仓库的 Settings → Secrets and variables → Actions → Repository secrets 新增 Secret：
+
+`AUTHORIZED_DRAMA_STREAMS_JSON`
+
+内容示例（示例域名不能直接播放，请用有授权的媒体域名和实际剧集地址）：
+
 ```json
 {
-  "episodes": [
-    {"number":1,"label":"第1集","url":"https://example.com/episode-1.mp4","mime":"video/mp4"},
-    {"number":2,"label":"第2集","url":"https://example.com/episode-2.m3u8","mime":"application/vnd.apple.mpegurl"}
-  ]
+  "schema": 1,
+  "allowedMediaHosts": ["media.example.org"],
+  "works": {
+    "mc-demo123": {
+      "title": "授权短剧演示",
+      "episodes": [
+        {"number": 1, "url": "https://media.example.org/episode-1.mp4"},
+        {"number": 2, "url": "https://media.example.org/episode-2.m3u8"}
+      ]
+    }
+  }
 }
 ```
-响应中只能包含可以直接访问的 HTTPS 电影/短剧资源地址，且必须具有对应播放授权。浏览器将从媒体源直接播放，GitHub Pages 不转发视频字节；跨域 HLS 分片必须有适当 CORS 配置。遇到无权限、无匹配或链接失效，保留明确失败反馈。
 
-**重要**：DJHUB 的短剧资料 ID 并不保证等于外部播放来源的内部剧集 ID；需要由可信适配服务核对标题/作品身份与剧集索引，不能将资料 ID 直接当作内部视频 ID。
+将 `mc-demo123` 改成网站 `data/media-short-dramas.json` 中对应作品的 `id`，并确保 `title` 与目录标题完全一致。配置好后在 GitHub Actions → **Deploy verified short drama metadata worker** → Run workflow 手动运行。该工作流会从 Repository Secret 读取 JSON，以 Cloudflare Worker Secret 方式部署，不会把 JSON 写到仓库或日志中。未添加该 Secret，工作流仍可部署，但不会假装存在可播放片源。
 
-## 验证
+为了防止开放代理和泄露私有视频密钥：Worker 仅接受允许域名列表中的 HTTPS MP4/M3U8，不支持任意用户指定的上游地址、含鉴权令牌的 URL、私网主机、内容代理、签名接口；响应不提供任何播放来源品牌。Cloudflare Worker 只返回合法剧集的 direct URL，视频数据由浏览器直接连接已授权媒体 CDN，因此不占用 Worker 代理流量。
 
-- `node --check media-shortdrama.js && node --check media-shortdrama-player.js`
-- `node --test scripts/test_short_drama_player.mjs`
-- 检查 iPhone Safari 上入口不遮挡卡片标签、弹窗关闭会清空视频、HLS 仅在点击选集后加载。
+## 上传混淆代码的审查结论
+
+上传的 `hongguo-native.obfuscated.js` 仅做了离线静态审查，未执行、未写入 GitHub、未部署。它是约 443KB 单行混淆 Worker，含移动端设备标识、应用请求包装、签名与加解密以及视频流转发代码。因请求目标被混淆、无法证明对第三方私有接口/正片有自动访问与分发授权，不能把「通过语法检查」等同安全且合法可上线。当前部署的是经过单元测试的全新小型 Worker，不含该代码。
+
+需要进一步确认第三方接口授权和具体视频访问许可，才可能接入来源提供的片源；不建议为了播放而复制应用认证参数、逆向生成受限制签名或绕过播放控制。
+
+## 排查
+
+- 打开 `/health`：`ok=true` 和 `videoProxy=false` 表示服务在线；`configured=false` 说明尚无已授权剧集配置。
+- 如 `configured=true` 但作品无剧集，核对 `workId`、标题精确匹配、HTTPS 域名及 JSON 集数结构。
+- iOS Safari 通常原生支持 HLS；其他浏览器需要 HLS.js 和媒体 CDN 正确的 CORS。
+- 任何权限问题只可通过授权的媒体服务解决，不要绕开 DRM、地域访问或鉴权保护。
