@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - 'media-intel.css'
+      - 'media-shortdrama.js'
+      - 'media-shortdrama-player.js'
+      - 'data/short-drama-playback-test.json'
+      - 'scripts/test_short_drama_player_browser.mjs'
       - 'media-intel.js'
       - 'data/media-worldwide-archive.json'
       - 'scripts/test_media_exact_scores.mjs'
@@ -41,6 +45,8 @@ jobs:
           sleep 2
       - name: Check 360px and 390px card alignment
         run: node scripts/test_media_mobile_layout.mjs
+      - name: Check short drama test button and in-page playback dialog on mobile
+        run: node scripts/test_short_drama_player_browser.mjs
       - name: Verify trailer and title-matched international and domestic news render together
         run: node scripts/test_media_discover_browser.mjs
       - name: Check domestic independent rating cards and news interactions
