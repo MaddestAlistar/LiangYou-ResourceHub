@@ -27,8 +27,8 @@ test('playback modal is lazy, closable and mobile-native',()=>{
 
 test('no obfuscated worker is executed in site, and unavailable streams are not faked',()=>{
   assert.equal(config.schema,1);
-  assert.equal(config.enabled,false);
-  assert.equal(config.resolveEndpoint,'');
+  assert.equal(config.enabled,true);
+  assert.equal(config.resolveEndpoint,'https://liangyou-short-drama-playback.maddestalistar.workers.dev/api/resolve');
   assert.match(player,/if\(settings\?\.schema!==1\|\|settings\?\.enabled!==true\|\|!endpoint\)/);
   assert.doesNotMatch(player,/hongguo-native\.obfuscated|createHandler\(/);
   assert.match(player,/https:/);
