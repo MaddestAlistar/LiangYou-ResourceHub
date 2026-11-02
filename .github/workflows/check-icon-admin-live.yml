@@ -1,0 +1,29 @@
+name: Verify live icon admin backend and mobile UI
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'icon-review-admin.html'
+      - 'tech-news-admin.js'
+      - 'workers/icon-review-worker.js'
+      - 'workers/tech-news.mjs'
+      - 'scripts/check_icon_admin_live.mjs'
+      - '.github/workflows/check-icon-admin-live.yml'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify publicly deployed icon management without admin secrets
+        run: node scripts/check_icon_admin_live.mjs
