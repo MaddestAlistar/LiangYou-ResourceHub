@@ -1,191 +1,281 @@
 #!/usr/bin/env python3
-"""Refresh public short-drama metadata from a configured MDJ Hub endpoint.
+"""MDJ Hub short-drama catalog, using the official /openapi/v1/dramas endpoint.
 
-Never store the API key, raw provider payloads, or credential-bearing URLs.
-The provider endpoint is deliberately configurable: the developer apply page
-does not document an independently verified API path.
+A GitHub Actions secret supplies X-API-Key. Only public, normalized metadata is
+saved for GitHub Pages; credentials, provider response bodies, and expiring play
+URLs are never published.
 """
 import json
 import os
 import re
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data/media-short-dramas.json"
-MAX_ITEMS = 80
+API_URL = "https://themdjhub.org/openapi/v1/dramas"
+MAX_ITEMS = 180
+KINDS = {
+    "live_action": "real",
+    "live-action": "real",
+    "real_drama": "real",
+    "ai_drama": "ai",
+    "ai_drama_series": "ai",
+    "motion_comic": "comic",
+    "comic": "comic",
+    "animated": "comic",
+}
 
 
-def clean(value, limit=300):
-    return str(value).strip()[:limit] if isinstance(value, (str, int, float)) else ""
+def clean(value, limit=200):
+    if isinstance(value, (str, int, float)):
+        return re.sub(r"[\x00-\x1f\x7f]+", " ", str(value)).strip()[:limit]
+    return ""
 
 
-def https_url(value):
-    if not isinstance(value, str):
+def get_first(row, *names):
+    for name in names:
+        value = row.get(name)
+        if value is not None and value != "":
+            return value
+    return None
+
+
+def public_url(value, *, poster=False):
+    if not isinstance(value, str) or not value.strip():
         return ""
+    raw = value.strip()
+    if raw.startswith("//"):
+        raw = "https:" + raw
+    elif raw.startswith("/"):
+        if poster and not raw.startswith(("/t/p/", "/images/", "/assets/", "/uploads/")):
+            raw = "https://themdjhub.org/t/p/w500" + raw
+        else:
+            raw = "https://themdjhub.org" + raw
     try:
-        part = urlsplit(value.strip())
-        if part.scheme != "https" or not part.hostname or part.username or part.password:
+        parsed = urllib.parse.urlsplit(raw)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
             return ""
-        if part.hostname in ("localhost", "127.0.0.1", "::1") or part.hostname.endswith(".local"):
+        if parsed.hostname in ("localhost", "127.0.0.1", "::1") or parsed.hostname.endswith(".local"):
             return ""
-        if re.search(r"(?:^|[?&])(token|key|api_key|secret|authorization)=", part.query, re.I):
+        forbidden = {"token", "apikey", "api_key", "key", "secret", "signature",
+                     "authorization", "auth", "access_token", "play_token"}
+        if any(k.lower() in forbidden for k, _ in urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)):
             return ""
-        return value.strip()[:1000]
+        return raw[:900]
     except (ValueError, TypeError):
         return ""
 
 
-def field(item, *names):
-    for name in names:
-        v = item.get(name)
-        if v is not None and v != "":
-            return v
-    return None
-
-
 def items_from(payload):
-    """Handle common documented shapes; never treat arbitrary dicts as results."""
-    obj = payload
-    for _ in range(5):
-        if isinstance(obj, list):
-            return [x for x in obj if isinstance(x, dict)]
-        if not isinstance(obj, dict):
-            break
-        selected = None
-        for key in ("items", "list", "results", "records", "rows", "dramas",
-                    "short_dramas", "shortDramas", "bookList", "videoList", "data"):
-            value = obj.get(key)
-            if isinstance(value, (list, dict)):
-                selected = value
-                break
-        if selected is None:
-            break
-        obj = selected
+    """Official native format: {data: [...], meta: {...}}."""
+    if isinstance(payload, list):
+        return [x for x in payload if isinstance(x, dict)]
+    if not isinstance(payload, dict):
+        return []
+    data = payload.get("data", payload)
+    if isinstance(data, list):
+        return [x for x in data if isinstance(x, dict)]
+    if isinstance(data, dict):
+        for key in ("results", "items", "list", "records", "dramas"):
+            if isinstance(data.get(key), list):
+                return [x for x in data[key] if isinstance(x, dict)]
+    for key in ("results", "items", "list"):
+        if isinstance(payload.get(key), list):
+            return [x for x in payload[key] if isinstance(x, dict)]
     return []
 
 
-def normalize(raw, checked_at):
-    title = clean(field(raw, "title", "name", "drama_name", "dramaName",
-                        "book_name", "bookName", "shortPlayName"), 140)
-    if not title or len(title) > 140:
-        return None
-    tags_value = field(raw, "tags", "genres", "labels", "categories")
-    if isinstance(tags_value, str):
-        tags_value = re.split(r"[,，、/|]", tags_value)
-    if not isinstance(tags_value, list):
-        tags_value = []
-    tags = [clean(t if not isinstance(t, dict) else field(t, "name", "title"), 24)
-            for t in tags_value[:8]]
-    tags = list(dict.fromkeys(t for t in tags if t))[:4]
-    typ = clean(field(raw, "type", "category", "kind", "dramaType", "book_type"), 60)
-    signature = (typ + " " + " ".join(tags)).casefold()
-    kind = ("comic" if re.search(r"漫剧|漫画|动画|动漫|animated|comic", signature) else
-            "ai" if re.search(r"(?:^|[^a-z])ai(?:[^a-z]|$)|人工智能", signature) else "real")
-    if re.search(r"(?:^|[^a-z])ai(?:[^a-z]|$)|人工智能", signature):
-        kind = "ai"
-    episodes_raw = field(raw, "episodes", "episode_count", "episodeCount",
-                         "total_episodes", "totalEpisodes", "chapter_num", "total")
-    episodes = len(episodes_raw) if isinstance(episodes_raw, list) else None
-    if episodes is None:
-        try:
-            episodes = int(episodes_raw)
-        except (ValueError, TypeError):
-            episodes = None
-    if episodes is not None and not 1 <= episodes <= 1000:
-        episodes = None
-    rank_raw = field(raw, "rank", "ranking", "rank_no")
+def infer_kind(row):
+    typ = clean(get_first(row, "contentType", "mdj_content_type", "content_type",
+                          "formatType", "dramaType", "kind", "type"), 50).lower()
+    if typ in KINDS:
+        return KINDS[typ]
+    label = clean(get_first(row, "contentTypeLabel", "mdj_content_type_label",
+                            "formatTypeLabel"), 40)
+    if "漫剧" in label or "漫画" in label or "动画" in label:
+        return "comic"
+    if "AI" in label.upper() or "人工智能" in label:
+        return "ai"
+    return "real" if typ in ("", "tv", "drama") or "真人" in label else "other"
+
+
+def episode_count(row):
+    value = get_first(row, "episodes", "number_of_episodes",
+                      "episodeCount", "episode_count", "totalEpisodes")
+    if isinstance(value, list):
+        value = len(value)
     try:
-        rank = int(rank_raw)
-        if rank < 1 or rank > 5000:
-            rank = None
-    except (TypeError, ValueError):
-        rank = None
-    published = clean(field(raw, "published_at", "release_date", "releaseDate",
-                            "publish_time", "online_time", "created_at"), 40)
-    is_new = raw.get("is_new") is True or raw.get("isNew") is True
-    if published and not is_new:
+        number = int(value)
+        return number if 1 <= number <= 2000 else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def newer(row, *, is_new_feed=False):
+    value = get_first(row, "releaseDate", "release_date", "first_air_date",
+                      "publishedAt", "created_at")
+    if isinstance(value, str) and value[:10]:
         try:
-            from datetime import timedelta
-            published_date = datetime.fromisoformat(published.replace("Z", "+00:00"))
-            if published_date.tzinfo is None:
-                published_date = published_date.replace(tzinfo=timezone.utc)
-            is_new = timedelta(0) <= datetime.now(timezone.utc) - published_date <= timedelta(days=30)
+            published = datetime.fromisoformat(value[:10]).replace(tzinfo=timezone.utc)
+            return timedelta(0) <= datetime.now(timezone.utc) - published <= timedelta(days=30)
         except ValueError:
             pass
-    link = https_url(field(raw, "url", "detail_url", "detailUrl", "share_url", "shareUrl"))
+    return is_new_feed
+
+
+def normalize(row, *, group, rank=None):
+    title = clean(get_first(row, "title", "name", "originalTitle", "original_title",
+                            "dramaName"), 140)
+    if not title:
+        return None
+    item_id = clean(get_first(row, "id", "string_id", "drama_id", "dramaId"), 100)
+    if not item_id:
+        return None
+    poster = get_first(row, "posterUrl", "poster_url", "poster", "coverUrl",
+                       "cover_url", "cover", "poster_path", "posterPath")
+    genres = row.get("genres")
+    keywords = row.get("keywords")
+    labels = []
+    for source in (genres, keywords):
+        if isinstance(source, list):
+            for label in source:
+                val = clean(label if not isinstance(label, dict) else get_first(label, "name", "title"), 24)
+                if val and val not in labels:
+                    labels.append(val)
+                if len(labels) >= 5:
+                    break
+    score = get_first(row, "score", "vote_average", "communityScore")
+    score_source = clean(get_first(row, "scoreSource", "score_source"), 40)
+    votes = get_first(row, "ratingCount", "vote_count", "votes")
+    try:
+        score = float(score)
+        votes = int(votes or 0)
+        if not (0 < score <= 10 and votes > 0 and score_source not in ("ai_initial", "ai", "estimated")):
+            score = None
+    except (ValueError, TypeError, OverflowError):
+        score = None
+    popularity = get_first(row, "popularity", "heat")
+    try:
+        popularity = int(float(popularity))
+        if not 0 <= popularity <= 10**14:
+            popularity = None
+    except (ValueError, TypeError, OverflowError):
+        popularity = None
+    kind = infer_kind(row)
+    direct = public_url(get_first(row, "url", "detailUrl", "detail_url", "homepage"))
+    if not direct:
+        direct = "https://themdjhub.org/drama/" + urllib.parse.quote(item_id, safe="")
+    status = clean(get_first(row, "status"), 35)
     return {
-        "id": clean(field(raw, "id", "drama_id", "dramaId", "book_id", "bookId",
-                           "short_play_id", "shortPlayId"), 90),
-        "title": title,
-        "poster": https_url(field(raw, "poster", "cover", "cover_url", "coverUrl",
-                                   "image_url", "image", "thumb", "pic")),
-        "intro": clean(field(raw, "intro", "description", "summary", "brief", "desc"), 500),
-        "tags": tags,
-        "episodes": episodes,
-        "rank": rank,
-        "kind": kind,
-        "is_new": is_new,
-        "url": link,
+        "id": item_id, "title": title,
+        "poster": public_url(poster, poster=True),
+        "intro": clean(get_first(row, "overview", "intro", "description", "summary"), 700),
+        "tags": labels[:4], "episodes": episode_count(row),
+        "published_episodes": get_first(row, "publishedEpisodes", "mdj_published_episodes"),
+        "kind": kind, "kind_label": clean(get_first(row, "contentTypeLabel", "mdj_content_type_label", "formatTypeLabel"), 40),
+        "status": status,
+        "platform": clean(get_first(row, "platform"), 40),
+        "release_date": clean(get_first(row, "releaseDate", "release_date", "first_air_date"), 24),
+        "heat": popularity,
+        "rating": round(score, 1) if score is not None else None,
+        "rank": rank if group == "popular" else None,
+        "is_new": newer(row, is_new_feed=(group == "new")),
+        "groups": [group],
+        "url": direct,
     }
+
+
+def fetch_feed(api_key, *, sort="popular", limit=60, content_type=None):
+    params = {"page": "1", "limit": str(limit), "sort": sort}
+    if content_type:
+        params["content_type"] = content_type
+    url = API_URL + "?" + urllib.parse.urlencode(params)
+    request = urllib.request.Request(url, headers={
+        "Accept": "application/json", "X-API-Key": api_key,
+        "User-Agent": "LiangYou-ResourceHub/1.0 (server-side metadata collection)",
+    })
+    with urllib.request.urlopen(request, timeout=22) as response:
+        if response.status != 200:
+            raise ValueError("unexpected_http_status")
+        payload = json.loads(response.read(2000000))
+    if isinstance(payload, dict):
+        if "error" in payload and payload["error"]:
+            raise ValueError("provider_error")
+        if payload.get("code") not in (None, 0, "0", 200, "200", 10000, "10000"):
+            raise ValueError("provider_code")
+    rows = items_from(payload)
+    if not rows:
+        raise ValueError("no_items")
+    return rows
+
+
+def collect(key):
+    by_id = {}
+    # The official documentation supports sort=popular, sort=new, and
+    # content_type filtering. Ranking badges come only from the popular feed.
+    feeds = [
+        ("popular", "popular", None, 80),
+        ("new", "new", None, 55),
+        ("ai", "popular", "ai_drama", 30),
+        ("comic", "popular", "motion_comic", 30),
+        ("comic", "popular", "comic", 20),
+    ]
+    successes = []
+    for group, sort, kind, limit in feeds:
+        try:
+            rows = fetch_feed(key, sort=sort, content_type=kind, limit=limit)
+            count = 0
+            for index, row in enumerate(rows):
+                item = normalize(row, group=("popular" if group == "popular" else "new" if group == "new" else group),
+                                 rank=index + 1 if group == "popular" else None)
+                if not item or (kind and item["kind"] != "comic" if kind in ("motion_comic", "comic") else kind and item["kind"] != "ai"):
+                    continue
+                old = by_id.get(item["id"])
+                if old:
+                    old["groups"] = list(dict.fromkeys(old["groups"] + item["groups"]))
+                    old["is_new"] = old["is_new"] or item["is_new"]
+                    for key_name in ("poster", "intro", "platform", "status", "release_date", "episodes", "heat", "rating"):
+                        if old.get(key_name) is None or old.get(key_name) == "":
+                            old[key_name] = item.get(key_name)
+                else:
+                    by_id[item["id"]] = item
+                count += 1
+                if len(by_id) >= MAX_ITEMS:
+                    break
+            successes.append(group + ":" + str(count))
+        except urllib.error.HTTPError as error:
+            print("SHORT_DRAMA_FEED_HTTP", group, error.code)
+            if error.code in (401, 403):
+                break
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
+            print("SHORT_DRAMA_FEED_UNAVAILABLE", group, type(error).__name__)
+        time.sleep(0.25)
+    return list(by_id.values())[:MAX_ITEMS], successes
 
 
 def main():
-    endpoint = (os.environ.get("MDJHUB_API_URL") or "").strip()
     key = (os.environ.get("MDJHUB_API_KEY") or "").strip()
-    if not key or not endpoint:
-        print("SHORT_DRAMA_NOT_CONFIGURED: require MDJHUB_API_KEY and MDJHUB_API_URL")
+    if not key:
+        print("SHORT_DRAMA_NO_SECRET: MDJHUB_API_KEY is not available")
         return
-    if not https_url(endpoint):
-        print("SHORT_DRAMA_INVALID_ENDPOINT: HTTPS URL required, without credentials")
+    records, successes = collect(key)
+    if not records:
+        print("SHORT_DRAMA_NO_VERIFIED_RECORDS; old snapshot retained")
         return
-    mode = (os.environ.get("MDJHUB_AUTH_MODE") or "bearer").strip().lower()
-    if mode not in ("bearer", "x-api-key"):
-        print("SHORT_DRAMA_AUTH_MODE_UNSUPPORTED")
-        return
-    headers = {
-        "Accept": "application/json",
-        "User-Agent": "LiangYou-ResourceHub/1.0 (public snapshot collector)",
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    output = {
+        "schema": 1, "source": "MDJ Hub", "status": "ok",
+        "checked_at": now, "items": records,
     }
-    headers["Authorization" if mode == "bearer" else "X-API-Key"] = (
-        "Bearer " + key if mode == "bearer" else key
-    )
-    try:
-        req = urllib.request.Request(endpoint, headers=headers)
-        with urllib.request.urlopen(req, timeout=18) as response:
-            if response.status != 200:
-                raise ValueError("non_200")
-            payload = json.loads(response.read(1500000))
-        if isinstance(payload, dict) and payload.get("code") not in (None, 0, "0", 200, "200"):
-            raise ValueError("provider_error")
-        raw = items_from(payload)
-        if not raw:
-            raise ValueError("no_dramas")
-        checked = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        records, seen = [], set()
-        for item in raw:
-            drama = normalize(item, checked)
-            if not drama:
-                continue
-            identity = drama["id"] or drama["title"].casefold()
-            if identity in seen:
-                continue
-            seen.add(identity)
-            records.append(drama)
-            if len(records) >= MAX_ITEMS:
-                break
-        if not records:
-            raise ValueError("no_valid_dramas")
-        output = {"schema": 1, "source": "MDJ Hub", "status": "ok",
-                  "checked_at": checked, "items": records}
-        OUTPUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print("SHORT_DRAMA_UPDATED", len(records))
-    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
-        # Never print response bodies, request URLs or token-bearing headers.
-        print("SHORT_DRAMA_UNAVAILABLE", type(exc).__name__)
+    OUTPUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    counts = {kind: sum(item["kind"] == kind for item in records)
+              for kind in ("real", "ai", "comic")}
+    print("SHORT_DRAMA_UPDATED", len(records), "kinds", counts, "feeds", successes)
 
 
 if __name__ == "__main__":
