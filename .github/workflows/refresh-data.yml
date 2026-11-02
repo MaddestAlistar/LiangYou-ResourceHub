@@ -5,10 +5,21 @@ on:
     # Heartbeat, not repeated full collection: scripts decide what is due.
     # GitHub may delay/drop cron events; check due work every 15 minutes.
     - cron: '7,22,37,52 * * * *'
-  # Independent hourly fallback: a successful or failed Apple rescue run
-  # wakes the main due-aware collector even if GitHub drops the main cron.
+  # A delayed/dropped GitHub cron must not stall every feed at once.
+  # Completed independent scheduled jobs are additional wake-up signals.
+  # They do not create loops: none of these jobs depends on this collector.
+  # refresh_data.py still enforces the existing per-feed due intervals.
   workflow_run:
-    workflows: ['Rescue independent Apple paid-to-free verification']
+    workflows:
+      - 'Rescue independent Apple paid-to-free verification'
+      - 'Mirror public tech news for mainland visitors'
+      - 'Refresh officially playable Douyin media videos'
+      - 'Cache verified Bilibili trailer cover images on Pages'
+      - 'Refresh anime themes and parental guidance'
+      - 'Refresh MDJ Hub short drama listings'
+      - 'Refresh verified film discovery source snapshots'
+      - 'Refresh current worldwide theatrical chart snapshot'
+      - 'Refresh matched film videos from public platforms'
     types: [completed]
     branches: [main]
   workflow_dispatch:
