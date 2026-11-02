@@ -76,12 +76,13 @@ async function browserTest(name,launcher){
     });
     testPage.on('requestfailed',r=>failures.push({host:new URL(r.url()).hostname,
       reason:r.failure()?.errorText?.slice(0,120)}));
-    // Serve an empty test document instead of the site's index: its unrelated
-    // news/metadata requests must not be mistaken for proxying video bytes.
-    await testPage.route('http://127.0.0.1:8765/hongguo-direct-probe.html',
+    // Intercept a blank document under the EXACT production GitHub Pages origin.
+    // The real site is unchanged; the browser sends the production Referer/Origin
+    // to the media server without loading unrelated page scripts.
+    await testPage.route('https://maddestalistar.github.io/LiangYou-ResourceHub/hongguo-direct-probe.html',
       route=>route.fulfill({status:200,contentType:'text/html',
         body:'<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>'}));
-    await testPage.goto('http://127.0.0.1:8765/hongguo-direct-probe.html',{waitUntil:'domcontentloaded',timeout});
+    await testPage.goto('https://maddestalistar.github.io/LiangYou-ResourceHub/hongguo-direct-probe.html',{waitUntil:'domcontentloaded',timeout});
     await testPage.setContent('<main><video id="test" controls playsinline preload="auto" style="width:320px;height:540px" src="'+VIDEO+'"></video></main>');
     const outcome=await testPage.evaluate(async()=>{
       const v=document.querySelector('video');
