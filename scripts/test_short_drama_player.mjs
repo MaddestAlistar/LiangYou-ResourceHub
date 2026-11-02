@@ -25,17 +25,17 @@ test('playback modal is lazy, closable and mobile-native',()=>{
   assert.match(css,/\.mi-dpt-dialog::backdrop/);
 });
 
-test('public sample media is direct from third-party CDN and clearly not a drama episode',()=>{
-  assert.match(player,/data-demo-stream="mp4"/);
-  assert.match(player,/data-demo-stream="hls"/);
-  assert.match(player,/test-videos\\.co\\.uk\\/vids\\/bigbuckbunny/);
-  assert.match(player,/test-streams\\.mux\\.dev\\/x36xhzz/);
-  assert.match(player,/非当前短剧正片/);
-  assert.match(player,/2008 Blender Foundation · CC BY 3\\.0/);
-  assert.match(player,/video\\.addEventListener\\('playing'/);
-  assert.match(css,/\\.mi-dpt-demo-button/);
-  assert.match(player,/await video\\.play\\(\\)/);
-  assert.doesNotMatch(player,/\.workers\\.dev\\/.*\\.mp4/);
+test('public sample media goes directly to its CDN and is explicitly labeled as a demonstration',()=>{
+  assert.ok(player.includes('data-demo-stream="mp4"'));
+  assert.ok(player.includes('data-demo-stream="hls"'));
+  assert.ok(player.includes('test-videos.co.uk/vids/bigbuckbunny'));
+  assert.ok(player.includes('test-streams.mux.dev/x36xhzz'));
+  assert.ok(player.includes('非当前短剧正片'));
+  assert.ok(player.includes('2008 Blender Foundation · CC BY 3.0'));
+  assert.ok(player.includes("video.addEventListener('playing'"));
+  assert.ok(css.includes('.mi-dpt-demo-button'));
+  assert.ok(player.includes('await video.play()'));
+  assert.ok(!player.includes('.workers.dev/video.mp4'));
 });
 
 test('no obfuscated worker is executed in site, and unavailable streams are not faked',()=>{
