@@ -10,53 +10,29 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 3
     steps:
-      - name: Inspect public API docs and response schema without credentials
+      - name: Inspect public fields and docs without credentials
         run: |
           python - <<'PY'
-          import re,urllib.request,urllib.error,json,html
+          import urllib.request,json,html
           from html.parser import HTMLParser
           class Plain(HTMLParser):
-              def __init__(self):
-                  super().__init__();self.out=[]
+              def __init__(self):super().__init__();self.rows=[]
               def handle_data(self,s):
                   s=html.unescape(s.strip())
-                  if s:self.out.append(s)
-          urls=[
-            'https://themdjhub.org/api-docs?v=20261102a1',
-            'https://themdjhub.org/api/v1/dramas?limit=2&sort=popular',
-            'https://themdjhub.org/api/v1/rankings?type=popular&limit=2',
-            'https://themdjhub.org/openapi/v1/dramas?limit=2&sort=popular'
-          ]
-          for url in urls:
-              try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json,text/html'})
-                  with urllib.request.urlopen(req,timeout=17) as r:
-                      body=r.read(600000).decode('utf-8','replace')
-                      print('HTTP',url,r.status,r.headers.get('Content-Type'),'bytes',len(body))
-              except urllib.error.HTTPError as e:
-                  print('HTTP_ERROR',url,e.code,e.read(200).decode('utf-8','replace'))
-                  continue
-              except Exception as e:
-                  print('ERROR',url,type(e).__name__,str(e)[:130]);continue
-              if '/api-docs' in url:
-                  doc=Plain();doc.feed(body)
-                  print('DOC_LINES',len(doc.out))
-                  for i,line in enumerate(doc.out):
-                      if any(word in line.lower() for word in ('openapi','x-api-key','limit','sort','q=','dramas','rank','content_type','episodes','price','rating','page','response')):
-                          print('DOC',i,line[:260])
-                  print('DOC_EXCERPT',' | '.join(doc.out[:80])[:3200])
-              else:
-                  try:
-                      obj=json.loads(body)
-                      print('JSON_TOP_KEYS',list(obj.keys()) if isinstance(obj,dict) else 'array')
-                      d=obj.get('data',obj) if isinstance(obj,dict) else obj
-                      print('JSON_DATA_TYPE',type(d).__name__)
-                      if isinstance(d,list): print('JSON_SAMPLE',json.dumps(d[:2],ensure_ascii=False)[:5500])
-                      elif isinstance(d,dict):
-                          print('JSON_DATA_KEYS',list(d.keys())[:30])
-                          for key in ('items','results','list','dramas','records'):
-                              if isinstance(d.get(key),list):print('JSON_ITEMS',key,json.dumps(d[key][:2],ensure_ascii=False)[:5500])
-                  except Exception: print('NON_JSON',body[:250])
+                  if s:self.rows.append(s)
+          req=urllib.request.Request('https://themdjhub.org/api-docs?v=20261102a1',headers={'User-Agent':'Mozilla/5.0'})
+          with urllib.request.urlopen(req,timeout=15) as r:content=r.read(600000).decode('utf-8','replace')
+          doc=Plain();doc.feed(content)
+          for i,line in enumerate(doc.rows):
+              if 118<=i<=237 or 508<=i<=545:print('DOC_LINE',i,line[:370])
+          with urllib.request.urlopen('https://themdjhub.org/api/v1/dramas?limit=2&sort=popular',timeout=15) as r:
+              data=json.loads(r.read(110000))
+          print('API_TOP_KEYS',list(data))
+          print('API_META',data.get('meta'))
+          for item in (data.get('data') or [])[:2]:
+              print('API_SAMPLE_FIELDS',list(item))
+              for k in ('id','title','poster','cover','posterUrl','images','contentType','contentTypeLabel','formatType','episodes','releaseDate','status','popularity','platform','genres','score','scoreSource','ratingCount'):
+                  if k in item:print('API_FIELD',k,str(item[k])[:220])
           PY
