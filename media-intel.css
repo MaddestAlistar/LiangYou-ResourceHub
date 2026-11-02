@@ -548,3 +548,32 @@
   .mi-dpt-screen{height:min(59dvh,510px);min-height:190px}
   .mi-dpt-status{font-size:11px}
 }
+
+/* Explicitly marked, direct-to-CDN playback checks (not actual drama episodes). */
+.mi-dpt-demo{
+  display:flex;flex-direction:column;gap:7px;padding:10px 12px;
+  border-radius:11px;border:1px solid rgba(181,198,227,.2);
+  background:linear-gradient(110deg,rgba(79,113,174,.14),rgba(183,144,80,.06));
+}
+.mi-dpt-demo-label{
+  margin:0;font-size:11px;font-weight:700;letter-spacing:.01em;
+  color:#d8e4f9;
+}
+.mi-dpt-demo-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.mi-dpt-demo-button{
+  padding:8px 13px;min-height:35px;border-radius:8px;cursor:pointer;
+  color:#edd6ab;background:rgba(213,173,111,.14);
+  border:1px solid rgba(228,194,140,.33);
+  font-size:12px;font-weight:650;
+}
+.mi-dpt-demo-button[aria-pressed="true"]{
+  background:rgba(213,178,117,.3);border-color:rgba(238,198,131,.8);
+  color:#ffe5ba;
+}
+.mi-dpt-demo-button:focus-visible{outline:2px solid #f4d29c;outline-offset:2px}
+.mi-dpt-credit{margin:0;font-size:10px;color:#9eacc1;line-height:1.4}
+@media(max-width:760px){
+  .mi-dpt-demo{padding:8px 10px}
+  .mi-dpt-demo-button{min-height:33px;font-size:11px;padding:7px 11px}
+  .mi-dpt-credit{font-size:9px}
+}
