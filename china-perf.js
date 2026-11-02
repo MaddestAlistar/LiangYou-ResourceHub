@@ -11,8 +11,8 @@
       urls: [
         './media-core.js?v=20261030.anime-unify2',
         './media-intel.js?v=20261102-djhub2',
-        './media-shortdrama.js?v=20261102-playtest1',
-        './media-shortdrama-player.js?v=20261102-playtest1'
+        './media-shortdrama.js?v=20261102-authorized2',
+        './media-shortdrama-player.js?v=20261102-authorized2'
       ],
       // Optional film detail modules hydrate after the catalogue is responsive.
       extraStyles: [
