@@ -361,8 +361,6 @@
 #media .mi-drama-overview{font-size:11px;color:#adc0dc}
 #media .mi-drama-overview summary{cursor:pointer;color:#d9c49f}
 #media .mi-drama-overview p{margin:6px 0;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap}
-#media .mi-drama-link{margin-top:auto;display:block;text-align:center;padding:9px;border:1px solid #c6ac7a4a;border-radius:8px;background:#9c784721;color:#ecd2a4;font-size:11px;text-decoration:none}
-#media .mi-drama-link:hover{background:#c6a96b30}
 #media .mi-drama-empty{grid-column:1/-1}
 @media(max-width:760px){
   #media .mi-drama-copy{padding:10px;gap:7px}
@@ -382,3 +380,27 @@
 #media .mi-drama-stats span:first-child{color:#eed19c;border-color:rgba(222,186,118,.29);background:rgba(216,162,74,.11)}
 #media .mi-drama-platform{margin:0;color:#a5b6d0;font-size:10px;line-height:1.55;overflow-wrap:anywhere}
 @media(max-width:760px){#media .mi-drama-stats span{font-size:9px;padding:3px 5px}#media .mi-drama-platform{font-size:9px}}
+
+/* MDJ Hub distinguishes community ratings from AI seed/reference scores. */
+#media .mi-drama-rating{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;
+  padding:8px 10px;border:1px solid rgba(222,185,123,.25);
+  border-radius:9px;background:linear-gradient(110deg,rgba(218,174,99,.13),rgba(85,119,173,.075));
+  min-width:0;
+}
+#media .mi-drama-rating strong{
+  font-size:18px;color:#f4d7a3;font-weight:750;line-height:1.1;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+#media .mi-drama-rating strong small{font-size:10px;color:#a5b5d0;font-weight:500}
+#media .mi-drama-rating>span{font-size:10px;color:#c4d1e4;line-height:1.5}
+#media .mi-drama-rating-ai{border-color:rgba(156,172,228,.25);background:linear-gradient(100deg,rgba(80,111,188,.14),rgba(140,105,184,.095))}
+#media .mi-drama-rating-ai strong{color:#cddafa}
+#media .mi-drama-rating-none{background:#71809c0b;border-color:var(--mi-line)}
+#media .mi-drama-rating-none strong{color:#8b9cb5}
+@media(max-width:760px){
+  #media .mi-drama-rating{padding:7px;gap:4px 7px}
+  #media .mi-drama-rating strong{font-size:15px}
+  #media .mi-drama-rating strong small{font-size:9px}
+  #media .mi-drama-rating>span{font-size:9px}
+}
