@@ -222,7 +222,7 @@
     status(t('正在准备测试播放器…','Preparing test player…'));
     if(!dialog.open)dialog.showModal();
     const [works,settings]=await Promise.all([catalog(),config()]);
-    if(turn!==serial||!dialog.open)return;
+    if(turn!==serial||!dialog.open||demoMode)return;
     const work=works.find(item=>String(item.id)===id);
     dialog.querySelector('.mi-dpt-title').textContent=String(work?.title||t('短剧测试播放','Drama playback test')).slice(0,100);
     // The uploaded file defines a server-side Worker, not a browser video file.
@@ -241,7 +241,7 @@
       request.searchParams.set('title',work.title);
       const response=await fetch(request.href,{credentials:'omit',cache:'no-store',signal:controller.signal,
         headers:{Accept:'application/json'}});
-      if(turn!==serial||!dialog.open)return;
+      if(turn!==serial||!dialog.open||demoMode)return;
       const data=await response.json().catch(()=>null);
       if(response.status===503&&data?.error==='not_configured'){
         status(t('播放服务已连接，但尚未配置可合法使用的视频地址。',
@@ -259,7 +259,7 @@
       status(t('已找到可测试剧集，请选择播放。','Episodes available. Select one to play.'));
     }catch(error){
       if(error?.name==='AbortError')return;
-      if(turn!==serial||!dialog.open)return;
+      if(turn!==serial||!dialog.open||demoMode)return;
       status(t('暂无可播放剧集，接口可能尚未部署或作品尚未匹配。',
         'No playable episodes. Service may be offline or the title unmatched.'),true);
     }
