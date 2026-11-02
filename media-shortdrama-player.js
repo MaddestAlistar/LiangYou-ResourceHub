@@ -166,8 +166,17 @@
       const response=await fetch(request.href,{credentials:'omit',cache:'no-store',signal:controller.signal,
         headers:{Accept:'application/json'}});
       if(turn!==serial||!dialog.open)return;
+      const data=await response.json().catch(()=>null);
+      if(response.status===503&&data?.error==='not_configured'){
+        status(t('播放服务已连接，但尚未配置可合法使用的视频地址。',
+          'Playback service is online; no authorized stream URLs have been configured.'),true);
+        return;
+      }
+      if(response.status===404&&data?.error==='no_authorized_episodes'){
+        status(t('当前作品暂无已授权的可播放剧集。','No authorized episodes for this title.'),true);
+        return;
+      }
       if(!response.ok)throw Error('not_available');
-      const data=await response.json();
       if(!data||!Array.isArray(data.episodes))throw Error('invalid_response');
       showEpisodes(data.episodes);
       if(!episodes.length)throw Error('no_episodes');
