@@ -9,15 +9,7 @@
   const t=(cn,eng)=>en()?eng:cn;
   const CONFIG='./data/short-drama-playback-test.json';
   let dialog=null,video=null,episodes=[],selected=-1,hls=null,controller=null;
-  let catalogPromise=null,configPromise=null,serial=0,playToken=0,demoMode=false,demoKind='';
-  // These are independent public player-test media, never titles from the
-  // DJHUB catalog. Browsers fetch video from these hosts, not Cloudflare.
-  const DEMO_STREAMS=Object.freeze({
-    mp4:{url:'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
-      mime:'video/mp4'},
-    hls:{url:'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-      mime:'application/vnd.apple.mpegurl'}
-  });
+  let catalogPromise=null,configPromise=null,serial=0;
   const safeUrl=value=>{
     if(typeof value!=='string'||value.length>2500)return '';
     try{
@@ -29,18 +21,12 @@
     const node=dialog?.querySelector('.mi-dpt-status');
     if(node){node.textContent=value;node.dataset.error=String(error);}
   };
-  const resetMedia=()=>{
-    playToken++;
-    if(hls){hls.destroy();hls=null;}
-    if(video){video.pause();video.removeAttribute('src');video.load();}
-    demoMode=false;demoKind='';selected=-1;
-    if(dialog)dialog.querySelectorAll('.mi-dpt-demo-button').forEach(b=>b.setAttribute('aria-pressed','false'));
-  };
   const stop=()=>{
     serial++;
     if(controller){controller.abort();controller=null;}
-    resetMedia();
-    episodes=[];
+    if(hls){hls.destroy();hls=null;}
+    if(video){video.pause();video.removeAttribute('src');video.load();}
+    episodes=[];selected=-1;
   };
   function ensureDialog(){
     if(dialog)return dialog;
@@ -55,14 +41,6 @@
       <div class="mi-dpt-screen">
         <video controls playsinline webkit-playsinline preload="metadata" controlslist="nodownload" aria-label="短剧播放器"></video>
       </div>
-      <div class="mi-dpt-demo" role="group" aria-label="播放器自检">
-        <p class="mi-dpt-demo-label">独立视频自检 · 非当前短剧正片</p>
-        <div class="mi-dpt-demo-actions">
-          <button type="button" class="mi-dpt-demo-button" data-demo-stream="mp4" aria-pressed="false">▶ MP4 测试</button>
-          <button type="button" class="mi-dpt-demo-button" data-demo-stream="hls" aria-pressed="false">▶ HLS 测试</button>
-        </div>
-        <p class="mi-dpt-credit">自检素材：Big Buck Bunny © 2008 Blender Foundation · CC BY 3.0</p>
-      </div>
       <p class="mi-dpt-status" role="status" aria-live="polite"></p>
       <div class="mi-dpt-episodes" hidden><div class="mi-dpt-section-title"></div><div class="mi-dpt-list" role="group"></div></div>
     </section>`;
@@ -72,22 +50,7 @@
     dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
     dialog.addEventListener('close',stop);
     video.addEventListener('error',()=>{
-      if(!dialog?.open)return;
-      if(demoMode)status(t('自检失败：媒体服务器未能提供可播放视频。','Playback check failed: media could not be loaded.'),true);
-      else if(selected>=0)status(t('视频暂时无法播放，请换一集再试。','Video unavailable. Try another episode.'),true);
-    });
-    video.addEventListener('loadedmetadata',()=>{
-      if(dialog?.open&&demoMode)
-        status(t('自检已加载视频信息，正在尝试播放…','Media metadata loaded; trying playback…'));
-    });
-    video.addEventListener('playing',()=>{
-      if(dialog?.open&&demoMode)status(
-        t('播放自检成功：浏览器正从外部媒体服务器直接读取 ', 'Playback check passed: direct CDN stream ')+
-        demoKind.toUpperCase()+t(' 视频（无需 CF 视频中转）。',' (no Cloudflare video proxy).')
-      );
-    });
-    dialog.querySelectorAll('.mi-dpt-demo-button').forEach(b=>{
-      b.addEventListener('click',()=>void playDemo(b.dataset.demoStream));
+      if(dialog?.open&&selected>=0)status(t('视频暂时无法播放，请换一集再试。','Video unavailable. Try another episode.'),true);
     });
     dialog.querySelector('.mi-dpt-list').addEventListener('click',e=>{
       const button=e.target.closest('button[data-episode-index]');
@@ -126,8 +89,11 @@
     const item=episodes[index];
     const src=safeUrl(item?.url);
     if(!src){status(t('这一集没有有效的视频地址。','This episode has no valid video URL.'),true);return;}
-    resetMedia();
     selected=index;
+    if(hls){hls.destroy();hls=null;}
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
     const cells=dialog.querySelectorAll('.mi-dpt-list button');
     for(const cell of cells)cell.setAttribute('aria-pressed',String(Number(cell.dataset.episodeIndex)===index));
     const isHls=item.mime==='application/vnd.apple.mpegurl'||/\.m3u8(?:[?#]|$)/i.test(src);
@@ -147,48 +113,6 @@
       status(t('正在测试第 ','Testing episode ')+(index+1)+t(' 集 · 可使用播放器控制操作',' · Use the playback controls'));
     }catch{
       status(t('当前浏览器无法加载该视频流。','This browser cannot load the video stream.'),true);
-    }
-  }
-  async function playDemo(kind){
-    const sample=DEMO_STREAMS[kind];
-    if(!sample||!dialog?.open)return;
-    resetMedia();
-    demoMode=true;demoKind=kind;
-    const turn=playToken;
-    const src=safeUrl(sample.url);
-    if(!src){status(t('测试地址无效。','Invalid test URL.'),true);return;}
-    dialog.querySelectorAll('.mi-dpt-demo-button').forEach(b=>
-      b.setAttribute('aria-pressed',String(b.dataset.demoStream===kind)));
-    status(t('正在直连外部媒体服务器，测试 ', 'Connecting directly to the media server for ')+
-      kind.toUpperCase()+'…');
-    try{
-      if(kind==='hls'&&!video.canPlayType('application/vnd.apple.mpegurl')){
-        const Hls=await loadHls();
-        if(!dialog.open||turn!==playToken||!demoMode)return;
-        hls=new Hls({enableWorker:true,maxBufferLength:20});
-        hls.on(Hls.Events.MANIFEST_PARSED,()=>{
-          if(dialog?.open&&turn===playToken&&demoMode)void video.play().catch(()=>{
-            status(t('视频已加载，点击播放器上的播放按钮即可开始。',
-              'Stream ready. Tap play in the video controls.'));
-          });
-        });
-        hls.on(Hls.Events.ERROR,(_ev,info)=>{
-          if(info?.fatal&&dialog?.open&&turn===playToken)
-            status(t('HLS 自检失败：流或跨域访问不可用。','HLS test failed: stream or CORS unavailable.'),true);
-        });
-        hls.attachMedia(video);
-        hls.loadSource(src);
-      }else{
-        video.src=src;
-        await video.play().catch(()=>{
-          if(dialog?.open&&turn===playToken&&demoMode)
-            status(t('已连接视频地址，若未自动播放，请点击播放器上的播放按钮。',
-              'Video source connected. Tap play if autoplay was blocked.'));
-        });
-      }
-    }catch{
-      if(dialog?.open&&turn===playToken)
-        status(t('自检失败：当前浏览器无法加载该视频。','Playback check failed in this browser.'),true);
     }
   }
   function showEpisodes(list){
@@ -222,7 +146,7 @@
     status(t('正在准备测试播放器…','Preparing test player…'));
     if(!dialog.open)dialog.showModal();
     const [works,settings]=await Promise.all([catalog(),config()]);
-    if(turn!==serial||!dialog.open||demoMode)return;
+    if(turn!==serial||!dialog.open)return;
     const work=works.find(item=>String(item.id)===id);
     dialog.querySelector('.mi-dpt-title').textContent=String(work?.title||t('短剧测试播放','Drama playback test')).slice(0,100);
     // The uploaded file defines a server-side Worker, not a browser video file.
@@ -241,7 +165,7 @@
       request.searchParams.set('title',work.title);
       const response=await fetch(request.href,{credentials:'omit',cache:'no-store',signal:controller.signal,
         headers:{Accept:'application/json'}});
-      if(turn!==serial||!dialog.open||demoMode)return;
+      if(turn!==serial||!dialog.open)return;
       const data=await response.json().catch(()=>null);
       if(response.status===503&&data?.error==='not_configured'){
         status(t('播放服务已连接，但尚未配置可合法使用的视频地址。',
@@ -259,7 +183,7 @@
       status(t('已找到可测试剧集，请选择播放。','Episodes available. Select one to play.'));
     }catch(error){
       if(error?.name==='AbortError')return;
-      if(turn!==serial||!dialog.open||demoMode)return;
+      if(turn!==serial||!dialog.open)return;
       status(t('暂无可播放剧集，接口可能尚未部署或作品尚未匹配。',
         'No playable episodes. Service may be offline or the title unmatched.'),true);
     }
