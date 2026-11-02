@@ -11,7 +11,7 @@
   function heatLabel(value){
     const n=Number(value);
     if(!Number.isFinite(n)||n<=0)return '';
-    return n>=1e8?(n/1e8).toFixed(1).replace(/\\.0$/,'')+'亿':n>=1e4?(n/1e4).toFixed(1).replace(/\\.0$/,'')+'万':Math.round(n).toLocaleString('zh-CN');
+    return n>=1e8?(n/1e8).toFixed(1).replace(/\.0$/,'')+'亿':n>=1e4?(n/1e4).toFixed(1).replace(/\.0$/,'')+'万':Math.round(n).toLocaleString('zh-CN');
   }
   function active(){return root.querySelector('[data-mi-tab="drama"]')?.getAttribute('aria-pressed')==='true';}
   function date(value){
