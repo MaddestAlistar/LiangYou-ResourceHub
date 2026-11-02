@@ -1,0 +1,29 @@
+name: Probe Hongguo public web MP4 direct playback (read-only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe_hongguo_web_direct.mjs'
+      - '.github/workflows/probe-hongguo-web-direct.yml'
+permissions:
+  contents: read
+jobs:
+  test-public-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated Chromium and WebKit runtimes
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Serve the unmodified site locally
+        run: |
+          nohup python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/hongguo-probe-http.log 2>&1 &
+          sleep 2
+      - name: Test matching title, MP4 bytes and direct playback in two browser engines
+        run: node scripts/probe_hongguo_web_direct.mjs
