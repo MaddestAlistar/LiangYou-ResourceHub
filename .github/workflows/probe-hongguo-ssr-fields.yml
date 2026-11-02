@@ -1,0 +1,21 @@
+name: Inspect public Hongguo SSR playback fields (read-only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe_hongguo_ssr_fields.mjs'
+      - '.github/workflows/probe-hongguo-ssr-fields.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check public web page field presence without private keys
+        run: node scripts/probe_hongguo_ssr_fields.mjs
