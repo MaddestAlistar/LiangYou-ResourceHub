@@ -1,0 +1,61 @@
+name: Deploy verified short drama metadata worker
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'labs/short-drama-playback-worker.mjs'
+      - 'scripts/test_short_drama_playback_worker.mjs'
+      - '.github/workflows/deploy-short-drama-playback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-liangyou-short-drama-playback
+  cancel-in-progress: false
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit worker syntax and access control tests
+        run: |
+          node --check labs/short-drama-playback-worker.mjs
+          node --test scripts/test_short_drama_playback_worker.mjs
+          if grep -Eiq 'hongguo-native|QIMEI36|biz_app_key|sign_md5|kairos_channel|eval\\(' labs/short-drama-playback-worker.mjs; then
+            echo 'Unexpected native-client or executable obfuscation code blocked.'
+            exit 1
+          fi
+      - name: Verify deployment credentials are available
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Deploy isolated metadata-only Worker
+        run: npx --yes wrangler@4 deploy labs/short-drama-playback-worker.mjs --name liangyou-short-drama-playback --compatibility-date 2026-10-20
+      - name: Smoke test health and deny untrusted API requests
+        run: |
+          node --input-type=module <<'NODE'
+          const host='https://liangyou-short-drama-playback.maddestalistar.workers.dev';
+          let good=false;
+          for(let attempt=0;attempt<5;attempt++){
+            try{
+              const r=await fetch(host+'/health',{signal:AbortSignal.timeout(12000)});
+              const body=await r.json();
+              if(r.ok&&body.service==='short-drama-playback'&&body.videoProxy===false&&body.mode==='metadata-only'){
+                good=true;break;
+              }
+            }catch{}
+            await new Promise(resolve=>setTimeout(resolve,4000));
+          }
+          if(!good)throw Error('Metadata-only worker health check failed');
+          const forbidden=await fetch(host+'/api/resolve?workId=mc-test001&title=Test',{
+            headers:{Origin:'https://attacker.invalid'},signal:AbortSignal.timeout(12000)});
+          if(forbidden.status!==403)throw Error('Cross-origin access-control regression');
+          console.log('Authorized short-drama Worker online: metadata-only, no video proxy, restricted origin');
+          NODE
