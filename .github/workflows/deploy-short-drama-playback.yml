@@ -19,6 +19,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      AUTHORIZED_DRAMA_STREAMS_JSON: ${{ secrets.AUTHORIZED_DRAMA_STREAMS_JSON }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,6 +39,13 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Deploy isolated metadata-only Worker
         run: npx --yes wrangler@4 deploy labs/short-drama-playback-worker.mjs --name liangyou-short-drama-playback --compatibility-date 2026-10-20
+      - name: Provision optional approved-stream manifest securely
+        run: |
+          if [ -n "$AUTHORIZED_DRAMA_STREAMS_JSON" ]; then
+            printf '%s' "$AUTHORIZED_DRAMA_STREAMS_JSON" | npx --yes wrangler@4 secret put AUTHORIZED_DRAMA_STREAMS_JSON --name liangyou-short-drama-playback
+          else
+            echo "No approved stream manifest provided. Playback remains unavailable by design."
+          fi
       - name: Smoke test health and deny untrusted API requests
         run: |
           node --input-type=module <<'NODE'
