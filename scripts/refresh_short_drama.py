@@ -128,6 +128,59 @@ def newer(row, *, is_new_feed=False):
     return is_new_feed
 
 
+def valid_score(value):
+    """Return an actual bounded numeric score, never zero/NaN/Infinity."""
+    try:
+        score = float(value)
+        if 0 < score <= 10:
+            return round(score, 1)
+    except (TypeError, ValueError, OverflowError):
+        pass
+    return None
+
+
+def rating_info(row):
+    """(score, origin, votes): user, source, ai, reference or unavailable.
+
+    A nonzero ratingCount alone is insufficient to promote an AI seed score.
+    Prefer the actual community score where voting has occurred; distinguish
+    provider ratings, AI estimates and otherwise unclassified reference scores.
+    """
+    source = clean(get_first(row, "scoreSource", "score_source"), 50).lower()
+    ai_sources = {"ai_initial", "ai", "estimated", "ai_estimate", "ai_prediction", "ai_generated"}
+    raw_votes = get_first(row, "ratingCount", "vote_count", "votes")
+    try:
+        votes = max(0, min(int(raw_votes or 0), 1_000_000_000))
+    except (TypeError, ValueError, OverflowError):
+        votes = 0
+
+    if votes:
+        community = valid_score(get_first(row, "communityScore", "community_score"))
+        if community is not None:
+            return community, "user", votes
+        if source not in ai_sources:
+            voted_score = valid_score(get_first(row, "score", "vote_average"))
+            if voted_score is not None:
+                return voted_score, "user", votes
+
+    provider_score = valid_score(get_first(row, "sourceRating", "source_rating"))
+    provider_name = clean(get_first(row, "sourceRatingSource", "source_rating_source"), 60)
+    if provider_score is not None and provider_name:
+        return provider_score, "source", votes
+
+    raw_score = valid_score(get_first(row, "score", "vote_average"))
+    ai_score = valid_score(get_first(row, "aiScore", "ai_score"))
+    if source in ai_sources:
+        score = ai_score if ai_score is not None else raw_score
+        return score, "ai" if score is not None else None, votes
+
+    if raw_score is not None:
+        return raw_score, "source" if source not in ("", "unknown") else "reference", votes
+    if ai_score is not None:
+        return ai_score, "ai", votes
+    return None, None, votes
+
+
 def normalize(row, *, group, rank=None):
     title = clean(get_first(row, "title", "name", "originalTitle", "original_title",
                             "dramaName"), 140)
@@ -149,16 +202,9 @@ def normalize(row, *, group, rank=None):
                     labels.append(val)
                 if len(labels) >= 5:
                     break
-    score = get_first(row, "score", "vote_average", "communityScore")
-    score_source = clean(get_first(row, "scoreSource", "score_source"), 40)
-    votes = get_first(row, "ratingCount", "vote_count", "votes")
-    try:
-        score = float(score)
-        votes = int(votes or 0)
-        if not (0 < score <= 10 and votes > 0 and score_source not in ("ai_initial", "ai", "estimated")):
-            score = None
-    except (ValueError, TypeError, OverflowError):
-        score = None
+    # DJHUB exposes different score origins. Keep every valid score, but
+    # never describe an AI initial estimate as an audience/community rating.
+    rating, rating_type, rating_votes = rating_info(row)
     popularity = get_first(row, "popularity", "heat")
     try:
         popularity = int(float(popularity))
@@ -182,7 +228,9 @@ def normalize(row, *, group, rank=None):
         "platform": clean(get_first(row, "platform"), 40),
         "release_date": clean(get_first(row, "releaseDate", "release_date", "first_air_date"), 24),
         "heat": popularity,
-        "rating": round(score, 1) if score is not None else None,
+        "rating": rating,
+        "rating_type": rating_type,
+        "rating_votes": rating_votes,
         "rank": rank if group == "popular" else None,
         "is_new": newer(row, is_new_feed=(group == "new")),
         "groups": [group],
