@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-02T17:51:47Z",
+  "generated_at": "2026-11-02T23:57:45Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-02T17:51:47Z"
+      "verified_at": "2026-11-02T23:57:45Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 149,
       "standings": 5,
-      "verified_at": "2026-11-02T17:51:47Z"
+      "verified_at": "2026-11-02T23:57:45Z"
     }
   ],
   "status": "ok",
@@ -460,12 +460,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-02T17:30:00Z",
-      "status": "live",
-      "status_detail": "IN_PLAY",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "US Sassuolo Calcio",
       "away": "ACF Fiorentina",
-      "score_home": 0,
-      "score_away": 0,
+      "score_home": 2,
+      "score_away": 4,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -478,12 +478,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-02T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Atalanta BC",
       "away": "Parma Calcio 1913",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 3,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -496,12 +496,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-11-02T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "FC Lorient",
       "away": "Stade Brestois 29",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -514,12 +514,12 @@
       "league": "Premier League",
       "stage": "Regular Season",
       "start_time": "2026-11-02T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Newcastle United FC",
       "away": "Everton FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -532,12 +532,12 @@
       "league": "La Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-02T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "RC Deportivo La Coruña",
       "away": "CA Osasuna",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -550,12 +550,12 @@
       "league": "Primeira Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-02T20:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Sport Lisboa e Benfica",
       "away": "FC Alverca",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -568,12 +568,12 @@
       "league": "Primeira Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-02T20:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Gil Vicente FC",
       "away": "Vitória SC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -586,12 +586,12 @@
       "league": "Campeonato Brasileiro Série A",
       "stage": "Regular Season",
       "start_time": "2026-11-02T23:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "PAUSED",
       "home": "RB Bragantino",
       "away": "Santos FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -2985,7 +2985,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     },
     {
@@ -3057,6 +3057,16 @@
         },
         {
           "rank": 7,
+          "team": "Everton FC",
+          "wins": 3,
+          "losses": 2,
+          "draws": 4,
+          "points": 13,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 8,
           "team": "AFC Bournemouth",
           "wins": 3,
           "losses": 3,
@@ -3066,7 +3076,7 @@
           "group": ""
         },
         {
-          "rank": 8,
+          "rank": 9,
           "team": "Tottenham Hotspur FC",
           "wins": 3,
           "losses": 3,
@@ -3076,7 +3086,7 @@
           "group": ""
         },
         {
-          "rank": 9,
+          "rank": 10,
           "team": "Aston Villa FC",
           "wins": 3,
           "losses": 3,
@@ -3086,7 +3096,7 @@
           "group": ""
         },
         {
-          "rank": 10,
+          "rank": 11,
           "team": "Hull City AFC",
           "wins": 2,
           "losses": 2,
@@ -3096,7 +3106,7 @@
           "group": ""
         },
         {
-          "rank": 11,
+          "rank": 12,
           "team": "Leeds United FC",
           "wins": 2,
           "losses": 2,
@@ -3106,18 +3116,8 @@
           "group": ""
         },
         {
-          "rank": 12,
-          "team": "Newcastle United FC",
-          "wins": 3,
-          "losses": 3,
-          "draws": 2,
-          "points": 11,
-          "played": 8,
-          "group": ""
-        },
-        {
           "rank": 13,
-          "team": "Ipswich Town FC",
+          "team": "Newcastle United FC",
           "wins": 3,
           "losses": 4,
           "draws": 2,
@@ -3127,12 +3127,12 @@
         },
         {
           "rank": 14,
-          "team": "Everton FC",
-          "wins": 2,
-          "losses": 2,
-          "draws": 4,
-          "points": 10,
-          "played": 8,
+          "team": "Ipswich Town FC",
+          "wins": 3,
+          "losses": 4,
+          "draws": 2,
+          "points": 11,
+          "played": 9,
           "group": ""
         },
         {
@@ -3197,7 +3197,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     },
     {
@@ -3279,6 +3279,16 @@
         },
         {
           "rank": 8,
+          "team": "RC Deportivo La Coruña",
+          "wins": 3,
+          "losses": 3,
+          "draws": 5,
+          "points": 14,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 9,
           "team": "Villarreal CF",
           "wins": 3,
           "losses": 5,
@@ -3288,7 +3298,7 @@
           "group": ""
         },
         {
-          "rank": 9,
+          "rank": 10,
           "team": "RC Celta de Vigo",
           "wins": 2,
           "losses": 3,
@@ -3298,7 +3308,7 @@
           "group": ""
         },
         {
-          "rank": 10,
+          "rank": 11,
           "team": "Deportivo Alavés",
           "wins": 3,
           "losses": 5,
@@ -3308,7 +3318,7 @@
           "group": ""
         },
         {
-          "rank": 11,
+          "rank": 12,
           "team": "Rayo Vallecano de Madrid",
           "wins": 3,
           "losses": 4,
@@ -3318,23 +3328,13 @@
           "group": ""
         },
         {
-          "rank": 12,
+          "rank": 13,
           "team": "Getafe CF",
           "wins": 3,
           "losses": 5,
           "draws": 3,
           "points": 12,
           "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 13,
-          "team": "RC Deportivo La Coruña",
-          "wins": 2,
-          "losses": 3,
-          "draws": 5,
-          "points": 11,
-          "played": 10,
           "group": ""
         },
         {
@@ -3351,10 +3351,10 @@
           "rank": 15,
           "team": "CA Osasuna",
           "wins": 3,
-          "losses": 5,
+          "losses": 6,
           "draws": 2,
           "points": 11,
-          "played": 10,
+          "played": 11,
           "group": ""
         },
         {
@@ -3409,7 +3409,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     },
     {
@@ -3601,7 +3601,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     },
     {
@@ -3735,24 +3735,14 @@
           "rank": 13,
           "team": "Atalanta BC",
           "wins": 3,
-          "losses": 4,
+          "losses": 5,
           "draws": 2,
           "points": 11,
-          "played": 9,
-          "group": ""
-        },
-        {
-          "rank": 14,
-          "team": "US Sassuolo Calcio",
-          "wins": 2,
-          "losses": 5,
-          "draws": 3,
-          "points": 9,
           "played": 10,
           "group": ""
         },
         {
-          "rank": 15,
+          "rank": 14,
           "team": "US Lecce",
           "wins": 3,
           "losses": 7,
@@ -3762,33 +3752,43 @@
           "group": ""
         },
         {
+          "rank": 15,
+          "team": "Parma Calcio 1913",
+          "wins": 2,
+          "losses": 6,
+          "draws": 2,
+          "points": 8,
+          "played": 10,
+          "group": ""
+        },
+        {
           "rank": 16,
+          "team": "ACF Fiorentina",
+          "wins": 2,
+          "losses": 6,
+          "draws": 2,
+          "points": 8,
+          "played": 10,
+          "group": ""
+        },
+        {
+          "rank": 17,
+          "team": "US Sassuolo Calcio",
+          "wins": 2,
+          "losses": 6,
+          "draws": 2,
+          "points": 8,
+          "played": 10,
+          "group": ""
+        },
+        {
+          "rank": 18,
           "team": "AC Monza",
           "wins": 2,
           "losses": 7,
           "draws": 1,
           "points": 7,
           "played": 10,
-          "group": ""
-        },
-        {
-          "rank": 17,
-          "team": "ACF Fiorentina",
-          "wins": 1,
-          "losses": 6,
-          "draws": 3,
-          "points": 6,
-          "played": 10,
-          "group": ""
-        },
-        {
-          "rank": 18,
-          "team": "Parma Calcio 1913",
-          "wins": 1,
-          "losses": 6,
-          "draws": 2,
-          "points": 5,
-          "played": 9,
           "group": ""
         },
         {
@@ -3813,7 +3813,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     },
     {
@@ -3915,16 +3915,26 @@
         },
         {
           "rank": 10,
-          "team": "FC Lorient",
+          "team": "Stade Brestois 29",
           "wins": 3,
-          "losses": 2,
+          "losses": 3,
           "draws": 3,
           "points": 12,
-          "played": 8,
+          "played": 9,
           "group": ""
         },
         {
           "rank": 11,
+          "team": "FC Lorient",
+          "wins": 3,
+          "losses": 3,
+          "draws": 3,
+          "points": 12,
+          "played": 9,
+          "group": ""
+        },
+        {
+          "rank": 12,
           "team": "Toulouse FC",
           "wins": 2,
           "losses": 3,
@@ -3934,7 +3944,7 @@
           "group": ""
         },
         {
-          "rank": 12,
+          "rank": 13,
           "team": "RC Strasbourg Alsace",
           "wins": 3,
           "losses": 5,
@@ -3944,23 +3954,13 @@
           "group": ""
         },
         {
-          "rank": 13,
+          "rank": 14,
           "team": "AJ Auxerre",
           "wins": 3,
           "losses": 5,
           "draws": 1,
           "points": 10,
           "played": 9,
-          "group": ""
-        },
-        {
-          "rank": 14,
-          "team": "Stade Brestois 29",
-          "wins": 2,
-          "losses": 3,
-          "draws": 3,
-          "points": 9,
-          "played": 8,
           "group": ""
         },
         {
@@ -4005,7 +4005,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-02T17:51:47Z",
+      "verified_at": "2026-11-02T23:57:45Z",
       "status": "ok"
     }
   ],
