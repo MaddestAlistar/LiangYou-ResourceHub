@@ -2,138 +2,75 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-05T01:49:11Z",
+  "generated_at": "2026-11-05T09:50:54Z",
   "quota_month": "2026-11",
-  "monthly_credits": 22,
+  "monthly_credits": 25,
   "monthly_cap": 210,
-  "provider_remaining": 477,
+  "provider_remaining": 474,
   "last_checked": {
-    "basketball_nba": "2026-11-05T01:49:11Z",
-    "soccer_epl": "2026-11-04T19:44:37Z",
-    "soccer_uefa_champs_league": "2026-11-03T21:52:26Z"
+    "basketball_nba": "2026-11-05T09:50:54Z",
+    "soccer_epl": "2026-11-05T09:50:54Z",
+    "soccer_uefa_champs_league": "2026-11-05T09:50:54Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 5
+      "count": 2
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "recent",
+      "status": "ok",
       "count": 10
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "inactive",
+      "status": "ok",
       "count": 0
     }
   ],
   "events": [
     {
-      "id": "odds-50bdc20ea9ea3c88d4bfa261b9b2307e",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Denver Nuggets",
-      "away": "Toronto Raptors",
-      "start_time": "2026-11-05T02:00:00Z",
-      "bookmaker": "LowVig.ag",
-      "outcomes": [
-        {
-          "name": "Denver Nuggets",
-          "decimal": 1.5
-        },
-        {
-          "name": "Toronto Raptors",
-          "decimal": 2.75
-        }
-      ],
-      "quote_at": "2026-11-05T01:48:49Z"
-    },
-    {
-      "id": "odds-d3d91c40111aca301d41c9cdb9d64608",
+      "id": "odds-2a76b31e02d1416de069a995589515fc",
       "provider": "the-odds-api",
       "sport": "basketball",
       "league": "NBA",
       "home": "Phoenix Suns",
-      "away": "Portland Trail Blazers",
-      "start_time": "2026-11-05T02:00:00Z",
-      "bookmaker": "BetRivers",
-      "outcomes": [
-        {
-          "name": "Phoenix Suns",
-          "decimal": 2.18
-        },
-        {
-          "name": "Portland Trail Blazers",
-          "decimal": 1.7
-        }
-      ],
-      "quote_at": "2026-11-05T01:48:48Z"
-    },
-    {
-      "id": "odds-6b25f3932db93d4c5ad7658def2645bf",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "San Antonio Spurs",
-      "away": "Dallas Mavericks",
-      "start_time": "2026-11-05T02:30:00Z",
+      "away": "Orlando Magic",
+      "start_time": "2026-11-06T02:10:00Z",
       "bookmaker": "FanDuel",
       "outcomes": [
         {
-          "name": "Dallas Mavericks",
-          "decimal": 5.4
+          "name": "Orlando Magic",
+          "decimal": 1.96
         },
         {
-          "name": "San Antonio Spurs",
-          "decimal": 1.17
+          "name": "Phoenix Suns",
+          "decimal": 1.89
         }
       ],
-      "quote_at": "2026-11-05T01:48:49Z"
+      "quote_at": "2026-11-05T09:50:53Z"
     },
     {
-      "id": "odds-29988f1011d7738962e13e0a0beb693f",
+      "id": "odds-ac38449dd3dfbe1c9b48164b6a41aa83",
       "provider": "the-odds-api",
       "sport": "basketball",
       "league": "NBA",
-      "home": "Sacramento Kings",
-      "away": "Los Angeles Lakers",
-      "start_time": "2026-11-05T03:10:00Z",
+      "home": "Golden State Warriors",
+      "away": "Miami Heat",
+      "start_time": "2026-11-06T03:10:00Z",
       "bookmaker": "DraftKings",
       "outcomes": [
         {
-          "name": "Los Angeles Lakers",
-          "decimal": 1.15
-        },
-        {
-          "name": "Sacramento Kings",
-          "decimal": 5.7
-        }
-      ],
-      "quote_at": "2026-11-05T01:48:48Z"
-    },
-    {
-      "id": "odds-72c786e70ad9360fdc41e4c2a50fa788",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Los Angeles Clippers",
-      "away": "Miami Heat",
-      "start_time": "2026-11-05T03:40:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Los Angeles Clippers",
-          "decimal": 2.72
+          "name": "Golden State Warriors",
+          "decimal": 1.36
         },
         {
           "name": "Miami Heat",
-          "decimal": 1.49
+          "decimal": 3.3
         }
       ],
-      "quote_at": "2026-11-05T01:48:49Z"
+      "quote_at": "2026-11-05T09:50:30Z"
     },
     {
       "id": "odds-586bec023ee8ac2f0645d963bd2c9d25",
@@ -151,14 +88,14 @@
         },
         {
           "name": "Everton",
-          "decimal": 1.69
+          "decimal": 1.68
         },
         {
           "name": "Draw",
           "decimal": 3.8
         }
       ],
-      "quote_at": "2026-11-04T19:42:33Z"
+      "quote_at": "2026-11-05T09:49:27Z"
     },
     {
       "id": "odds-5c87852253fd11eea5d34ad723356607",
@@ -183,7 +120,7 @@
           "decimal": 3.2
         }
       ],
-      "quote_at": "2026-11-04T19:44:28Z"
+      "quote_at": "2026-11-05T09:50:53Z"
     },
     {
       "id": "odds-842fcc5b9feb8c63054a661ad1fc8926",
@@ -197,18 +134,18 @@
       "outcomes": [
         {
           "name": "Arsenal",
-          "decimal": 1.15
+          "decimal": 1.14
         },
         {
           "name": "Hull City",
-          "decimal": 14.5
+          "decimal": 15.0
         },
         {
           "name": "Draw",
-          "decimal": 7.2
+          "decimal": 7.1
         }
       ],
-      "quote_at": "2026-11-04T19:42:33Z"
+      "quote_at": "2026-11-05T09:49:27Z"
     },
     {
       "id": "odds-3903e98a54db0f2cc23095407fe9dad8",
@@ -233,7 +170,7 @@
           "decimal": 3.4
         }
       ],
-      "quote_at": "2026-11-04T19:43:42Z"
+      "quote_at": "2026-11-05T09:50:31Z"
     },
     {
       "id": "odds-59c5f635cfe11613c07e9a5520ced5c1",
@@ -258,7 +195,7 @@
           "decimal": 3.9
         }
       ],
-      "quote_at": "2026-11-04T19:44:28Z"
+      "quote_at": "2026-11-05T09:50:53Z"
     },
     {
       "id": "odds-79ed3df594d7b352ef027128b1ba5d0a",
@@ -283,7 +220,7 @@
           "decimal": 3.7
         }
       ],
-      "quote_at": "2026-11-04T19:44:28Z"
+      "quote_at": "2026-11-05T09:50:53Z"
     },
     {
       "id": "odds-8e3ca98e29be84dd4a882ed05f50fa79",
@@ -308,7 +245,7 @@
           "decimal": 3.7
         }
       ],
-      "quote_at": "2026-11-04T19:42:33Z"
+      "quote_at": "2026-11-05T09:49:27Z"
     },
     {
       "id": "odds-3a4608abdf257d2a0024b944757d9dc9",
@@ -333,7 +270,7 @@
           "decimal": 3.6
         }
       ],
-      "quote_at": "2026-11-04T19:44:28Z"
+      "quote_at": "2026-11-05T09:50:53Z"
     },
     {
       "id": "odds-0cfbab01e152f81e34f9014e02c7eb79",
@@ -358,7 +295,7 @@
           "decimal": 4.2
         }
       ],
-      "quote_at": "2026-11-04T19:42:33Z"
+      "quote_at": "2026-11-05T09:49:27Z"
     },
     {
       "id": "odds-b0a4b5448a7e02d9ad1eaa817599fff0",
@@ -372,18 +309,18 @@
       "outcomes": [
         {
           "name": "Aston Villa",
-          "decimal": 3.02
+          "decimal": 3.04
         },
         {
           "name": "Manchester United",
-          "decimal": 2.15
+          "decimal": 2.14
         },
         {
           "name": "Draw",
           "decimal": 3.55
         }
       ],
-      "quote_at": "2026-11-04T19:42:33Z"
+      "quote_at": "2026-11-05T09:49:27Z"
     }
   ]
 }
