@@ -2,25 +2,25 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-05T17:42:46Z",
+  "generated_at": "2026-11-06T00:19:11Z",
   "quota_month": "2026-11",
-  "monthly_credits": 26,
+  "monthly_credits": 28,
   "monthly_cap": 210,
-  "provider_remaining": 473,
+  "provider_remaining": 471,
   "last_checked": {
-    "basketball_nba": "2026-11-05T17:42:46Z",
-    "soccer_epl": "2026-11-05T09:50:54Z",
+    "basketball_nba": "2026-11-06T00:19:11Z",
+    "soccer_epl": "2026-11-06T00:19:11Z",
     "soccer_uefa_champs_league": "2026-11-05T09:50:54Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 2
+      "count": 9
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "recent",
+      "status": "ok",
       "count": 10
     },
     {
@@ -42,14 +42,14 @@
       "outcomes": [
         {
           "name": "Orlando Magic",
-          "decimal": 1.93
+          "decimal": 1.96
         },
         {
           "name": "Phoenix Suns",
-          "decimal": 1.93
+          "decimal": 1.89
         }
       ],
-      "quote_at": "2026-11-05T17:42:16Z"
+      "quote_at": "2026-11-06T00:18:45Z"
     },
     {
       "id": "odds-ac38449dd3dfbe1c9b48164b6a41aa83",
@@ -63,14 +63,161 @@
       "outcomes": [
         {
           "name": "Golden State Warriors",
-          "decimal": 1.36
+          "decimal": 1.6
         },
         {
           "name": "Miami Heat",
-          "decimal": 3.28
+          "decimal": 2.4
         }
       ],
-      "quote_at": "2026-11-05T17:41:29Z"
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-85869b2fdc16ef10d3e2582bf05ead95",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Cleveland Cavaliers",
+      "away": "Philadelphia 76ers",
+      "start_time": "2026-11-07T00:40:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Cleveland Cavaliers",
+          "decimal": 2.05
+        },
+        {
+          "name": "Philadelphia 76ers",
+          "decimal": 1.81
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-62a92e31b546d31ba57caf792815bf65",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Dallas Mavericks",
+      "away": "Utah Jazz",
+      "start_time": "2026-11-07T01:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Dallas Mavericks",
+          "decimal": 1.41
+        },
+        {
+          "name": "Utah Jazz",
+          "decimal": 3.03
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-86684f64a8ec8385537a36c3b3768935",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Memphis Grizzlies",
+      "away": "Oklahoma City Thunder",
+      "start_time": "2026-11-07T01:10:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Memphis Grizzlies",
+          "decimal": 2.44
+        },
+        {
+          "name": "Oklahoma City Thunder",
+          "decimal": 1.58
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:45Z"
+    },
+    {
+      "id": "odds-1c60a090180de530cfe273a5d6a381e6",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Milwaukee Bucks",
+      "away": "Toronto Raptors",
+      "start_time": "2026-11-07T01:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Milwaukee Bucks",
+          "decimal": 2.97
+        },
+        {
+          "name": "Toronto Raptors",
+          "decimal": 1.42
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-5e4708fadda49a3c06fd7ac50414020e",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "New Orleans Pelicans",
+      "away": "Minnesota Timberwolves",
+      "start_time": "2026-11-07T01:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Minnesota Timberwolves",
+          "decimal": 1.61
+        },
+        {
+          "name": "New Orleans Pelicans",
+          "decimal": 2.39
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-83d77fe350d56a036fd7a3404e78249a",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Los Angeles Lakers",
+      "away": "Portland Trail Blazers",
+      "start_time": "2026-11-07T03:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Los Angeles Lakers",
+          "decimal": 1.77
+        },
+        {
+          "name": "Portland Trail Blazers",
+          "decimal": 2.1
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
+    },
+    {
+      "id": "odds-d24eb5492983d6e28be3b96df396fa12",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Sacramento Kings",
+      "away": "San Antonio Spurs",
+      "start_time": "2026-11-07T03:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Sacramento Kings",
+          "decimal": 7.1
+        },
+        {
+          "name": "San Antonio Spurs",
+          "decimal": 1.11
+        }
+      ],
+      "quote_at": "2026-11-06T00:18:44Z"
     },
     {
       "id": "odds-586bec023ee8ac2f0645d963bd2c9d25",
@@ -84,18 +231,18 @@
       "outcomes": [
         {
           "name": "Coventry City",
-          "decimal": 4.4
+          "decimal": 4.6
         },
         {
           "name": "Everton",
-          "decimal": 1.68
+          "decimal": 1.71
         },
         {
           "name": "Draw",
-          "decimal": 3.8
+          "decimal": 3.9
         }
       ],
-      "quote_at": "2026-11-05T09:49:27Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-5c87852253fd11eea5d34ad723356607",
@@ -109,18 +256,18 @@
       "outcomes": [
         {
           "name": "Leeds United",
-          "decimal": 2.6
+          "decimal": 2.75
         },
         {
           "name": "Tottenham Hotspur",
-          "decimal": 2.7
+          "decimal": 2.55
         },
         {
           "name": "Draw",
-          "decimal": 3.2
+          "decimal": 3.3
         }
       ],
-      "quote_at": "2026-11-05T09:50:53Z"
+      "quote_at": "2026-11-06T00:19:08Z"
     },
     {
       "id": "odds-842fcc5b9feb8c63054a661ad1fc8926",
@@ -134,18 +281,18 @@
       "outcomes": [
         {
           "name": "Arsenal",
-          "decimal": 1.14
+          "decimal": 1.15
         },
         {
           "name": "Hull City",
-          "decimal": 15.0
+          "decimal": 14.5
         },
         {
           "name": "Draw",
-          "decimal": 7.1
+          "decimal": 7.0
         }
       ],
-      "quote_at": "2026-11-05T09:49:27Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-3903e98a54db0f2cc23095407fe9dad8",
@@ -159,18 +306,18 @@
       "outcomes": [
         {
           "name": "Fulham",
-          "decimal": 2.0
+          "decimal": 1.93
         },
         {
           "name": "Newcastle United",
-          "decimal": 3.0
+          "decimal": 3.2
         },
         {
           "name": "Draw",
           "decimal": 3.4
         }
       ],
-      "quote_at": "2026-11-05T09:50:31Z"
+      "quote_at": "2026-11-06T00:19:08Z"
     },
     {
       "id": "odds-59c5f635cfe11613c07e9a5520ced5c1",
@@ -188,14 +335,14 @@
         },
         {
           "name": "Nottingham Forest",
-          "decimal": 4.6
+          "decimal": 4.7
         },
         {
           "name": "Draw",
-          "decimal": 3.9
+          "decimal": 4.0
         }
       ],
-      "quote_at": "2026-11-05T09:50:53Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-79ed3df594d7b352ef027128b1ba5d0a",
@@ -209,18 +356,18 @@
       "outcomes": [
         {
           "name": "Bournemouth",
-          "decimal": 1.87
+          "decimal": 1.91
         },
         {
           "name": "Ipswich Town",
-          "decimal": 3.7
+          "decimal": 3.8
         },
         {
           "name": "Draw",
-          "decimal": 3.7
+          "decimal": 3.6
         }
       ],
-      "quote_at": "2026-11-05T09:50:53Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-8e3ca98e29be84dd4a882ed05f50fa79",
@@ -234,18 +381,18 @@
       "outcomes": [
         {
           "name": "Brentford",
-          "decimal": 3.6
+          "decimal": 3.5
         },
         {
           "name": "Brighton and Hove Albion",
-          "decimal": 1.88
+          "decimal": 1.9
         },
         {
           "name": "Draw",
           "decimal": 3.7
         }
       ],
-      "quote_at": "2026-11-05T09:49:27Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-3a4608abdf257d2a0024b944757d9dc9",
@@ -259,18 +406,18 @@
       "outcomes": [
         {
           "name": "Chelsea",
-          "decimal": 2.0
+          "decimal": 1.95
         },
         {
           "name": "Sunderland",
-          "decimal": 3.5
+          "decimal": 3.6
         },
         {
           "name": "Draw",
           "decimal": 3.6
         }
       ],
-      "quote_at": "2026-11-05T09:50:53Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-0cfbab01e152f81e34f9014e02c7eb79",
@@ -284,18 +431,18 @@
       "outcomes": [
         {
           "name": "Crystal Palace",
-          "decimal": 4.9
+          "decimal": 5.0
         },
         {
           "name": "Liverpool",
-          "decimal": 1.58
+          "decimal": 1.55
         },
         {
           "name": "Draw",
           "decimal": 4.2
         }
       ],
-      "quote_at": "2026-11-05T09:49:27Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     },
     {
       "id": "odds-b0a4b5448a7e02d9ad1eaa817599fff0",
@@ -309,18 +456,18 @@
       "outcomes": [
         {
           "name": "Aston Villa",
-          "decimal": 3.04
+          "decimal": 3.02
         },
         {
           "name": "Manchester United",
-          "decimal": 2.14
+          "decimal": 2.15
         },
         {
           "name": "Draw",
           "decimal": 3.55
         }
       ],
-      "quote_at": "2026-11-05T09:49:27Z"
+      "quote_at": "2026-11-06T00:19:09Z"
     }
   ]
 }
