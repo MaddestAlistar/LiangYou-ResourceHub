@@ -639,6 +639,7 @@
     try{key.setPointerCapture(event.pointerId);}catch{}
     const instance=emulator;
     heldPads.set(event.pointerId,{name,instance,start:Date.now()});
+    simpleStatus("方向键已按下："+({up:"上",down:"下",left:"左",right:"右"}[name]||name)+"，松开手指即停止。");
     instance.keyboard_send_scancodes([0xe0,make]).catch(()=>{});
   });
   function releasePad(event) {
