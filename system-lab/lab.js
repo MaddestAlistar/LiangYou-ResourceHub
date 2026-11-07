@@ -544,30 +544,54 @@
       feedback("按键未发送成功：" + (error?.message || "模拟器暂不可用"));
     }
   }
-  async function runQuickCommand(cmd) {
+  async function runQuickCommand(cmd,level=null) {
     if(!emulator || !ready || !isRunning || !guestReady || commandBusy || graphical(current)) return;
-    if(!GUIDES[current].commands.some(item => item.value === cmd)) return;
+    const minePreset=cmd==="minesw~1" && ["1","2","3"].includes(level);
+    if(!GUIDES[current].commands.some(item => item.value === cmd) && !minePreset) return;
     if(current==="freedos" && gamePlaying) {
-      simpleStatus("先退出当前游戏并确认回到 A:\\>，再点击其他游戏。不能退出就点重启。");
+      simpleStatus("已经在游戏中了。点「退出游戏 · 返回 DOS」后再选另一款。");
       return;
     }
-    const instance = emulator;
-    commandBusy = true;
+    const instance=emulator;
+    commandBusy=true;
     updateGuideButtons();
-    feedback("正在发送 " + cmd + " 并执行…");
+    feedback(minePreset ? "正在启动扫雷并选择难度…" : "正在发送 "+cmd+"…");
     try {
-      await instance.keyboard_send_text(cmd, 15);
-      if(instance !== emulator || !isRunning) return;
-      await instance.keyboard_send_scancodes(KEY_CODES.enter, 15);
-      if(instance === emulator) {
-        feedback("已输入并执行「" + cmd + "」。请看上方黑色窗口的输出。");
-        if(current==="freedos" && GAME_COMMANDS.has(cmd)) gamePlaying=true;
-        simpleStatus(GAME_COMMANDS.has(cmd) ? "已尝试启动「"+cmd+"」。游戏按键因游戏而异，用下方方向键尝试，换游戏前先退出。" : "已执行「" + cmd + "」，请查看屏幕内容。");
+      await instance.keyboard_send_text(cmd,15);
+      if(instance!==emulator || !isRunning)return;
+      await instance.keyboard_send_scancodes(KEY_CODES.enter,15);
+      if(instance!==emulator || !isRunning)return;
+      if(minePreset) {
+        // Confirm the real GMB_MINE menu before selecting the difficulty.
+        // Its labels are 1=easy, 2=medium, 3=hard. These are single keys;
+        // pressing Enter afterwards may act on an already started board.
+        const begin=Date.now();
+        let menuReady=false;
+        while(Date.now()-begin<8000) {
+          if(instance!==emulator || !isRunning)return;
+          const text=$("screen_container").textContent||"";
+          if(/GMB_MINE|easy game/.test(text)){menuReady=true;break;}
+          await new Promise(resolve=>setTimeout(resolve,110));
+        }
+        if(!menuReady)throw new Error("未检测到扫雷难度菜单。可以点「退出游戏 · 返回 DOS」后重试。");
+        await instance.keyboard_send_text(level,45);
+      }
+      if(instance===emulator) {
+        if(current==="freedos" && GAME_COMMANDS.has(cmd)){gamePlaying=true;activeGame=cmd;}
+        const name={1:"简单",2:"中等",3:"困难"}[level];
+        feedback(minePreset ? "已向扫雷发送「"+name+"」难度，请查看画面。" : "已执行「"+cmd+"」，请查看画面。");
+        simpleStatus(minePreset
+          ? "扫雷 "+name+" 已选择：方向键移动、空格翻开、Tab 插旗。退出点「返回 DOS」。"
+          : GAME_COMMANDS.has(cmd)
+          ? "已尝试启动「"+cmd+"」。如果 Esc 无效，点「退出游戏 · 返回 DOS」。"
+          : "已执行「"+cmd+"」，请查看画面。");
       }
     } catch(error) {
-      feedback("快捷命令未执行成功：" + (error?.message || "模拟器暂不可用"));
+      feedback("操作未完成："+(error?.message||"请重新启动"));
+      simpleStatus("操作未完成，可以点击「退出游戏 · 返回 DOS」后再试。");
+      if(minePreset && instance===emulator){gamePlaying=true;activeGame=cmd;}
     } finally {
-      commandBusy = false;
+      commandBusy=false;
       updateGuideButtons();
     }
   }
@@ -582,13 +606,16 @@
   $("primaryAction").addEventListener("click", () => {
     if(!guestReady || !ready || !isRunning || commandBusy) return;
     if(current === "freedos") {
-      if(gamePlaying) {pressVirtualKey("esc"); gamePlaying=false; simpleStatus("已发送 Esc，请看屏幕是否回到 A:\\>。未退出可尝试 Q 或重启。");updateSimpleUI();}
+      if(gamePlaying) {
+        simpleStatus("正在重启 FreeDOS 以退出游戏。屏幕重新出现 A:\\> 即可选择其他游戏。");
+        launch("freedos");
+      }
       else runQuickCommand("dir");
     } else if(graphical(current)) clickMouse("left");
   });
   $("easyActions").addEventListener("click",event=>{
     const button=event.target.closest("[data-easycmd]");
-    if(button && !button.disabled)runQuickCommand(button.dataset.easycmd);
+    if(button && !button.disabled)runQuickCommand(button.dataset.easycmd,button.dataset.level||null);
   });
   $("mouseControls").addEventListener("click",event=>{
     const button=event.target.closest("[data-mouse]");
