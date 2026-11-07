@@ -35,6 +35,7 @@ jobs:
           node --test scripts/test_tech_news.mjs
           node scripts/test_china_performance.mjs
           node --check app.js
+          node --check system-lab/lab.js
           node --check design.js
           node --check navigation.js
           node --check bookmark.js
