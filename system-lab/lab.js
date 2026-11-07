@@ -4,6 +4,25 @@
   const $ = id => document.getElementById(id);
   const BASE = "https://raw.githubusercontent.com/copy/images/master/";
   const UPSTREAM = "https://cdn.jsdelivr.net/npm/v86@0.5.473/";
+  const UNPKG = "https://unpkg.com/v86@0.5.473/";
+  const ASSETS = Object.freeze({
+    seabios:[
+      "https://cdn.jsdelivr.net/gh/copy/v86@master/bios/seabios.bin",
+      "https://raw.githubusercontent.com/copy/v86/master/bios/seabios.bin"
+    ],
+    vgabios:[
+      "https://cdn.jsdelivr.net/gh/copy/v86@master/bios/vgabios.bin",
+      "https://raw.githubusercontent.com/copy/v86/master/bios/vgabios.bin"
+    ],
+    image: name => [
+      "https://cdn.jsdelivr.net/gh/copy/images@master/" + name,
+      "https://raw.githubusercontent.com/copy/images/master/" + name
+    ],
+    wasm:[
+      UPSTREAM + "build/v86.wasm",
+      UNPKG + "build/v86.wasm"
+    ]
+  });
   const SYSTEMS = Object.freeze({
     freedos: {name:"FreeDOS", type:"fda", file:"freedos722.img", memory:32, vga:4},
     kolibri: {name:"KolibriOS", type:"fda", file:"kolibri.img", memory:64, vga:8},
@@ -78,11 +97,73 @@
   let commandBusy = false;
   let gamePlaying = false;
   let bootMonitor = null;
+  const pendingDownloads = new Set();
+  let loadingTimer = null;
   const controls = ["pause","resume","restart","fullscreen","exit","typeText","sendText","sendEnter"];
   const status = (message, live = false) => {
     $("machineStatus").textContent = message;
     $("led").classList.toggle("live", live);
   };
+
+  const showLoading = (title,detail = "") => {
+    $("loadingCover").hidden = false;
+    $("loadingTitle").textContent = title;
+    $("loadingDetail").textContent = detail;
+    $("loadingCover").classList.remove("load-failed");
+    status(title);
+    simpleStatus(detail || title);
+  };
+  const hideLoading = () => {
+    $("loadingCover").hidden = true;
+    $("loadingCover").classList.remove("load-failed");
+  };
+  function cancelDownloads() {
+    for(const controller of pendingDownloads) controller.abort();
+    pendingDownloads.clear();
+    if(loadingTimer) {clearTimeout(loadingTimer);loadingTimer=null;}
+  }
+  async function fetchAsset(label,urls,minSize,token) {
+    const failures = [];
+    for(let i=0;i<urls.length;i++) {
+      if(token !== generation) throw new Error("已取消旧的加载任务");
+      const controller = new AbortController();
+      pendingDownloads.add(controller);
+      const timer = setTimeout(()=>controller.abort(),23000);
+      try {
+        showLoading("正在获取" + label, i ? "第一个下载地址连接失败，已自动切换备用地址…" : "下载由访客设备完成，不会运行云服务器。");
+        const response = await fetch(urls[i], {mode:"cors",cache:"default",signal:controller.signal});
+        if(!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.arrayBuffer();
+        if(data.byteLength < minSize) throw new Error("文件内容不完整");
+        if(token !== generation) throw new Error("已取消旧的加载任务");
+        return {buffer:data,url:urls[i]};
+      } catch(error) {
+        if(token !== generation) throw error;
+        failures.push((i===0?"主地址":"备用地址")+": "+(error?.message||String(error)));
+      } finally {
+        clearTimeout(timer);
+        pendingDownloads.delete(controller);
+      }
+    }
+    throw new Error(label+"下载失败（"+failures.join("；")+"）。请检查网络，或稍后重新尝试。");
+  }
+  async function prepareAssets(config,token) {
+    let completed = 0;
+    async function one(label,urls,min) {
+      const value = await fetchAsset(label,urls,min,token);
+      completed += 1;
+      if(token === generation) showLoading("资源准备中 " + completed + "/4","已取得"+label+"，正在准备剩余文件…");
+      return value;
+    }
+    const [bios,vga,image,wasm] = await Promise.all([
+      one("系统 BIOS",ASSETS.seabios,50000),
+      one("显示 BIOS",ASSETS.vgabios,10000),
+      one(config.name+"镜像",ASSETS.image(config.file),100000),
+      one("运行核心 WASM",ASSETS.wasm,1000000)
+    ]);
+    return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk:{buffer:image.buffer},wasm_path:wasm.url};
+  }
+
   const simpleStatus = text => { $("playStatus").textContent = text; };
   function updateSimpleUI() {
     const canUse = ready && isRunning;
@@ -208,6 +289,7 @@
   const resetUI = () => {
     ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false;
     if(bootMonitor) { clearInterval(bootMonitor); bootMonitor = null; }
+    cancelDownloads();
     controls.forEach(id => $(id).disabled = true);
     $("screenShell").classList.remove("running");
     document.querySelectorAll(".system-card").forEach(c => c.classList.remove("active"));
@@ -215,23 +297,47 @@
   };
   const fail = error => {
     const detail = error && error.message ? error.message : String(error || "未知错误");
-    status("启动未完成");
+    cancelDownloads();
+    status("启动未完成 · 可点击重新尝试");
     $("errorBox").hidden = false;
-    $("errorMessage").textContent = "无法加载模拟器或系统镜像。可能是网络跨域策略、浏览器限制或第三方资源不可用。" + " 详情：" + detail;
-    $("runtimeHint").textContent = "如遇 iOS Safari 兼容性问题，可尝试电脑浏览器或打开 v86 官方演示。";
+    $("errorMessage").textContent = "系统暂时没能启动。原因：" + detail;
+    $("loadingCover").hidden = false;
+    $("loadingCover").classList.add("load-failed");
+    $("loadingTitle").textContent = "没有启动成功";
+    $("loadingDetail").textContent = "可能是网络连接或 iPhone 浏览器限制。点击「重新尝试启动」，网页将自动重新选择下载地址。";
+    $("runtimeHint").textContent = "已经停止等待，不会一直停留在「正在下载」。如仍失败，可尝试刷新页面或打开官方 v86 演示。";
+    simpleStatus("加载失败，点击上方「重新尝试启动」可再次尝试。");
   };
   function loadRuntime() {
     if (window.V86 || window.V86Starter) return Promise.resolve();
     if (scriptPromise) return scriptPromise;
-    scriptPromise = new Promise((resolve,reject) => {
+    const sources = [UPSTREAM+"build/libv86.js",UNPKG+"build/libv86.js"];
+    const attempt = url => new Promise((resolve,reject)=>{
       const script = document.createElement("script");
-      const timer = setTimeout(() => reject(new Error("模拟器核心加载超时")), 30000);
-      script.src = UPSTREAM + "build/libv86.js";
-      script.async = true;
-      script.onload = () => { clearTimeout(timer); (window.V86 || window.V86Starter) ? resolve() : reject(new Error("无法找到 v86 模拟器接口")); };
-      script.onerror = () => { clearTimeout(timer); reject(new Error("无法获取 v86 模拟器脚本")); };
+      let done = false;
+      const finish = (ok,reason) => {
+        if(done) return;
+        done = true;
+        clearTimeout(timer);
+        if(!ok) script.remove();
+        ok ? resolve() : reject(new Error(reason));
+      };
+      const timer = setTimeout(()=>finish(false,"模拟器脚本加载超时"),18000);
+      script.src=url;
+      script.async=true;
+      script.onload=()=>finish(!!(window.V86||window.V86Starter),"脚本未提供模拟器接口");
+      script.onerror=()=>finish(false,"当前镜像站点无法连接");
       document.head.append(script);
-    }).catch(error => {scriptPromise = null; throw error;});
+    });
+    scriptPromise = (async () => {
+      for(let i=0;i<sources.length;i++) {
+        showLoading("正在获取模拟器程序",i?"已自动切换备用程序下载地址…":"即将准备系统核心和开机文件…");
+        try {await attempt(sources[i]);return;}catch(error) {
+          if(window.V86 || window.V86Starter) return;
+          if(i===sources.length-1) throw new Error("模拟器程序下载失败：" + error.message);
+        }
+      }
+    })().catch(error=>{scriptPromise=null;throw error;});
     return scriptPromise;
   }
   async function stopExisting() {
@@ -248,6 +354,7 @@
     $("errorBox").hidden = true;
     $("machineName").textContent = config.name;
     resetUI();
+    showLoading("正在准备系统…","首次运行需要下载几个系统文件。若下载失败会自动切换备用地址。");
     renderGuide(id);
     simpleStatus("系统正在启动，等屏幕出现提示后，点击旁边的大按钮即可。");
     document.querySelector('[data-system="' + id + '"]').classList.add("active");
@@ -258,21 +365,23 @@
       if(token !== generation) return;
       await loadRuntime();
       if(token !== generation) return;
-      status("正在下载系统镜像并启动…");
+      const assets = await prepareAssets(config,token);
+      if(token !== generation) return;
+      showLoading("系统文件已准备完成","正在启动虚拟机，出现开机画面后即可操作。");
       const Emulator = window.V86 || window.V86Starter;
       const options = {
-        wasm_path: UPSTREAM + "build/v86.wasm",
+        wasm_path: assets.wasm_path,
         memory_size: config.memory * 1024 * 1024,
         vga_memory_size: config.vga * 1024 * 1024,
         screen_container: $("screen_container"),
-        bios: {url:"https://raw.githubusercontent.com/copy/v86/master/bios/seabios.bin"},
-        vga_bios: {url:"https://raw.githubusercontent.com/copy/v86/master/bios/vgabios.bin"},
+        bios: assets.bios,
+        vga_bios: assets.vga_bios,
         autostart:true,
         boot_order:config.type === "cdrom" ? 0x132 : 0x213,
         disable_keyboard:false,
         disable_mouse:false
       };
-      options[config.type] = {url:BASE + config.file};
+      options[config.type] = assets.disk;
       const instance = new Emulator(options);
       if(token !== generation) { await instance.destroy(); return; }
       emulator = instance;
@@ -287,6 +396,7 @@
       instance.add_listener("emulator-started", () => {
         if(token !== generation) return;
         ready = true; isRunning = true;
+        hideLoading();
         status("虚拟机运行中 · 系统正在引导",true);
         buttons();
         // v86's emulator-started event only means the emulated CPU is running.
@@ -335,9 +445,9 @@
         buttons();
       });
       // Don't claim success until the engine explicitly reports it has started.
-      setTimeout(() => {
+      loadingTimer = setTimeout(() => {
         if(token !== generation || isRunning) return;
-        if(!ready) fail(new Error("等待模拟器启动超时；可能是 WASM/CORS 或移动设备兼容性问题"));
+        fail(new Error("文件已下载，但虚拟机在 45 秒内没有开始运行。可能是浏览器 WebAssembly 内存或兼容性问题。"));
       }, 45000);
     } catch(error) {
       if(token === generation) { resetUI(); fail(error); }
@@ -350,6 +460,8 @@
   $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
   $("fullscreen").addEventListener("click",toggleImmersive);
   $("screenMode").addEventListener("click",toggleImmersive);
+  $("retryLoading").addEventListener("click",()=>{if(current) launch(current);});
+  $("retryFailed").addEventListener("click",()=>{if(current) launch(current);});
   document.addEventListener("fullscreenchange",() => {
     if(!document.fullscreenElement && document.body.classList.contains("lab-immersive")) setImmersive(false);
   });
