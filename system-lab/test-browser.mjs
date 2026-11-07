@@ -32,7 +32,7 @@ try {
   await page.locator('[data-launch="linux"]').click();
   await page.waitForFunction(() => document.querySelector('#machineName')?.textContent==='Buildroot Linux' && document.querySelector('#machineStatus')?.textContent?.includes('运行中'), null, {timeout:90000});
   // Require a login or shell prompt, not just kernel initialization.
-  await page.waitForFunction(() => /(?:login:\\s*$|(?:^|\\n)[^\\n]*[#$]\\s*$)/m.test(document.querySelector('#screen_container')?.textContent || ''), null, {timeout:100000});
+  await page.waitForFunction(() => /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(document.querySelector('#screen_container')?.textContent || ''), null, {timeout:100000});
   console.log('Buildroot Linux login/shell prompt reached');
   await page.screenshot({path:'/tmp/ly-web-os-linux.png',fullPage:true});
   const mobile = await browser.newPage({...devices['iPhone 13']});
