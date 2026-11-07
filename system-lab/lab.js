@@ -114,10 +114,10 @@
           const text = screen.textContent || "";
           const canvas = screen.querySelector("canvas");
           const graphics = canvas && getComputedStyle(canvas).display !== "none" && canvas.width >= 320 && canvas.height >= 200;
-          if(id === "freedos" && /A:\\\\>/.test(text)) {
+          if(id === "freedos" && /A:\\>/.test(text)) {
             status("DOS 提示符已就绪 · 本地运行",true);
             clearInterval(monitor);
-          } else if(id === "linux" && /(?:login:\\s*$|(?:^|\\n)[^\\n]*[#$]\\s*$)/m.test(text)) {
+          } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$)/m.test(text)) {
             status("Linux 命令行已就绪 · 本地运行",true);
             clearInterval(monitor);
           } else if(id === "kolibri" && graphics) {
