@@ -30,6 +30,8 @@ jobs:
           sleep 2
       - name: Boot FreeDOS and KolibriOS in a real browser
         run: node system-lab/test-browser.mjs
+      - name: Verify failed downloads show retry and recover
+        run: node system-lab/test-loading-recovery.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
