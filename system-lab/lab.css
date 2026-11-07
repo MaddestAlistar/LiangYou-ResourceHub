@@ -116,3 +116,8 @@ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{marg
  body.lab-immersive #machine .play-minitools button,#machine:fullscreen .play-minitools button{min-height:29px}
  body.lab-immersive #machine .play-status,#machine:fullscreen .play-status{font-size:10px;margin:3px 0}
 }
+
+/* Only two rows are needed for the cross-shaped direction pad. */
+.dpad{grid-template-rows:repeat(2,47px)}
+@media(max-width:480px){.dpad{grid-template-rows:repeat(2,43px)}}
+@media(max-height:580px) and (orientation:landscape){body.lab-immersive #machine .dpad,#machine:fullscreen .dpad{grid-template-rows:repeat(2,36px)}}
