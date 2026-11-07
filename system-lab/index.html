@@ -7,7 +7,7 @@
   <meta name="description" content="良友科技在线系统实验室：在浏览器本地运行 FreeDOS、KolibriOS、ReactOS、Windows 95/98 和 Android-x86，无需云端虚拟机。">
   <title>在线系统实验室 | 良友科技</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./lab.css?v=20261108r4">
+  <link rel="stylesheet" href="./lab.css?v=20261108r5">
   <script defer src="./lab.js?v=20261108r4"></script>
 </head>
 <body>
@@ -42,40 +42,41 @@
         </article>
         <article class="system-card" data-system="reactos">
           <div class="system-icon reactos" aria-hidden="true">▦</div>
-          <div class="card-top"><h3>ReactOS</h3><span class="tag">开源 Windows 风格</span></div>
+          <div class="card-top"><h3>ReactOS</h3><span class="tag">开源桌面 · 实验</span></div>
           <p>体验带开始菜单、桌面和文件管理器的免费开源系统。首次开机会较慢，手机可能受内存限制。</p>
           <div class="detail"><span>约 700 MB 虚拟磁盘（按需分块）</span><span>建议电脑使用</span></div>
-          <button class="launch" type="button" data-launch="reactos">试运行 ReactOS <span aria-hidden="true">↗</span></button>
-          <a class="os-official" href="https://copy.sh/v86/?profile=reactos" target="_blank" rel="noopener noreferrer">官方演示备用入口</a>
+          <a class="launch" href="https://copy.sh/v86/?profile=reactos" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
+          <button class="launch launch-secondary" type="button" data-launch="reactos">本站实验运行（尚未通过桌面测试）</button>
         </article>
         <article class="system-card" data-system="win95">
           <div class="system-icon windows" aria-hidden="true">95</div>
           <div class="card-top"><h3>Windows 95</h3><span class="tag">自备合法镜像</span></div>
           <p>体验经典 Windows 桌面。本站不预装微软系统；选择你合法持有的已安装启动磁盘镜像才能在本页运行。</p>
           <div class="detail"><span>需启动盘 .img / .vhd</span><span>大文件建议电脑</span></div>
-          <button class="launch" type="button" data-local="win95">选择镜像并启动 <span aria-hidden="true">↗</span></button>
-          <a class="os-official" href="https://copy.sh/v86/?profile=windows95" target="_blank" rel="noopener noreferrer">查看 v86 官方 Windows 95 演示</a>
+          <a class="launch" href="https://copy.sh/v86/?profile=windows95" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
+          <button class="launch launch-secondary" type="button" data-local="win95">在本站加载自己的合法启动盘</button>
         </article>
         <article class="system-card" data-system="win98">
           <div class="system-icon windows" aria-hidden="true">98</div>
           <div class="card-top"><h3>Windows 98</h3><span class="tag">自备合法镜像</span></div>
           <p>同样支持本地加载合法持有的启动盘文件。普通安装 ISO 不是已经安装好的系统，不能直接进入桌面。</p>
           <div class="detail"><span>需启动盘 .img / .vhd</span><span>大文件建议电脑</span></div>
-          <button class="launch" type="button" data-local="win98">选择镜像并启动 <span aria-hidden="true">↗</span></button>
-          <a class="os-official" href="https://copy.sh/v86/?profile=windows98" target="_blank" rel="noopener noreferrer">查看 v86 官方 Windows 98 演示</a>
+          <a class="launch" href="https://copy.sh/v86/?profile=windows98" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
+          <button class="launch launch-secondary" type="button" data-local="win98">在本站加载自己的合法启动盘</button>
         </article>
         <article class="system-card" data-system="android">
           <div class="system-icon android" aria-hidden="true">A</div>
           <div class="card-top"><h3>Android-x86</h3><span class="tag">早期安卓 · 实验</span></div>
           <p>在浏览器里体验老版安卓。1.6 版本更轻量；4.4 需要读取更多镜像数据，均不代表能运行现代 APK。</p>
           <div class="detail"><span>1.6：约 52 MB</span><span>4.4：约 236 MB</span><span>按需分块加载</span></div>
-          <button class="launch" type="button" data-launch="android">试运行 Android 1.6 <span aria-hidden="true">↗</span></button>
-          <button class="launch launch-secondary" type="button" data-launch="android44">实验运行 Android 4.4 <span aria-hidden="true">↗</span></button>
-          <a class="os-official" href="https://copy.sh/v86/?profile=android" target="_blank" rel="noopener noreferrer">官方安卓演示备用入口</a>
+          <a class="launch" href="https://copy.sh/v86/?profile=android" target="_blank" rel="noopener noreferrer">打开 v86 官方 Android 1.6 演示 <span aria-hidden="true">↗</span></a>
+          <a class="os-official" href="https://copy.sh/v86/?profile=android4" target="_blank" rel="noopener noreferrer">官方 Android 4.4 演示</a>
+          <button class="launch launch-secondary" type="button" data-launch="android">本站实验运行 Android 1.6</button>
+          <button class="launch launch-secondary" type="button" data-launch="android44">本站实验运行 Android 4.4</button>
         </article>
       </div>
       <input id="localDiskInput" type="file" accept=".img,.vhd,.bin" hidden aria-label="选择本地 Windows 启动磁盘镜像">
-      <p class="system-legal">说明：Windows 95/98 版权属于微软，本站不提供系统镜像。选择的文件只在访客浏览器本地读取，不上传服务器。ReactOS 和 Android 通过 v86 官方演示镜像的分块资源加载，移动端可能无法流畅运行。</p>
+      <p class="system-legal">说明：Windows 95/98 版权属于微软，本站不提供系统镜像。选择的文件只在访客浏览器本地读取，不上传服务器。ReactOS 和 Android 官方演示由 v86 维护；本站另提供尚未通过桌面可用性验证的实验模式。移动端可能因内存或兼容性限制无法启动。</p>
     </section>
     <section class="wrap stage" id="runtime" aria-labelledby="runtime-title">
       <div class="section-head"><div><p class="kicker">LOCAL VIRTUAL MACHINE</p><h2 id="runtime-title">系统运行窗口</h2></div><a class="source" href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">官方 v86 演示 ↗</a></div>
