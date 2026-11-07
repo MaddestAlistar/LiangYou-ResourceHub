@@ -81,7 +81,7 @@ try {
   await mobile.goto(url, {waitUntil:'domcontentloaded'});
   const layout = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth, viewport:innerWidth, cardCount:document.querySelectorAll('.system-card').length}));
   console.log('Mobile layout:',layout);
-  if(layout.document > layout.viewport + 5 || layout.cardCount !== 5) throw Error('Mobile screen layout overflow or missing system cards');
+  if(layout.document > layout.viewport + 5 || layout.cardCount !== 6) throw Error('Mobile screen layout overflow or missing system cards');
   await mobile.locator('[data-launch="freedos"]').click();
   if(!(await mobile.locator('#guideTitle').textContent()).includes('FreeDOS')) throw Error('Mobile guide did not update on launch');
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
