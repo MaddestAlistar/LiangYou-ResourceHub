@@ -76,12 +76,74 @@
   let isRunning = false;
   let guestReady = false;
   let commandBusy = false;
+  let gamePlaying = false;
   let bootMonitor = null;
   const controls = ["pause","resume","restart","fullscreen","exit","typeText","sendText","sendEnter"];
   const status = (message, live = false) => {
     $("machineStatus").textContent = message;
     $("led").classList.toggle("live", live);
   };
+  const simpleStatus = text => { $("playStatus").textContent = text; };
+  function updateSimpleUI() {
+    const canUse = ready && isRunning;
+    const btn = $("primaryAction");
+    const isReady = canUse && guestReady;
+    $("screenMode").disabled = !current;
+    $("padEnter").disabled = !canUse;
+    $("padEsc").disabled = !canUse;
+    $("dpad").querySelectorAll("[data-padkey]").forEach(key => { key.disabled = !canUse; });
+    btn.disabled = !isReady || commandBusy;
+    if(!current) {
+      $("simpleStep").textContent = "先在上面选择一个系统，点击「启动」。";
+      $("simpleActionHelp").textContent = "之后会自动告诉你下一步做什么。";
+      btn.textContent = "▶ 启动系统后可操作";
+    } else if(!guestReady) {
+      $("simpleStep").textContent = current === "freedos" ? "等黑色画面出现 A:\\>，就能玩游戏。" : current === "linux" ? "等黑色画面出现 /root%，再点下方大按钮。" : "正在开机，等待桌面出现。";
+      $("simpleActionHelp").textContent = "先不用输入任何文字；开机结束后按钮会自动亮起。";
+      btn.textContent = "⌛ 正在等待系统启动";
+    } else if(current === "freedos") {
+      $("simpleStep").textContent = gamePlaying ? "贪吃蛇已发送启动指令，试试右侧方向键！" : "已开机！点「开始贪吃蛇」，然后按右侧方向键。";
+      $("simpleActionHelp").textContent = gamePlaying ? "点方向键控制移动；Esc 可以退出游戏。" : "不需要打字，也不用先寻找下面的方向键。";
+      btn.textContent = gamePlaying ? "↻ 重新开始游戏" : "🎮 开始贪吃蛇";
+    } else if(current === "linux") {
+      $("simpleStep").textContent = "已进入 Linux。点下面的大按钮即可查看文件。";
+      $("simpleActionHelp").textContent = "无需输入 /root%，只需点击即可自动执行。";
+      btn.textContent = "📁 看看有哪些文件";
+    } else {
+      $("simpleStep").textContent = "已切换到桌面显示；尝试点屏幕上的图标。";
+      $("simpleActionHelp").textContent = "可按方向键移动选择，用「确认」进入，用「返回」退出。";
+      btn.textContent = "↵ 确认选择";
+    }
+    const immersive = document.body.classList.contains("lab-immersive");
+    $("fullscreen").textContent = immersive ? "↙ 退出放大" : "⛶ 放大操作";
+    $("screenMode").textContent = immersive ? "↙ 返回页面" : "⛶ 放大操作";
+    for(const control of [$("fullscreen"), $("screenMode")]) control.setAttribute("aria-pressed",String(immersive));
+  }
+  function setImmersive(enabled) {
+    document.body.classList.toggle("lab-immersive",enabled);
+    updateSimpleUI();
+    if(enabled) {
+      simpleStatus("已放大为整页操作区；iPhone Safari 可能仍显示浏览器地址栏，可横屏获得更多空间。");
+    } else {
+      simpleStatus("已返回普通页面，游戏方向键仍在屏幕下方。");
+    }
+  }
+  async function toggleImmersive() {
+    const enabled = document.body.classList.contains("lab-immersive");
+    if(enabled) {
+      setImmersive(false);
+      if(document.fullscreenElement && document.exitFullscreen) {
+        try { await document.exitFullscreen(); } catch {}
+      }
+    } else {
+      setImmersive(true);
+      // iPhone Safari does not support fullscreen for arbitrary page elements.
+      // Fixed viewport mode is usable without the Fullscreen API.
+      if(document.fullscreenEnabled && $("machine").requestFullscreen) {
+        try { await $("machine").requestFullscreen({navigationUI:"hide"}); } catch {}
+      }
+    }
+  }
   const updateGuideButtons = () => {
     const enabled = ready && isRunning;
     const allowCommands = enabled && guestReady && !commandBusy;
@@ -91,6 +153,7 @@
     $("virtualKeys").querySelectorAll("[data-vkey]").forEach(button => {
       button.disabled = !enabled || (button.dataset.vkey === "ctrlc" && current === "kolibri");
     });
+    updateSimpleUI();
     $("guestIndicator").textContent = !current ? "尚未选择"
       : !guestReady ? "等待系统就绪"
       : current === "freedos" ? "DOS 已进入"
@@ -143,7 +206,7 @@
     updateGuideButtons();
   };
   const resetUI = () => {
-    ready = false; isRunning = false; guestReady = false; commandBusy = false;
+    ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false;
     if(bootMonitor) { clearInterval(bootMonitor); bootMonitor = null; }
     controls.forEach(id => $(id).disabled = true);
     $("screenShell").classList.remove("running");
@@ -186,6 +249,7 @@
     $("machineName").textContent = config.name;
     resetUI();
     renderGuide(id);
+    simpleStatus("系统正在启动，等屏幕出现提示后，点击旁边的大按钮即可。");
     document.querySelector('[data-system="' + id + '"]').classList.add("active");
     $("runtime").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
     status("正在加载模拟器核心…");
@@ -240,16 +304,19 @@
           if(id === "freedos" && /A:\\>/.test(text)) {
             guestReady = true;
             status("DOS 提示符已就绪 · 本地运行",true);
+            simpleStatus("已开机！点击「开始贪吃蛇」，方向键就在屏幕下方。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(text)) {
             guestReady = true;
             status("Linux 命令行已就绪 · 本地运行",true);
+            simpleStatus("Linux 已就绪，点「看看有哪些文件」即可操作。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(id === "kolibri" && graphics) {
             guestReady = true;
             status("已切换图形模式 · 请确认桌面",true);
+            simpleStatus("试着点击桌面图标；也可以使用旁边的方向键、确认和返回。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(Date.now() - startedAt > 60000 && !warningShown) {
@@ -280,15 +347,11 @@
   $("pause").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.stop();}catch(e){fail(e);}}});
   $("resume").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.run();}catch(e){fail(e);}}});
   $("restart").addEventListener("click",() => {if(emulator && ready) emulator.restart();});
-  $("exit").addEventListener("click",async () => {++generation; resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
-  $("fullscreen").addEventListener("click",async () => {
-    try {
-      if(!emulator) return;
-      if(document.fullscreenElement){await document.exitFullscreen();return;}
-      if($("screenShell").requestFullscreen) await $("screenShell").requestFullscreen();
-      else if(emulator.screen_go_fullscreen) emulator.screen_go_fullscreen();
-      else throw new Error("当前浏览器不支持全屏显示");
-    } catch(e) { $("runtimeHint").textContent = "当前设备可能不支持网页全屏。可以尝试横屏操作：" + e.message; }
+  $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
+  $("fullscreen").addEventListener("click",toggleImmersive);
+  $("screenMode").addEventListener("click",toggleImmersive);
+  document.addEventListener("fullscreenchange",() => {
+    if(!document.fullscreenElement && document.body.classList.contains("lab-immersive")) setImmersive(false);
   });
   const feedback = message => { $("quickFeedback").textContent = message; };
   async function pressVirtualKey(name) {
@@ -297,7 +360,10 @@
     const instance = emulator;
     try {
       await instance.keyboard_send_scancodes(KEY_CODES[name], 12);
-      if(instance === emulator) feedback("虚拟按键 " + (name === "enter" ? "Enter" : name.toUpperCase()) + " 已发送到 " + SYSTEMS[current].name + "。");
+      if(instance === emulator) {
+        feedback("虚拟按键 " + (name === "enter" ? "Enter" : name.toUpperCase()) + " 已发送到 " + SYSTEMS[current].name + "。");
+        if(!gamePlaying) simpleStatus("按键已发送：" + (name === "enter" ? "确认" : name) + "。");
+      }
     } catch(error) {
       feedback("按键未发送成功：" + (error?.message || "模拟器暂不可用"));
     }
@@ -313,7 +379,11 @@
       await instance.keyboard_send_text(cmd, 15);
       if(instance !== emulator || !isRunning) return;
       await instance.keyboard_send_scancodes(KEY_CODES.enter, 15);
-      if(instance === emulator) feedback("已输入并执行「" + cmd + "」。请看上方黑色窗口的输出。");
+      if(instance === emulator) {
+        feedback("已输入并执行「" + cmd + "」。请看上方黑色窗口的输出。");
+        if(cmd === "snake" && current === "freedos") gamePlaying = true;
+        simpleStatus(cmd === "snake" ? "已发送贪吃蛇启动指令！用屏幕下方的方向键控制移动，按返回键退出。" : "已执行「" + cmd + "」，请查看屏幕内容。");
+      }
     } catch(error) {
       feedback("快捷命令未执行成功：" + (error?.message || "模拟器暂不可用"));
     } finally {
@@ -328,6 +398,30 @@
   $("virtualKeys").addEventListener("click", event => {
     const button = event.target.closest("[data-vkey]");
     if(button && $("virtualKeys").contains(button) && !button.disabled) pressVirtualKey(button.dataset.vkey);
+  });
+  $("primaryAction").addEventListener("click", () => {
+    if(!guestReady || !ready || !isRunning || commandBusy) return;
+    if(current === "freedos") runQuickCommand("snake");
+    else if(current === "linux") runQuickCommand("ls");
+    else if(current === "kolibri") pressVirtualKey("enter");
+  });
+  $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
+  $("padEsc").addEventListener("click",() => pressVirtualKey("esc"));
+  // Pointerdown sends immediately (without waiting for delayed iOS click synthesis).
+  // Click remains available for keyboard and assistive-technology activation.
+  const sentOnPointer = new WeakSet();
+  $("dpad").addEventListener("pointerdown", event => {
+    const key = event.target.closest("[data-padkey]");
+    if(!key || key.disabled || !event.isPrimary) return;
+    event.preventDefault();
+    sentOnPointer.add(key);
+    pressVirtualKey(key.dataset.padkey);
+  });
+  $("dpad").addEventListener("click", event => {
+    const key = event.target.closest("[data-padkey]");
+    if(!key || key.disabled) return;
+    if(sentOnPointer.has(key)) { sentOnPointer.delete(key); return; }
+    pressVirtualKey(key.dataset.padkey);
   });
   $("typeForm").addEventListener("submit", async event => {
     event.preventDefault();
@@ -346,5 +440,6 @@
   });
   $("sendEnter").addEventListener("click", () => pressVirtualKey("enter"));
   renderGuide(null);
+  updateSimpleUI();
   window.addEventListener("pagehide",() => { if(emulator) { try { emulator.stop(); } catch {} } });
 })();
