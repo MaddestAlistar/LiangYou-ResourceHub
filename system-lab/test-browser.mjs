@@ -24,7 +24,7 @@ try {
   await dosQuick.waitFor({state:'visible'});
   await page.waitForFunction(() => !document.querySelector('[data-command="dir"]')?.disabled, null, {timeout:15000});
   await dosQuick.click();
-  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('已输入并执行「dir」'),null,{timeout:15000});
+  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('已执行「dir」'),null,{timeout:15000});
   await page.waitForFunction(() => /dir/i.test(document.querySelector('#screen_container')?.textContent || ''),null,{timeout:15000});
   console.log('FreeDOS one-tap command sent successfully');
   const gameButton = page.locator('#primaryAction');
