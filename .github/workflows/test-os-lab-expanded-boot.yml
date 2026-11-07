@@ -1,0 +1,39 @@
+name: Test ReactOS and Android browser bootstrap
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'system-lab/**'
+      - '.github/workflows/test-os-lab-expanded-boot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  boot:
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [android, reactos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve static site
+        run: |
+          nohup python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/oslab-http.log 2>&1 &
+          sleep 2
+      - name: Check VM engine and guest screen
+        run: node system-lab/test-expanded-boot.mjs ${{ matrix.profile }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: os-lab-${{ matrix.profile }}-boot
+          path: /tmp/ly-${{ matrix.profile }}-*.png
+          if-no-files-found: ignore
