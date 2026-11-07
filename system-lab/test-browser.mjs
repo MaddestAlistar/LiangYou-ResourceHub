@@ -24,6 +24,11 @@ try {
   await page.waitForTimeout(2500);
   console.log('KolibriOS started');
   await page.screenshot({path:'/tmp/ly-web-os-kolibri.png',fullPage:true});
+  await page.locator('[data-launch="linux"]').click();
+  await page.waitForFunction(() => document.querySelector('#machineName')?.textContent==='Buildroot Linux' && document.querySelector('#machineStatus')?.textContent?.includes('运行中'), null, {timeout:90000});
+  await page.waitForTimeout(2500);
+  console.log('Buildroot Linux started');
+  await page.screenshot({path:'/tmp/ly-web-os-linux.png',fullPage:true});
   const mobile = await browser.newPage({...devices['iPhone 13']});
   await mobile.goto(url, {waitUntil:'domcontentloaded'});
   const layout = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth, viewport:innerWidth, cardCount:document.querySelectorAll('.system-card').length}));
