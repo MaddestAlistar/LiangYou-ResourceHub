@@ -102,8 +102,33 @@
       instance.add_listener("emulator-started", () => {
         if(token !== generation) return;
         ready = true; isRunning = true;
-        status("运行中 · 本地计算",true);
+        status("虚拟机运行中 · 系统正在引导",true);
         buttons();
+        // v86's emulator-started event only means the emulated CPU is running.
+        // It does NOT mean the guest OS has reached a usable prompt or desktop.
+        const startedAt = Date.now();
+        const monitor = setInterval(() => {
+          if(token !== generation || !emulator) { clearInterval(monitor); return; }
+          if(!isRunning) return;
+          const screen = $("screen_container");
+          const text = screen.textContent || "";
+          const canvas = screen.querySelector("canvas");
+          const graphics = canvas && getComputedStyle(canvas).display !== "none" && canvas.width >= 320 && canvas.height >= 200;
+          if(id === "freedos" && /A:\\\\>/.test(text)) {
+            status("DOS 提示符已就绪 · 本地运行",true);
+            clearInterval(monitor);
+          } else if(id === "linux" && /(?:login:\\s*$|(?:^|\\n)[^\\n]*[#$]\\s*$)/m.test(text)) {
+            status("Linux 命令行已就绪 · 本地运行",true);
+            clearInterval(monitor);
+          } else if(id === "kolibri" && graphics) {
+            status("已切换图形模式 · 请确认桌面",true);
+            clearInterval(monitor);
+          } else if(Date.now() - startedAt > 60000) {
+            status("引导时间较长 · 可能未完成启动");
+            $("runtimeHint").textContent = "模拟器已运行，但尚未检测到系统就绪界面。若画面一直不动，可重启或尝试桌面浏览器。";
+            clearInterval(monitor);
+          }
+        }, 1400);
       });
       instance.add_listener("emulator-stopped", () => {
         if(token !== generation) return;
