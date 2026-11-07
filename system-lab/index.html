@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#080f23">
-  <meta name="description" content="良友科技在线系统实验室：在浏览器本地运行 FreeDOS、KolibriOS、ReactOS、Windows 95/98 和 Android-x86，无需云端虚拟机。">
+  <meta name="description" content="良友科技在线系统实验室：在浏览器本地运行 FreeDOS 与 KolibriOS，无需云端虚拟机。">
   <title>在线系统实验室 | 良友科技</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./lab.css?v=20261108r5">
+  <link rel="stylesheet" href="./lab.css?v=20261108r6">
   <script defer src="./lab.js?v=20261108r4"></script>
 </head>
 <body>
@@ -29,7 +29,7 @@
         <article class="system-card" data-system="freedos">
           <div class="system-icon dos" aria-hidden="true">&gt;_</div>
           <div class="card-top"><h3>FreeDOS</h3><span class="tag">推荐入门</span></div>
-          <p>可以试贪吃蛇、俄罗斯方块、太空侵略者，也能查看文件和使用 DOS 工具。</p>
+          <p>内置太空侵略者、俄罗斯方块、扫雷、Jumper 和 Rogue，也能查看文件、使用 DOS 工具。</p>
           <div class="detail"><span>命令行</span><span>约 0.7 MB 镜像</span></div>
           <button class="launch" type="button" data-launch="freedos">启动 FreeDOS <span aria-hidden="true">↗</span></button>
         </article>
@@ -40,43 +40,7 @@
           <div class="detail"><span>图形界面</span><span>约 1.4 MB 镜像</span></div>
           <button class="launch" type="button" data-launch="kolibri">启动 KolibriOS <span aria-hidden="true">↗</span></button>
         </article>
-        <article class="system-card" data-system="reactos">
-          <div class="system-icon reactos" aria-hidden="true">▦</div>
-          <div class="card-top"><h3>ReactOS</h3><span class="tag">开源桌面 · 实验</span></div>
-          <p>体验带开始菜单、桌面和文件管理器的免费开源系统。首次开机会较慢，手机可能受内存限制。</p>
-          <div class="detail"><span>约 700 MB 虚拟磁盘（按需分块）</span><span>建议电脑使用</span></div>
-          <a class="launch" href="https://copy.sh/v86/?profile=reactos" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
-          <button class="launch launch-secondary" type="button" data-launch="reactos">本站实验运行（尚未通过桌面测试）</button>
-        </article>
-        <article class="system-card" data-system="win95">
-          <div class="system-icon windows" aria-hidden="true">95</div>
-          <div class="card-top"><h3>Windows 95</h3><span class="tag">自备合法镜像</span></div>
-          <p>体验经典 Windows 桌面。本站不预装微软系统；选择你合法持有的已安装启动磁盘镜像才能在本页运行。</p>
-          <div class="detail"><span>需启动盘 .img / .vhd</span><span>大文件建议电脑</span></div>
-          <a class="launch" href="https://copy.sh/v86/?profile=windows95" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
-          <button class="launch launch-secondary" type="button" data-local="win95">在本站加载自己的合法启动盘</button>
-        </article>
-        <article class="system-card" data-system="win98">
-          <div class="system-icon windows" aria-hidden="true">98</div>
-          <div class="card-top"><h3>Windows 98</h3><span class="tag">自备合法镜像</span></div>
-          <p>同样支持本地加载合法持有的启动盘文件。普通安装 ISO 不是已经安装好的系统，不能直接进入桌面。</p>
-          <div class="detail"><span>需启动盘 .img / .vhd</span><span>大文件建议电脑</span></div>
-          <a class="launch" href="https://copy.sh/v86/?profile=windows98" target="_blank" rel="noopener noreferrer">打开 v86 官方在线体验 <span aria-hidden="true">↗</span></a>
-          <button class="launch launch-secondary" type="button" data-local="win98">在本站加载自己的合法启动盘</button>
-        </article>
-        <article class="system-card" data-system="android">
-          <div class="system-icon android" aria-hidden="true">A</div>
-          <div class="card-top"><h3>Android-x86</h3><span class="tag">早期安卓 · 实验</span></div>
-          <p>在浏览器里体验老版安卓。1.6 版本更轻量；4.4 需要读取更多镜像数据，均不代表能运行现代 APK。</p>
-          <div class="detail"><span>1.6：约 52 MB</span><span>4.4：约 236 MB</span><span>按需分块加载</span></div>
-          <a class="launch" href="https://copy.sh/v86/?profile=android" target="_blank" rel="noopener noreferrer">打开 v86 官方 Android 1.6 演示 <span aria-hidden="true">↗</span></a>
-          <a class="os-official" href="https://copy.sh/v86/?profile=android4" target="_blank" rel="noopener noreferrer">官方 Android 4.4 演示</a>
-          <button class="launch launch-secondary" type="button" data-launch="android">本站实验运行 Android 1.6</button>
-          <button class="launch launch-secondary" type="button" data-launch="android44">本站实验运行 Android 4.4</button>
-        </article>
       </div>
-      <input id="localDiskInput" type="file" accept=".img,.vhd,.bin" hidden aria-label="选择本地 Windows 启动磁盘镜像">
-      <p class="system-legal">说明：Windows 95/98 版权属于微软，本站不提供系统镜像。选择的文件只在访客浏览器本地读取，不上传服务器。ReactOS 和 Android 官方演示由 v86 维护；本站另提供尚未通过桌面可用性验证的实验模式。移动端可能因内存或兼容性限制无法启动。</p>
     </section>
     <section class="wrap stage" id="runtime" aria-labelledby="runtime-title">
       <div class="section-head"><div><p class="kicker">LOCAL VIRTUAL MACHINE</p><h2 id="runtime-title">系统运行窗口</h2></div><a class="source" href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">官方 v86 演示 ↗</a></div>
@@ -92,7 +56,7 @@
         </div>
         <div class="play-panel" id="playPanel" aria-label="屏幕旁边的操作区">
           <p class="system-note" id="systemNote" hidden></p>
-          <div class="next-step"><span class="next-badge">下一步做什么？</span><strong id="simpleStep" aria-live="polite">选一个系统启动；Windows 需要选择你自己拥有的镜像。</strong></div>
+          <div class="next-step"><span class="next-badge">下一步做什么？</span><strong id="simpleStep" aria-live="polite">先在上方选一个系统，点击启动。</strong></div>
           <div class="play-layout">
             <div class="play-actions">
               <button type="button" class="play-primary" id="primaryAction" disabled>▶ 启动系统后可操作</button>
@@ -133,7 +97,7 @@
         </div>
         <section class="beginner-guide" id="beginnerGuide" aria-labelledby="guideTitle">
           <div class="guide-head"><div><span class="guide-eyebrow">新手帮助 · 看不懂时看这里</span><h3 id="guideTitle">选择系统后显示操作提示</h3></div><span id="guestIndicator" class="guide-indicator" aria-live="polite">尚未选择</span></div>
-          <p class="guide-intro" id="guideIntro">FreeDOS 用命令操作，其他系统偏向图形桌面。ReactOS 和 Android 启动比较慢，Windows 需自行选择合法镜像。下面会根据你启动的系统自动切换提示。</p>
+          <p class="guide-intro" id="guideIntro">FreeDOS 可以玩经典 DOS 游戏，KolibriOS 是有鼠标和窗口的桌面系统。启动后会显示操作提示。</p>
           <ol class="guide-steps" id="guideSteps"><li>从上方选择一个系统并点击「启动」。</li><li>等待系统进入命令提示符或桌面。</li><li>通过下方快捷命令和虚拟按键操作。</li></ol>
         </section>
         <form id="typeForm" class="type-controls"><label for="typeText">手机虚拟输入</label><div><input id="typeText" type="text" placeholder="输入命令或文本（不适合输入密码）" autocomplete="off" spellcheck="false" disabled><button id="sendText" type="submit" disabled>仅发送文字</button><button id="sendEnter" type="button" disabled>Enter ↵ 执行</button></div></form>
@@ -157,7 +121,7 @@
           </details>
           <p class="quick-feedback" id="quickFeedback" role="status" aria-live="polite">先启动一个系统，虚拟按键才会启用。</p>
         </section>
-        <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可以打开对应系统的官方 v86 演示。</div>
+        <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可打开 v86 官方演示。</div>
         <div class="error-box" id="errorBox" hidden><strong>暂时没有启动成功</strong><p id="errorMessage"></p><button type="button" id="retryFailed" class="retry-error">↻ 重新下载并启动</button><a href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">在 v86 官方网站尝试 ↗</a></div>
       </div>
     </section>
