@@ -117,7 +117,7 @@
           if(id === "freedos" && /A:\\>/.test(text)) {
             status("DOS 提示符已就绪 · 本地运行",true);
             clearInterval(monitor);
-          } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$)/m.test(text)) {
+          } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(text)) {
             status("Linux 命令行已就绪 · 本地运行",true);
             clearInterval(monitor);
           } else if(id === "kolibri" && graphics) {
