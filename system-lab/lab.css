@@ -125,3 +125,17 @@ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{marg
 .advanced-keyboard{margin-top:16px;border:1px solid #30496c;border-radius:12px;background:#0f2240;padding:8px 11px}
 .advanced-keyboard summary{list-style:revert;cursor:pointer;font-size:12px;font-weight:700;color:#bad3fb;padding:6px 0}
 .advanced-keyboard .virtual-keys{margin:10px 0 5px}
+
+
+/* Startup feedback: never leave visitors staring at an unexplained black screen. */
+.screen-shell .loading-cover{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:18px;background:linear-gradient(155deg,rgba(7,13,29,.97),rgba(10,24,47,.97));color:#dce9ff}
+.screen-shell .loading-cover[hidden]{display:none!important}
+.loading-cover .loading-spinner{width:32px;height:32px;border:3px solid #2f4f7e;border-top-color:#95beff;border-radius:50%;animation:oslab-spinner 1s linear infinite}
+@keyframes oslab-spinner{to{transform:rotate(360deg)}}
+.loading-cover strong{font-size:16px;font-weight:700}
+.loading-cover p{font-size:12px;line-height:1.7;color:#a8bcd9;max-width:370px;margin:0;overflow-wrap:anywhere}
+.loading-cover button,.retry-error{background:#214a88;border:1px solid #729de6;color:#fff;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:650;min-height:42px;cursor:pointer}
+.loading-cover.load-failed .loading-spinner{display:none}
+.loading-cover.load-failed{background:rgba(13,25,44,.97)}
+.retry-error{margin-right:12px}
+@media(prefers-reduced-motion:reduce){.loading-cover .loading-spinner{animation:none}}
