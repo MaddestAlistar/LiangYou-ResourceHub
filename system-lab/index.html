@@ -51,27 +51,51 @@
     </section>
     <section class="wrap stage" id="runtime" aria-labelledby="runtime-title">
       <div class="section-head"><div><p class="kicker">LOCAL VIRTUAL MACHINE</p><h2 id="runtime-title">系统运行窗口</h2></div><a class="source" href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">官方 v86 演示 ↗</a></div>
-      <div class="machine">
+      <div class="machine" id="machine">
         <div class="machine-bar"><div class="machine-brand"><span class="led" id="led"></span><strong id="machineName">尚未启动</strong></div><span id="machineStatus" class="machine-status" aria-live="polite">请选择上方的系统</span></div>
         <div class="screen-shell" id="screenShell"><div class="empty-screen" id="screenPlaceholder"><span class="screen-symbol">⌘</span><strong>READY WHEN YOU ARE</strong><span>点击上方任意「启动」按钮，操作系统将在此处打开。</span></div><div id="screen_container" aria-label="虚拟机屏幕" tabindex="0"><div style="white-space:pre;font:14px monospace;line-height:14px"></div><canvas style="display:none"></canvas></div></div>
+        <div class="play-panel" id="playPanel" aria-label="屏幕旁边的操作区">
+          <div class="next-step"><span class="next-badge">下一步做什么？</span><strong id="simpleStep" aria-live="polite">先在上面选择一个系统，点击「启动」。</strong></div>
+          <div class="play-layout">
+            <div class="play-actions">
+              <button type="button" class="play-primary" id="primaryAction" disabled>▶ 启动系统后可操作</button>
+              <p class="play-explain" id="simpleActionHelp">启动后会根据系统自动显示最简单的操作。</p>
+              <div class="play-minitools">
+                <button type="button" id="screenMode" disabled>⛶ 放大操作</button>
+                <button type="button" id="padEnter" disabled>↵ 确认</button>
+                <button type="button" id="padEsc" disabled>返回</button>
+              </div>
+            </div>
+            <div class="dpad-wrap">
+              <div class="dpad-title"><strong>方向控制</strong><small>玩游戏时就在屏幕下方</small></div>
+              <div class="dpad" id="dpad" role="group" aria-label="方向控制">
+                <button type="button" data-padkey="up" aria-label="向上" disabled>▲</button>
+                <button type="button" data-padkey="left" aria-label="向左" disabled>◀</button>
+                <button type="button" data-padkey="down" aria-label="向下" disabled>▼</button>
+                <button type="button" data-padkey="right" aria-label="向右" disabled>▶</button>
+              </div>
+            </div>
+          </div>
+          <p class="play-status" id="playStatus" role="status" aria-live="polite">选择一个系统后即可使用。</p>
+        </div>
         <div class="machine-toolbar" role="group" aria-label="模拟器操作">
-          <button type="button" id="pause" disabled>暂停</button>
-          <button type="button" id="resume" disabled>继续</button>
-          <button type="button" id="restart" disabled>重启</button>
-          <button type="button" id="fullscreen" disabled>全屏</button>
-          <button type="button" id="exit" disabled>退出</button>
+          <button type="button" id="pause" disabled>⏸ 暂停</button>
+          <button type="button" id="resume" disabled>▶ 继续</button>
+          <button type="button" id="restart" disabled>↻ 重启</button>
+          <button type="button" id="fullscreen" disabled>⛶ 放大操作</button>
+          <button type="button" id="exit" disabled>✕ 退出系统</button>
         </div>
         <section class="beginner-guide" id="beginnerGuide" aria-labelledby="guideTitle">
-          <div class="guide-head"><div><span class="guide-eyebrow">QUICK START · 新手引导</span><h3 id="guideTitle">选择系统后显示操作提示</h3></div><span id="guestIndicator" class="guide-indicator" aria-live="polite">尚未选择</span></div>
+          <div class="guide-head"><div><span class="guide-eyebrow">新手帮助 · 看不懂时看这里</span><h3 id="guideTitle">选择系统后显示操作提示</h3></div><span id="guestIndicator" class="guide-indicator" aria-live="polite">尚未选择</span></div>
           <p class="guide-intro" id="guideIntro">FreeDOS 和 Linux 用命令操作；KolibriOS 则使用桌面和鼠标。下面会根据你启动的系统自动切换提示。</p>
           <ol class="guide-steps" id="guideSteps"><li>从上方选择一个系统并点击「启动」。</li><li>等待系统进入命令提示符或桌面。</li><li>通过下方快捷命令和虚拟按键操作。</li></ol>
         </section>
         <form id="typeForm" class="type-controls"><label for="typeText">手机虚拟输入</label><div><input id="typeText" type="text" placeholder="输入命令或文本（不适合输入密码）" autocomplete="off" spellcheck="false" disabled><button id="sendText" type="submit" disabled>仅发送文字</button><button id="sendEnter" type="button" disabled>Enter ↵ 执行</button></div></form>
-        <p class="input-explain">输入框里的内容只会发送给虚拟机，不会自动按回车。可以点「Enter ↵ 执行」，或者直接使用下面的「一键执行」。</p>
+        <p class="input-explain">想省事就用屏幕下方的大按钮；需要自己输入时，再在这里写英文命令。</p>
         <section class="quick-section" aria-label="新手快捷操作">
           <div class="quick-heading"><strong id="quickTitle">常用命令</strong><span id="quickNote">启动系统后自动显示对应快捷命令</span></div>
           <div class="quick-commands" id="quickCommands"><span class="quick-empty">尚未选择系统</span></div>
-          <div class="quick-heading keypad-heading"><strong>虚拟按键</strong><span>点击后直接发送给当前系统</span></div>
+          <div class="quick-heading keypad-heading"><strong>更多按键</strong><span>常用方向键已移到屏幕正下方</span></div>
           <div class="virtual-keys" id="virtualKeys">
             <button type="button" data-vkey="esc" disabled>Esc <small>返回</small></button>
             <button type="button" data-vkey="tab" disabled>Tab <small>切换</small></button>
