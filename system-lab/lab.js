@@ -567,6 +567,11 @@
         status("已暂停");
         buttons();
       });
+      instance.add_listener("download-error",info=>{
+        if(token!==generation || emulator!==instance || attemptFailed) return;
+        const name=info?.file_name ? String(info.file_name).split("/").slice(-1)[0] : "系统镜像分块";
+        fail(new Error(name+" 无法下载，可能是线路无法访问或跨域限制。请重试或改用系统卡片里的官方演示。"));
+      });
       instance.add_listener("download-progress",progress=>{
         if(token!==generation || !config.remote) return;
         if(progress?.lengthComputable && progress.total>0)
