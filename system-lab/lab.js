@@ -3,7 +3,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const BASE = "https://raw.githubusercontent.com/copy/images/master/";
-  const UPSTREAM = "https://copy.sh/v86/";
+  const UPSTREAM = "https://cdn.jsdelivr.net/npm/v86@0.5.473/";
   const SYSTEMS = Object.freeze({
     freedos: {name:"FreeDOS", type:"fda", file:"freedos722.img", memory:32, vga:4},
     kolibri: {name:"KolibriOS", type:"fda", file:"kolibri.img", memory:64, vga:8},
