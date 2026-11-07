@@ -23,82 +23,46 @@
       UNPKG + "build/v86.wasm"
     ]
   });
-  const SYSTEMS = Object.freeze({
-    freedos: {name:"FreeDOS", type:"fda", file:"freedos722.img", memory:32, vga:4},
-    kolibri: {name:"KolibriOS", type:"fda", file:"kolibri.img", memory:64, vga:8},
-    reactos: {name:"ReactOS", type:"hda", memory:512, vga:16, remote:{url:"https://i.copy.sh/reactos-v3/.img",size:734003200,async:true,fixed_chunk_size:1048576,use_parts:true}, state:{url:"https://i.copy.sh/reactos_state-v3.bin.zst"},acpi:true},
-    android: {name:"Android-x86 1.6", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android-x86-1.6-r2/.iso",size:54661120,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
-    android44: {name:"Android-x86 4.4", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android_x86_nonsse3_4.4r1_20140904/.iso",size:247463936,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
-    win95: {name:"Windows 95",type:"hda", memory:64,vga:8,local:true},
-    win98: {name:"Windows 98",type:"hda", memory:128,vga:8,local:true}
+  const SYSTEMS=Object.freeze({
+    freedos:{name:"FreeDOS",type:"fda",file:"freedos722.img",memory:32,vga:4},
+    kolibri:{name:"KolibriOS",type:"fda",file:"kolibri.img",memory:64,vga:8}
   });
 
-  const GUIDES = Object.freeze({
-    freedos: {
-      title:"FreeDOS · 不止一个游戏，还能做什么？",
-      intro:"这是一台复古 DOS 电脑。看到 A:\\> 就说明开机了，不需要密码。你可以玩多个游戏，也可以浏览文件和了解早期电脑命令。",
+  // Game list verified from the GAMES directory of copy/images/freedos722.img.
+  const GUIDES=Object.freeze({
+    freedos:{
+      title:"FreeDOS · 经典小游戏与 DOS 工具",
+      intro:"这是复古 DOS 电脑。开机看到 A:\\> 就进入系统了，无需登录。镜像里有五款其他游戏。",
       steps:[
-        "先等待黑色窗口出现 A:\\> 提示符。开头出现「Boot failed: CDROM」并不一定是故障，之后从 Floppy 启动成功即可。",
-        "先点画面下方的「查看磁盘文件」，了解磁盘里有什么；想玩游戏可选贪吃蛇、太空侵略者或俄罗斯方块。",
-        "游戏中用方向键；换游戏前先退出，回到 A:\\> 后再点另一个。不同游戏退出键可能是 Esc 或 Q，实在无法退出可重启。"
+        "等屏幕显示 A:\\>，就说明进入系统。前面提示光驱启动失败，不一定是真正启动失败。",
+        "点「太空侵略者」「俄罗斯方块」或「扫雷」直接运行；下方还有 Jumper、Rogue 和文件工具。",
+        "老游戏控制方法不完全一样，可试方向键、Enter 或 Esc；换游戏前先返回 A:\\>，必要时重启。"
       ],
-      note:"图标按钮只是帮你输入命令；DOS 远不止这些功能。看到 A:\\> 才能输入下一条。",
+      note:"已核对镜像内 GAMES 目录。部分游戏操作需要额外按键，手机体验因游戏而异。",
       commands:[
-        {name:"列出文件",value:"dir",hint:"查看当前目录"},
-        {name:"查看帮助",value:"help",hint:"显示可用命令"},
-        {name:"清屏",value:"cls",hint:"清空屏幕"},
-        {name:"贪吃蛇",value:"snake",hint:"方向键控制"},
-        {name:"太空侵略者",value:"invaders",hint:"经典小游戏"},
-        {name:"俄罗斯方块",value:"tetris",hint:"经典方块游戏"}
+        {name:"查看文件",value:"dir",hint:"查看磁盘目录"},
+        {name:"显示帮助",value:"help",hint:"DOS 命令"},
+        {name:"清空屏幕",value:"cls",hint:"清屏"},
+        {name:"太空侵略者",value:"invaders",hint:"射击游戏"},
+        {name:"俄罗斯方块",value:"tetris",hint:"拼方块"},
+        {name:"扫雷",value:"minesw~1",hint:"避雷解谜"},
+        {name:"Jumper",value:"jumper",hint:"跳跃游戏"},
+        {name:"Rogue",value:"rogue",hint:"地牢冒险"}
       ]
     },
-    kolibri: {
-      title:"KolibriOS · 进入图形桌面",
-      intro:"这是有窗口和桌面图标的系统。手机滑动通常只会移动光标，不一定能自动完成鼠标单击；请用画面下方的「左键点击」或「双击打开」。",
+    kolibri:{
+      title:"KolibriOS · 图形桌面操作",
+      intro:"这是有窗口和桌面图标的轻量系统。手机拖动可移动光标，单击或双击可以使用画面下方的鼠标键。",
       steps:[
-        "刚开始会看到硬件和 CPU 初始化信息，这是开机过程，不是操作界面。",
-        "等待画面切换到图形桌面后再操作；单纯切换为图形模式也不保证已完全进入桌面。",
-        "先用手指拖动光标到目标，再点「单击左键」选中，或「双击打开」进入。若只有光标移动，使用下面的鼠标按键，不要只点「确认」。"
+        "等开机信息结束、进入图形桌面。出现图形画面不一定代表桌面完全就绪。",
+        "把鼠标指针移到图标上，点「单击左键」选中、点「双击打开」进入。",
+        "可尝试 Esc 返回菜单；遇到无响应可重启。"
       ],
-      note:"KolibriOS 需要鼠标左右键。下方提供单击、双击、右键；方向键和 Enter 不能代替所有桌面点击。",
-      commands:[]
-    },
-    reactos: {
-      title:"ReactOS · 免费开源的 Windows 风格桌面",
-      intro:"ReactOS 是独立开源系统，不是微软 Windows。加载的是约 700 MB 的虚拟硬盘，采用分块读取。首次启动可能很慢，iPhone 可能因为内存不足而失败。",
-      steps:["等待出现图形桌面或系统启动界面；单纯出现开机文字不等于已进入桌面。","在画面上移动光标，用「左键点击」「双击打开」「右键菜单」操作。","如果黑屏、长时间不动或手机闪退，请用电脑访问，或点击系统卡片里的官方演示入口。"],
-      note:"ReactOS 使用 v86 官方演示镜像（按需分块），不要输入账号、密码或重要个人数据。",
-      commands:[]
-    },
-    android: {
-      title:"Android-x86 1.6 · 早期安卓演示",
-      intro:"这是旧版 Android-x86，不是现代手机安卓，也不支持当代应用商店或大多数新 APK。网页只模拟一台旧设备。",
-      steps:["启动后等待出现安卓开机菜单或 logo；可能需要按 Enter 选择启动。","进入图形界面后，可以轻点屏幕或使用鼠标点击按钮。","系统可能需要较长时间加载；在 iPhone 上可能因内存限制无法进入桌面。"],
-      note:"使用旧版安卓演示镜像，适合怀旧体验，不适合登录真实账号。",
-      commands:[]
-    },
-    android44: {
-      title:"Android-x86 4.4 · 实验性安卓系统",
-      intro:"4.4 镜像比 1.6 大得多，需要更高内存，iPhone Safari 可能无法运行。这是历史 Android-x86，不支持现代应用体验。",
-      steps:["等待系统引导，若出现启动菜单可按 Enter 确认。","进入系统后尝试触屏操作；网页模拟器的鼠标行为与手机原生安卓不同。","如始终黑屏，建议电脑端或尝试轻量版 Android 1.6。"],
-      note:"安卓 4.4 为额外实验入口，兼容性不做保证。",
-      commands:[]
-    },
-    win95: {
-      title:"Windows 95 · 加载你自己的启动磁盘",
-      intro:"本站不会提供 Windows 系统文件。请从本机选择你有权使用的、已经安装好 Windows 95 的可启动 .img/.vhd 磁盘文件，安装光盘 ISO 不能直接打开桌面。",
-      steps:["点击 Windows 95 卡片的「选择镜像并启动」，选取本地可启动磁盘文件。","镜像会留在当前访客浏览器中运行，不上传到良友科技网站。","等待 Windows 95 开机；如果是空白磁盘或安装 ISO，无法直接进入桌面。大镜像建议电脑打开。"],
-      note:"也可以通过系统卡片中的 v86 官方演示链接参观 Windows 95。",
-      commands:[]
-    },
-    win98: {
-      title:"Windows 98 · 加载你自己的启动磁盘",
-      intro:"Windows 98 是微软的专有系统。本站不预装镜像；请自行选择你有权使用的已安装、可启动的 .img/.vhd 文件。",
-      steps:["选择 Windows 98 卡片里的「选择镜像并启动」，从本机选取启动磁盘文件。","系统数据不会上传网站；大型镜像可能占用数百 MB 内存。","等待 Windows 98 桌面，必要时重启。安装 ISO 并不等同于可启动的已安装磁盘。"],
-      note:"想快速参观可以用系统卡片里的 v86 官方演示。",
+      note:"这是图形桌面，主要依靠鼠标；方向键和 Enter 不能替代所有鼠标操作。",
       commands:[]
     }
   });
+
   // Set 1 keyboard scan codes with key-down and key-up for each virtual key.
   const HOLD_KEYS = Object.freeze({up:0x48,down:0x50,left:0x4b,right:0x4d});
   const heldPads = new Map();
@@ -214,11 +178,15 @@
   }
 
 
-  const EASY_ACTIONS = Object.freeze({
-    freedos:[{label:"🐍 贪吃蛇",value:"snake"},{label:"👾 太空侵略者",value:"invaders"},{label:"🧱 俄罗斯方块",value:"tetris"}],
+  const EASY_ACTIONS=Object.freeze({
+    freedos:[
+      {label:"👾 太空侵略者",value:"invaders"},
+      {label:"🧱 俄罗斯方块",value:"tetris"},
+      {label:"💣 扫雷",value:"minesw~1"}
+    ],
     kolibri:[]
   });
-  const GAME_COMMANDS = new Set(["snake","invaders","tetris"]);
+  const GAME_COMMANDS=new Set(["invaders","tetris","minesw~1","jumper","rogue"]);
   let touchStart = null;
   let mouseBusy = false;
   const graphical = id => !!id && id !== "freedos";
