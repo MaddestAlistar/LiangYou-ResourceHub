@@ -40,8 +40,8 @@ jobs:
             rm "$headers"
             echo "::endgroup::"
           }
-          check_asset "https://copy.sh/v86/build/libv86.js" no
-          check_asset "https://copy.sh/v86/build/v86.wasm" yes
+          check_asset "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/libv86.js" no
+          check_asset "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm" yes
           check_asset "https://raw.githubusercontent.com/copy/v86/master/bios/seabios.bin" yes
           check_asset "https://raw.githubusercontent.com/copy/v86/master/bios/vgabios.bin" yes
           check_asset "https://raw.githubusercontent.com/copy/images/master/freedos722.img" yes
