@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const $ = id => document.getElementById(id);
-  const BASE = "https://raw.githubusercontent.com/copy/images/master/";
+
   const UPSTREAM = "https://cdn.jsdelivr.net/npm/v86@0.5.473/";
   const UNPKG = "https://unpkg.com/v86@0.5.473/";
   const ASSETS = Object.freeze({
@@ -26,7 +26,11 @@
   const SYSTEMS = Object.freeze({
     freedos: {name:"FreeDOS", type:"fda", file:"freedos722.img", memory:32, vga:4},
     kolibri: {name:"KolibriOS", type:"fda", file:"kolibri.img", memory:64, vga:8},
-    linux: {name:"Buildroot Linux", type:"cdrom", file:"linux.iso", memory:128, vga:8}
+    reactos: {name:"ReactOS", type:"hda", memory:512, vga:16, remote:{url:"https://i.copy.sh/reactos-v3/.img",size:734003200,async:true,fixed_chunk_size:1048576,use_parts:true},acpi:true},
+    android: {name:"Android-x86 1.6", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android-x86-1.6-r2/.iso",size:54661120,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
+    android44: {name:"Android-x86 4.4", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android_x86_nonsse3_4.4r1_20140904/.iso",size:247463936,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
+    win95: {name:"Windows 95",type:"hda", memory:64,vga:8,local:true},
+    win98: {name:"Windows 98",type:"hda", memory:128,vga:8,local:true}
   });
 
   const GUIDES = Object.freeze({
@@ -59,21 +63,40 @@
       note:"KolibriOS 需要鼠标左右键。下方提供单击、双击、右键；方向键和 Enter 不能代替所有桌面点击。",
       commands:[]
     },
-    linux: {
-      title:"Buildroot Linux · 文字版 Linux，不是桌面",
-      intro:"这就是已经运行的 Linux，只是没有图标、窗口或鼠标桌面。看到 /root% 就表示进入了系统，和电脑上的「终端」类似。",
-      steps:[
-        "先等待内核启动日志走完。「VFS: Mounted root」表示根文件系统已挂载，但还未必能输入。",
-        "看到 /root%（或其他命令提示符）就已经进系统了。点「查看文件」能看到当前目录内容。",
-        "想继续探索，可点「我在哪」「系统信息」「显示 Hello」，每个按钮都会直接输入命令并回车。"
-      ],
-      note:"这是用来学习 Linux 指令的极简系统。没有软件商店、浏览器或图形桌面，不代表启动失败。",
-      commands:[
-        {name:"列出文件",value:"ls",hint:"查看文件与目录"},
-        {name:"当前位置",value:"pwd",hint:"显示工作目录"},
-        {name:"查看系统信息",value:"uname -a",hint:"显示内核信息"},
-        {name:"打印文字",value:"echo hello",hint:"确认终端可输入"}
-      ]
+    reactos: {
+      title:"ReactOS · 免费开源的 Windows 风格桌面",
+      intro:"ReactOS 是独立开源系统，不是微软 Windows。加载的是约 700 MB 的虚拟硬盘，采用分块读取。首次启动可能很慢，iPhone 可能因为内存不足而失败。",
+      steps:["等待出现图形桌面或系统启动界面；单纯出现开机文字不等于已进入桌面。","在画面上移动光标，用「左键点击」「双击打开」「右键菜单」操作。","如果黑屏、长时间不动或手机闪退，请用电脑访问，或点击系统卡片里的官方演示入口。"],
+      note:"ReactOS 使用 v86 官方演示镜像（按需分块），不要输入账号、密码或重要个人数据。",
+      commands:[]
+    },
+    android: {
+      title:"Android-x86 1.6 · 早期安卓演示",
+      intro:"这是旧版 Android-x86，不是现代手机安卓，也不支持当代应用商店或大多数新 APK。网页只模拟一台旧设备。",
+      steps:["启动后等待出现安卓开机菜单或 logo；可能需要按 Enter 选择启动。","进入图形界面后，可以轻点屏幕或使用鼠标点击按钮。","系统可能需要较长时间加载；在 iPhone 上可能因内存限制无法进入桌面。"],
+      note:"使用旧版安卓演示镜像，适合怀旧体验，不适合登录真实账号。",
+      commands:[]
+    },
+    android44: {
+      title:"Android-x86 4.4 · 实验性安卓系统",
+      intro:"4.4 镜像比 1.6 大得多，需要更高内存，iPhone Safari 可能无法运行。这是历史 Android-x86，不支持现代应用体验。",
+      steps:["等待系统引导，若出现启动菜单可按 Enter 确认。","进入系统后尝试触屏操作；网页模拟器的鼠标行为与手机原生安卓不同。","如始终黑屏，建议电脑端或尝试轻量版 Android 1.6。"],
+      note:"安卓 4.4 为额外实验入口，兼容性不做保证。",
+      commands:[]
+    },
+    win95: {
+      title:"Windows 95 · 加载你自己的启动磁盘",
+      intro:"本站不会提供 Windows 系统文件。请从本机选择你有权使用的、已经安装好 Windows 95 的可启动 .img/.vhd 磁盘文件，安装光盘 ISO 不能直接打开桌面。",
+      steps:["点击 Windows 95 卡片的「选择镜像并启动」，选取本地可启动磁盘文件。","镜像会留在当前访客浏览器中运行，不上传到良友科技网站。","等待 Windows 95 开机；如果是空白磁盘或安装 ISO，无法直接进入桌面。大镜像建议电脑打开。"],
+      note:"也可以通过系统卡片中的 v86 官方演示链接参观 Windows 95。",
+      commands:[]
+    },
+    win98: {
+      title:"Windows 98 · 加载你自己的启动磁盘",
+      intro:"Windows 98 是微软的专有系统。本站不预装镜像；请自行选择你有权使用的已安装、可启动的 .img/.vhd 文件。",
+      steps:["选择 Windows 98 卡片里的「选择镜像并启动」，从本机选取启动磁盘文件。","系统数据不会上传网站；大型镜像可能占用数百 MB 内存。","等待 Windows 98 桌面，必要时重启。安装 ISO 并不等同于可启动的已安装磁盘。"],
+      note:"想快速参观可以用系统卡片里的 v86 官方演示。",
+      commands:[]
     }
   });
   // Set 1 keyboard scan codes with key-down and key-up for each virtual key.
@@ -104,6 +127,8 @@
   const pendingDownloads = new Set();
   let loadingTimer = null;
   let attemptFailed = false;
+  let activeLocalFile = null;
+  let localIntent = null;
   const controls = ["pause","resume","restart","fullscreen","exit","typeText","sendText","sendEnter"];
   const status = (message, live = false) => {
     $("machineStatus").textContent = message;
@@ -173,7 +198,6 @@
 
   const EASY_ACTIONS = Object.freeze({
     freedos:[{label:"🐍 贪吃蛇",value:"snake"},{label:"👾 太空侵略者",value:"invaders"},{label:"🧱 俄罗斯方块",value:"tetris"}],
-    linux:[{label:"📍 我在哪",value:"pwd"},{label:"🖥 系统信息",value:"uname -a"},{label:"💬 显示 Hello",value:"echo hello"}],
     kolibri:[]
   });
   const GAME_COMMANDS = new Set(["snake","invaders","tetris"]);
