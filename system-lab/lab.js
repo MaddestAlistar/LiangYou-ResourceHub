@@ -520,7 +520,7 @@
   document.querySelectorAll("[data-launch]").forEach(button => button.addEventListener("click", () => launch(button.dataset.launch)));
   $("pause").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.stop();}catch(e){fail(e);}}});
   $("resume").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.run();}catch(e){fail(e);}}});
-  $("restart").addEventListener("click",() => {if(emulator && ready) emulator.restart();});
+  $("restart").addEventListener("click",() => {if(current) launch(current);});
   $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
   $("fullscreen").addEventListener("click",toggleImmersive);
   $("screenMode").addEventListener("click",toggleImmersive);
