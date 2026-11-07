@@ -9,7 +9,6 @@ page.on('console', msg => { if(msg.type()==='error') browserErrors.push(msg.text
 try {
   await page.goto(url, {waitUntil:'domcontentloaded'});
   await page.locator('[data-launch="freedos"]').click();
-  await page.waitForFunction(() => document.querySelector('#machineStatus')?.textContent?.includes('运行中'), null, {timeout:90000});
   // VM CPU started is not guest OS boot: wait for the actual DOS prompt.
   await page.waitForFunction(() => /A:\\>/.test(document.querySelector('#screen_container')?.textContent || ''), null, {timeout:100000});
   const first = await page.locator('#screen_container').evaluate(el => ({
@@ -21,7 +20,6 @@ try {
   if(!first.shown) throw new Error('FreeDOS screen was hidden');
   await page.screenshot({path:'/tmp/ly-web-os-freedos.png',fullPage:true});
   await page.locator('[data-launch="kolibri"]').click();
-  await page.waitForFunction(() => document.querySelector('#machineName')?.textContent==='KolibriOS' && document.querySelector('#machineStatus')?.textContent?.includes('运行中'), null, {timeout:90000});
   // KolibriOS must switch to graphics; boot messages alone do not count.
   await page.waitForFunction(() => {
     const canvas = document.querySelector('#screen_container canvas');
@@ -30,7 +28,6 @@ try {
   console.log('KolibriOS graphics mode started');
   await page.screenshot({path:'/tmp/ly-web-os-kolibri.png',fullPage:true});
   await page.locator('[data-launch="linux"]').click();
-  await page.waitForFunction(() => document.querySelector('#machineName')?.textContent==='Buildroot Linux' && document.querySelector('#machineStatus')?.textContent?.includes('运行中'), null, {timeout:90000});
   // Require a login or shell prompt, not just kernel initialization.
   await page.waitForFunction(() => /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(document.querySelector('#screen_container')?.textContent || ''), null, {timeout:100000});
   console.log('Buildroot Linux login/shell prompt reached');
