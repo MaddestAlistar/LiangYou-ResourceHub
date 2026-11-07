@@ -77,6 +77,8 @@
     }
   });
   // Set 1 keyboard scan codes with key-down and key-up for each virtual key.
+  const HOLD_KEYS = Object.freeze({up:0x48,down:0x50,left:0x4b,right:0x4d});
+  const heldPads = new Map();
   const KEY_CODES = Object.freeze({
     esc:[0x01,0x81],
     tab:[0x0f,0x8f],
@@ -357,6 +359,10 @@
   const resetUI = () => {
     ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false; attemptFailed = false;
     if(bootMonitor) { clearInterval(bootMonitor); bootMonitor = null; }
+    for(const hold of heldPads.values()) {
+      try {hold.instance.keyboard_send_scancodes([0xe0,HOLD_KEYS[hold.name]|0x80]);} catch {}
+    }
+    heldPads.clear();
     cancelDownloads();
     controls.forEach(id => $(id).disabled = true);
     $("screenShell").classList.remove("running");
@@ -619,21 +625,40 @@
   },{passive:false});
     $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
   $("padEsc").addEventListener("click",() => pressVirtualKey("esc"));
-  // Pointerdown sends immediately (without waiting for delayed iOS click synthesis).
-  // Click remains available for keyboard and assistive-technology activation.
-  const sentOnPointer = new WeakSet();
-  $("dpad").addEventListener("pointerdown", event => {
-    const key = event.target.closest("[data-padkey]");
-    if(!key || key.disabled || !event.isPrimary) return;
+  // Holding a D-pad button keeps the emulated arrow key pressed until finger-up.
+  // Quick taps last at least 90 ms, as older DOS games often poll keys slowly.
+  const handledPointerClicks=new WeakSet();
+  $("dpad").addEventListener("pointerdown",event=>{
+    const key=event.target.closest("[data-padkey]");
+    if(!key || key.disabled || !event.isPrimary || !ready || !isRunning || !emulator)return;
     event.preventDefault();
-    sentOnPointer.add(key);
-    pressVirtualKey(key.dataset.padkey);
+    const name=key.dataset.padkey;
+    const make=HOLD_KEYS[name];
+    if(!make)return;
+    handledPointerClicks.add(key);
+    try{key.setPointerCapture(event.pointerId);}catch{}
+    const instance=emulator;
+    heldPads.set(event.pointerId,{name,instance,start:Date.now()});
+    instance.keyboard_send_scancodes([0xe0,make]).catch(()=>{});
   });
-  $("dpad").addEventListener("click", event => {
-    const key = event.target.closest("[data-padkey]");
-    if(!key || key.disabled) return;
-    if(sentOnPointer.has(key)) { sentOnPointer.delete(key); return; }
-    pressVirtualKey(key.dataset.padkey);
+  function releasePad(event) {
+    const held=heldPads.get(event.pointerId);
+    if(!held)return;
+    heldPads.delete(event.pointerId);
+    const release=()=>{
+      if(held.instance!==emulator)return;
+      held.instance.keyboard_send_scancodes([0xe0,HOLD_KEYS[held.name]|0x80]).catch(()=>{});
+    };
+    const time=Math.max(0,90-(Date.now()-held.start));
+    if(time) setTimeout(release,time); else release();
+  }
+  $("dpad").addEventListener("pointerup",releasePad);
+  $("dpad").addEventListener("pointercancel",releasePad);
+  $("dpad").addEventListener("click",event=>{
+    const key=event.target.closest("[data-padkey]");
+    if(!key || key.disabled)return;
+    if(handledPointerClicks.has(key)){handledPointerClicks.delete(key);return;}
+    pressVirtualKey(key.dataset.padkey); // Keyboard or accessibility activation.
   });
   $("typeForm").addEventListener("submit", async event => {
     event.preventDefault();
