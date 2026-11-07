@@ -179,3 +179,12 @@ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{marg
 .game-action:active:not(:disabled){background:#3779c5}
 @media(max-width:480px){.game-action{font-size:12px;min-height:38px}.game-action small{font-size:9px}}
 @media(max-height:580px) and (orientation:landscape){body.lab-immersive #machine .game-action,#machine:fullscreen .game-action{min-height:29px;margin-top:3px;font-size:11px}.game-action small{display:none}}
+
+/* Five small instant-start buttons: arcade plus Minesweeper difficulty presets. */
+@media(max-width:600px){
+  .easy-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .easy-actions button{min-height:36px;font-size:11px;padding:6px 3px}
+}
+@media(max-width:390px){
+  .easy-actions button{font-size:10px;min-height:34px}
+}
