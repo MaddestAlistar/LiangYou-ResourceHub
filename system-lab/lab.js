@@ -91,8 +91,6 @@
   const pendingDownloads = new Set();
   let loadingTimer = null;
   let attemptFailed = false;
-  let activeLocalFile = null;
-  let localIntent = null;
   const controls = ["pause","resume","restart","fullscreen","exit","typeText","sendText","sendEnter"];
   const status = (message, live = false) => {
     $("machineStatus").textContent = message;
@@ -142,41 +140,23 @@
     }
     throw new Error(label+"下载失败（"+failures.join("；")+"）。请检查网络，或稍后重新尝试。");
   }
-  async function prepareAssets(config,token,localFile) {
-    let completed = 0;
-    const total = config.remote || config.local ? 3 : 4;
+  async function prepareAssets(config,token) {
+    let completed=0;
     async function one(label,urls,min) {
-      const value = await fetchAsset(label,urls,min,token);
-      completed += 1;
-      if(token === generation && !attemptFailed)
-        showLoading("资源准备中 " + completed + "/" + total,"已取得"+label+"，正在准备剩余文件…");
-      return value;
+      const result=await fetchAsset(label,urls,min,token);
+      completed++;
+      if(token===generation && !attemptFailed)
+        showLoading("资源准备中 "+completed+"/4","已取得"+label+"，正在准备剩余文件…");
+      return result;
     }
-    const tasks = [
+    const [bios,vga,wasm,image]=await Promise.all([
       one("系统 BIOS",ASSETS.seabios,50000),
       one("显示 BIOS",ASSETS.vgabios,10000),
-      one("运行核心 WASM",ASSETS.wasm,1000000)
-    ];
-    if(!config.remote && !config.local) tasks.push(one(config.name+"镜像",ASSETS.image(config.file),100000));
-    const [bios,vga,wasm,image] = await Promise.all(tasks);
-    let disk;
-    if(config.remote) {
-      // v86 downloads only accessed chunks from the upstream public image CDN.
-      // Don't fetch the entire virtual hard drive into the phone's RAM.
-      disk = {...config.remote};
-    } else if(config.local) {
-      if(!localFile) throw new Error("请先选择自己的 Windows 可启动 .img 磁盘镜像。");
-      showLoading("正在读取本地 Windows 启动磁盘","文件留在你的设备，不上传到网站。大镜像在手机上可能占用较多内存。");
-      const data = await localFile.arrayBuffer();
-      if(token !== generation) throw new Error("加载已取消");
-      if(data.byteLength < 1024 * 1024) throw new Error("选择的文件太小，可能不是可启动的磁盘镜像。");
-      disk = {buffer:data};
-    } else {
-      disk = {buffer:image.buffer};
-    }
-    return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk,wasm_path:wasm.url};
+      one("运行核心 WASM",ASSETS.wasm,1000000),
+      one(config.name+"镜像",ASSETS.image(config.file),100000)
+    ]);
+    return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk:{buffer:image.buffer},wasm_path:wasm.url};
   }
-
 
   const EASY_ACTIONS=Object.freeze({
     freedos:[
@@ -189,7 +169,7 @@
   const GAME_COMMANDS=new Set(["invaders","tetris","minesw~1","jumper","rogue"]);
   let touchStart = null;
   let mouseBusy = false;
-  const graphical = id => !!id && id !== "freedos";
+  const graphical=id=>id==="kolibri";
   async function clickMouse(kind) {
     if(!graphical(current) || !ready || !isRunning || !emulator || !emulator.bus?.send || mouseBusy) {
       simpleStatus("鼠标尚未就绪。请先启动图形系统并等待桌面出现。");
@@ -241,16 +221,16 @@
       $("simpleActionHelp").textContent = "可以用按钮操作，不需要记住英文指令。";
       btn.textContent = "▶ 启动系统后可操作";
     } else if(!guestReady) {
-      $("simpleStep").textContent = current==="freedos" ? "等待 A:\\> 出现；这是已经开机的标志。" : "正在启动图形系统。Android 和 ReactOS 需要更长时间，建议电脑体验。";
+      $("simpleStep").textContent = current==="freedos" ? "等待 A:\\> 出现，就能选择小游戏。" : "正在启动 KolibriOS，请等待桌面出现。";
       $("simpleActionHelp").textContent = "现在还在启动，请先不要输入。";
       btn.textContent = "⌛ 等待系统启动";
     } else if(current==="freedos") {
       $("simpleStep").textContent = gamePlaying
         ? "正在游戏中。换游戏前请先回到 A:\\>，必要时重启。"
-        : "已进入 DOS！先查看文件，或点下方其他小游戏。";
+        : "已进入 DOS！可以查看文件，也可以选择不同小游戏。";
       $("simpleActionHelp").textContent = gamePlaying
         ? "尝试 Esc 退出（有些游戏用 Q），不能退出可点「重启」。"
-        : "不只贪吃蛇：还可以玩侵略者、俄罗斯方块和使用 DOS 工具。";
+        : "这里有太空侵略者、俄罗斯方块、扫雷等游戏，下方还有 Jumper 与 Rogue。";
       btn.textContent = gamePlaying ? "↩ 尝试退出当前游戏" : "📁 查看磁盘文件";
     } else {
       $("simpleStep").textContent = "拖动光标到图标，再点「单击左键」或「双击打开」。";
@@ -305,7 +285,7 @@
   const renderGuide = id => {
     const guide = GUIDES[id];
     $("guideTitle").textContent = guide ? guide.title : "选择系统后显示操作提示";
-    $("guideIntro").textContent = guide ? guide.intro : "选择系统查看操作提示。ReactOS、Android 是图形系统；Windows 需要合法的本地启动盘。";
+    $("guideIntro").textContent = guide ? guide.intro : "FreeDOS 可以玩经典游戏，KolibriOS 是轻量桌面。";
     const steps = guide ? guide.steps : ["从上方选择一个系统并点击「启动」。","等待系统进入命令提示符或桌面。","通过下方快捷命令和虚拟按键操作。"];
     $("guideSteps").replaceChildren(...steps.map(step => {
       const item = document.createElement("li");
@@ -314,11 +294,8 @@
     }));
     const note=$("systemNote");
     note.hidden = !id;
-    note.textContent = id==="freedos" ? "💡 FreeDOS 不是游戏机：你可以打开多个游戏，也能看文件和使用早期电脑工具。"
-      : id==="kolibri" ? "💡 KolibriOS 有真正的桌面。手机只移动光标还不够，要点击下方的鼠标左键或双击。"
-      : id==="reactos" ? "💡 ReactOS 模拟磁盘约 700 MB，分块读取；首次启动可能很慢。"
-      : id==="android"||id==="android44" ? "💡 这是旧版 Android-x86 实验镜像，不代表能使用现代安卓 APP。"
-      : id==="win95"||id==="win98" ? "💡 Windows 必须选择你合法持有的可启动磁盘，本站不提供微软系统镜像。" : "";
+    note.textContent=id==="freedos" ? "💡 FreeDOS 镜像里有太空侵略者、俄罗斯方块、扫雷、Jumper 和 Rogue。"
+      : id==="kolibri" ? "💡 KolibriOS 是图形桌面；先移动鼠标，再点左键或双击。" : "";
     const actions=$("easyActions");
     actions.replaceChildren();
     for(const item of EASY_ACTIONS[id]||[]) {
@@ -430,25 +407,18 @@
     if(old) { try { await old.destroy(); } catch (error) { console.warn("VM teardown:",error); } }
     $("screen_container").replaceChildren(Object.assign(document.createElement("div"),{style:"white-space:pre;font:14px monospace;line-height:14px"}), Object.assign(document.createElement("canvas"),{style:"display:none"}));
   }
-  async function launch(id,localFile=null) {
-    const config = SYSTEMS[id];
-    if (!config) return;
-    if(config.local && !localFile) {
-      localIntent=id;
-      $("localDiskInput").value="";
-      $("localDiskInput").click();
-      return;
-    }
-    activeLocalFile = config.local ? localFile : null;
+  async function launch(id) {
+    const config=SYSTEMS[id];
+    if(!config)return;
     const token = ++generation;
     current = id;
     $("errorBox").hidden = true;
     $("machineName").textContent = config.name;
     resetUI();
-    showLoading("正在准备系统…",config.remote ? "正在准备模拟器。大型系统镜像由 v86 分块读取，较适合电脑浏览器。" : config.local ? "正在准备加载你选的本地启动磁盘…" : "首次运行需要下载几个系统文件，失败会切换备用地址。");
+    showLoading("正在准备系统…","首次运行需要下载几个系统文件，失败会自动切换备用地址。");
     renderGuide(id);
     simpleStatus("系统正在启动，等屏幕出现提示后，点击旁边的大按钮即可。");
-    const card = document.querySelector('[data-system="' + (id==="android44" ? "android" : id) + '"]');
+    const card = document.querySelector('[data-system="' + id + '"]');
     if(card) card.classList.add("active");
     $("runtime").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
     status("正在加载模拟器核心…");
@@ -457,7 +427,7 @@
       if(token !== generation) return;
       await loadRuntime();
       if(token !== generation) return;
-      const assets = await prepareAssets(config,token,localFile);
+      const assets = await prepareAssets(config,token);
       if(token !== generation) return;
       showLoading("系统文件已准备完成","正在启动虚拟机，出现开机画面后即可操作。");
       const Emulator = window.V86 || window.V86Starter;
@@ -469,9 +439,7 @@
         bios: assets.bios,
         vga_bios: assets.vga_bios,
         autostart:true,
-        boot_order:config.type === "cdrom" ? 0x213 : config.type === "hda" ? 0x132 : 0x231,
-        acpi:!!config.acpi,
-        initial_state:config.state || undefined,
+        boot_order:0x231,
         disable_keyboard:false,
         disable_mouse:false
       };
@@ -486,9 +454,7 @@
         status("模拟器就绪，系统正在启动…",true);
         buttons();
         $("screen_container").focus({preventScroll:true});
-        if(config.autoEnter) setTimeout(()=>{
-          if(token===generation && emulator===instance && isRunning) instance.keyboard_send_scancodes(KEY_CODES.enter,15).catch(()=>{});
-        },3000);
+
       });
       instance.add_listener("emulator-started", () => {
         if(token !== generation) return;
@@ -511,7 +477,7 @@
           if(id === "freedos" && /A:\\>/.test(text)) {
             guestReady = true;
             status("DOS 提示符已就绪 · 本地运行",true);
-            simpleStatus("DOS 已进入：可以查看磁盘文件，也能选贪吃蛇、侵略者或俄罗斯方块。");
+            simpleStatus("DOS 已进入：可以查看文件，也能选太空侵略者、俄罗斯方块、扫雷等小游戏。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(graphical(id) && graphics) {
@@ -535,41 +501,24 @@
         status("已暂停");
         buttons();
       });
-      instance.add_listener("download-error",info=>{
-        if(token!==generation || emulator!==instance || attemptFailed) return;
-        const name=info?.file_name ? String(info.file_name).split("/").slice(-1)[0] : "系统镜像分块";
-        fail(new Error(name+" 无法下载，可能是线路无法访问或跨域限制。请重试或改用系统卡片里的官方演示。"));
-      });
-      instance.add_listener("download-progress",progress=>{
-        if(token!==generation || !config.remote) return;
-        if(progress?.lengthComputable && progress.total>0)
-          $("runtimeHint").textContent = "正在按需读取系统磁盘："+Math.round(100*progress.loaded/progress.total)+"%（单个资源）。大型系统加载慢属于正常情况。";
-      });
       // Don't claim success until the engine explicitly reports it has started.
       loadingTimer = setTimeout(() => {
         if(token !== generation || isRunning) return;
         fail(new Error("虚拟机没有在允许的启动时间内运行。大系统可能超过设备内存限制，请优先尝试电脑或使用官方演示。"));
-      }, config.remote ? 180000 : 45000);
+      },45000);
     } catch(error) {
       if(token === generation) { resetUI(); fail(error); }
     }
   }
   document.querySelectorAll("[data-launch]").forEach(button => button.addEventListener("click", () => launch(button.dataset.launch)));
-  document.querySelectorAll("[data-local]").forEach(button=>button.addEventListener("click",()=>launch(button.dataset.local)));
-  $("localDiskInput").addEventListener("change",event=>{
-    const file=event.target.files?.[0];
-    const id=localIntent;
-    localIntent=null;
-    if(file && id && SYSTEMS[id]?.local) launch(id,file);
-  });
   $("pause").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.stop();}catch(e){fail(e);}}});
   $("resume").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.run();}catch(e){fail(e);}}});
   $("restart").addEventListener("click",() => {if(emulator && ready) emulator.restart();});
-  $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;activeLocalFile=null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
+  $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
   $("fullscreen").addEventListener("click",toggleImmersive);
   $("screenMode").addEventListener("click",toggleImmersive);
-  $("retryLoading").addEventListener("click",()=>{if(current) launch(current,activeLocalFile);});
-  $("retryFailed").addEventListener("click",()=>{if(current) launch(current,activeLocalFile);});
+  $("retryLoading").addEventListener("click",()=>{if(current) launch(current);});
+  $("retryFailed").addEventListener("click",()=>{if(current) launch(current);});
   document.addEventListener("fullscreenchange",() => {
     if(!document.fullscreenElement && document.body.classList.contains("lab-immersive")) setImmersive(false);
   });
