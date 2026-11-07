@@ -222,6 +222,7 @@
     $("easyActions").querySelectorAll("[data-easycmd]").forEach(button=>{
       button.disabled = !isReady || commandBusy || (current==="freedos" && gamePlaying);
     });
+    $("easyActions").hidden = !(EASY_ACTIONS[current]?.length) || (current==="freedos" && gamePlaying);
     btn.disabled = !isReady || commandBusy;
     if(!current) {
       $("simpleStep").textContent = "先选一个系统并启动，下面会告诉你怎么操作。";
