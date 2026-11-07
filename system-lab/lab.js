@@ -178,21 +178,39 @@
     }
     throw new Error(label+"下载失败（"+failures.join("；")+"）。请检查网络，或稍后重新尝试。");
   }
-  async function prepareAssets(config,token) {
+  async function prepareAssets(config,token,localFile) {
     let completed = 0;
+    const total = config.remote || config.local ? 3 : 4;
     async function one(label,urls,min) {
       const value = await fetchAsset(label,urls,min,token);
       completed += 1;
-      if(token === generation && !attemptFailed) showLoading("资源准备中 " + completed + "/4","已取得"+label+"，正在准备剩余文件…");
+      if(token === generation && !attemptFailed)
+        showLoading("资源准备中 " + completed + "/" + total,"已取得"+label+"，正在准备剩余文件…");
       return value;
     }
-    const [bios,vga,image,wasm] = await Promise.all([
+    const tasks = [
       one("系统 BIOS",ASSETS.seabios,50000),
       one("显示 BIOS",ASSETS.vgabios,10000),
-      one(config.name+"镜像",ASSETS.image(config.file),100000),
       one("运行核心 WASM",ASSETS.wasm,1000000)
-    ]);
-    return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk:{buffer:image.buffer},wasm_path:wasm.url};
+    ];
+    if(!config.remote && !config.local) tasks.push(one(config.name+"镜像",ASSETS.image(config.file),100000));
+    const [bios,vga,wasm,image] = await Promise.all(tasks);
+    let disk;
+    if(config.remote) {
+      // v86 downloads only accessed chunks from the upstream public image CDN.
+      // Don't fetch the entire virtual hard drive into the phone's RAM.
+      disk = {...config.remote};
+    } else if(config.local) {
+      if(!localFile) throw new Error("请先选择自己的 Windows 可启动 .img 磁盘镜像。");
+      showLoading("正在读取本地 Windows 启动磁盘","文件留在你的设备，不上传到网站。大镜像在手机上可能占用较多内存。");
+      const data = await localFile.arrayBuffer();
+      if(token !== generation) throw new Error("加载已取消");
+      if(data.byteLength < 1024 * 1024) throw new Error("选择的文件太小，可能不是可启动的磁盘镜像。");
+      disk = {buffer:data};
+    } else {
+      disk = {buffer:image.buffer};
+    }
+    return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk,wasm_path:wasm.url};
   }
 
 
@@ -446,15 +464,22 @@
     if(old) { try { await old.destroy(); } catch (error) { console.warn("VM teardown:",error); } }
     $("screen_container").replaceChildren(Object.assign(document.createElement("div"),{style:"white-space:pre;font:14px monospace;line-height:14px"}), Object.assign(document.createElement("canvas"),{style:"display:none"}));
   }
-  async function launch(id) {
+  async function launch(id,localFile=null) {
     const config = SYSTEMS[id];
     if (!config) return;
+    if(config.local && !localFile) {
+      localIntent=id;
+      $("localDiskInput").value="";
+      $("localDiskInput").click();
+      return;
+    }
+    activeLocalFile = config.local ? localFile : null;
     const token = ++generation;
     current = id;
     $("errorBox").hidden = true;
     $("machineName").textContent = config.name;
     resetUI();
-    showLoading("正在准备系统…","首次运行需要下载几个系统文件。若下载失败会自动切换备用地址。");
+    showLoading("正在准备系统…",config.remote ? "正在准备模拟器。大型系统镜像由 v86 分块读取，较适合电脑浏览器。" : config.local ? "正在准备加载你选的本地启动磁盘…" : "首次运行需要下载几个系统文件，失败会切换备用地址。");
     renderGuide(id);
     simpleStatus("系统正在启动，等屏幕出现提示后，点击旁边的大按钮即可。");
     document.querySelector('[data-system="' + id + '"]').classList.add("active");
@@ -465,7 +490,7 @@
       if(token !== generation) return;
       await loadRuntime();
       if(token !== generation) return;
-      const assets = await prepareAssets(config,token);
+      const assets = await prepareAssets(config,token,localFile);
       if(token !== generation) return;
       showLoading("系统文件已准备完成","正在启动虚拟机，出现开机画面后即可操作。");
       const Emulator = window.V86 || window.V86Starter;
@@ -478,6 +503,7 @@
         vga_bios: assets.vga_bios,
         autostart:true,
         boot_order:config.type === "cdrom" ? 0x132 : 0x213,
+        acpi:!!config.acpi,
         disable_keyboard:false,
         disable_mouse:false
       };
@@ -492,6 +518,9 @@
         status("模拟器就绪，系统正在启动…",true);
         buttons();
         $("screen_container").focus({preventScroll:true});
+        if(config.autoEnter) setTimeout(()=>{
+          if(token===generation && emulator===instance && isRunning) instance.keyboard_send_scancodes(KEY_CODES.enter,15).catch(()=>{});
+        },3000);
       });
       instance.add_listener("emulator-started", () => {
         if(token !== generation) return;
@@ -544,6 +573,11 @@
         status("已暂停");
         buttons();
       });
+      instance.add_listener("download-progress",progress=>{
+        if(token!==generation || !config.remote) return;
+        if(progress?.lengthComputable && progress.total>0)
+          $("runtimeHint").textContent = "正在按需读取系统磁盘："+Math.round(100*progress.loaded/progress.total)+"%（单个资源）。大型系统加载慢属于正常情况。";
+      });
       // Don't claim success until the engine explicitly reports it has started.
       loadingTimer = setTimeout(() => {
         if(token !== generation || isRunning) return;
@@ -554,14 +588,21 @@
     }
   }
   document.querySelectorAll("[data-launch]").forEach(button => button.addEventListener("click", () => launch(button.dataset.launch)));
+  document.querySelectorAll("[data-local]").forEach(button=>button.addEventListener("click",()=>launch(button.dataset.local)));
+  $("localDiskInput").addEventListener("change",event=>{
+    const file=event.target.files?.[0];
+    const id=localIntent;
+    localIntent=null;
+    if(file && id && SYSTEMS[id]?.local) launch(id,file);
+  });
   $("pause").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.stop();}catch(e){fail(e);}}});
   $("resume").addEventListener("click",async () => {if(emulator && ready) {try{await emulator.run();}catch(e){fail(e);}}});
   $("restart").addEventListener("click",() => {if(emulator && ready) emulator.restart();});
-  $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
+  $("exit").addEventListener("click",async () => {++generation; if(document.body.classList.contains("lab-immersive")) setImmersive(false); resetUI();current = null;activeLocalFile=null;renderGuide(null);status("已退出");$("machineName").textContent="尚未启动";await stopExisting();});
   $("fullscreen").addEventListener("click",toggleImmersive);
   $("screenMode").addEventListener("click",toggleImmersive);
-  $("retryLoading").addEventListener("click",()=>{if(current) launch(current);});
-  $("retryFailed").addEventListener("click",()=>{if(current) launch(current);});
+  $("retryLoading").addEventListener("click",()=>{if(current) launch(current,activeLocalFile);});
+  $("retryFailed").addEventListener("click",()=>{if(current) launch(current,activeLocalFile);});
   document.addEventListener("fullscreenchange",() => {
     if(!document.fullscreenElement && document.body.classList.contains("lab-immersive")) setImmersive(false);
   });
