@@ -107,6 +107,7 @@
         // v86's emulator-started event only means the emulated CPU is running.
         // It does NOT mean the guest OS has reached a usable prompt or desktop.
         const startedAt = Date.now();
+        let warningShown = false;
         const monitor = setInterval(() => {
           if(token !== generation || !emulator) { clearInterval(monitor); return; }
           if(!isRunning) return;
@@ -123,9 +124,11 @@
           } else if(id === "kolibri" && graphics) {
             status("已切换图形模式 · 请确认桌面",true);
             clearInterval(monitor);
-          } else if(Date.now() - startedAt > 60000) {
-            status("引导时间较长 · 可能未完成启动");
-            $("runtimeHint").textContent = "模拟器已运行，但尚未检测到系统就绪界面。若画面一直不动，可重启或尝试桌面浏览器。";
+          } else if(Date.now() - startedAt > 60000 && !warningShown) {
+            warningShown = true;
+            status("系统仍在引导 · 可以继续等待");
+            $("runtimeHint").textContent = "模拟器仍在运行，但尚未检测到系统就绪界面。若画面长时间不动，可重启或尝试桌面浏览器。";
+          } else if(Date.now() - startedAt > 180000) {
             clearInterval(monitor);
           }
         }, 1400);
