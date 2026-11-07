@@ -65,28 +65,28 @@ try {
   await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('ENTER 已发送') || document.querySelector('#quickFeedback')?.textContent?.includes('Enter 已发送'),null,{timeout:10000});
   console.log('KolibriOS virtual Enter key sent');
   await page.screenshot({path:'/tmp/ly-web-os-kolibri.png',fullPage:true});
-  await page.locator('[data-launch="linux"]').click();
-  // Require a login or shell prompt, not just kernel initialization.
-  await page.waitForFunction(() => /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(document.querySelector('#screen_container')?.textContent || ''), null, {timeout:100000});
-  console.log('Buildroot Linux login/shell prompt reached');
-  if(!(await page.locator('#systemNote').textContent()).includes('没有可点击的桌面'))throw Error('Linux CLI explanation missing');
-  if(await page.locator('#easyActions [data-easycmd]').count()!==3)throw Error('Linux beginner actions not available');
-  await page.waitForFunction(() => document.querySelector('#guestIndicator')?.textContent?.includes('Shell 已进入'),null,{timeout:15000});
-  if(!(await page.locator('#guideTitle').textContent()).includes('Linux')) throw new Error('Linux guide not shown');
-  await page.locator('[data-command="pwd"]').click();
-  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('已输入并执行「pwd」'),null,{timeout:15000});
-  console.log('Linux one-tap command sent successfully');
-  await page.screenshot({path:'/tmp/ly-web-os-linux.png',fullPage:true});
+  // Removed Buildroot must never appear in the public menu.
+  if(await page.locator('[data-system="linux"]').count())throw Error('Buildroot Linux should be removed');
+  if(await page.locator('[data-system="reactos"]').count()!==1)throw Error('ReactOS entry missing');
+  if(await page.locator('[data-system="android"]').count()!==1)throw Error('Android-x86 entry missing');
+  if(await page.locator('[data-system="win95"]').count()!==1 || await page.locator('[data-system="win98"]').count()!==1)throw Error('Windows cards missing');
+  if(await page.locator('[data-launch="android44"]').count()!==1)throw Error('Android 4.4 experimental entry missing');
+  const chooserWait = page.waitForEvent('filechooser');
+  await page.locator('[data-local="win95"]').click();
+  const chooser = await chooserWait;
+  if(!chooser.isMultiple() && !(await page.locator('#localDiskInput').getAttribute('accept')).includes('.img'))throw Error('Local Windows disk picker unavailable');
+  // Do not choose a proprietary Windows image in CI. No Windows binaries are bundled.
+  console.log('ReactOS, Android and Windows local-file entry points present');
   const mobile = await browser.newPage({...devices['iPhone 13']});
   await mobile.goto(url, {waitUntil:'domcontentloaded'});
   const layout = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth, viewport:innerWidth, cardCount:document.querySelectorAll('.system-card').length}));
   console.log('Mobile layout:',layout);
-  if(layout.document > layout.viewport + 5 || layout.cardCount !== 3) throw Error('Mobile screen layout overflow or missing system cards');
-  await mobile.locator('[data-launch="linux"]').click();
-  if(!(await mobile.locator('#guideTitle').textContent()).includes('Linux')) throw Error('Mobile guide did not update on launch');
+  if(layout.document > layout.viewport + 5 || layout.cardCount !== 5) throw Error('Mobile screen layout overflow or missing system cards');
+  await mobile.locator('[data-launch="freedos"]').click();
+  if(!(await mobile.locator('#guideTitle').textContent()).includes('FreeDOS')) throw Error('Mobile guide did not update on launch');
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
   console.log('Mobile after choosing guest:', mobileWidth);
-  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 4) throw Error('Mobile guide or keypad overflows / is incomplete');
+  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 6) throw Error('Mobile guide or keypad overflows / is incomplete');
   await mobile.locator('#screenMode').click();
   const immersive = await mobile.evaluate(() => ({
     enabled:document.body.classList.contains('lab-immersive'),
