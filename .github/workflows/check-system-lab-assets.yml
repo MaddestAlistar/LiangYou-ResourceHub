@@ -1,0 +1,49 @@
+name: Check Web OS Lab external assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'system-lab/**'
+      - '.github/workflows/check-system-lab-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check v86 core, images and browser CORS support
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://maddestalistar.github.io"
+          check_asset() {
+            local url="$1"
+            local require_cors="$2"
+            local headers
+            headers="$(mktemp)"
+            echo "::group::Checking $url"
+            curl -fSL --connect-timeout 12 --max-time 45 --retry 2 \
+              -H "Origin: $origin" -o /dev/null -D "$headers" "$url"
+            echo "Status and CORS headers:"
+            grep -iE '^(HTTP/|access-control-allow-origin:|content-type:|content-length:)' "$headers" || true
+            if [[ "$require_cors" == yes ]]; then
+              if ! grep -qiE '^access-control-allow-origin: (\\*|https://maddestalistar.github.io)' "$headers"; then
+                echo "::error::Missing browser CORS permission for $url"
+                exit 1
+              fi
+            fi
+            rm "$headers"
+            echo "::endgroup::"
+          }
+          check_asset "https://copy.sh/v86/build/libv86.js" no
+          check_asset "https://copy.sh/v86/build/v86.wasm" yes
+          check_asset "https://raw.githubusercontent.com/copy/v86/master/bios/seabios.bin" yes
+          check_asset "https://raw.githubusercontent.com/copy/v86/master/bios/vgabios.bin" yes
+          check_asset "https://raw.githubusercontent.com/copy/images/master/freedos722.img" yes
+          check_asset "https://raw.githubusercontent.com/copy/images/master/kolibri.img" yes
+          check_asset "https://raw.githubusercontent.com/copy/images/master/linux.iso" yes
