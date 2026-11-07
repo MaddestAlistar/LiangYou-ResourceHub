@@ -17,6 +17,21 @@ try {
   if(!(await page.locator('#screen_container').textContent()).includes('A:\\>'))throw new Error('WebKit did not boot FreeDOS to DOS prompt');
   console.log('WebKit mobile FreeDOS boot successful');
   await page.screenshot({path:'/tmp/ly-os-webkit.png',fullPage:true});
+  await page.locator('[data-launch="kolibri"]').click();
+  await page.waitForFunction(()=>{
+    const canvas=document.querySelector('#screen_container canvas');
+    return !!canvas && getComputedStyle(canvas).display!=='none' && canvas.width>=320 && canvas.height>=200;
+  },null,{timeout:110000});
+  await page.waitForFunction(()=>!document.querySelector('[data-mouse="left"]')?.disabled,null,{timeout:15000});
+  if(await page.locator('#mouseControls').isHidden())throw Error('Mouse buttons should appear in Kolibri mode');
+  await page.locator('[data-mouse="left"]').click();
+  await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('左键点击已发送'),null,{timeout:15000});
+  await page.locator('[data-mouse="double"]').click();
+  await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('双击已发送'),null,{timeout:15000});
+  await page.locator('#screen_container canvas').tap({position:{x:20,y:20}});
+  await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('左键点击已发送'),null,{timeout:15000});
+  console.log('WebKit iPhone-like KolibriOS left/double/tap mouse events sent.');
+  await page.screenshot({path:'/tmp/ly-os-webkit-kolibri.png',fullPage:true});
 }catch(e){
   console.error('WebKit mobile boot FAILED:',e.message);
   console.error('State:',await page.locator('#machineStatus').textContent().catch(()=>'?'));
