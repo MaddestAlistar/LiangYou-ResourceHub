@@ -28,12 +28,12 @@ try {
   await page.waitForFunction(() => /dir/i.test(document.querySelector('#screen_container')?.textContent || ''),null,{timeout:15000});
   console.log('FreeDOS one-tap command sent successfully');
   const gameButton = page.locator('#primaryAction');
-  if(!(await gameButton.textContent()).includes('查看磁盘文件')) throw Error('DOS main button should show files, not force snake');
+  if(!(await gameButton.textContent()).includes('查看磁盘文件')) throw Error('DOS main button should show files, not force a game');
   if(await page.locator('#easyActions [data-easycmd]').count()!==3)throw Error('Missing three DOS game choices');
   await gameButton.click();
   await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('dir'),null,{timeout:15000});
-  await page.locator('#easyActions [data-easycmd="snake"]').click();
-  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('已尝试启动「snake」'),null,{timeout:15000});
+  await page.locator('#easyActions [data-easycmd="invaders"]').click();
+  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('已尝试启动「invaders」'),null,{timeout:15000});
   await page.locator('[data-padkey="up"]').click();
   await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('方向键已按下：上'),null,{timeout:10000});
   console.log('FreeDOS multiple game choices and screen-adjacent gamepad work');
@@ -65,28 +65,28 @@ try {
   await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('ENTER 已发送') || document.querySelector('#quickFeedback')?.textContent?.includes('Enter 已发送'),null,{timeout:10000});
   console.log('KolibriOS virtual Enter key sent');
   await page.screenshot({path:'/tmp/ly-web-os-kolibri.png',fullPage:true});
-  // Removed Buildroot must never appear in the public menu.
-  if(await page.locator('[data-system="linux"]').count())throw Error('Buildroot Linux should be removed');
-  if(await page.locator('[data-system="reactos"]').count()!==1)throw Error('ReactOS entry missing');
-  if(await page.locator('[data-system="android"]').count()!==1)throw Error('Android-x86 entry missing');
-  if(await page.locator('[data-system="win95"]').count()!==1 || await page.locator('[data-system="win98"]').count()!==1)throw Error('Windows cards missing');
-  if(await page.locator('[data-launch="android44"]').count()!==1)throw Error('Android 4.4 experimental entry missing');
-  const chooserWait = page.waitForEvent('filechooser');
-  await page.locator('[data-local="win95"]').click();
-  const chooser = await chooserWait;
-  if(!chooser.isMultiple() && !(await page.locator('#localDiskInput').getAttribute('accept')).includes('.img'))throw Error('Local Windows disk picker unavailable');
-  // Do not choose a proprietary Windows image in CI. No Windows binaries are bundled.
-  console.log('ReactOS, Android and Windows local-file entry points present');
+  // The retired OS choices must not be present in the menu.
+  if(await page.locator('.system-card').count()!==2)throw Error('Expected exactly FreeDOS and KolibriOS');
+  for(const removed of ['linux','reactos','android','win95','win98']) {
+    if(await page.locator('[data-system="'+removed+'"]').count())throw Error('Removed system is still present: '+removed);
+  }
+  if(await page.locator('[data-command="snake"]').count())throw Error('Removed game should not have a launch button');
+  for(const command of ['invaders','tetris','minesw~1','jumper','rogue']) {
+    await page.locator('[data-launch="freedos"]').click();
+    await page.waitForFunction(()=>document.querySelector('#quickCommands [data-command="dir"]')!==null,null,{timeout:20000});
+    if(await page.locator('[data-command="'+command+'"]').count()!==1)throw Error('Expected verified DOS game: '+command);
+  }
+  console.log('Retired OS entries removed; five verified DOS game commands displayed');
   const mobile = await browser.newPage({...devices['iPhone 13']});
   await mobile.goto(url, {waitUntil:'domcontentloaded'});
   const layout = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth, viewport:innerWidth, cardCount:document.querySelectorAll('.system-card').length}));
   console.log('Mobile layout:',layout);
-  if(layout.document > layout.viewport + 5 || layout.cardCount !== 6) throw Error('Mobile screen layout overflow or missing system cards');
+  if(layout.document > layout.viewport + 5 || layout.cardCount !== 2) throw Error('Mobile screen layout overflow or missing system cards');
   await mobile.locator('[data-launch="freedos"]').click();
   if(!(await mobile.locator('#guideTitle').textContent()).includes('FreeDOS')) throw Error('Mobile guide did not update on launch');
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
   console.log('Mobile after choosing guest:', mobileWidth);
-  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 6) throw Error('Mobile guide or keypad overflows / is incomplete');
+  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 8) throw Error('Mobile guide or keypad overflows / is incomplete');
   await mobile.locator('#screenMode').click();
   const immersive = await mobile.evaluate(() => ({
     enabled:document.body.classList.contains('lab-immersive'),
