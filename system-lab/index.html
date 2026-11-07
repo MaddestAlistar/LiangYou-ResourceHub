@@ -7,8 +7,8 @@
   <meta name="description" content="良友科技在线系统实验室：在浏览器本地运行 FreeDOS、KolibriOS 和轻量 Linux，无需云端虚拟机。">
   <title>在线系统实验室 | 良友科技</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./lab.css">
-  <script defer src="./lab.js"></script>
+  <link rel="stylesheet" href="./lab.css?v=20261108c">
+  <script defer src="./lab.js?v=20261108c"></script>
 </head>
 <body>
   <a class="skip" href="#systems">跳转到系统列表</a>
@@ -53,7 +53,14 @@
       <div class="section-head"><div><p class="kicker">LOCAL VIRTUAL MACHINE</p><h2 id="runtime-title">系统运行窗口</h2></div><a class="source" href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">官方 v86 演示 ↗</a></div>
       <div class="machine" id="machine">
         <div class="machine-bar"><div class="machine-brand"><span class="led" id="led"></span><strong id="machineName">尚未启动</strong></div><span id="machineStatus" class="machine-status" aria-live="polite">请选择上方的系统</span></div>
-        <div class="screen-shell" id="screenShell"><div class="empty-screen" id="screenPlaceholder"><span class="screen-symbol">⌘</span><strong>READY WHEN YOU ARE</strong><span>点击上方任意「启动」按钮，操作系统将在此处打开。</span></div><div id="screen_container" aria-label="虚拟机屏幕" tabindex="0"><div style="white-space:pre;font:14px monospace;line-height:14px"></div><canvas style="display:none"></canvas></div></div>
+        <div class="screen-shell" id="screenShell"><div class="empty-screen" id="screenPlaceholder"><span class="screen-symbol">⌘</span><strong>READY WHEN YOU ARE</strong><span>点击上方任意「启动」按钮，操作系统将在此处打开。</span></div><div id="screen_container" aria-label="虚拟机屏幕" tabindex="0"><div style="white-space:pre;font:14px monospace;line-height:14px"></div><canvas style="display:none"></canvas></div>
+          <div class="loading-cover" id="loadingCover" hidden aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <strong id="loadingTitle">正在准备系统…</strong>
+            <p id="loadingDetail">准备完成后，画面会自动显示。</p>
+            <button type="button" id="retryLoading">↻ 重新尝试启动</button>
+          </div>
+        </div>
         <div class="play-panel" id="playPanel" aria-label="屏幕旁边的操作区">
           <div class="next-step"><span class="next-badge">下一步做什么？</span><strong id="simpleStep" aria-live="polite">先在上面选择一个系统，点击「启动」。</strong></div>
           <div class="play-layout">
@@ -112,7 +119,7 @@
           <p class="quick-feedback" id="quickFeedback" role="status" aria-live="polite">先启动一个系统，虚拟按键才会启用。</p>
         </section>
         <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可打开官方 v86 演示。</div>
-        <div class="error-box" id="errorBox" hidden><strong>启动未完成</strong><p id="errorMessage"></p><a href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">在 v86 官方网站尝试 ↗</a></div>
+        <div class="error-box" id="errorBox" hidden><strong>暂时没有启动成功</strong><p id="errorMessage"></p><button type="button" id="retryFailed" class="retry-error">↻ 重新下载并启动</button><a href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">在 v86 官方网站尝试 ↗</a></div>
       </div>
     </section>
     <section class="wrap notice" aria-labelledby="notice-title">
