@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080f23">
+  <meta name="description" content="良友科技在线系统实验室：在浏览器本地运行 FreeDOS、KolibriOS 和轻量 Linux，无需云端虚拟机。">
+  <title>在线系统实验室 | 良友科技</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./lab.css">
+  <script defer src="./lab.js"></script>
+</head>
+<body>
+  <a class="skip" href="#systems">跳转到系统列表</a>
+  <header class="topbar">
+    <a class="brand" href="../index.html"><span class="brand-mark">良</span><span>良友科技 <small>LIANGYOU TECH</small></span></a>
+    <nav aria-label="页面导航"><a href="../index.html">返回资源中心</a><a href="https://github.com/copy/v86" target="_blank" rel="noopener noreferrer">开源项目</a></nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow"><span class="glow-dot"></span> LIANGYOU · WEB OS LAB</div>
+      <h1>在线系统<span>实验室</span></h1>
+      <p class="hero-intro">不用安装 App，在浏览器里启动经典操作系统。系统计算在你的设备上进行，不使用我们的云端虚拟机。</p>
+      <div class="hero-meta"><span>WebAssembly 本地运行</span><span>按需加载</span><span>移动端实验支持</span></div>
+    </section>
+    <section id="systems" class="wrap" aria-labelledby="systems-title">
+      <div class="section-head"><div><p class="kicker">CHOOSE A SYSTEM</p><h2 id="systems-title">选择一个系统</h2></div><p class="section-hint">只有点击启动后才加载模拟器和系统镜像。</p></div>
+      <div class="system-grid">
+        <article class="system-card" data-system="freedos">
+          <div class="system-icon dos" aria-hidden="true">&gt;_</div>
+          <div class="card-top"><h3>FreeDOS</h3><span class="tag">推荐入门</span></div>
+          <p>体验经典 DOS 命令行，适合第一次使用网页模拟器。</p>
+          <div class="detail"><span>命令行</span><span>约 0.7 MB 镜像</span></div>
+          <button class="launch" type="button" data-launch="freedos">启动 FreeDOS <span aria-hidden="true">↗</span></button>
+        </article>
+        <article class="system-card" data-system="kolibri">
+          <div class="system-icon kolibri" aria-hidden="true">▦</div>
+          <div class="card-top"><h3>KolibriOS</h3><span class="tag">轻量桌面</span></div>
+          <p>极小的图形操作系统，可试用窗口、菜单和简单工具。</p>
+          <div class="detail"><span>图形界面</span><span>约 1.4 MB 镜像</span></div>
+          <button class="launch" type="button" data-launch="kolibri">启动 KolibriOS <span aria-hidden="true">↗</span></button>
+        </article>
+        <article class="system-card" data-system="linux">
+          <div class="system-icon linux" aria-hidden="true">#</div>
+          <div class="card-top"><h3>Buildroot Linux</h3><span class="tag">轻量 Linux</span></div>
+          <p>体验开源 Linux 环境。这里使用轻量镜像，并非完整桌面发行版。</p>
+          <div class="detail"><span>命令行</span><span>约 5.7 MB 镜像</span></div>
+          <button class="launch" type="button" data-launch="linux">启动 Linux <span aria-hidden="true">↗</span></button>
+        </article>
+      </div>
+    </section>
+    <section class="wrap stage" id="runtime" aria-labelledby="runtime-title">
+      <div class="section-head"><div><p class="kicker">LOCAL VIRTUAL MACHINE</p><h2 id="runtime-title">系统运行窗口</h2></div><a class="source" href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">官方 v86 演示 ↗</a></div>
+      <div class="machine">
+        <div class="machine-bar"><div class="machine-brand"><span class="led" id="led"></span><strong id="machineName">尚未启动</strong></div><span id="machineStatus" class="machine-status" aria-live="polite">请选择上方的系统</span></div>
+        <div class="screen-shell" id="screenShell"><div class="empty-screen" id="screenPlaceholder"><span class="screen-symbol">⌘</span><strong>READY WHEN YOU ARE</strong><span>点击上方任意「启动」按钮，操作系统将在此处打开。</span></div><div id="screen_container" aria-label="虚拟机屏幕" tabindex="0"><div style="white-space:pre;font:14px monospace;line-height:14px"></div><canvas style="display:none"></canvas></div></div>
+        <div class="machine-toolbar" role="group" aria-label="模拟器操作">
+          <button type="button" id="pause" disabled>暂停</button>
+          <button type="button" id="resume" disabled>继续</button>
+          <button type="button" id="restart" disabled>重启</button>
+          <button type="button" id="fullscreen" disabled>全屏</button>
+          <button type="button" id="exit" disabled>退出</button>
+        </div>
+        <form id="typeForm" class="type-controls"><label for="typeText">手机虚拟输入</label><div><input id="typeText" type="text" placeholder="输入命令或文本（不适合输入密码）" autocomplete="off" spellcheck="false" disabled><button id="sendText" type="submit" disabled>发送文本</button><button id="sendEnter" type="button" disabled>Enter ↵</button></div></form>
+        <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可打开官方 v86 演示。</div>
+        <div class="error-box" id="errorBox" hidden><strong>启动未完成</strong><p id="errorMessage"></p><a href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">在 v86 官方网站尝试 ↗</a></div>
+      </div>
+    </section>
+    <section class="wrap notice" aria-labelledby="notice-title">
+      <h2 id="notice-title">使用说明</h2>
+      <div class="notice-grid">
+        <p><strong>不会占用网站服务器算力</strong><br>模拟器运行在你自己的浏览器中，但首次打开会从第三方下载模拟器和系统镜像，产生正常下载流量。</p>
+        <p><strong>手机端推荐横屏</strong><br>触屏输入支持有限。部分系统需要键盘、鼠标，Safari 可能因内存、全屏或运行限制无法正常启动。</p>
+        <p><strong>请勿输入个人资料</strong><br>这些是公开演示镜像，不是隔离的安全系统。关闭页面后，未保存的改动通常不会保留。</p>
+        <p><strong>开源致谢与授权</strong><br>模拟器基于 <a href="https://github.com/copy/v86" target="_blank" rel="noopener noreferrer">v86</a>，镜像来自 <a href="https://github.com/copy/images" target="_blank" rel="noopener noreferrer">copy/images</a>；各系统拥有独立的开源许可。</p>
+      </div>
+    </section>
+  </main>
+  <footer><span>良友科技 · 良哥看未来</span><a href="../index.html">返回资源中心</a></footer>
+</body>
+</html>
