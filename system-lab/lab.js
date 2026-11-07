@@ -221,9 +221,10 @@
   const GAME_COMMANDS = new Set(["snake","invaders","tetris"]);
   let touchStart = null;
   let mouseBusy = false;
+  const graphical = id => !!id && id !== "freedos";
   async function clickMouse(kind) {
-    if(current !== "kolibri" || !ready || !isRunning || !emulator || !emulator.bus?.send || mouseBusy) {
-      simpleStatus("鼠标尚未就绪。请先启动 KolibriOS，等待桌面出现。");
+    if(!graphical(current) || !ready || !isRunning || !emulator || !emulator.bus?.send || mouseBusy) {
+      simpleStatus("鼠标尚未就绪。请先启动图形系统并等待桌面出现。");
       return;
     }
     const instance = emulator;
@@ -259,7 +260,7 @@
     $("padEnter").disabled = !canUse;
     $("padEsc").disabled = !canUse;
     $("dpad").querySelectorAll("[data-padkey]").forEach(key=>{key.disabled=!canUse;});
-    $("mouseControls").hidden = current !== "kolibri";
+    $("mouseControls").hidden = !graphical(current);
     $("mouseControls").querySelectorAll("[data-mouse]").forEach(button=>{button.disabled=!canUse||mouseBusy;});
     $("easyActions").querySelectorAll("[data-easycmd]").forEach(button=>{
       button.disabled = !isReady || commandBusy || (current==="freedos" && gamePlaying);
@@ -271,8 +272,7 @@
       $("simpleActionHelp").textContent = "可以用按钮操作，不需要记住英文指令。";
       btn.textContent = "▶ 启动系统后可操作";
     } else if(!guestReady) {
-      $("simpleStep").textContent = current==="freedos" ? "等待 A:\\> 出现；这是已经开机的标志。"
-        : current==="linux" ? "等待 /root% 出现；那就是进入 Linux 了。" : "等待图形桌面出现，然后用鼠标点击。";
+      $("simpleStep").textContent = current==="freedos" ? "等待 A:\\> 出现；这是已经开机的标志。" : "正在启动图形系统。Android 和 ReactOS 需要更长时间，建议电脑体验。";
       $("simpleActionHelp").textContent = "现在还在启动，请先不要输入。";
       btn.textContent = "⌛ 等待系统启动";
     } else if(current==="freedos") {
@@ -283,10 +283,6 @@
         ? "尝试 Esc 退出（有些游戏用 Q），不能退出可点「重启」。"
         : "不只贪吃蛇：还可以玩侵略者、俄罗斯方块和使用 DOS 工具。";
       btn.textContent = gamePlaying ? "↩ 尝试退出当前游戏" : "📁 查看磁盘文件";
-    } else if(current==="linux") {
-      $("simpleStep").textContent = "看到 /root% 就是进入 Linux 了，这里没有图形桌面。";
-      $("simpleActionHelp").textContent = "点「查看文件」，或试试「我在哪」「系统信息」。";
-      btn.textContent = "📁 查看文件";
     } else {
       $("simpleStep").textContent = "拖动光标到图标，再点「单击左键」或「双击打开」。";
       $("simpleActionHelp").textContent = "下方有鼠标按键；方向键和 Enter 不是鼠标点击。";
@@ -329,19 +325,18 @@
       button.disabled = !allowCommands;
     });
     $("virtualKeys").querySelectorAll("[data-vkey]").forEach(button => {
-      button.disabled = !enabled || (button.dataset.vkey === "ctrlc" && current === "kolibri");
+      button.disabled = !enabled || (button.dataset.vkey === "ctrlc" && graphical(current));
     });
     updateSimpleUI();
     $("guestIndicator").textContent = !current ? "尚未选择"
       : !guestReady ? "等待系统就绪"
       : current === "freedos" ? "DOS 已进入"
-      : current === "linux" ? "Shell 已进入"
       : "已切换图形模式";
   };
   const renderGuide = id => {
     const guide = GUIDES[id];
     $("guideTitle").textContent = guide ? guide.title : "选择系统后显示操作提示";
-    $("guideIntro").textContent = guide ? guide.intro : "FreeDOS 和 Linux 用命令操作；KolibriOS 则使用桌面和鼠标。下面会根据你启动的系统自动切换提示。";
+    $("guideIntro").textContent = guide ? guide.intro : "选择系统查看操作提示。ReactOS、Android 是图形系统；Windows 需要合法的本地启动盘。";
     const steps = guide ? guide.steps : ["从上方选择一个系统并点击「启动」。","等待系统进入命令提示符或桌面。","通过下方快捷命令和虚拟按键操作。"];
     $("guideSteps").replaceChildren(...steps.map(step => {
       const item = document.createElement("li");
@@ -352,7 +347,9 @@
     note.hidden = !id;
     note.textContent = id==="freedos" ? "💡 FreeDOS 不是游戏机：你可以打开多个游戏，也能看文件和使用早期电脑工具。"
       : id==="kolibri" ? "💡 KolibriOS 有真正的桌面。手机只移动光标还不够，要点击下方的鼠标左键或双击。"
-      : id==="linux" ? "💡 看到 /root% 就已经进 Linux 了：这是文字终端，没有可点击的桌面。" : "";
+      : id==="reactos" ? "💡 ReactOS 模拟磁盘约 700 MB，分块读取；首次启动可能很慢。"
+      : id==="android"||id==="android44" ? "💡 这是旧版 Android-x86 实验镜像，不代表能使用现代安卓 APP。"
+      : id==="win95"||id==="win98" ? "💡 Windows 必须选择你合法持有的可启动磁盘，本站不提供微软系统镜像。" : "";
     const actions=$("easyActions");
     actions.replaceChildren();
     for(const item of EASY_ACTIONS[id]||[]) {
@@ -364,7 +361,7 @@
       actions.append(button);
     }
     actions.hidden = !actions.childElementCount;
-    $("quickTitle").textContent = id === "kolibri" ? "图形桌面操作" : "一键执行常用命令";
+    $("quickTitle").textContent = graphical(id) ? "桌面操作帮助" : "一键执行常用命令";
     $("quickNote").textContent = guide ? guide.note : "启动系统后自动显示对应快捷命令";
     const commands = $("quickCommands");
     commands.replaceChildren();
@@ -386,11 +383,11 @@
     } else {
       const hint = document.createElement("p");
       hint.className = "quick-empty";
-      hint.textContent = guide ? "不用输入命令。等待桌面出现后，可以直接触摸图标，或使用下方的虚拟方向键、Tab、Enter、Esc。" : "尚未选择系统";
+      hint.textContent = guide ? "图形系统通常不需要英文命令。请等待桌面出现，使用画面下方的单击、双击或右键。" : "尚未选择系统";
       commands.append(hint);
     }
     $("quickFeedback").textContent = guide ? "已切换到 " + SYSTEMS[id].name + " 的操作提示；请等待系统真正进入操作界面。" : "先启动一个系统，虚拟按键才会启用。";
-    $("typeText").placeholder = id === "kolibri" ? "图形系统主要用鼠标与虚拟按键操作" : id === "linux" ? "例如：ls（不用输入 /root%）" : id === "freedos" ? "例如：dir（不用输入 A:\\>）" : "输入命令或文本（不适合输入密码）";
+    $("typeText").placeholder = graphical(id) ? "图形系统优先使用鼠标点击按钮" : id === "freedos" ? "例如：dir（不用输入 A:\\>）" : "输入命令或文本（不适合输入密码）";
     updateGuideButtons();
   };
   const buttons = () => {
@@ -482,7 +479,8 @@
     showLoading("正在准备系统…",config.remote ? "正在准备模拟器。大型系统镜像由 v86 分块读取，较适合电脑浏览器。" : config.local ? "正在准备加载你选的本地启动磁盘…" : "首次运行需要下载几个系统文件，失败会切换备用地址。");
     renderGuide(id);
     simpleStatus("系统正在启动，等屏幕出现提示后，点击旁边的大按钮即可。");
-    document.querySelector('[data-system="' + id + '"]').classList.add("active");
+    const card = document.querySelector('[data-system="' + (id==="android44" ? "android" : id) + '"]');
+    if(card) card.classList.add("active");
     $("runtime").scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
     status("正在加载模拟器核心…");
     try {
@@ -546,16 +544,10 @@
             simpleStatus("DOS 已进入：可以查看磁盘文件，也能选贪吃蛇、侵略者或俄罗斯方块。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
-          } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(text)) {
+          } else if(graphical(id) && graphics) {
             guestReady = true;
-            status("Linux 命令行已就绪 · 本地运行",true);
-            simpleStatus("Linux 已就绪！看到 /root% 就是进入系统，点「查看文件」试试。");
-            updateGuideButtons();
-            clearInterval(bootMonitor); bootMonitor = null;
-          } else if(id === "kolibri" && graphics) {
-            guestReady = true;
-            status("已切换图形模式 · 请确认桌面",true);
-            simpleStatus("图形模式已启动。先移动光标，再点「单击左键」或「双击打开」。");
+            status("图形模式已出现 · 请确认是否进入桌面",true);
+            simpleStatus("已显示图形画面。等待桌面加载完成后，移动光标并点「单击左键」或「双击打开」。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(Date.now() - startedAt > 60000 && !warningShown) {
@@ -609,7 +601,7 @@
   const feedback = message => { $("quickFeedback").textContent = message; };
   async function pressVirtualKey(name) {
     if(!emulator || !ready || !isRunning || !KEY_CODES[name]) return;
-    if(current === "kolibri" && name === "ctrlc") return;
+    if(graphical(current) && name === "ctrlc") return;
     const instance = emulator;
     try {
       await instance.keyboard_send_scancodes(KEY_CODES[name], 12);
@@ -622,7 +614,7 @@
     }
   }
   async function runQuickCommand(cmd) {
-    if(!emulator || !ready || !isRunning || !guestReady || commandBusy || current === "kolibri") return;
+    if(!emulator || !ready || !isRunning || !guestReady || commandBusy || graphical(current)) return;
     if(!GUIDES[current].commands.some(item => item.value === cmd)) return;
     if(current==="freedos" && gamePlaying) {
       simpleStatus("先退出当前游戏并确认回到 A:\\>，再点击其他游戏。不能退出就点重启。");
@@ -661,8 +653,7 @@
     if(current === "freedos") {
       if(gamePlaying) {pressVirtualKey("esc"); gamePlaying=false; simpleStatus("已发送 Esc，请看屏幕是否回到 A:\\>。未退出可尝试 Q 或重启。");updateSimpleUI();}
       else runQuickCommand("dir");
-    } else if(current === "linux") runQuickCommand("ls");
-    else if(current === "kolibri") clickMouse("left");
+    } else if(graphical(current)) clickMouse("left");
   });
   $("easyActions").addEventListener("click",event=>{
     const button=event.target.closest("[data-easycmd]");
@@ -674,12 +665,12 @@
   });
   const screen=$("screen_container");
   screen.addEventListener("touchstart",event=>{
-    if(current!=="kolibri" || !isRunning || event.touches.length!==1) {touchStart=null;return;}
+    if(!graphical(current) || !isRunning || event.touches.length!==1) {touchStart=null;return;}
     const touch=event.touches[0];
     touchStart={x:touch.clientX,y:touch.clientY,at:Date.now()};
   },{passive:true});
   screen.addEventListener("touchend",event=>{
-    if(!touchStart || current!=="kolibri" || !isRunning) return;
+    if(!touchStart || !graphical(current) || !isRunning) return;
     const touch=event.changedTouches[0];
     const dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;
     const tap=Math.hypot(dx,dy)<12 && Date.now()-touchStart.at<650;
@@ -687,7 +678,7 @@
     if(!tap) return;
     event.preventDefault(); // Avoid a duplicate synthetic mouse click on iOS.
     // Let the v86 adapter's touchend handler release its own buttons first.
-    setTimeout(()=>{if(current==="kolibri" && isRunning)clickMouse("left");},0);
+    setTimeout(()=>{if(graphical(current) && isRunning)clickMouse("left");},0);
   },{passive:false});
     $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
   $("padEsc").addEventListener("click",() => pressVirtualKey("esc"));
