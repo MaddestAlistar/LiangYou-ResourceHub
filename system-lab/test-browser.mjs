@@ -47,7 +47,7 @@ try {
   console.log('Enlarge and exit buttons work');
   // Esc is not universal. The primary game exit must destroy and restart DOS.
   await page.locator('#primaryAction').click();
-  await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+  await page.waitForFunction(() => /A:\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
     document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
     !document.querySelector('#primaryAction')?.disabled, null, {timeout:90000});
   console.log('Forced return to DOS after an arcade game succeeded');
@@ -62,7 +62,7 @@ try {
     },null,{timeout:18000});
     console.log('Minesweeper '+label+' entered graphics mode without manual difficulty selection');
     await page.locator('#primaryAction').click();
-    await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+    await page.waitForFunction(() => /A:\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
       document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
       !document.querySelector('#primaryAction')?.disabled,null,{timeout:90000});
     console.log('Forced exit from Minesweeper '+label+' returned to DOS prompt');
@@ -70,7 +70,7 @@ try {
   await page.locator('[data-command="tetris"]').click();
   await page.waitForFunction(()=>document.querySelector('#primaryAction')?.textContent?.includes('退出游戏'),null,{timeout:12000});
   await page.locator('#primaryAction').click();
-  await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+  await page.waitForFunction(() => /A:\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
     document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
     !document.querySelector('#primaryAction')?.disabled,null,{timeout:90000});
   console.log('Forced exit from Tetris returned to DOS prompt');
