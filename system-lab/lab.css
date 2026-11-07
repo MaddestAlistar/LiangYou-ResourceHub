@@ -121,3 +121,7 @@ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{marg
 .dpad{grid-template-rows:repeat(2,47px)}
 @media(max-width:480px){.dpad{grid-template-rows:repeat(2,43px)}}
 @media(max-height:580px) and (orientation:landscape){body.lab-immersive #machine .dpad,#machine:fullscreen .dpad{grid-template-rows:repeat(2,36px)}}
+
+.advanced-keyboard{margin-top:16px;border:1px solid #30496c;border-radius:12px;background:#0f2240;padding:8px 11px}
+.advanced-keyboard summary{list-style:revert;cursor:pointer;font-size:12px;font-weight:700;color:#bad3fb;padding:6px 0}
+.advanced-keyboard .virtual-keys{margin:10px 0 5px}
