@@ -31,41 +31,43 @@
 
   const GUIDES = Object.freeze({
     freedos: {
-      title:"FreeDOS · 进入系统后怎么操作",
-      intro:"这是命令行系统。看到 A:\\>（也可能是其他盘符提示符），就表示已进入系统。不需要登录。",
+      title:"FreeDOS · 不止一个游戏，还能做什么？",
+      intro:"这是一台复古 DOS 电脑。看到 A:\\> 就说明开机了，不需要密码。你可以玩多个游戏，也可以浏览文件和了解早期电脑命令。",
       steps:[
         "先等待黑色窗口出现 A:\\> 提示符。开头出现「Boot failed: CDROM」并不一定是故障，之后从 Floppy 启动成功即可。",
-        "点击下面的「列出文件 · dir」即可自动输入并回车，查看当前目录。",
-        "如果想自己输入，先在输入框写命令，点击「仅发送文字」，再点击 Enter 执行。也可以试试 snake 小游戏。"
+        "先点画面下方的「查看磁盘文件」，了解磁盘里有什么；想玩游戏可选贪吃蛇、太空侵略者或俄罗斯方块。",
+        "游戏中用方向键；换游戏前先退出，回到 A:\\> 后再点另一个。不同游戏退出键可能是 Esc 或 Q，实在无法退出可重启。"
       ],
-      note:"DOS 命令无需输入中文。执行命令前请确认屏幕已经出现 A:\\>。",
+      note:"图标按钮只是帮你输入命令；DOS 远不止这些功能。看到 A:\\> 才能输入下一条。",
       commands:[
         {name:"列出文件",value:"dir",hint:"查看当前目录"},
         {name:"查看帮助",value:"help",hint:"显示可用命令"},
         {name:"清屏",value:"cls",hint:"清空屏幕"},
-        {name:"试玩贪吃蛇",value:"snake",hint:"镜像内置小游戏"}
+        {name:"贪吃蛇",value:"snake",hint:"方向键控制"},
+        {name:"太空侵略者",value:"invaders",hint:"经典小游戏"},
+        {name:"俄罗斯方块",value:"tetris",hint:"经典方块游戏"}
       ]
     },
     kolibri: {
       title:"KolibriOS · 进入图形桌面",
-      intro:"这是图形桌面系统，不需要输入 DOS / Linux 命令，也没有登录密码。",
+      intro:"这是有窗口和桌面图标的系统。手机滑动通常只会移动光标，不一定能自动完成鼠标单击；请用画面下方的「左键点击」或「双击打开」。",
       steps:[
         "刚开始会看到硬件和 CPU 初始化信息，这是开机过程，不是操作界面。",
         "等待画面切换到图形桌面后再操作；单纯切换为图形模式也不保证已完全进入桌面。",
-        "先尝试点桌面菜单或图标；如出现选择菜单，可使用方向键、Tab、Enter 确认，Esc 退出。手机触摸与模拟鼠标不一定完全兼容。"
+        "先用手指拖动光标到目标，再点「单击左键」选中，或「双击打开」进入。若只有光标移动，使用下面的鼠标按键，不要只点「确认」。"
       ],
-      note:"KolibriOS 主要用鼠标操作。下面提供方向键、Tab、Esc 和 Enter；输入框不适合操作图形桌面。",
+      note:"KolibriOS 需要鼠标左右键。下方提供单击、双击、右键；方向键和 Enter 不能代替所有桌面点击。",
       commands:[]
     },
     linux: {
-      title:"Buildroot Linux · 进入 Shell",
-      intro:"这是命令行 Linux，不会显示常见的电脑桌面。看到 /root% 等提示符就可以输入命令。",
+      title:"Buildroot Linux · 文字版 Linux，不是桌面",
+      intro:"这就是已经运行的 Linux，只是没有图标、窗口或鼠标桌面。看到 /root% 就表示进入了系统，和电脑上的「终端」类似。",
       steps:[
         "先等待内核启动日志走完。「VFS: Mounted root」表示根文件系统已挂载，但还未必能输入。",
-        "出现 /root% 或其他 Shell 提示符后，点击下方「列出文件 · ls」一键执行。",
-        "也可以在输入框输入 pwd、uname -a 等命令，然后「仅发送文字」和「Enter」依次操作。"
+        "看到 /root%（或其他命令提示符）就已经进系统了。点「查看文件」能看到当前目录内容。",
+        "想继续探索，可点「我在哪」「系统信息」「显示 Hello」，每个按钮都会直接输入命令并回车。"
       ],
-      note:"Linux 的命令对大小写敏感；/root% 是提示符，不用自己输入。",
+      note:"这是用来学习 Linux 指令的极简系统。没有软件商店、浏览器或图形桌面，不代表启动失败。",
       commands:[
         {name:"列出文件",value:"ls",hint:"查看文件与目录"},
         {name:"当前位置",value:"pwd",hint:"显示工作目录"},
@@ -166,41 +168,89 @@
     return {bios:{buffer:bios.buffer},vga_bios:{buffer:vga.buffer},disk:{buffer:image.buffer},wasm_path:wasm.url};
   }
 
+
+  const EASY_ACTIONS = Object.freeze({
+    freedos:[{label:"🐍 贪吃蛇",value:"snake"},{label:"👾 太空侵略者",value:"invaders"},{label:"🧱 俄罗斯方块",value:"tetris"}],
+    linux:[{label:"📍 我在哪",value:"pwd"},{label:"🖥 系统信息",value:"uname -a"},{label:"💬 显示 Hello",value:"echo hello"}],
+    kolibri:[]
+  });
+  const GAME_COMMANDS = new Set(["snake","invaders","tetris"]);
+  let touchStart = null;
+  let mouseBusy = false;
+  async function clickMouse(kind) {
+    if(current !== "kolibri" || !ready || !isRunning || !emulator || !emulator.bus?.send || mouseBusy) {
+      simpleStatus("鼠标尚未就绪。请先启动 KolibriOS，等待桌面出现。");
+      return;
+    }
+    const instance = emulator;
+    mouseBusy = true;
+    const buttons = kind === "right" ? [false,false,true] : [true,false,false];
+    const release = [false,false,false];
+    try {
+      for(let i=0;i<(kind==="double"?2:1);i++) {
+        if(instance !== emulator) break;
+        instance.bus.send("mouse-click",buttons);
+        await new Promise(resolve=>setTimeout(resolve,90));
+        instance.bus.send("mouse-click",release);
+        if(kind==="double" && i===0) await new Promise(resolve=>setTimeout(resolve,120));
+      }
+      if(instance===emulator) {
+        const msg = kind==="right" ? "右键已发送，可查看是否弹出菜单。"
+          : kind==="double" ? "双击已发送；如果没打开，请先把光标移动到图标上。"
+          : "左键点击已发送；再试试选中图标。";
+        simpleStatus(msg);
+        $("quickFeedback").textContent = msg;
+      }
+    } catch(error) {
+      simpleStatus("鼠标操作没能发送：" + (error?.message||String(error)));
+    } finally { mouseBusy=false; }
+  }
+
   const simpleStatus = text => { $("playStatus").textContent = text; };
   function updateSimpleUI() {
     const canUse = ready && isRunning;
-    const btn = $("primaryAction");
     const isReady = canUse && guestReady;
+    const btn = $("primaryAction");
     $("screenMode").disabled = !current;
     $("padEnter").disabled = !canUse;
     $("padEsc").disabled = !canUse;
-    $("dpad").querySelectorAll("[data-padkey]").forEach(key => { key.disabled = !canUse; });
+    $("dpad").querySelectorAll("[data-padkey]").forEach(key=>{key.disabled=!canUse;});
+    $("mouseControls").hidden = current !== "kolibri";
+    $("mouseControls").querySelectorAll("[data-mouse]").forEach(button=>{button.disabled=!canUse||mouseBusy;});
+    $("easyActions").querySelectorAll("[data-easycmd]").forEach(button=>{
+      button.disabled = !isReady || commandBusy || (current==="freedos" && gamePlaying);
+    });
     btn.disabled = !isReady || commandBusy;
     if(!current) {
-      $("simpleStep").textContent = "先在上面选择一个系统，点击「启动」。";
-      $("simpleActionHelp").textContent = "之后会自动告诉你下一步做什么。";
+      $("simpleStep").textContent = "先选一个系统并启动，下面会告诉你怎么操作。";
+      $("simpleActionHelp").textContent = "可以用按钮操作，不需要记住英文指令。";
       btn.textContent = "▶ 启动系统后可操作";
     } else if(!guestReady) {
-      $("simpleStep").textContent = current === "freedos" ? "等黑色画面出现 A:\\>，就能玩游戏。" : current === "linux" ? "等黑色画面出现 /root%，再点下方大按钮。" : "正在开机，等待桌面出现。";
-      $("simpleActionHelp").textContent = "先不用输入任何文字；开机结束后按钮会自动亮起。";
-      btn.textContent = "⌛ 正在等待系统启动";
-    } else if(current === "freedos") {
-      $("simpleStep").textContent = gamePlaying ? "贪吃蛇已发送启动指令，试试右侧方向键！" : "已开机！点「开始贪吃蛇」，然后按右侧方向键。";
-      $("simpleActionHelp").textContent = gamePlaying ? "点方向键控制移动；Esc 可以退出游戏。" : "不需要打字，也不用先寻找下面的方向键。";
-      btn.textContent = gamePlaying ? "↻ 重新开始游戏" : "🎮 开始贪吃蛇";
-    } else if(current === "linux") {
-      $("simpleStep").textContent = "已进入 Linux。点下面的大按钮即可查看文件。";
-      $("simpleActionHelp").textContent = "无需输入 /root%，只需点击即可自动执行。";
-      btn.textContent = "📁 看看有哪些文件";
+      $("simpleStep").textContent = current==="freedos" ? "等待 A:\\> 出现；这是已经开机的标志。"
+        : current==="linux" ? "等待 /root% 出现；那就是进入 Linux 了。" : "等待图形桌面出现，然后用鼠标点击。";
+      $("simpleActionHelp").textContent = "现在还在启动，请先不要输入。";
+      btn.textContent = "⌛ 等待系统启动";
+    } else if(current==="freedos") {
+      $("simpleStep").textContent = gamePlaying
+        ? "正在游戏中。换游戏前请先回到 A:\\>，必要时重启。"
+        : "已进入 DOS！先查看文件，或点下方其他小游戏。";
+      $("simpleActionHelp").textContent = gamePlaying
+        ? "尝试 Esc 退出（有些游戏用 Q），不能退出可点「重启」。"
+        : "不只贪吃蛇：还可以玩侵略者、俄罗斯方块和使用 DOS 工具。";
+      btn.textContent = gamePlaying ? "↩ 尝试退出当前游戏" : "📁 查看磁盘文件";
+    } else if(current==="linux") {
+      $("simpleStep").textContent = "看到 /root% 就是进入 Linux 了，这里没有图形桌面。";
+      $("simpleActionHelp").textContent = "点「查看文件」，或试试「我在哪」「系统信息」。";
+      btn.textContent = "📁 查看文件";
     } else {
-      $("simpleStep").textContent = "已切换到桌面显示；尝试点屏幕上的图标。";
-      $("simpleActionHelp").textContent = "可按方向键移动选择，用「确认」进入，用「返回」退出。";
-      btn.textContent = "↵ 确认选择";
+      $("simpleStep").textContent = "拖动光标到图标，再点「单击左键」或「双击打开」。";
+      $("simpleActionHelp").textContent = "下方有鼠标按键；方向键和 Enter 不是鼠标点击。";
+      btn.textContent = "🖱 单击左键";
     }
-    const immersive = document.body.classList.contains("lab-immersive");
-    $("fullscreen").textContent = immersive ? "↙ 退出放大" : "⛶ 放大操作";
-    $("screenMode").textContent = immersive ? "↙ 返回页面" : "⛶ 放大操作";
-    for(const control of [$("fullscreen"), $("screenMode")]) control.setAttribute("aria-pressed",String(immersive));
+    const immersive=document.body.classList.contains("lab-immersive");
+    $("fullscreen").textContent = immersive?"↙ 退出放大":"⛶ 放大操作";
+    $("screenMode").textContent = immersive?"↙ 返回页面":"⛶ 放大操作";
+    for(const control of [$("fullscreen"),$("screenMode")])control.setAttribute("aria-pressed",String(immersive));
   }
   function setImmersive(enabled) {
     document.body.classList.toggle("lab-immersive",enabled);
@@ -253,6 +303,22 @@
       item.textContent = step;
       return item;
     }));
+    const note=$("systemNote");
+    note.hidden = !id;
+    note.textContent = id==="freedos" ? "💡 FreeDOS 不是游戏机：你可以打开多个游戏，也能看文件和使用早期电脑工具。"
+      : id==="kolibri" ? "💡 KolibriOS 有真正的桌面。手机只移动光标还不够，要点击下方的鼠标左键或双击。"
+      : id==="linux" ? "💡 看到 /root% 就已经进 Linux 了：这是文字终端，没有可点击的桌面。" : "";
+    const actions=$("easyActions");
+    actions.replaceChildren();
+    for(const item of EASY_ACTIONS[id]||[]) {
+      const button=document.createElement("button");
+      button.type="button";
+      button.dataset.easycmd=item.value;
+      button.textContent=item.label;
+      button.disabled=true;
+      actions.append(button);
+    }
+    actions.hidden = !actions.childElementCount;
     $("quickTitle").textContent = id === "kolibri" ? "图形桌面操作" : "一键执行常用命令";
     $("quickNote").textContent = guide ? guide.note : "启动系统后自动显示对应快捷命令";
     const commands = $("quickCommands");
@@ -417,19 +483,19 @@
           if(id === "freedos" && /A:\\>/.test(text)) {
             guestReady = true;
             status("DOS 提示符已就绪 · 本地运行",true);
-            simpleStatus("已开机！点击「开始贪吃蛇」，方向键就在屏幕下方。");
+            simpleStatus("DOS 已进入：可以查看磁盘文件，也能选贪吃蛇、侵略者或俄罗斯方块。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(id === "linux" && /(?:login:\s*$|(?:^|\n)[^\n]*[#$]\s*$|\/root%\s*$)/m.test(text)) {
             guestReady = true;
             status("Linux 命令行已就绪 · 本地运行",true);
-            simpleStatus("Linux 已就绪，点「看看有哪些文件」即可操作。");
+            simpleStatus("Linux 已就绪！看到 /root% 就是进入系统，点「查看文件」试试。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(id === "kolibri" && graphics) {
             guestReady = true;
             status("已切换图形模式 · 请确认桌面",true);
-            simpleStatus("试着点击桌面图标；也可以使用旁边的方向键、确认和返回。");
+            simpleStatus("图形模式已启动。先移动光标，再点「单击左键」或「双击打开」。");
             updateGuideButtons();
             clearInterval(bootMonitor); bootMonitor = null;
           } else if(Date.now() - startedAt > 60000 && !warningShown) {
@@ -486,6 +552,10 @@
   async function runQuickCommand(cmd) {
     if(!emulator || !ready || !isRunning || !guestReady || commandBusy || current === "kolibri") return;
     if(!GUIDES[current].commands.some(item => item.value === cmd)) return;
+    if(current==="freedos" && gamePlaying) {
+      simpleStatus("先退出当前游戏并确认回到 A:\\>，再点击其他游戏。不能退出就点重启。");
+      return;
+    }
     const instance = emulator;
     commandBusy = true;
     updateGuideButtons();
@@ -496,8 +566,8 @@
       await instance.keyboard_send_scancodes(KEY_CODES.enter, 15);
       if(instance === emulator) {
         feedback("已输入并执行「" + cmd + "」。请看上方黑色窗口的输出。");
-        if(cmd === "snake" && current === "freedos") gamePlaying = true;
-        simpleStatus(cmd === "snake" ? "已发送贪吃蛇启动指令！用屏幕下方的方向键控制移动，按返回键退出。" : "已执行「" + cmd + "」，请查看屏幕内容。");
+        if(current==="freedos" && GAME_COMMANDS.has(cmd)) gamePlaying=true;
+        simpleStatus(GAME_COMMANDS.has(cmd) ? "已尝试启动「"+cmd+"」。游戏按键因游戏而异，用下方方向键尝试，换游戏前先退出。" : "已执行「" + cmd + "」，请查看屏幕内容。");
       }
     } catch(error) {
       feedback("快捷命令未执行成功：" + (error?.message || "模拟器暂不可用"));
@@ -516,11 +586,38 @@
   });
   $("primaryAction").addEventListener("click", () => {
     if(!guestReady || !ready || !isRunning || commandBusy) return;
-    if(current === "freedos") runQuickCommand("snake");
-    else if(current === "linux") runQuickCommand("ls");
-    else if(current === "kolibri") pressVirtualKey("enter");
+    if(current === "freedos") {
+      if(gamePlaying) {pressVirtualKey("esc"); gamePlaying=false; simpleStatus("已发送 Esc，请看屏幕是否回到 A:\\>。未退出可尝试 Q 或重启。");updateSimpleUI();}
+      else runQuickCommand("dir");
+    } else if(current === "linux") runQuickCommand("ls");
+    else if(current === "kolibri") clickMouse("left");
   });
-  $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
+  $("easyActions").addEventListener("click",event=>{
+    const button=event.target.closest("[data-easycmd]");
+    if(button && !button.disabled)runQuickCommand(button.dataset.easycmd);
+  });
+  $("mouseControls").addEventListener("click",event=>{
+    const button=event.target.closest("[data-mouse]");
+    if(button && !button.disabled)clickMouse(button.dataset.mouse);
+  });
+  const screen=$("screen_container");
+  screen.addEventListener("touchstart",event=>{
+    if(current!=="kolibri" || !isRunning || event.touches.length!==1) {touchStart=null;return;}
+    const touch=event.touches[0];
+    touchStart={x:touch.clientX,y:touch.clientY,at:Date.now()};
+  },{passive:true});
+  screen.addEventListener("touchend",event=>{
+    if(!touchStart || current!=="kolibri" || !isRunning) return;
+    const touch=event.changedTouches[0];
+    const dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;
+    const tap=Math.hypot(dx,dy)<12 && Date.now()-touchStart.at<650;
+    touchStart=null;
+    if(!tap) return;
+    event.preventDefault(); // Avoid a duplicate synthetic mouse click on iOS.
+    // Let the v86 adapter's touchend handler release its own buttons first.
+    setTimeout(()=>{if(current==="kolibri" && isRunning)clickMouse("left");},0);
+  },{passive:false});
+    $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
   $("padEsc").addEventListener("click",() => pressVirtualKey("esc"));
   // Pointerdown sends immediately (without waiting for delayed iOS click synthesis).
   // Click remains available for keyboard and assistive-technology activation.
