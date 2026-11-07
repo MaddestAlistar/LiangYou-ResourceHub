@@ -1,10 +1,7 @@
 name: Test ReactOS and Android browser bootstrap
+# Heavy historical OS smoke tests are opt-in because guest graphics may never become usable
+# in CI and each run consumes substantial RAM/CPU. The fast asset checks still run on push.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'system-lab/**'
-      - '.github/workflows/test-os-lab-expanded-boot.yml'
   workflow_dispatch:
 permissions:
   contents: read
