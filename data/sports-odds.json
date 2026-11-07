@@ -2,13 +2,13 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-07T15:09:37Z",
+  "generated_at": "2026-11-07T21:48:11Z",
   "quota_month": "2026-11",
-  "monthly_credits": 39,
+  "monthly_credits": 40,
   "monthly_cap": 210,
-  "provider_remaining": 460,
+  "provider_remaining": 459,
   "last_checked": {
-    "basketball_nba": "2026-11-07T15:09:37Z",
+    "basketball_nba": "2026-11-07T21:48:11Z",
     "soccer_epl": "2026-11-07T15:09:37Z",
     "soccer_uefa_champs_league": "2026-11-07T15:09:37Z"
   },
@@ -16,16 +16,16 @@
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 7
+      "count": 9
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "ok",
-      "count": 6
+      "status": "recent",
+      "count": 5
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "ok",
+      "status": "recent",
       "count": 0
     }
   ],
@@ -42,14 +42,14 @@
       "outcomes": [
         {
           "name": "Denver Nuggets",
-          "decimal": 1.34
+          "decimal": 1.3
         },
         {
           "name": "Indiana Pacers",
-          "decimal": 3.4
+          "decimal": 3.7
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-ee45341df802cfb42dd48f1ad60c8b81",
@@ -70,7 +70,7 @@
           "decimal": 3.15
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-fdf3b77f50b2fad3988193af5ef4b00e",
@@ -84,14 +84,14 @@
       "outcomes": [
         {
           "name": "Cleveland Cavaliers",
-          "decimal": 2.72
+          "decimal": 2.8
         },
         {
           "name": "New York Knicks",
-          "decimal": 1.49
+          "decimal": 1.47
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-6faeaee3bdf2a167eb67f93c44d3ef37",
@@ -105,14 +105,14 @@
       "outcomes": [
         {
           "name": "Oklahoma City Thunder",
-          "decimal": 1.21
+          "decimal": 1.16
         },
         {
           "name": "Washington Wizards",
-          "decimal": 4.7
+          "decimal": 5.6
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-39099dc03208d0771daaab5f7993478a",
@@ -126,14 +126,14 @@
       "outcomes": [
         {
           "name": "Golden State Warriors",
-          "decimal": 1.47
+          "decimal": 1.36
         },
         {
           "name": "Orlando Magic",
-          "decimal": 2.8
+          "decimal": 3.25
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-af8d920f175d73f12933c64ae296573f",
@@ -147,14 +147,14 @@
       "outcomes": [
         {
           "name": "Houston Rockets",
-          "decimal": 1.37
+          "decimal": 1.42
         },
         {
           "name": "Phoenix Suns",
-          "decimal": 3.2
+          "decimal": 2.98
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-08d47dd5e50e83839e395e49870d6a0d",
@@ -168,39 +168,56 @@
       "outcomes": [
         {
           "name": "Portland Trail Blazers",
-          "decimal": 2.8
+          "decimal": 2.72
         },
         {
           "name": "San Antonio Spurs",
-          "decimal": 1.47
+          "decimal": 1.49
         }
       ],
-      "quote_at": "2026-11-07T15:09:00Z"
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
-      "id": "odds-59c5f635cfe11613c07e9a5520ced5c1",
+      "id": "odds-a5d2d9c68b7446860de658aa4bc33c5b",
       "provider": "the-odds-api",
-      "sport": "football",
-      "league": "Premier League",
-      "home": "Nottingham Forest",
-      "away": "Manchester City",
-      "start_time": "2026-11-07T17:30:00Z",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Chicago Bulls",
+      "away": "Philadelphia 76ers",
+      "start_time": "2026-11-08T20:40:00Z",
       "bookmaker": "FanDuel",
       "outcomes": [
         {
-          "name": "Manchester City",
-          "decimal": 1.67
+          "name": "Chicago Bulls",
+          "decimal": 3.6
         },
         {
-          "name": "Nottingham Forest",
-          "decimal": 4.9
-        },
-        {
-          "name": "Draw",
-          "decimal": 4.0
+          "name": "Philadelphia 76ers",
+          "decimal": 1.31
         }
       ],
-      "quote_at": "2026-11-07T15:09:25Z"
+      "quote_at": "2026-11-07T21:47:53Z"
+    },
+    {
+      "id": "odds-182e2b5349fa0ff4ad3c0e8359c1a9a0",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Detroit Pistons",
+      "away": "Los Angeles Lakers",
+      "start_time": "2026-11-08T23:10:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Detroit Pistons",
+          "decimal": 1.81
+        },
+        {
+          "name": "Los Angeles Lakers",
+          "decimal": 2.06
+        }
+      ],
+      "quote_at": "2026-11-07T21:47:53Z"
     },
     {
       "id": "odds-79ed3df594d7b352ef027128b1ba5d0a",
