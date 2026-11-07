@@ -171,3 +171,11 @@ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{marg
  body.lab-immersive #machine .easy-actions,#machine:fullscreen .easy-actions{grid-template-columns:repeat(2,minmax(0,1fr));margin:3px 0}
  body.lab-immersive #machine .easy-actions button,#machine:fullscreen .easy-actions button{min-height:28px;font-size:10px}
 }
+
+/* Frequently needed DOS game key close to the direction pad. */
+.game-action{display:block;width:100%;max-width:185px;min-height:38px;margin:7px auto 0;border:1px solid #73a1e6;border-radius:10px;background:#274d85;color:#fff;font-size:13px;font-weight:750}
+.game-action small{display:block;font-size:10px;font-weight:400;color:#bad5f9;margin-top:2px}
+.game-action:disabled{opacity:.42}
+.game-action:active:not(:disabled){background:#3779c5}
+@media(max-width:480px){.game-action{font-size:12px;min-height:38px}.game-action small{font-size:9px}}
+@media(max-height:580px) and (orientation:landscape){body.lab-immersive #machine .game-action,#machine:fullscreen .game-action{min-height:29px;margin-top:3px;font-size:11px}.game-action small{display:none}}
