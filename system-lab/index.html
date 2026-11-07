@@ -95,8 +95,9 @@
         <section class="quick-section" aria-label="新手快捷操作">
           <div class="quick-heading"><strong id="quickTitle">常用命令</strong><span id="quickNote">启动系统后自动显示对应快捷命令</span></div>
           <div class="quick-commands" id="quickCommands"><span class="quick-empty">尚未选择系统</span></div>
-          <div class="quick-heading keypad-heading"><strong>更多按键</strong><span>常用方向键已移到屏幕正下方</span></div>
-          <div class="virtual-keys" id="virtualKeys">
+          <details class="advanced-keyboard">
+            <summary>⌨ 更多按键（高级操作，可选）</summary>
+            <div class="virtual-keys" id="virtualKeys">
             <button type="button" data-vkey="esc" disabled>Esc <small>返回</small></button>
             <button type="button" data-vkey="tab" disabled>Tab <small>切换</small></button>
             <button type="button" data-vkey="up" disabled>↑</button>
@@ -106,7 +107,8 @@
             <button type="button" data-vkey="backspace" disabled>⌫ <small>退格</small></button>
             <button type="button" data-vkey="enter" class="vkey-primary" disabled>Enter ↵</button>
             <button type="button" data-vkey="ctrlc" class="vkey-command" disabled>Ctrl+C <small>中断</small></button>
-          </div>
+            </div>
+          </details>
           <p class="quick-feedback" id="quickFeedback" role="status" aria-live="polite">先启动一个系统，虚拟按键才会启用。</p>
         </section>
         <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可打开官方 v86 演示。</div>
