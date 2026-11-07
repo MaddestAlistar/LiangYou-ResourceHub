@@ -70,6 +70,7 @@
     esc:[0x01,0x81],
     tab:[0x0f,0x8f],
     enter:[0x1c,0x9c],
+    space:[0x39,0xb9],
     backspace:[0x0e,0x8e],
     up:[0xe0,0x48,0xe0,0xc8],
     down:[0xe0,0x50,0xe0,0xd0],
@@ -207,6 +208,7 @@
     const btn = $("primaryAction");
     $("screenMode").disabled = !current;
     $("padEnter").disabled = !canUse;
+    $("padSpace").disabled = !canUse;
     $("padEsc").disabled = !canUse;
     $("dpad").querySelectorAll("[data-padkey]").forEach(key=>{key.disabled=!canUse;});
     $("mouseControls").hidden = !graphical(current);
@@ -605,6 +607,7 @@
     setTimeout(()=>{if(graphical(current) && isRunning)clickMouse("left");},0);
   },{passive:false});
     $("padEnter").addEventListener("click",() => pressVirtualKey("enter"));
+  $("padSpace").addEventListener("click",() => pressVirtualKey("space"));
   $("padEsc").addEventListener("click",() => pressVirtualKey("esc"));
   // Holding a D-pad button keeps the emulated arrow key pressed until finger-up.
   // Quick taps last at least 90 ms, as older DOS games often poll keys slowly.
