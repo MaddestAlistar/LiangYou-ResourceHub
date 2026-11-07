@@ -61,7 +61,30 @@
           <button type="button" id="fullscreen" disabled>全屏</button>
           <button type="button" id="exit" disabled>退出</button>
         </div>
-        <form id="typeForm" class="type-controls"><label for="typeText">手机虚拟输入</label><div><input id="typeText" type="text" placeholder="输入命令或文本（不适合输入密码）" autocomplete="off" spellcheck="false" disabled><button id="sendText" type="submit" disabled>发送文本</button><button id="sendEnter" type="button" disabled>Enter ↵</button></div></form>
+        <section class="beginner-guide" id="beginnerGuide" aria-labelledby="guideTitle">
+          <div class="guide-head"><div><span class="guide-eyebrow">QUICK START · 新手引导</span><h3 id="guideTitle">选择系统后显示操作提示</h3></div><span id="guestIndicator" class="guide-indicator" aria-live="polite">尚未选择</span></div>
+          <p class="guide-intro" id="guideIntro">FreeDOS 和 Linux 用命令操作；KolibriOS 则使用桌面和鼠标。下面会根据你启动的系统自动切换提示。</p>
+          <ol class="guide-steps" id="guideSteps"><li>从上方选择一个系统并点击「启动」。</li><li>等待系统进入命令提示符或桌面。</li><li>通过下方快捷命令和虚拟按键操作。</li></ol>
+        </section>
+        <form id="typeForm" class="type-controls"><label for="typeText">手机虚拟输入</label><div><input id="typeText" type="text" placeholder="输入命令或文本（不适合输入密码）" autocomplete="off" spellcheck="false" disabled><button id="sendText" type="submit" disabled>仅发送文字</button><button id="sendEnter" type="button" disabled>Enter ↵ 执行</button></div></form>
+        <p class="input-explain">输入框里的内容只会发送给虚拟机，不会自动按回车。可以点「Enter ↵ 执行」，或者直接使用下面的「一键执行」。</p>
+        <section class="quick-section" aria-label="新手快捷操作">
+          <div class="quick-heading"><strong id="quickTitle">常用命令</strong><span id="quickNote">启动系统后自动显示对应快捷命令</span></div>
+          <div class="quick-commands" id="quickCommands"><span class="quick-empty">尚未选择系统</span></div>
+          <div class="quick-heading keypad-heading"><strong>虚拟按键</strong><span>点击后直接发送给当前系统</span></div>
+          <div class="virtual-keys" id="virtualKeys">
+            <button type="button" data-vkey="esc" disabled>Esc <small>返回</small></button>
+            <button type="button" data-vkey="tab" disabled>Tab <small>切换</small></button>
+            <button type="button" data-vkey="up" disabled>↑</button>
+            <button type="button" data-vkey="left" disabled>←</button>
+            <button type="button" data-vkey="down" disabled>↓</button>
+            <button type="button" data-vkey="right" disabled>→</button>
+            <button type="button" data-vkey="backspace" disabled>⌫ <small>退格</small></button>
+            <button type="button" data-vkey="enter" class="vkey-primary" disabled>Enter ↵</button>
+            <button type="button" data-vkey="ctrlc" class="vkey-command" disabled>Ctrl+C <small>中断</small></button>
+          </div>
+          <p class="quick-feedback" id="quickFeedback" role="status" aria-live="polite">先启动一个系统，虚拟按键才会启用。</p>
+        </section>
         <div class="runtime-hint" id="runtimeHint">目前提供轻量系统试用。iPhone Safari 的 WebAssembly 兼容性因设备和系统版本而异；运行失败可打开官方 v86 演示。</div>
         <div class="error-box" id="errorBox" hidden><strong>启动未完成</strong><p id="errorMessage"></p><a href="https://copy.sh/v86/" target="_blank" rel="noopener noreferrer">在 v86 官方网站尝试 ↗</a></div>
       </div>
