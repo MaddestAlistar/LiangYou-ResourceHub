@@ -26,7 +26,7 @@
   const SYSTEMS = Object.freeze({
     freedos: {name:"FreeDOS", type:"fda", file:"freedos722.img", memory:32, vga:4},
     kolibri: {name:"KolibriOS", type:"fda", file:"kolibri.img", memory:64, vga:8},
-    reactos: {name:"ReactOS", type:"hda", memory:512, vga:16, remote:{url:"https://i.copy.sh/reactos-v3/.img",size:734003200,async:true,fixed_chunk_size:1048576,use_parts:true},acpi:true},
+    reactos: {name:"ReactOS", type:"hda", memory:512, vga:16, remote:{url:"https://i.copy.sh/reactos-v3/.img",size:734003200,async:true,fixed_chunk_size:1048576,use_parts:true}, state:{url:"https://i.copy.sh/reactos_state-v3.bin.zst"},acpi:true},
     android: {name:"Android-x86 1.6", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android-x86-1.6-r2/.iso",size:54661120,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
     android44: {name:"Android-x86 4.4", type:"cdrom", memory:512, vga:16, remote:{url:"https://i.copy.sh/android_x86_nonsse3_4.4r1_20140904/.iso",size:247463936,async:true,fixed_chunk_size:1048576,use_parts:true},autoEnter:true},
     win95: {name:"Windows 95",type:"hda", memory:64,vga:8,local:true},
@@ -503,6 +503,7 @@
         autostart:true,
         boot_order:config.type === "cdrom" ? 0x213 : config.type === "hda" ? 0x132 : 0x231,
         acpi:!!config.acpi,
+        initial_state:config.state || undefined,
         disable_keyboard:false,
         disable_mouse:false
       };
@@ -574,8 +575,8 @@
       // Don't claim success until the engine explicitly reports it has started.
       loadingTimer = setTimeout(() => {
         if(token !== generation || isRunning) return;
-        fail(new Error("文件已下载，但虚拟机在 45 秒内没有开始运行。可能是浏览器 WebAssembly 内存或兼容性问题。"));
-      }, 45000);
+        fail(new Error("虚拟机没有在允许的启动时间内运行。大系统可能超过设备内存限制，请优先尝试电脑或使用官方演示。"));
+      }, config.remote ? 180000 : 45000);
     } catch(error) {
       if(token === generation) { resetUI(); fail(error); }
     }
