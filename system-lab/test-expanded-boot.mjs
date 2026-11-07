@@ -13,16 +13,17 @@ try{
  const status=await page.locator('#machineStatus').textContent();
  console.log(profile,'engine state:',status);
  if(status.includes('启动未完成'))throw Error('Engine did not start '+await page.locator('#errorMessage').textContent());
+ // Reaching the BIOS text or running the virtual CPU is not a usable OS.
+ // Require the graphics canvas to actually switch to display mode.
  await page.waitForFunction(()=>{
-   const el=document.querySelector('#screen_container'),cv=el?.querySelector('canvas');
-   const txt=el?.textContent||'';
-   return /\S/.test(txt) || (!!cv && getComputedStyle(cv).display!=='none' && cv.width>=320 && cv.height>=200);
- },null,{timeout:160000});
+   const cv=document.querySelector('#screen_container canvas');
+   return !!cv && getComputedStyle(cv).display!=='none' && cv.width>=320 && cv.height>=200;
+ },null,{timeout:180000});
  const state=await page.locator('#screen_container').evaluate(el=>({text:el.textContent.slice(-500),canvas:el.querySelector('canvas')?.width,canvasHeight:el.querySelector('canvas')?.height,screenVisible:getComputedStyle(el).display!=='none'}));
- console.log(profile,'guest display appeared (not necessarily desktop):',state);
+ console.log(profile,'graphical mode appeared (not necessarily desktop):',state);
  if(!state.screenVisible)throw Error('Display hidden');
  if(errors.length)throw Error('Page errors: '+errors.join(';'));
- console.log(profile,'smoke test passed: engine and guest display appeared');
+ console.log(profile,'smoke test passed: graphics mode shown, full desktop remains unverified');
  await page.screenshot({path:'/tmp/ly-'+profile+'-boot.png',fullPage:true});
 }catch(e){
  console.error(profile,'SMOKE FAILED:',e.message);
