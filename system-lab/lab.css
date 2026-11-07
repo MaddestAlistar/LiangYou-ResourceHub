@@ -35,3 +35,84 @@
 .quick-feedback{min-height:18px;font-size:11px;color:#9bbce9;line-height:1.7;margin:12px 0 0}
 @media(max-width:800px){.quick-commands{grid-template-columns:repeat(2,minmax(0,1fr))}.virtual-keys{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:480px){.beginner-guide{margin:4px 11px 0;padding:14px 12px}.beginner-guide h3{font-size:16px}.guide-head{gap:6px}.guide-intro{font-size:12px}.guide-steps{font-size:12px;gap:6px}.input-explain{padding:2px 12px 13px}.quick-section{padding:14px 11px 17px}.quick-commands{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick-command{min-height:70px;padding:10px}.virtual-keys{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.virtual-keys button{min-height:45px}.type-controls{display:block}.type-controls label{display:block;margin-bottom:8px}.type-controls>div{display:flex;width:100%;min-width:0}.type-controls input{font-size:16px;min-height:44px}.type-controls button{min-height:44px}.quick-heading{display:block}.quick-heading span{display:block;margin-top:4px}}
+
+
+/* Screen-first controls: the direction pad stays immediately below the VM canvas. */
+.play-panel{border-top:1px solid #314b73;background:linear-gradient(135deg,#142849,#0d1e37);padding:12px 15px 14px}
+.next-step{display:flex;align-items:center;flex-wrap:wrap;gap:7px 11px;margin-bottom:11px}
+.next-badge{font-size:10px;font-weight:800;white-space:nowrap;background:#2b64b3;color:#f4f8ff;border-radius:99px;padding:6px 9px}
+.next-step strong{font-size:13px;line-height:1.45;font-weight:650;color:#e5f0ff}
+.play-layout{display:grid;grid-template-columns:minmax(0,1fr) 174px;gap:14px;align-items:start}
+.play-actions{min-width:0}
+.play-primary{width:100%;min-height:52px;border:1px solid #66a2ff;background:#285fd2;color:white;border-radius:13px;font-size:15px;font-weight:800;padding:10px 12px;box-shadow:0 8px 26px #14337b60}
+.play-primary:disabled{opacity:.55}
+.play-explain{color:#a9c2e7;line-height:1.55;font-size:12px;margin:8px 0}
+.play-minitools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.play-minitools button{min-height:37px;min-width:0;padding:5px 3px;border-radius:9px;background:#213c61;border:1px solid #52749f;color:#ebf4ff;font-size:11px;white-space:normal;line-height:1.2}
+.play-minitools button:disabled{opacity:.43}
+.dpad-title{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;margin-bottom:7px;line-height:1.35;text-align:center}
+.dpad-title strong{font-size:12px;color:#e1edff}
+.dpad-title small{font-size:10px;color:#9bb6db}
+.dpad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,47px);gap:5px;max-width:180px;margin:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.dpad button{width:100%;height:100%;border:1px solid #79aafa;border-radius:12px;color:#fff;font-size:20px;font-weight:900;background:#23518e;box-shadow:inset 0 1px 0 #ffffff19;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.dpad button:active:not(:disabled){background:#4186e6;transform:scale(.97)}
+.dpad button:disabled{opacity:.38}
+.dpad [data-padkey="up"]{grid-column:2;grid-row:1}
+.dpad [data-padkey="left"]{grid-column:1;grid-row:2}
+.dpad [data-padkey="down"]{grid-column:2;grid-row:2}
+.dpad [data-padkey="right"]{grid-column:3;grid-row:2}
+.play-status{font-size:11px;line-height:1.5;color:#a2c4fb;margin:10px 0 0;min-height:16px}
+#machine .machine-toolbar{gap:7px}
+#machine .machine-toolbar button{min-height:37px}
+#machine .screen-shell{overscroll-behavior:contain}
+body.lab-immersive{overflow:hidden;overscroll-behavior:none}
+body.lab-immersive #machine, #machine:fullscreen{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;z-index:99999;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none;background:#0a1428;overflow:hidden}
+body.lab-immersive #machine .machine-bar,#machine:fullscreen .machine-bar{flex:none;padding:7px max(10px,env(safe-area-inset-right)) 7px max(10px,env(safe-area-inset-left))}
+body.lab-immersive #machine .screen-shell,#machine:fullscreen .screen-shell{flex:1 1 auto;min-height:0;max-height:none;justify-content:center;align-items:center;overscroll-behavior:contain}
+body.lab-immersive #machine .play-panel,#machine:fullscreen .play-panel{flex:none;padding:8px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+body.lab-immersive #machine .machine-toolbar,
+body.lab-immersive #machine .beginner-guide,
+body.lab-immersive #machine .type-controls,
+body.lab-immersive #machine .input-explain,
+body.lab-immersive #machine .quick-section,
+body.lab-immersive #machine .runtime-hint,
+body.lab-immersive #machine .error-box,
+#machine:fullscreen .machine-toolbar,
+#machine:fullscreen .beginner-guide,
+#machine:fullscreen .type-controls,
+#machine:fullscreen .input-explain,
+#machine:fullscreen .quick-section,
+#machine:fullscreen .runtime-hint,
+#machine:fullscreen .error-box{display:none}
+body.lab-immersive #machine .play-layout,#machine:fullscreen .play-layout{grid-template-columns:minmax(0,1fr) 170px}
+body.lab-immersive #machine #screenMode,#machine:fullscreen #screenMode{background:#34588e;border-color:#91baff}
+body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{margin:5px 0}
+@media(max-width:480px){
+  .play-panel{padding:11px 10px 12px}
+  .play-layout{grid-template-columns:minmax(0,1fr) minmax(0,154px);gap:8px}
+  .play-primary{font-size:13px;min-height:49px;padding:8px}
+  .play-explain{font-size:11px}
+  .play-minitools{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .play-minitools button{font-size:10px;padding:5px 2px;min-height:38px}
+  .dpad{grid-template-rows:repeat(3,43px);gap:4px}
+  .dpad button{font-size:18px;border-radius:10px}
+  .dpad-title small{display:none}
+  .next-step strong{font-size:12px}
+  body.lab-immersive #machine .play-layout{grid-template-columns:minmax(0,1fr) 150px}
+}
+@media(max-height:580px) and (orientation:landscape){
+ body.lab-immersive #machine,#machine:fullscreen{display:grid;grid-template-columns:minmax(0,1fr) minmax(205px,34vw);grid-template-rows:auto minmax(0,1fr)}
+ body.lab-immersive #machine .machine-bar,#machine:fullscreen .machine-bar{grid-column:1/-1;grid-row:1;min-height:40px}
+ body.lab-immersive #machine .screen-shell,#machine:fullscreen .screen-shell{grid-column:1;grid-row:2;padding:5px;min-width:0}
+ body.lab-immersive #machine .play-panel,#machine:fullscreen .play-panel{grid-column:2;grid-row:2;overflow:auto;min-height:0;padding:6px max(6px,env(safe-area-inset-right)) 6px 8px}
+ body.lab-immersive #machine .play-layout,#machine:fullscreen .play-layout{display:flex;flex-direction:column;gap:5px}
+ body.lab-immersive #machine .play-actions,#machine:fullscreen .play-actions{width:100%}
+ body.lab-immersive #machine .play-explain,#machine:fullscreen .play-explain{display:none}
+ body.lab-immersive #machine .dpad-wrap,#machine:fullscreen .dpad-wrap{width:100%}
+ body.lab-immersive #machine .dpad,#machine:fullscreen .dpad{grid-template-rows:repeat(3,36px);max-width:150px}
+ body.lab-immersive #machine .next-step,#machine:fullscreen .next-step{margin-bottom:5px}
+ body.lab-immersive #machine .next-step strong,#machine:fullscreen .next-step strong{font-size:10px}
+ body.lab-immersive #machine .play-primary,#machine:fullscreen .play-primary{min-height:32px;font-size:11px;padding:6px}
+ body.lab-immersive #machine .play-minitools button,#machine:fullscreen .play-minitools button{min-height:29px}
+ body.lab-immersive #machine .play-status,#machine:fullscreen .play-status{font-size:10px;margin:3px 0}
+}
