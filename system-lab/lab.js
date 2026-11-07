@@ -35,8 +35,8 @@
       intro:"这是复古 DOS 电脑。开机看到 A:\\> 就进入系统了，无需登录。镜像里有五款其他游戏。",
       steps:[
         "等屏幕显示 A:\\>，就说明进入系统。前面提示光驱启动失败，不一定是真正启动失败。",
-        "点「太空侵略者」「俄罗斯方块」或「扫雷」直接运行；下方还有 Jumper、Rogue 和文件工具。",
-        "老游戏控制方法不完全一样，可试方向键、Enter 或 Esc；换游戏前先返回 A:\\>，必要时重启。"
+        "扫雷可以点「简单 / 中等 / 困难」直接进入，不用再手动输入数字；还有俄罗斯方块、太空侵略者等游戏。",
+        "扫雷：方向键移动、空格翻开、Tab 插旗。退出当前游戏可以点「退出游戏 · 返回 DOS」，无需刷新整个网页。"
       ],
       note:"已核对镜像内 GAMES 目录。部分游戏操作需要额外按键，手机体验因游戏而异。",
       commands:[
@@ -45,7 +45,6 @@
         {name:"清空屏幕",value:"cls",hint:"清屏"},
         {name:"太空侵略者",value:"invaders",hint:"射击游戏"},
         {name:"俄罗斯方块",value:"tetris",hint:"拼方块"},
-        {name:"扫雷",value:"minesw~1",hint:"避雷解谜"},
         {name:"Jumper",value:"jumper",hint:"跳跃游戏"},
         {name:"Rogue",value:"rogue",hint:"地牢冒险"}
       ]
@@ -88,6 +87,7 @@
   let guestReady = false;
   let commandBusy = false;
   let gamePlaying = false;
+  let activeGame = null;
   let bootMonitor = null;
   const pendingDownloads = new Set();
   let loadingTimer = null;
@@ -163,7 +163,9 @@
     freedos:[
       {label:"👾 太空侵略者",value:"invaders"},
       {label:"🧱 俄罗斯方块",value:"tetris"},
-      {label:"💣 扫雷",value:"minesw~1"}
+      {label:"💣 扫雷·简单",value:"minesw~1",level:"1"},
+      {label:"💣 扫雷·中等",value:"minesw~1",level:"2"},
+      {label:"💣 扫雷·困难",value:"minesw~1",level:"3"}
     ],
     kolibri:[]
   });
@@ -228,12 +230,14 @@
       btn.textContent = "⌛ 等待系统启动";
     } else if(current==="freedos") {
       $("simpleStep").textContent = gamePlaying
-        ? "正在游戏中。换游戏前请先回到 A:\\>，必要时重启。"
-        : "已进入 DOS！可以查看文件，也可以选择不同小游戏。";
+        ? "正在游戏中。换游戏点「退出游戏 · 返回 DOS」，不必一直试 Esc。"
+        : "已进入 DOS！扫雷可直接选择简单、中等或困难。";
       $("simpleActionHelp").textContent = gamePlaying
-        ? "尝试 Esc 退出（有些游戏用 Q），不能退出可点「重启」。"
-        : "这里有太空侵略者、俄罗斯方块、扫雷等游戏，下方还有 Jumper 与 Rogue。";
-      btn.textContent = gamePlaying ? "↩ 尝试退出当前游戏" : "📁 查看磁盘文件";
+        ? activeGame==="minesw~1"
+          ? "扫雷：方向键移动、空格翻开、Tab 插旗。点「退出游戏」可直接返回 DOS。"
+          : "老游戏可能不响应 Esc；点击大按钮会重启 DOS，确保退出游戏。"
+        : "选择扫雷难度可直接进游戏，也可以玩俄罗斯方块、太空侵略者。";
+      btn.textContent = gamePlaying ? "↻ 退出游戏 · 返回 DOS" : "📁 查看磁盘文件";
     } else {
       $("simpleStep").textContent = "拖动光标到图标，再点「单击左键」或「双击打开」。";
       $("simpleActionHelp").textContent = "下方有鼠标按键；方向键和 Enter 不是鼠标点击。";
@@ -296,7 +300,7 @@
     }));
     const note=$("systemNote");
     note.hidden = !id;
-    note.textContent=id==="freedos" ? "💡 FreeDOS 镜像里有太空侵略者、俄罗斯方块、扫雷、Jumper 和 Rogue。"
+    note.textContent=id==="freedos" ? "💡 扫雷可一键进入三种难度；方向键移动、空格翻开、Tab 插旗。退出按「返回 DOS」。"
       : id==="kolibri" ? "💡 KolibriOS 是图形桌面；先移动鼠标，再点左键或双击。" : "";
     const actions=$("easyActions");
     actions.replaceChildren();
@@ -304,6 +308,7 @@
       const button=document.createElement("button");
       button.type="button";
       button.dataset.easycmd=item.value;
+      if(item.level)button.dataset.level=item.level;
       button.textContent=item.label;
       button.disabled=true;
       actions.append(button);
@@ -345,7 +350,7 @@
     updateGuideButtons();
   };
   const resetUI = () => {
-    ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false; attemptFailed = false;
+    ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false; activeGame = null; attemptFailed = false;
     if(bootMonitor) { clearInterval(bootMonitor); bootMonitor = null; }
     for(const hold of heldPads.values()) {
       try {hold.instance.keyboard_send_scancodes([0xe0,HOLD_KEYS[hold.name]|0x80]);} catch {}
