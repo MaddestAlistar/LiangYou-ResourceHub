@@ -102,10 +102,12 @@ try {
     if(await page.locator('[data-system="'+removed+'"]').count())throw Error('Removed system is still present: '+removed);
   }
   if(await page.locator('[data-command="snake"]').count())throw Error('Removed game should not have a launch button');
-  for(const command of ['invaders','tetris','minesw~1','jumper','rogue']) {
-    await page.locator('[data-launch="freedos"]').click();
-    await page.waitForFunction(()=>document.querySelector('#quickCommands [data-command="dir"]')!==null,null,{timeout:20000});
+  await page.locator('[data-launch="freedos"]').click();
+  for(const command of ['invaders','tetris','jumper','rogue']) {
     if(await page.locator('[data-command="'+command+'"]').count()!==1)throw Error('Expected verified DOS game: '+command);
+  }
+  for(const level of ['1','2','3']) {
+    if(await page.locator('[data-easycmd="minesw~1"][data-level="'+level+'"]').count()!==1)throw Error('Missing one-tap Minesweeper level: '+level);
   }
   console.log('Retired OS entries removed; five verified DOS game commands displayed');
   const mobile = await browser.newPage({...devices['iPhone 13']});
