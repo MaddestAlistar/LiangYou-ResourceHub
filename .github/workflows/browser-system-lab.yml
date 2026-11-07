@@ -1,0 +1,38 @@
+name: Browser smoke test — Web OS Lab
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'system-lab/**'
+      - '.github/workflows/browser-system-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve site locally
+        run: |
+          nohup python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ly-web-os-http.log 2>&1 &
+          sleep 2
+      - name: Boot FreeDOS and KolibriOS in a real browser
+        run: node system-lab/test-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: liangyou-web-os-lab-browser
+          path: /tmp/ly-web-os-*.png
+          if-no-files-found: ignore
