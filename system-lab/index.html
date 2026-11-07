@@ -29,21 +29,21 @@
         <article class="system-card" data-system="freedos">
           <div class="system-icon dos" aria-hidden="true">&gt;_</div>
           <div class="card-top"><h3>FreeDOS</h3><span class="tag">推荐入门</span></div>
-          <p>体验经典 DOS 命令行，适合第一次使用网页模拟器。</p>
+          <p>可以试贪吃蛇、俄罗斯方块、太空侵略者，也能查看文件和使用 DOS 工具。</p>
           <div class="detail"><span>命令行</span><span>约 0.7 MB 镜像</span></div>
           <button class="launch" type="button" data-launch="freedos">启动 FreeDOS <span aria-hidden="true">↗</span></button>
         </article>
         <article class="system-card" data-system="kolibri">
           <div class="system-icon kolibri" aria-hidden="true">▦</div>
           <div class="card-top"><h3>KolibriOS</h3><span class="tag">轻量桌面</span></div>
-          <p>极小的图形操作系统，可试用窗口、菜单和简单工具。</p>
+          <p>有图标和窗口的轻量桌面。手机可用「单击、双击、右键」操作。</p>
           <div class="detail"><span>图形界面</span><span>约 1.4 MB 镜像</span></div>
           <button class="launch" type="button" data-launch="kolibri">启动 KolibriOS <span aria-hidden="true">↗</span></button>
         </article>
         <article class="system-card" data-system="linux">
           <div class="system-icon linux" aria-hidden="true">#</div>
-          <div class="card-top"><h3>Buildroot Linux</h3><span class="tag">轻量 Linux</span></div>
-          <p>体验开源 Linux 环境。这里使用轻量镜像，并非完整桌面发行版。</p>
+          <div class="card-top"><h3>Buildroot Linux</h3><span class="tag">命令行 · 无桌面</span></div>
+          <p>这是只有文字命令的 Linux，没有桌面图标或窗口，适合体验文件和系统信息。</p>
           <div class="detail"><span>命令行</span><span>约 5.7 MB 镜像</span></div>
           <button class="launch" type="button" data-launch="linux">启动 Linux <span aria-hidden="true">↗</span></button>
         </article>
@@ -62,11 +62,13 @@
           </div>
         </div>
         <div class="play-panel" id="playPanel" aria-label="屏幕旁边的操作区">
+          <p class="system-note" id="systemNote" hidden></p>
           <div class="next-step"><span class="next-badge">下一步做什么？</span><strong id="simpleStep" aria-live="polite">先在上面选择一个系统，点击「启动」。</strong></div>
           <div class="play-layout">
             <div class="play-actions">
               <button type="button" class="play-primary" id="primaryAction" disabled>▶ 启动系统后可操作</button>
               <p class="play-explain" id="simpleActionHelp">启动后会根据系统自动显示最简单的操作。</p>
+              <div id="easyActions" class="easy-actions" aria-label="简单操作入口"></div>
               <div class="play-minitools">
                 <button type="button" id="screenMode" disabled>⛶ 放大操作</button>
                 <button type="button" id="padEnter" disabled>↵ 确认</button>
@@ -81,6 +83,14 @@
                 <button type="button" data-padkey="down" aria-label="向下" disabled>▼</button>
                 <button type="button" data-padkey="right" aria-label="向右" disabled>▶</button>
               </div>
+            </div>
+          </div>
+          <div id="mouseControls" class="mouse-controls" hidden>
+            <p>🖱 桌面操作：先用手指拖动光标到图标，再点下面的鼠标键。也可以直接轻点屏幕。</p>
+            <div class="mouse-buttons">
+              <button type="button" data-mouse="left" disabled>👆 单击左键</button>
+              <button type="button" data-mouse="double" disabled>👆 双击打开</button>
+              <button type="button" data-mouse="right" disabled>右键菜单</button>
             </div>
           </div>
           <p class="play-status" id="playStatus" role="status" aria-live="polite">选择一个系统后即可使用。</p>
