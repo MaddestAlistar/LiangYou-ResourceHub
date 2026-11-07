@@ -29,7 +29,7 @@ try {
   console.log('FreeDOS one-tap command sent successfully');
   const gameButton = page.locator('#primaryAction');
   if(!(await gameButton.textContent()).includes('查看磁盘文件')) throw Error('DOS main button should show files, not force a game');
-  if(await page.locator('#easyActions [data-easycmd]').count()!==3)throw Error('Missing three DOS game choices');
+  if(await page.locator('#easyActions [data-easycmd]').count()!==5)throw Error('Expected two arcade games and three Minesweeper difficulty choices');
   await gameButton.click();
   await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('dir'),null,{timeout:15000});
   await page.locator('#easyActions [data-easycmd="invaders"]').click();
@@ -45,6 +45,35 @@ try {
   await page.locator('#screenMode').click();
   if(await page.evaluate(()=>document.body.classList.contains('lab-immersive'))) throw Error('Immersive viewport did not close');
   console.log('Enlarge and exit buttons work');
+  // Esc is not universal. The primary game exit must destroy and restart DOS.
+  await page.locator('#primaryAction').click();
+  await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+    document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
+    !document.querySelector('#primaryAction')?.disabled, null, {timeout:90000});
+  console.log('Forced return to DOS after an arcade game succeeded');
+  for(const [difficulty,label] of [['1','简单'],['2','中等'],['3','困难']]) {
+    const button=page.locator('#easyActions [data-easycmd="minesw~1"][data-level="'+difficulty+'"]');
+    if(await button.count()!==1)throw Error('Minesweeper '+label+' button not found');
+    await button.click();
+    await page.waitForFunction(label => document.querySelector('#playStatus')?.textContent?.includes('扫雷 '+label+' 已选择'),label,{timeout:25000});
+    await page.waitForFunction(() => {
+      const cv=document.querySelector('#screen_container canvas');
+      return !!cv && getComputedStyle(cv).display!=='none' && cv.width>=640;
+    },null,{timeout:18000});
+    console.log('Minesweeper '+label+' entered graphics mode without manual difficulty selection');
+    await page.locator('#primaryAction').click();
+    await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+      document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
+      !document.querySelector('#primaryAction')?.disabled,null,{timeout:90000});
+    console.log('Forced exit from Minesweeper '+label+' returned to DOS prompt');
+  }
+  await page.locator('[data-command="tetris"]').click();
+  await page.waitForFunction(()=>document.querySelector('#primaryAction')?.textContent?.includes('退出游戏'),null,{timeout:12000});
+  await page.locator('#primaryAction').click();
+  await page.waitForFunction(() => /A:\\\\>/.test(document.querySelector('#screen_container')?.textContent||'') &&
+    document.querySelector('#primaryAction')?.textContent?.includes('查看磁盘文件') &&
+    !document.querySelector('#primaryAction')?.disabled,null,{timeout:90000});
+  console.log('Forced exit from Tetris returned to DOS prompt');
   await page.screenshot({path:'/tmp/ly-web-os-freedos.png',fullPage:true});
   await page.locator('[data-launch="kolibri"]').click();
   // KolibriOS must switch to graphics; boot messages alone do not count.
@@ -88,7 +117,7 @@ try {
   if(!(await mobile.locator('#guideTitle').textContent()).includes('FreeDOS')) throw Error('Mobile guide did not update on launch');
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
   console.log('Mobile after choosing guest:', mobileWidth);
-  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 8) throw Error('Mobile guide or keypad overflows / is incomplete');
+  if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 7) throw Error('Mobile guide or keypad overflows / is incomplete');
   if(await mobile.locator('#padSpace').count()!==1) throw Error('Mobile Space game button missing');
   await mobile.locator('#screenMode').click();
   const immersive = await mobile.evaluate(() => ({
