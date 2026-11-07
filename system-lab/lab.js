@@ -500,7 +500,7 @@
         bios: assets.bios,
         vga_bios: assets.vga_bios,
         autostart:true,
-        boot_order:config.type === "cdrom" ? 0x132 : 0x213,
+        boot_order:config.type === "cdrom" ? 0x213 : config.type === "hda" ? 0x132 : 0x231,
         acpi:!!config.acpi,
         disable_keyboard:false,
         disable_mouse:false
