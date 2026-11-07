@@ -1,26 +1,34 @@
 # 良友科技 · 在线系统实验室
 
-公开页面：`/LiangYou-ResourceHub/system-lab/`。
+网站：`/LiangYou-ResourceHub/system-lab/`
 
-## 当前系统
-- **FreeDOS**：内置小型 DOS 启动软盘，命令行和经典小游戏。
-- **KolibriOS**：极轻量图形桌面，触屏鼠标点击操作。
-- **ReactOS**：开源 Windows 风格系统。通过 [v86](https://github.com/copy/v86) 的分块磁盘接口加载上游演示镜像（约 700 MiB 虚拟磁盘），内存要求高，iPhone 不保证可进入桌面。
-- **Android-x86 1.6 / 4.4**：早期安卓实验系统，按需分块读取官方 v86 演示镜像（分别约 52 MiB / 236 MiB），不支持现代 Android 应用环境。
-- **Windows 95 / Windows 98**：仅提供**访客本机合法持有**的已安装启动磁盘文件 `.img/.vhd/.bin` 选择器。浏览器端读取，不上传、不在站点存储或分发 Windows 镜像。单独附上上游 v86 的历史系统演示链接。
+这是无需运行服务器的浏览器内操作系统实验室，使用 [v86](https://github.com/copy/v86)（WebAssembly）在访客本机执行。
 
-## 技术与限制
-本项目仍使用 WebAssembly v86，宿主部署在静态 GitHub Pages，运行计算全部在访客浏览器完成。FreeDOS 和 KolibriOS 小镜像来自 [copy/images](https://github.com/copy/images)。ReactOS、Android 使用 `https://i.copy.sh/` 提供的**按需分块**的示例磁盘；仓库不存放大型镜像文件。
+## 当前仅保留两个系统
 
-Windows 本地文件用 `File.arrayBuffer()` 装载，文件越大，访客手机内存占用越高。普通安装光盘 ISO 并不是已经安装好的 Windows 启动盘。不要上传不明来源文件或重要隐私资料。
+- **FreeDOS**：使用 `freedos722.img` 软盘镜像。可以浏览文件、输入 DOS 命令，也有 5 款可执行小游戏。
+- **KolibriOS**：使用 `kolibri.img`，在浏览器中提供轻量图形桌面；移动端有单击、双击和右键等虚拟鼠标按钮。
 
-浏览器模拟器并不等于真机。**虚拟 CPU 正在运行、进入图形模式，不等于桌面已经完全可用**。特别是 ReactOS 和 Android，iPhone Safari 可能因内存、CPU 限制或旧版驱动而无法启动。建议电脑优先尝试，并显示官方下载或演示备用入口。
+## FreeDOS 游戏文件核实
 
-## 手机新手操作
-系统运行窗口保留放大、重启、退出、虚拟方向键和手机鼠标左键/双击/右键。iPhone Safari 不允许普通元素完整占据原生全屏时，使用固定视口沉浸模式。
+实际检查 `copy/images/freedos722.img` 的 FAT12 文件目录及 `AUTOEXEC.BAT`，确认 `A:\\GAMES` 已加入 PATH，游戏文件包括：
 
-## 版权与来源
-- v86 见 [项目仓库](https://github.com/copy/v86)。
-- ReactOS 项目及使用许可见 [ReactOS 官网](https://reactos.org/)。
-- Android-x86 为早期演示，来源参考 v86 官方 profile。
-- Windows 95/98 属于微软专有软件，本站不会提供微软系统磁盘或安装程序，要求访客自行拥有合法使用权。
+| 页面名称 | 对应镜像文件 | DOS 命令 |
+| --- | --- | --- |
+| 太空侵略者 | `GAMES/INVADERS.COM` | `invaders` |
+| 俄罗斯方块 | `GAMES/TETRIS.COM` | `tetris` |
+| 扫雷 | `GAMES/MINESW~1.COM` | `minesw~1` |
+| Jumper | `GAMES/JUMPER.COM` | `jumper` |
+| Rogue | `GAMES/ROGUE.EXE` | `rogue` |
+
+已根据需求**移除贪吃蛇的网页入口**。注意：此处复用原始上游镜像，`SNAKE.EXE` 仍存在于镜像内部，且开机自带的文本可能提到它；本次不重新发布或篡改上游磁盘镜像。
+
+文件存在与命令可识别不等于每款游戏都在所有 iPhone 上流畅可玩，游戏的按键要求不同。游戏方向按键提供手指按住和松开交互。
+
+## 其他说明
+
+已移除 Buildroot Linux、ReactOS、Android-x86、Windows 95/98 的本网站入口和加载代码，不再维护其大量镜像的下载、启动和检测流程。
+
+模拟器使用固定版本的 v86 JS/WASM 核心与静态系统镜像；访客端按需下载，运算在浏览器本地完成。无需云服务器、Workers 或数据库。主下载地址失败时会切换备用地址，支持启动失败重试。
+
+iPhone Safari 不支持普通网页元素真正全屏时，提供整页沉浸视口，保留游戏方向键；模拟鼠标点击与游戏控制是否生效仍会受设备和系统版本影响。
