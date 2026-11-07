@@ -34,3 +34,8 @@ jobs:
             rm -f "$headers"
             echo "::endgroup::"
           done
+          echo "::group::ReactOS optional state snapshot"
+          curl -sSLI --connect-timeout 8 --max-time 20 \
+            -H 'Origin: https://maddestalistar.github.io' \
+            'https://i.copy.sh/reactos_state-v3.bin.zst' | grep -iE '^HTTP/|^content-length:|^access-control-allow-origin:' || true
+          echo "::endgroup::"
