@@ -33,9 +33,9 @@ try {
   await gameButton.click();
   await page.waitForFunction(()=>document.querySelector('#playStatus')?.textContent?.includes('dir'),null,{timeout:15000});
   await page.locator('#easyActions [data-easycmd="snake"]').click();
-  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('贪吃蛇启动指令'),null,{timeout:15000});
+  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('已尝试启动「snake」'),null,{timeout:15000});
   await page.locator('[data-padkey="up"]').click();
-  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('UP 已发送'),null,{timeout:10000});
+  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('方向键已按下：上'),null,{timeout:10000});
   console.log('FreeDOS multiple game choices and screen-adjacent gamepad work');
   await page.locator('#screenMode').click();
   if(!(await page.evaluate(()=>document.body.classList.contains('lab-immersive')))) throw Error('Immersive viewport did not open');
