@@ -5,7 +5,7 @@
 ## 原理
 - 使用 [copy/v86](https://github.com/copy/v86) 的浏览器 WebAssembly x86 模拟器。
 - 系统磁盘使用 [copy/images](https://github.com/copy/images) 的小体积示例镜像：FreeDOS、KolibriOS、Buildroot Linux。
-- 运行时动态下载 `https://copy.sh/v86/build/libv86.js` 和 `v86.wasm`，BIOS/镜像从 GitHub raw 加载，不经过良友自己的后端服务。
+- 运行时动态下载 `https://cdn.jsdelivr.net/npm/v86@0.5.473/build/libv86.js` 和同版本 `build/v86.wasm`，BIOS/镜像从 GitHub raw 加载，不经过良友自己的后端服务。
 - 首次加载需联网；第三方网络、跨域限制或 Safari WebAssembly 限制可能导致无法启动。网站只提供实验入口，不保证所有设备可用。
 
 ## 使用
