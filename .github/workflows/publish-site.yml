@@ -9,6 +9,7 @@ on:
       - '*.js'
       - 'assets/**'
       - 'interactive/**'
+      - 'system-lab/**'
       - '.github/workflows/publish-site.yml'
   workflow_dispatch:
 
@@ -35,6 +36,10 @@ jobs:
       - name: Verify the Sixfast frontend files exist and JavaScript parses
         run: |
           test -s index.html
+          test -s system-lab/index.html
+          test -s system-lab/lab.js
+          node --check system-lab/lab.js
+          grep -q 'href="./system-lab/"' index.html
           test -s sixfast.css
           test -s sixfast.js
           grep -q 'id="sixfast"' index.html
