@@ -27,6 +27,19 @@ try {
   await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('已输入并执行「dir」'),null,{timeout:15000});
   await page.waitForFunction(() => /dir/i.test(document.querySelector('#screen_container')?.textContent || ''),null,{timeout:15000});
   console.log('FreeDOS one-tap command sent successfully');
+  const gameButton = page.locator('#primaryAction');
+  if(!(await gameButton.textContent()).includes('贪吃蛇')) throw Error('Novice one-tap game button not visible');
+  await gameButton.click();
+  await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('贪吃蛇启动指令'),null,{timeout:15000});
+  await page.locator('[data-padkey="up"]').click();
+  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('UP 已发送'),null,{timeout:10000});
+  console.log('FreeDOS screen-adjacent gamepad works');
+  await page.locator('#screenMode').click();
+  if(!(await page.evaluate(()=>document.body.classList.contains('lab-immersive')))) throw Error('Immersive viewport did not open');
+  if(!(await page.locator('#screenMode').textContent()).includes('返回')) throw Error('Immersive exit control missing');
+  await page.locator('#screenMode').click();
+  if(await page.evaluate(()=>document.body.classList.contains('lab-immersive'))) throw Error('Immersive viewport did not close');
+  console.log('Enlarge and exit buttons work');
   await page.screenshot({path:'/tmp/ly-web-os-freedos.png',fullPage:true});
   await page.locator('[data-launch="kolibri"]').click();
   // KolibriOS must switch to graphics; boot messages alone do not count.
@@ -37,7 +50,7 @@ try {
   console.log('KolibriOS graphics mode started');
   if(!(await page.locator('#guideTitle').textContent()).includes('KolibriOS')) throw new Error('KolibriOS guide not shown');
   if(await page.locator('[data-vkey="ctrlc"]').isEnabled()) throw new Error('Ctrl+C should be disabled for graphical guest');
-  await page.locator('[data-vkey="enter"]').click();
+  await page.locator('#padEnter').click();
   await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('ENTER 已发送') || document.querySelector('#quickFeedback')?.textContent?.includes('Enter 已发送'),null,{timeout:10000});
   console.log('KolibriOS virtual Enter key sent');
   await page.screenshot({path:'/tmp/ly-web-os-kolibri.png',fullPage:true});
@@ -61,7 +74,19 @@ try {
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
   console.log('Mobile after choosing guest:', mobileWidth);
   if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 4) throw Error('Mobile guide or keypad overflows / is incomplete');
+  await mobile.locator('#screenMode').click();
+  const immersive = await mobile.evaluate(() => ({
+    enabled:document.body.classList.contains('lab-immersive'),
+    machinePosition:getComputedStyle(document.querySelector('#machine')).position,
+    machineHeight:document.querySelector('#machine').getBoundingClientRect().height,
+    windowHeight:innerHeight,
+    padVisible:(() => { const r=document.querySelector('#dpad').getBoundingClientRect();return r.width>0&&r.top>=0&&r.bottom<=innerHeight+2; })()
+  }));
+  console.log('iPhone-like immersive layout:',immersive);
+  if(!immersive.enabled || immersive.machinePosition!=='fixed' || !immersive.padVisible) throw Error('Mobile fullscreen fallback or gamepad not accessible');
   await mobile.screenshot({path:'/tmp/ly-web-os-mobile.png',fullPage:true});
+  await mobile.locator('#screenMode').click();
+  if(await mobile.evaluate(()=>document.body.classList.contains('lab-immersive'))) throw Error('Mobile immersive exit did not work');
   console.log('Browser OS lab smoke test passed.');
 } catch(error) {
   console.error('Browser OS lab smoke test failed:',error);
