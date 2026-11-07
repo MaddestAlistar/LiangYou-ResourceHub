@@ -26,6 +26,10 @@ jobs:
             headers="$(mktemp)"
             http="$(curl -sSL --connect-timeout 8 --max-time 22 -H 'Origin: https://maddestalistar.github.io' -o /dev/null -D "$headers" -w '%{http_code}' "$url" || true)"
             echo "HTTP=$http"
+            if [[ "$http" != "200" ]]; then echo "::error::$name image chunk not available"; exit 1; fi
+            if ! grep -qiE '^access-control-allow-origin: (\\*|https://maddestalistar.github.io)' "$headers"; then
+              echo "::error::$name image chunk lacks CORS"; exit 1
+            fi
             grep -iE '^HTTP/|^access-control-allow-origin:|^content-type:|^content-length:' "$headers" || true
             rm -f "$headers"
             echo "::endgroup::"
