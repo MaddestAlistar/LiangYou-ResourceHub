@@ -229,6 +229,7 @@
     }
     const instance = emulator;
     mouseBusy = true;
+    updateSimpleUI();
     const buttons = kind === "right" ? [false,false,true] : [true,false,false];
     const release = [false,false,false];
     try {
@@ -248,7 +249,7 @@
       }
     } catch(error) {
       simpleStatus("鼠标操作没能发送：" + (error?.message||String(error)));
-    } finally { mouseBusy=false; }
+    } finally { mouseBusy=false; updateSimpleUI(); }
   }
 
   const simpleStatus = text => { $("playStatus").textContent = text; };
