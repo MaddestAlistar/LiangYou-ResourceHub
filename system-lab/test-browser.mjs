@@ -36,7 +36,9 @@ try {
   await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('已尝试启动「invaders」'),null,{timeout:15000});
   await page.locator('[data-padkey="up"]').click();
   await page.waitForFunction(() => document.querySelector('#playStatus')?.textContent?.includes('方向键已按下：上'),null,{timeout:10000});
-  console.log('FreeDOS multiple game choices and screen-adjacent gamepad work');
+  await page.locator('#padSpace').click();
+  await page.waitForFunction(() => document.querySelector('#quickFeedback')?.textContent?.includes('SPACE 已发送'),null,{timeout:10000});
+  console.log('FreeDOS multiple game choices, direction pad and Space key work');
   await page.locator('#screenMode').click();
   if(!(await page.evaluate(()=>document.body.classList.contains('lab-immersive')))) throw Error('Immersive viewport did not open');
   if(!(await page.locator('#screenMode').textContent()).includes('返回')) throw Error('Immersive exit control missing');
@@ -87,6 +89,7 @@ try {
   const mobileWidth = await mobile.evaluate(() => ({document:document.documentElement.scrollWidth,viewport:innerWidth,keys:document.querySelectorAll('#virtualKeys button').length,commands:document.querySelectorAll('#quickCommands [data-command]').length}));
   console.log('Mobile after choosing guest:', mobileWidth);
   if(mobileWidth.document > mobileWidth.viewport + 5 || mobileWidth.keys !== 9 || mobileWidth.commands !== 8) throw Error('Mobile guide or keypad overflows / is incomplete');
+  if(await mobile.locator('#padSpace').count()!==1) throw Error('Mobile Space game button missing');
   await mobile.locator('#screenMode').click();
   const immersive = await mobile.evaluate(() => ({
     enabled:document.body.classList.contains('lab-immersive'),
