@@ -99,6 +99,7 @@
   let bootMonitor = null;
   const pendingDownloads = new Set();
   let loadingTimer = null;
+  let attemptFailed = false;
   const controls = ["pause","resume","restart","fullscreen","exit","typeText","sendText","sendEnter"];
   const status = (message, live = false) => {
     $("machineStatus").textContent = message;
@@ -106,6 +107,7 @@
   };
 
   const showLoading = (title,detail = "") => {
+    if(attemptFailed) return;
     $("loadingCover").hidden = false;
     $("loadingTitle").textContent = title;
     $("loadingDetail").textContent = detail;
@@ -125,7 +127,7 @@
   async function fetchAsset(label,urls,minSize,token) {
     const failures = [];
     for(let i=0;i<urls.length;i++) {
-      if(token !== generation) throw new Error("已取消旧的加载任务");
+      if(token !== generation || attemptFailed) throw new Error("已取消旧的加载任务");
       const controller = new AbortController();
       pendingDownloads.add(controller);
       const timer = setTimeout(()=>controller.abort(),23000);
@@ -138,7 +140,7 @@
         if(token !== generation) throw new Error("已取消旧的加载任务");
         return {buffer:data,url:urls[i]};
       } catch(error) {
-        if(token !== generation) throw error;
+        if(token !== generation || attemptFailed) throw error;
         failures.push((i===0?"主地址":"备用地址")+": "+(error?.message||String(error)));
       } finally {
         clearTimeout(timer);
@@ -152,7 +154,7 @@
     async function one(label,urls,min) {
       const value = await fetchAsset(label,urls,min,token);
       completed += 1;
-      if(token === generation) showLoading("资源准备中 " + completed + "/4","已取得"+label+"，正在准备剩余文件…");
+      if(token === generation && !attemptFailed) showLoading("资源准备中 " + completed + "/4","已取得"+label+"，正在准备剩余文件…");
       return value;
     }
     const [bios,vga,image,wasm] = await Promise.all([
@@ -287,7 +289,7 @@
     updateGuideButtons();
   };
   const resetUI = () => {
-    ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false;
+    ready = false; isRunning = false; guestReady = false; commandBusy = false; gamePlaying = false; attemptFailed = false;
     if(bootMonitor) { clearInterval(bootMonitor); bootMonitor = null; }
     cancelDownloads();
     controls.forEach(id => $(id).disabled = true);
@@ -296,6 +298,7 @@
     updateGuideButtons();
   };
   const fail = error => {
+    attemptFailed = true;
     const detail = error && error.message ? error.message : String(error || "未知错误");
     cancelDownloads();
     status("启动未完成 · 可点击重新尝试");
