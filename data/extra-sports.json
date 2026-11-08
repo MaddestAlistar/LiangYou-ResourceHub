@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-08T05:52:46Z",
+  "generated_at": "2026-11-08T12:01:38Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-08T05:52:46Z"
+      "verified_at": "2026-11-08T12:01:38Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 71,
       "standings": 5,
-      "verified_at": "2026-11-08T05:52:46Z"
+      "verified_at": "2026-11-08T12:01:38Z"
     }
   ],
   "status": "ok",
@@ -658,12 +658,12 @@
       "league": "Eredivisie",
       "stage": "Regular Season",
       "start_time": "2026-11-08T11:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "SC Heerenveen",
       "away": "Feyenoord Rotterdam",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -676,12 +676,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-08T11:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "SSC Napoli",
       "away": "SS Lazio",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -1309,6 +1309,15 @@
       "provider": "dunkapi",
       "groups": [
         {
+          "team": "San Antonio Spurs",
+          "group": "Western Conference",
+          "wins": 8,
+          "losses": 2,
+          "played": 10,
+          "win_pct": 0.8,
+          "rank": 1
+        },
+        {
           "team": "Oklahoma City Thunder",
           "group": "Western Conference",
           "wins": 8,
@@ -1345,15 +1354,6 @@
           "rank": 2
         },
         {
-          "team": "San Antonio Spurs",
-          "group": "Western Conference",
-          "wins": 7,
-          "losses": 2,
-          "played": 9,
-          "win_pct": 0.7778,
-          "rank": 3
-        },
-        {
           "team": "Detroit Pistons",
           "group": "Eastern Conference",
           "wins": 6,
@@ -1363,22 +1363,13 @@
           "rank": 3
         },
         {
-          "team": "Portland Trail Blazers",
-          "group": "Western Conference",
-          "wins": 6,
-          "losses": 2,
-          "played": 8,
-          "win_pct": 0.75,
-          "rank": 4
-        },
-        {
           "team": "Minnesota Timberwolves",
           "group": "Western Conference",
           "wins": 7,
           "losses": 3,
           "played": 10,
           "win_pct": 0.7,
-          "rank": 5
+          "rank": 4
         },
         {
           "team": "Houston Rockets",
@@ -1387,7 +1378,7 @@
           "losses": 3,
           "played": 10,
           "win_pct": 0.7,
-          "rank": 5
+          "rank": 4
         },
         {
           "team": "Golden State Warriors",
@@ -1396,7 +1387,7 @@
           "losses": 3,
           "played": 10,
           "win_pct": 0.7,
-          "rank": 5
+          "rank": 4
         },
         {
           "team": "Memphis Grizzlies",
@@ -1405,7 +1396,16 @@
           "losses": 3,
           "played": 9,
           "win_pct": 0.6667,
-          "rank": 8
+          "rank": 7
+        },
+        {
+          "team": "Portland Trail Blazers",
+          "group": "Western Conference",
+          "wins": 6,
+          "losses": 3,
+          "played": 9,
+          "win_pct": 0.6667,
+          "rank": 7
         },
         {
           "team": "Atlanta Hawks",
@@ -1581,7 +1581,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     },
     {
@@ -1793,7 +1793,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     },
     {
@@ -2005,7 +2005,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     },
     {
@@ -2197,7 +2197,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     },
     {
@@ -2212,9 +2212,9 @@
           "team": "SS Lazio",
           "wins": 9,
           "losses": 0,
-          "draws": 1,
-          "points": 28,
-          "played": 10,
+          "draws": 2,
+          "points": 29,
+          "played": 11,
           "group": ""
         },
         {
@@ -2302,9 +2302,9 @@
           "team": "SSC Napoli",
           "wins": 4,
           "losses": 4,
-          "draws": 2,
-          "points": 14,
-          "played": 10,
+          "draws": 3,
+          "points": 15,
+          "played": 11,
           "group": ""
         },
         {
@@ -2409,7 +2409,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     },
     {
@@ -2601,7 +2601,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-08T05:52:46Z",
+      "verified_at": "2026-11-08T12:01:38Z",
       "status": "ok"
     }
   ],
