@@ -32,6 +32,9 @@ test('Ranma 2026 keeps verified Bangumi data when optional MAL/AniList records a
 test('Ranma 2026 merges additional MAL/AniList scores only with matching season identity',()=>{
   const bangumi=d.works['bangumi-637802'];
   assert.ok(bangumi);
+  // Simulate a provider without an AniList score so the merge must add it.
+  // Live catalog scores change and must not override this synthetic fixture.
+  const bangumiWithoutAniList={...bangumi,ratings:(bangumi.ratings||[]).filter(r=>r.source!=='AniList')};
   const mal={
     id:'mal-63801',kind:'anime',title:'らんま1/2 (2024) 第3期',
     original_title:'らんま1/2 (2024) 第3期',date:'2026-10-03',
@@ -39,7 +42,7 @@ test('Ranma 2026 merges additional MAL/AniList scores only with matching season 
     ratings:[{source:'AniList',value:78}]
   };
   const merged=core.mergeAnimeCatalog({
-    works:{[bangumi.id]:bangumi,[mal.id]:mal},aliases:{}
+    works:{[bangumi.id]:bangumiWithoutAniList,[mal.id]:mal},aliases:{}
   });
   assert.equal(merged.aliases['mal-63801'],'bangumi-637802');
   assert.equal(merged.aliases['anilist-209872'],'bangumi-637802');
