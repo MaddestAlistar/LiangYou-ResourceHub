@@ -7,6 +7,8 @@ on:
       - 'workers/**'
       - 'icon-image.mjs'
       - 'icon-motion.mjs'
+      - 'emby-wiki-schema.mjs'
+      - 'scripts/test_emby_wiki.mjs'
       - 'scripts/test_icon*.mjs'
       - 'scripts/check_icon_worker.mjs'
       - 'workers/wrangler.jsonc'
@@ -30,6 +32,8 @@ jobs:
         run: node --test scripts/test_icon*.mjs
       - name: Verify tech news publishing regressions
         run: node --test scripts/test_tech_news.mjs
+      - name: Verify Emby Wiki submission and moderation
+        run: node --test scripts/test_emby_wiki.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:

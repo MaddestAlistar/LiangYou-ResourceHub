@@ -82,6 +82,8 @@
   }
 }
 </style>
+<link rel="stylesheet" href="./emby-wiki.css?v=20261110.1">
+<script type="module" src="./emby-wiki.js?v=20261110.1"></script>
 </head>
 <body id="top">
   <a href="#library" class="skip-link">跳到资源库</a>
@@ -93,6 +95,7 @@
           <div class="nav-panel" role="group" aria-label="资源中心">
             <a href="#resource-badges">媒体徽章</a>
             <a href="#resource-icons">媒体图标</a>
+            <a href="#emby-wiki">Emby Wiki</a>
             <a href="#resource-channels">频道库</a>
             <a href="#lab">资源实验室</a>
             <a href="./system-lab/">在线系统实验室</a>
@@ -261,9 +264,19 @@
         <div class="icon-submit-feature-copy"><span class="icon-submit-kicker">✦ LIANGYOU ICON STUDIO · 社区共创</span><h3>你的图标，也能加入良友图标库。</h3><p>分享原创静态图标或动态 GIF，上传后即可预览并提交审核。通过审核后收录至正式图标库，让更多人发现你的作品。</p><div class="icon-submit-tags"><span>静态 · 720 × 720</span><span>动态 GIF · 320–480 px 正方形</span><span>审核后收录</span></div></div>
         <a class="icon-submit-action" href="./icon-submit.html">立即投稿 <span aria-hidden="true" style="margin-left:8px">↗</span></a>
       </div>
+      <div class="wiki wk-cta" aria-label="Emby Wiki 自助投稿入口">
+        <div><p class="wk-eyebrow">LIANGYOU · EMBY WIKI</p><h3>把你了解的 Emby 服，整理成一份档案。</h3><p class="wk-hint">记录资源特色、媒体库统计与开号方式。社区自助投稿，审核后公开展示。</p></div>
+        <div class="wk-actions"><a class="wk-button" href="./emby-wiki-submit.html">Emby Wiki 投稿 ↗</a><a class="wk-button wk-secondary" href="#emby-wiki">浏览档案 ↓</a></div>
+      </div>
       <div class="project-grid" id="projectGrid" aria-busy="true"><p class="loading-note">正在加载资源目录…</p></div>
       <div class="empty-state" id="emptyState" hidden><h3>没有找到匹配的资源</h3><p>试试「EplayerX」「精选」「汇流」等关键词，或清除当前筛选。</p><button id="resetSearch" class="button button-secondary" type="button">清除筛选</button></div>
 <noscript><div class="notice"><p>开启 JavaScript 后可搜索资源、选择版本并复制链接。</p></div></noscript>
+    </section>
+    <section class="section container wiki" id="emby-wiki" aria-labelledby="wiki-title">
+      <div class="wk-shell"><header class="wk-head"><div><p class="wk-eyebrow">LIANGYOU · COMMUNITY ARCHIVE</p><h2 id="wiki-title">Emby Wiki · 服务器档案</h2><p class="wk-hint">从片库规模到开号规则，按需了解一台服务器。资料由社区投稿，审核后收录。</p></div><a class="wk-button" href="./emby-wiki-submit.html">＋ 自助投稿</a></header>
+      <div class="wk-tools"><input id="wiki-search" type="search" maxlength="100" placeholder="搜索服务器、资源或开号方式" aria-label="搜索 Emby 服务器"><select id="wiki-nature" aria-label="服务器性质"><option value="">全部分类</option></select><select id="wiki-sort" aria-label="档案排序"><option value="updatedAt">最近更新</option><option value="statsDate">最新统计</option><option value="name">名称排序</option></select></div>
+      <p id="wiki-count" class="wk-count" role="status">正在准备服务器档案…</p><div id="wiki-list" class="wk-grid" aria-busy="true"><p class="wk-empty">正在读取档案…</p></div><button id="wiki-retry" class="wk-button wk-secondary" type="button" hidden>重新加载</button><button id="wiki-more" class="wk-button wk-secondary wk-pagination" type="button" hidden>加载更多档案</button><p class="wk-hint" style="margin:20px 0 0">媒体库数量以标注的统计日期为准；服务规则可能变化，请以官方公告为准。</p><noscript><p>请开启 JavaScript 查看服务器档案。</p></noscript></div>
+      <dialog id="wiki-detail" class="wk-dialog" aria-labelledby="wiki-detail-title"><div class="wk-dialog-head"><div><p id="wiki-detail-meta" class="wk-eyebrow"></p><h2 id="wiki-detail-title">服务器档案</h2></div><button id="wiki-detail-close" type="button" class="wk-quiet" aria-label="关闭档案">关闭 ×</button></div><div id="wiki-detail-content"></div></dialog>
     </section>
     <section class="section container sports-section" id="sports" aria-labelledby="sports-title">
       <div class="sports-shell">
