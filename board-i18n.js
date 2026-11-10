@@ -102,7 +102,7 @@ function stage(value,sport,language='zh'){
  const raw=blank(value);
  if(!raw||language!=='zh')return raw;
  if(sport==='chess'){
-   return raw.replace(/\b(?:Round|Ronda)\s*(\d+)\b/gi,'第$1轮')
+   return raw.replace(/\b(?:Round|Ronda|Ronde)\s*(?:[:：]\s*)?(\d+)\b/gi,'第$1轮')
     .replace(/\bGame\s*(\d+)\b/gi,'第$1局')
     .replace(/\bMatch\s*(\d+)\b/gi,'第$1场')
     .replace(/\bQualifiers?\b/gi,'资格赛')
