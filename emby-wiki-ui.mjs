@@ -16,22 +16,40 @@ export function buildForm(host,prefix='wiki'){
 }
  host.innerHTML=`<section class="wk-form-section"><h2><span>01</span> 服务器资料</h2>${input('name','服务器名称',{max:60,required:true,placeholder:'填写播放器中显示的名称'})}<div class="wk-cols">${select('nature','服务器性质',NATURES,true)}${select('state','运营状态',STATES,true)}</div>${chips('contents','资源内容',CONTENTS,true)}${input('extraContent','其他资源内容',{max:100})}${chips('qualities','画质与规格',QUALITIES)}${input('extraQuality','画质补充',{max:100})}</section>
  ${wikiStatsSection(prefix)}
- <section class="wk-form-section"><h2><span>03</span> 开号与使用</h2>${area('registration','开号条件',500,true,'说明如何获取账号、目前是否开放。可点击下面的常用方式后补充。')}<div class="wk-shortcuts">${['开放注册','活动','抽奖','付费','签到开号','邀请','暂不开注'].map(x=>`<button type="button" class="wk-quiet" data-add="${x}">${x}</button>`).join('')}</div>${area('retention','保号规则',500,false,'留空显示“未提供”，不等同于无需保号。')}${input('pricing','费用说明',{max:200,placeholder:'例如月费、年费或公益免费；请注明币种'})}${area('network','线路与访问说明',300,false,'例如：直连情况、运营商差异、是否需要代理。')}</section>
+ <section class="wk-form-section"><h2><span>03</span> 开号与使用</h2>${area('registration','开号条件',500,true,'说明如何获取账号、目前是否开放。可点击下面的常用方式后补充。')}<div class="wk-shortcuts" role="group" aria-label="Quick account registration options">${[['开放注册','Open registration','↗'],['活动','Event','✦'],['抽奖','Giveaway','◇'],['付费','Paid','＄'],['签到开号','Check-in','✓'],['邀请','Invitation','＋'],['暂不开注','Closed','−']].map(([x,en,glyph])=>`<button type="button" class="wk-quiet wk-shortcut" data-add="${x}" data-en="${en}" aria-pressed="false"><span class="wk-shortcut-glyph" aria-hidden="true">${glyph}</span><span class="wk-shortcut-label">${x}</span></button>`).join('')}</div>${area('retention','保号规则',500,false,'留空显示“未提供”，不等同于无需保号。')}${input('pricing','费用说明',{max:200,placeholder:'例如月费、年费或公益免费；请注明币种'})}${area('network','线路与访问说明',300,false,'例如：直连情况、运营商差异、是否需要代理。')}</section>
  <section class="wk-form-section"><h2><span>04</span> 公开入口与简介</h2><p class="wk-hint">以下四种入口至少填写一个。仅填写官方网站或公开社区入口，不填写服务器登录地址、账号、密码或 API Key。</p>${input('website','官方网站',{max:500,placeholder:'https://…'})}<div class="wk-cols">${input('channel','Telegram 频道',{max:500,placeholder:'@用户名 或 https://t.me/…'})}${input('group','Telegram 群组',{max:500,placeholder:'@用户名 或邀请链接'})}</div>${input('bot','Telegram 机器人',{max:500,placeholder:'@用户名 或 https://t.me/…'})}${area('summary','服务器简介',600,false,'简要介绍资源特色、更新情况等，避免夸大。')}</section>
  <section class="wk-form-section"><h2><span>05</span> 投稿信息</h2><div class="wk-cols wk-submission-cols">${input('nickname','投稿人昵称',{max:40,required:true,help:'昵称会随档案公开展示。'})}${input('submissionDate','投稿日期',{type:'date',required:true})}</div>${select('role','你与服务器的关系',ROLES,true)}</section>`;
  host.querySelectorAll('input[type=date]').forEach(x=>x.value=chinaDate());
  host.addEventListener('input',e=>{if(e.target?.closest('.wk-count-table'))updateCountStatus(host)});
  updateCountStatus(host);
- host.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const t=host.querySelector('[name=registration]');t.value=[...new Set([...t.value.split('、').filter(Boolean),b.dataset.add])].join('、');t.dispatchEvent(new Event('input',{bubbles:true}))});
+ host.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
+ const input=host.querySelector('[name=registration]');
+ const current=input.value.split(/[、,]/).map(x=>x.trim()).filter(Boolean);
+ const existing=current.findIndex(x=>x===b.dataset.add||x===b.dataset.en);
+ if(existing>=0)current.splice(existing,1);
+ else current.push(document.documentElement.lang==='en'?b.dataset.en:b.dataset.add);
+ input.value=current.join(document.documentElement.lang==='en'?', ':'、');
+ input.dispatchEvent(new Event('input',{bubbles:true}));
+});
+host.querySelector('[name=registration]').addEventListener('input',()=>syncShortcutButtons(host));
+syncShortcutButtons(host);
 }
 export function readForm(host){const out={contents:[],qualities:[]};for(const n of host.querySelectorAll('[name]')){if(n.type==='checkbox'){if(n.checked&&Array.isArray(out[n.name]))out[n.name].push(n.value)}else out[n.name]=n.value}return out}
-export function fillForm(host,item){for(const n of host.querySelectorAll('[name]')){if(n.type==='checkbox')n.checked=(item[n.name]||[]).includes(n.value);else n.value=item[n.name]??''}updateCountStatus(host)}
+export function fillForm(host,item){for(const n of host.querySelectorAll('[name]')){if(n.type==='checkbox')n.checked=(item[n.name]||[]).includes(n.value);else n.value=item[n.name]??''}updateCountStatus(host);syncShortcutButtons(host)}
+export function syncShortcutButtons(host){
+ const val=host.querySelector('[name=registration]')?.value||'';
+ const selected=val.split(/[、,]/).map(x=>x.trim());
+ for(const b of host.querySelectorAll('[data-add]'))b.setAttribute('aria-pressed',String(selected.includes(b.dataset.add)||selected.includes(b.dataset.en)));
+}
 export function updateCountStatus(host){
  const note=host.querySelector('.wk-count-status');if(!note)return;
  const filled=name=>{const input=host.querySelector('[name="'+name+'"]');return !!input&&input.value!==''};
  const plain=filled('movies')&&filled('series'),multi=filled('moviesWithVersions')&&filled('seriesWithVersions');
  note.dataset.complete=plain||multi?'true':'false';
- note.textContent=plain&&multi?'两种统计口径均已填写完整':plain?'已完成「不含多版本」统计，包含多版本可选填':multi?'已完成「包含多版本」统计，不含多版本可选填':'请完整填写其中一列的电影和剧集数量（无该类别填 0）';
+ const english=document.documentElement.lang==='en';
+ note.textContent=english
+  ?plain&&multi?'Both counting methods are complete':plain?'Excluding versions completed; including versions is optional':multi?'Including versions completed; excluding versions is optional':'Complete movie and TV series counts in either column (use 0 if none)'
+  :plain&&multi?'两种统计口径均已填写完整':plain?'已完成「不含多版本」统计，包含多版本可选填':multi?'已完成「包含多版本」统计，不含多版本可选填':'请完整填写其中一列的电影和剧集数量（无该类别填 0）';
 }
 export function stats(item){
  const box=el('div',undefined,'wk-stats wk-version-stats');

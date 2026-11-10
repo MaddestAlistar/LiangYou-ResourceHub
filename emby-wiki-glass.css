@@ -263,3 +263,163 @@
   -webkit-backdrop-filter:none;backdrop-filter:none;background:#20324e;
  }
 }
+
+/* v20261110.8 · small polished glass pills and bilingual header */
+.wiki-page .wk-top{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px 18px;
+}
+.wiki-page .wk-brand{min-width:0}
+.wiki-page .wk-brand strong{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:4px 8px;
+  color:#f6e6bf;
+  font-size:clamp(12px,1.35vw,15px);
+  font-weight:720;
+  line-height:1.45;
+  letter-spacing:.035em;
+  overflow-wrap:anywhere;
+}
+.wiki-page .wk-brand-sep{color:rgba(205,232,255,.47)}
+.wiki-page .wk-brand-amazing{
+  color:#c7fff5;
+  text-shadow:0 0 18px rgba(137,242,226,.22);
+  font-weight:670;
+  letter-spacing:.02em;
+}
+.wiki-page .wk-top-actions{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.wiki-page .wk-lang-switch{
+  display:inline-flex;
+  flex:none;
+  align-items:center;
+  gap:3px;
+  border:1px solid rgba(183,219,255,.31);
+  border-radius:999px;
+  padding:4px;
+  background:linear-gradient(125deg,rgba(176,209,254,.13),rgba(60,95,157,.17));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 4px 15px rgba(0,6,24,.11);
+  -webkit-backdrop-filter:blur(14px) saturate(150%);
+  backdrop-filter:blur(14px) saturate(150%);
+}
+.wiki-page .wk-lang-switch button{
+  border:0;
+  border-radius:999px;
+  padding:7px 12px;
+  min-width:42px;
+  min-height:34px;
+  background:transparent;
+  color:#c4d7e9;
+  font-size:12px;
+  line-height:1.2;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.wiki-page .wk-lang-switch button[aria-pressed="true"]{
+  color:#172637;
+  background:linear-gradient(128deg,#f5e9c9 0%,#e5fcfa 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.87),0 3px 12px rgba(0,0,0,.13);
+}
+.wiki-page .wk-lang-switch button:focus-visible{
+  outline:2px solid #bbfbf4;
+  outline-offset:3px;
+}
+.wiki-page .wk-top .wk-back{
+  color:#c8f4f0;
+  font-weight:650;
+  font-size:12px;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.wiki-page .wk-top .wk-back:hover{color:#fff}
+
+/* Compact pills deliberately replace the old oversized rectangular buttons. */
+.wiki-page .wk-shortcuts{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+  margin:0 0 24px;
+}
+.wiki-page .wk-shortcuts .wk-shortcut{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-start;
+  flex:none;
+  width:auto;
+  min-width:0;
+  min-height:43px;
+  padding:6px 14px 6px 7px;
+  border-radius:999px;
+  border:1px solid rgba(189,225,255,.30);
+  color:#eaf6ff!important;
+  background:linear-gradient(130deg,rgba(130,186,231,.19) 0%,rgba(82,117,184,.14) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 4px 16px rgba(0,4,22,.11);
+  font-size:13px;
+  font-weight:600;
+  line-height:1.25;
+  letter-spacing:0;
+  white-space:nowrap;
+  text-align:left;
+  gap:8px;
+  -webkit-backdrop-filter:blur(12px) saturate(140%);
+  backdrop-filter:blur(12px) saturate(140%);
+}
+.wiki-page .wk-shortcut-glyph{
+  display:inline-flex;
+  width:27px;
+  height:27px;
+  flex:0 0 27px;
+  border:1px solid rgba(208,235,255,.17);
+  border-radius:50%;
+  align-items:center;
+  justify-content:center;
+  color:#bcece9;
+  background:linear-gradient(145deg,rgba(203,239,255,.17),rgba(80,141,212,.11));
+  font-size:14px;
+  line-height:1;
+  font-weight:550;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+}
+.wiki-page .wk-shortcuts .wk-shortcut[aria-pressed="true"]{
+  color:#f5fffc!important;
+  border-color:rgba(136,243,221,.76);
+  background:linear-gradient(135deg,rgba(43,159,157,.48),rgba(60,118,169,.31));
+  box-shadow:0 0 0 1px rgba(126,235,222,.11),inset 0 1px 0 rgba(255,255,255,.19),0 5px 18px rgba(17,90,98,.13);
+}
+.wiki-page .wk-shortcuts .wk-shortcut[aria-pressed="true"] .wk-shortcut-glyph{
+  color:#173e42;
+  border-color:rgba(204,255,242,.62);
+  background:linear-gradient(145deg,#e0f8ef,#9ce4d9);
+}
+.wiki-page .wk-shortcuts .wk-shortcut:active{transform:scale(.975)}
+@media(max-width:800px){
+  .wiki-page .wk-top{grid-template-columns:1fr;gap:12px}
+  .wiki-page .wk-top-actions{justify-content:space-between}
+  .wiki-page .wk-brand strong{font-size:13px}
+}
+@media(max-width:580px){
+  .wiki-page .wk-top-actions{width:100%}
+  .wiki-page .wk-lang-switch button{min-height:32px;padding:6px 12px}
+  .wiki-page .wk-shortcuts{gap:8px;margin:2px 0 22px}
+  .wiki-page .wk-shortcuts .wk-shortcut{
+    font-size:12.5px;
+    padding:5px 12px 5px 6px;
+    min-height:40px;
+    gap:7px;
+  }
+  .wiki-page .wk-shortcut-glyph{width:25px;height:25px;flex-basis:25px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .wiki-page .wk-lang-switch button,.wiki-page .wk-shortcuts .wk-shortcut{transition:none}
+}

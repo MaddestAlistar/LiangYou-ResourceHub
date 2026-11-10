@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {serveEmbyWiki} from '../workers/emby-wiki.mjs';
 import {validateWiki,chinaDate,hasCompleteCountColumn} from '../emby-wiki-schema.mjs';
+import {localizeNotice,shortLabels} from '../emby-wiki-lang.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'test-only-long-admin-key-123456',GITHUB_TOKEN:'test-token',REVIEW_REPO:'MaddestAlistar/Icon-Review-Queue'};
 const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',role:'普通用户',registration:'活动开号',website:'https://example.com',channel:'@example',confirm:true});
@@ -153,4 +154,32 @@ test('relationship selector and progress both require a real choice',()=>{
  const submit=readFileSync('emby-wiki-submit.mjs','utf8');
  assert.ok(ui.includes("select('role','你与服务器的关系',ROLES,true)"));
  assert.ok(submit.includes('x.submissionDate&&x.role'));
+});
+
+test('submission header contains Amazing Group and a working bilingual switch entrypoint',()=>{
+ const html=readFileSync('emby-wiki-submit.html','utf8');
+ const js=readFileSync('emby-wiki-submit.mjs','utf8');
+ const lang=readFileSync('emby-wiki-lang.mjs','utf8');
+ assert.match(html,/Amazing Group/);
+ assert.match(html,/data-wiki-lang="zh"/);
+ assert.match(html,/data-wiki-lang="en"/);
+ assert.match(html,/emby-wiki-glass\.css/);
+ assert.ok(js.includes('changeLanguage(language)'));
+ assert.ok(js.includes('applyLanguage(document.body,language)'));
+ assert.ok(lang.includes("option.setAttribute('value',option.value)"));
+ assert.equal(shortLabels['开放注册'],'Open registration');
+ assert.equal(localizeNotice('清空当前表单和本地文字草稿？','en'),'Clear the form and its saved draft?');
+ assert.equal(localizeNotice('已恢复上次未提交的草稿。','en'),'Your saved draft has been restored.');
+ assert.match(localizeNotice('投稿成功，已进入待审核队列。\n投稿编号：wiki-test\n审核通过后将显示在网站 Emby Wiki 板块。','en'),/Submission ID: wiki-test/);
+});
+test('registration shortcuts have localized compact glass pills and toggleable selection',()=>{
+ const ui=readFileSync('emby-wiki-ui.mjs','utf8');
+ const css=readFileSync('emby-wiki-glass.css','utf8');
+ assert.ok(ui.includes('class="wk-quiet wk-shortcut"'));
+ assert.ok(ui.includes('data-add='));
+ assert.ok(ui.includes('data-en='));
+ assert.ok(ui.includes('aria-pressed'));
+ assert.ok(ui.includes("input.dispatchEvent(new Event('input',{bubbles:true}))"));
+ assert.ok(css.includes('.wk-shortcuts .wk-shortcut[aria-pressed="true"]'));
+ assert.ok(css.includes('.wk-lang-switch button[aria-pressed="true"]'));
 });
