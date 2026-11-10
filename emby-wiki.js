@@ -2,7 +2,7 @@ import {NATURES} from './emby-wiki-schema.mjs';
 import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs';
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
- let items=[],limit=6,loaded=false;
+ let items=[],limit=6,loaded=false,loading=false;
  const list=$('wiki-list'),search=$('wiki-search'),nature=$('wiki-nature'),sort=$('wiki-sort'),more=$('wiki-more'),dialog=$('wiki-detail');
  NATURES.forEach(n=>{const o=el('option',n);o.value=n;nature.append(o)});
  function open(item){$('wiki-detail-title').textContent=item.name;$('wiki-detail-meta').textContent=item.nature+' · '+item.state;$('wiki-detail-content').replaceChildren(details(item));dialog.showModal()}
@@ -20,7 +20,26 @@ if(root){
   }
  }
  const changed=()=>{limit=6;render()};search.oninput=changed;nature.onchange=changed;sort.onchange=changed;more.onclick=()=>{limit+=6;render()};
- async function load(){list.setAttribute('aria-busy','true');$('wiki-retry').hidden=true;$('wiki-count').textContent='正在读取服务器档案…';try{const data=await api('/emby-wiki-feed');items=data.items;loaded=true;render()}catch(e){$('wiki-count').textContent='档案暂时无法加载';list.replaceChildren(el('p',e.message,'wk-empty'));$('wiki-retry').hidden=false}finally{list.setAttribute('aria-busy','false')}}
+ async function load(){if(loading)return;loading=true;list.setAttribute('aria-busy','true');$('wiki-retry').hidden=true;$('wiki-count').textContent='正在读取服务器档案…';try{const data=await api('/emby-wiki-feed');items=data.items;loaded=true;render()}catch(e){$('wiki-count').textContent='档案暂时无法加载';list.replaceChildren(el('p',e.message,'wk-empty'));$('wiki-retry').hidden=false}finally{loading=false;list.setAttribute('aria-busy','false')}}
  $('wiki-retry').onclick=load;
+ // Direct links must load even before the section enters the viewport.
+ // The async resource gallery above us can move the anchor after initial navigation.
+ let anchorPending=location.hash==='#emby-wiki';
+ function alignAnchor(){
+  if(!anchorPending||location.hash!=='#emby-wiki')return;
+  if($('projectGrid')?.getAttribute('aria-busy')==='true')return;
+  anchorPending=false;
+  requestAnimationFrame(()=>{if(location.hash==='#emby-wiki')root.scrollIntoView({block:'start'})});
+ }
+ function fromHash(){if(location.hash!=='#emby-wiki'){anchorPending=false;return}anchorPending=true;if(!loaded)load();alignAnchor()}
+ window.addEventListener('hashchange',fromHash);
+ document.addEventListener('hub:render',alignAnchor);
+ const gallery=$('projectGrid');
+ if(gallery&&'MutationObserver'in window){
+  const galleryObserver=new MutationObserver(()=>{if(gallery.getAttribute('aria-busy')!=='true'){alignAnchor();galleryObserver.disconnect()}});
+  galleryObserver.observe(gallery,{attributes:true,attributeFilter:['aria-busy']});
+ }
+ if(document.readyState!=='complete')window.addEventListener('load',()=>{if(location.hash==='#emby-wiki'){anchorPending=true;alignAnchor()}},{once:true});
+ fromHash();
  if('IntersectionObserver'in window){const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)&&!loaded){observer.disconnect();load()}},{rootMargin:'300px'});observer.observe(root)}else load();
 }
