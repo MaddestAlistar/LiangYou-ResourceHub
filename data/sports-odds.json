@@ -2,30 +2,30 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-10T17:42:33Z",
+  "generated_at": "2026-11-10T23:44:48Z",
   "quota_month": "2026-11",
-  "monthly_credits": 56,
+  "monthly_credits": 58,
   "monthly_cap": 210,
-  "provider_remaining": 443,
+  "provider_remaining": 441,
   "last_checked": {
-    "basketball_nba": "2026-11-10T17:42:33Z",
+    "basketball_nba": "2026-11-10T23:44:48Z",
     "soccer_epl": "2026-11-10T17:42:33Z",
-    "soccer_uefa_champs_league": "2026-11-09T19:17:43Z"
+    "soccer_uefa_champs_league": "2026-11-10T23:44:48Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 6
+      "count": 11
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "ok",
+      "status": "recent",
       "count": 0
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "recent",
+      "status": "ok",
       "count": 0
     }
   ],
@@ -42,14 +42,14 @@
       "outcomes": [
         {
           "name": "Milwaukee Bucks",
-          "decimal": 9.1
+          "decimal": 7.4
         },
         {
           "name": "New York Knicks",
-          "decimal": 1.07
+          "decimal": 1.11
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
     },
     {
       "id": "odds-cfa503c66cd505776a910921875ef7dd",
@@ -63,14 +63,14 @@
       "outcomes": [
         {
           "name": "Boston Celtics",
-          "decimal": 1.83
+          "decimal": 1.81
         },
         {
           "name": "Philadelphia 76ers",
-          "decimal": 2.02
+          "decimal": 2.06
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
     },
     {
       "id": "odds-8178ff2ec61f604b61dfe6d7b8d71103",
@@ -84,14 +84,14 @@
       "outcomes": [
         {
           "name": "Los Angeles Clippers",
-          "decimal": 2.42
+          "decimal": 2.4
         },
         {
           "name": "Phoenix Suns",
           "decimal": 1.6
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
     },
     {
       "id": "odds-9ac02cb22adf276b325b1e9c9c6c588e",
@@ -105,14 +105,14 @@
       "outcomes": [
         {
           "name": "Miami Heat",
-          "decimal": 1.29
+          "decimal": 1.25
         },
         {
           "name": "Utah Jazz",
-          "decimal": 3.75
+          "decimal": 4.2
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
     },
     {
       "id": "odds-78ab42ddb22b68903fd53a384d0fc616",
@@ -126,14 +126,14 @@
       "outcomes": [
         {
           "name": "Orlando Magic",
-          "decimal": 1.43
+          "decimal": 1.45
         },
         {
           "name": "Sacramento Kings",
-          "decimal": 2.94
+          "decimal": 2.8
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
     },
     {
       "id": "odds-f5477c781c94e09e85374bbf9149c0f1",
@@ -147,14 +147,119 @@
       "outcomes": [
         {
           "name": "Oklahoma City Thunder",
-          "decimal": 1.74
+          "decimal": 1.81
         },
         {
           "name": "Portland Trail Blazers",
-          "decimal": 2.16
+          "decimal": 2.06
         }
       ],
-      "quote_at": "2026-11-10T17:42:09Z"
+      "quote_at": "2026-11-10T23:44:34Z"
+    },
+    {
+      "id": "odds-e9545a3084389f5f3429e19fea891124",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Indiana Pacers",
+      "away": "Washington Wizards",
+      "start_time": "2026-11-12T00:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Indiana Pacers",
+          "decimal": 1.62
+        },
+        {
+          "name": "Washington Wizards",
+          "decimal": 2.35
+        }
+      ],
+      "quote_at": "2026-11-10T23:43:16Z"
+    },
+    {
+      "id": "odds-e6a37eea1dddcbd0384c81237e81f47f",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "New Orleans Pelicans",
+      "away": "Brooklyn Nets",
+      "start_time": "2026-11-12T01:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Brooklyn Nets",
+          "decimal": 2.4
+        },
+        {
+          "name": "New Orleans Pelicans",
+          "decimal": 1.6
+        }
+      ],
+      "quote_at": "2026-11-10T23:43:16Z"
+    },
+    {
+      "id": "odds-8e0fdbf07b1f288b00ec5b370f6c1e2d",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Chicago Bulls",
+      "away": "San Antonio Spurs",
+      "start_time": "2026-11-12T01:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Chicago Bulls",
+          "decimal": 7.3
+        },
+        {
+          "name": "San Antonio Spurs",
+          "decimal": 1.11
+        }
+      ],
+      "quote_at": "2026-11-10T23:43:16Z"
+    },
+    {
+      "id": "odds-f41d186dc7a7dcf01adab32579a82ca3",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Houston Rockets",
+      "away": "Golden State Warriors",
+      "start_time": "2026-11-12T02:40:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Golden State Warriors",
+          "decimal": 2.58
+        },
+        {
+          "name": "Houston Rockets",
+          "decimal": 1.53
+        }
+      ],
+      "quote_at": "2026-11-10T23:43:16Z"
+    },
+    {
+      "id": "odds-d4f288eeb0132970825be17748f2b4f0",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Portland Trail Blazers",
+      "away": "Oklahoma City Thunder",
+      "start_time": "2026-11-12T03:10:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Oklahoma City Thunder",
+          "decimal": 1.76
+        },
+        {
+          "name": "Portland Trail Blazers",
+          "decimal": 2.11
+        }
+      ],
+      "quote_at": "2026-11-10T23:43:16Z"
     }
   ]
 }
