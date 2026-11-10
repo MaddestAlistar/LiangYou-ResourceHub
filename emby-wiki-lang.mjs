@@ -32,6 +32,8 @@ const translations={
   '统计口径说明':'Counting method',
   '例如：统计是否包含动漫、短剧，以及多版本的计算方式。':'For example: whether anime and short dramas are included, and how multiple versions are counted.',
   '统计凭证截图':'Statistics screenshot',
+  '统计凭证预览':'Statistics screenshot preview',
+  'Emby 媒体库统计':'Emby library statistics',
   '可上传 JPG / PNG / WebP，单张原图不超过 5 MB。上传后压缩为图片保存，审核人员可查看；也可以同时提供链接。请遮挡账号等私密内容。':'Upload one JPG, PNG or WebP image (up to 5 MB before compression). Reviewers can view it. You can also add a link. Hide account names and private information.',
   '移除凭证图片':'Remove screenshot',
   '统计凭证链接':'Statistics evidence URL',
@@ -79,6 +81,7 @@ const translations={
   '投稿日期':'Submission date',
   '你与服务器的关系':'Your relationship to the server',
   '封面图片':'Cover image',
+  '封面预览':'Cover preview',
   '选择服务器封面':'Choose server cover',
   'JPG / PNG / WebP，原图不超过 5 MB。建议横图，上传前自动压缩；不上传也能展示档案。':'JPG / PNG / WebP, up to 5 MB. Landscape images work best. Automatically compressed; a cover is optional.',
   '移除封面':'Remove cover',
@@ -144,11 +147,11 @@ const translateText=(value,lang)=>{
 };
 const attributes=['placeholder','aria-label','alt','title'];
 export function preferredLanguage(){
- try{const saved=localStorage.getItem('liangyou-emby-wiki-language');if(saved==='en'||saved==='zh')return saved}catch{}
+ try{const site=localStorage.getItem('liangyou-site-language');if(site==='en'||site==='zh')return site;const saved=localStorage.getItem('liangyou-emby-wiki-language');if(saved==='en'||saved==='zh')return saved}catch{}
  return 'zh';
 }
 export function setPreferredLanguage(lang){
- try{localStorage.setItem('liangyou-emby-wiki-language',lang)}catch{}
+ try{localStorage.setItem('liangyou-emby-wiki-language',lang);localStorage.setItem('liangyou-site-language',lang)}catch{}
 }
 export function applyLanguage(root,lang){
  // Explicit values are essential: options with only textContent otherwise change
