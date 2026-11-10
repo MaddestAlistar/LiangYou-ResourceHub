@@ -232,3 +232,22 @@ test('retention shortcuts and required-field progress are present, with English 
  assert.ok(submit.includes('x.retention.trim()'));
  assert.ok(ui.includes("data-retention-add"));
 });
+
+test('added quick choices are present, localized and grouped into balanced rows',()=>{
+ const ui=readFileSync('emby-wiki-ui.mjs','utf8');
+ const en=readFileSync('emby-wiki-lang.mjs','utf8');
+ const css=readFileSync('emby-wiki-glass.css','utf8');
+ for(const choice of ['无需保号','人脉 KK','积分开号']){
+  assert.ok(ui.includes(choice),'Missing '+choice);
+  assert.ok(en.includes("'"+choice+"':"),'Missing EN translation for '+choice);
+ }
+ assert.ok(ui.includes("['无需保号','No retention requirements']"));
+ assert.ok(ui.includes("['人脉 KK','Connections / KK'"));
+ assert.ok(ui.includes("['积分开号','Points registration'"));
+ assert.ok(ui.includes('noRetention.includes(b.dataset.retentionAdd)'));
+ assert.ok(ui.includes('if(noRetention.includes(current[i]))'));
+ assert.ok(ui.includes('wk-nine-shortcuts'));
+ assert.ok(css.includes('.wk-nine-shortcuts .wk-shortcut:last-child'));
+ assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert.match(readFileSync('emby-wiki-submit.html','utf8'),/emby-wiki-glass\.css\?v=20261110\.12/);
+});
