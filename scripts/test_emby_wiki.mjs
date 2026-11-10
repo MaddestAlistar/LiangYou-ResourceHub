@@ -251,3 +251,49 @@ test('added quick choices are present, localized and grouped into balanced rows'
  assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
  assert.match(readFileSync('emby-wiki-submit.html','utf8'),/emby-wiki-glass\.css\?v=20261110\.12/);
 });
+
+
+test('admin can replace cover and evidence after publication with immutable preview URLs',async()=>{
+ const db=database(),bytes=Buffer.alloc(200,0);bytes[0]=255;bytes[1]=216;bytes[198]=255;bytes[199]=217;
+ const photo='data:image/jpeg;base64,'+bytes.toString('base64');
+ const created=await submit(db,{coverData:photo,evidenceData:photo});
+ assert.equal(created.status,201);const id=(await created.json()).id;
+ const before=db.state.items[0];const oldCover=before.coverUrl,oldEvidence=before.evidenceImageUrl;
+ assert.match(oldCover,/\/covers\/wiki-/);assert.match(oldEvidence,/\/evidence\/wiki-/);
+ // An unapproved author cannot replace images; regular status actions cannot carry images.
+ assert.equal((await serveEmbyWiki(req('/emby-wiki-admin',{id,action:'update',version:1,note:'',item:item(),coverData:photo}),env,{...context(db),origin:'https://not-allowed.example'})).status,403);
+ assert.equal((await review(db,id,'approved',1,{coverData:photo})).status,400);
+ assert.equal((await review(db,id,'approved')).status,200);
+ assert.equal((await review(db,id,'update',2,{item:item(),coverData:'data:image/png;base64,xyz'})).status,400);
+ assert.equal((await review(db,id,'update',2,{item:item(),coverData:photo,removeCover:true})).status,400);
+ assert.equal((await review(db,id,'update',2,{item:item(),evidenceData:photo,removeEvidence:true})).status,400);
+ assert.equal(db.state.items[0].version,2);
+ const replaced=await review(db,id,'update',2,{item:{...item(),summary:'管理员重新核验图片'},coverData:photo,evidenceData:photo});
+ assert.equal(replaced.status,200);
+ const current=(await feed(db))[0];
+ assert.notEqual(current.coverUrl,oldCover);
+ assert.notEqual(current.evidenceImageUrl,oldEvidence);
+ assert.match(current.coverUrl,/\/covers\/wiki-[a-f0-9-]+-r[a-f0-9]{12}\.jpg$/);
+ assert.match(current.evidenceImageUrl,/\/evidence\/wiki-[a-f0-9-]+-r[a-f0-9]{12}\.jpg$/);
+ assert.equal(current.summary,'管理员重新核验图片');
+ assert.equal((await review(db,id,'update',2,{item:item(),coverData:photo})).status,409,'stale image edit must be rejected');
+ assert.equal((await review(db,id,'update',3,{item:item()})).status,200,'text-only updates keep uploaded images');
+ assert.equal((await feed(db))[0].coverUrl,current.coverUrl);
+ assert.equal((await feed(db))[0].evidenceImageUrl,current.evidenceImageUrl);
+ assert.equal((await review(db,id,'update',4,{item:item(),removeCover:true,removeEvidence:true})).status,200);
+ assert.equal((await feed(db))[0].coverUrl,'');
+ assert.equal((await feed(db))[0].evidenceImageUrl,'');
+});
+test('admin editor exposes independent image inputs, previews, and removal actions',()=>{
+ const admin=readFileSync('icon-review-admin.html','utf8');
+ const js=readFileSync('emby-wiki-admin.mjs','utf8');
+ const ui=readFileSync('emby-wiki-ui.mjs','utf8');
+ for(const kind of ['cover','evidence']){
+  for(const part of ['file','current','preview','clear','message'])assert.ok(admin.includes('id="wiki-admin-'+kind+'-'+part+'"'),'Missing '+kind+' '+part);
+  assert.ok(js.includes("'wiki-admin-'+kind+'-file'"));
+  assert.ok(js.includes("photos."+kind+".data"));
+ }
+ assert.ok(js.includes('compressAdminPhoto'));
+ assert.ok(js.includes('safeEvidence'));
+ assert.ok(ui.includes('(?:-r[a-f0-9]{12})?'),'Public URLs must allow revisioned images');
+});
