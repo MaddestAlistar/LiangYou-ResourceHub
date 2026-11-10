@@ -37,6 +37,20 @@
 .news-image-remove{justify-self:start;padding:8px 12px;font-size:12px}
 .news-admin-photo{display:block;width:100%;max-height:210px;object-fit:contain;background:#090f1c;border-radius:10px;margin-top:8px}
 
+
+/* Admin-only Emby Wiki image replacement controls */
+.wk-admin-photo-tools{padding:17px;border:1px solid rgba(140,170,217,.35);border-radius:16px;background:linear-gradient(145deg,#162438,#0d1929);margin:18px 0}
+.wk-admin-photo-tools h3{margin:0 0 8px;font-size:16px;color:#e7f2ff}
+.wk-admin-photo-tools .wk-hint{font-size:12px;line-height:1.6}
+.wk-admin-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:16px}
+.wk-admin-photo-group{display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0;padding:13px;border:1px solid #344660;border-radius:12px;background:rgba(7,15,27,.62)}
+.wk-admin-photo-group>strong{font-size:14px;color:#f1f5fb}
+.wk-admin-photo-group input[type=file]{display:block;width:100%;min-width:0;padding:10px 7px;border:1px solid #465c7a;border-radius:10px;background:#101b2a;color:#d8e6f8;font-size:12px}
+.wk-admin-photo-group img{width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid rgba(154,188,225,.23);background:rgba(10,18,32,.5)}
+.wk-admin-photo-group .wk-admin-photo-preview{border-color:rgba(214,178,115,.7);background:#19263a}
+.wk-admin-photo-group img[hidden],.wk-admin-photo-group button[hidden],.wk-admin-photo-group label[hidden],.wk-admin-photo-group p[hidden]{display:none!important}
+.wk-admin-photo-group .wk-quiet{align-self:flex-start}
+@media(max-width:680px){.wk-admin-photo-grid{grid-template-columns:1fr}.wk-admin-photo-tools{padding:12px}.wk-admin-photo-group{padding:11px}}
 </style><link rel="stylesheet" href="./emby-wiki.css?v=20261110.5"></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友投稿 · 审核后台</h1><nav class="wk-admin-toplinks" aria-label="后台管理栏目"><a href="#items">图标审核</a><a href="#tech-news-admin">新闻管理</a><a href="#emby-wiki-admin">Emby Wiki 审核</a></nav><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p></section><section class="panel icon-review-filter-panel" aria-label="图标审核筛选"><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
   <div class="news-admin-header"><div><p class="news-admin-eyebrow">LIANGYOU · TECH NEWS</p><h2 id="tech-news-admin-heading">良友科技圈新闻管理</h2><p class="muted">使用上方管理员密钥发布与管理新闻。选择“视频精选”时填写原帖链接、上传视频、内容标题和内容描述。</p></div><button id="news-refresh" class="secondary" type="button">刷新新闻</button></div>
   <div class="news-admin-form">
@@ -80,7 +94,32 @@
   <div class="news-admin-published-head"><h3>已发布新闻</h3><span id="news-total" class="muted"></span></div>
   <div id="news-items" class="news-admin-items"></div>
 </section><section class="panel wiki" id="emby-wiki-admin" aria-labelledby="wiki-admin-title"><header class="wk-head"><div><p class="wk-eyebrow">LIANGYOU · EMBY WIKI</p><h2 id="wiki-admin-title">Emby Wiki 投稿审核</h2><p class="wk-hint">使用上方管理员密钥。可编辑资料、通过发布、拒绝或下架；待审核档案不在网页公开展示。</p></div><button class="wk-button wk-secondary" type="button" id="wiki-admin-refresh">刷新 Wiki 投稿</button></header><div class="wk-tools"><input id="wiki-admin-search" type="search" placeholder="搜索服务器、投稿人或编号" aria-label="搜索 Wiki 投稿"><select id="wiki-admin-filter" aria-label="Wiki 审核状态"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></div><p id="wiki-admin-count" class="wk-hint"></p><p id="wiki-admin-message" class="wk-notice" role="status">输入上方管理员密钥后，点击刷新读取投稿。</p><div id="wiki-admin-list" class="wk-admin-grid"></div>
-<dialog id="wiki-admin-edit" class="wk-dialog wk-admin-edit" aria-labelledby="wiki-edit-title"><div class="wk-dialog-head"><h2 id="wiki-edit-title">编辑档案</h2><button id="wiki-edit-close" type="button" class="wk-quiet">关闭 ×</button></div><form id="wiki-admin-edit-form"><div id="wiki-admin-fields"></div><label class="wk-field">审核备注（选填，不在前台展示；勿填隐私）<textarea id="wiki-admin-note" maxlength="500" rows="3"></textarea></label><label class="wk-consent"><input id="wiki-admin-remove-cover" type="checkbox">移除当前封面</label><label class="wk-consent"><input id="wiki-admin-remove-evidence" type="checkbox">移除统计凭证截图</label><button type="submit" id="wiki-edit-save" class="wk-button">保存修改</button><p id="wiki-edit-message" role="status" tabindex="-1" class="wk-notice"></p></form></dialog></section></main><script>
+<dialog id="wiki-admin-edit" class="wk-dialog wk-admin-edit" aria-labelledby="wiki-edit-title"><div class="wk-dialog-head"><h2 id="wiki-edit-title">编辑档案</h2><button id="wiki-edit-close" type="button" class="wk-quiet">关闭 ×</button></div><form id="wiki-admin-edit-form"><div id="wiki-admin-fields"></div><label class="wk-field">审核备注（选填，不在前台展示；勿填隐私）<textarea id="wiki-admin-note" maxlength="500" rows="3"></textarea></label><section class="wk-admin-photo-tools" aria-label="管理员图片修改">
+  <h3>图片管理</h3>
+  <p class="wk-hint">可分别替换封面与统计凭证截图；不选择新文件则保留原图。支持 JPG、PNG、WebP，原图最大 5 MB，保存时自动压缩。</p>
+  <div class="wk-admin-photo-grid">
+    <div class="wk-admin-photo-group">
+      <strong>封面图片</strong>
+      <img id="wiki-admin-cover-current" class="wk-admin-photo-current" alt="当前封面预览" hidden>
+      <p id="wiki-admin-cover-empty" class="wk-hint">暂无封面</p>
+      <label class="wk-field" for="wiki-admin-cover-file"><span>上传新封面</span><input id="wiki-admin-cover-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <img id="wiki-admin-cover-preview" class="wk-admin-photo-preview" alt="新封面预览" hidden>
+      <button id="wiki-admin-cover-clear" type="button" class="wk-quiet" hidden>取消替换封面</button>
+      <p id="wiki-admin-cover-message" class="wk-hint" role="status"></p>
+      <label class="wk-consent"><input id="wiki-admin-remove-cover" type="checkbox">移除当前封面</label>
+    </div>
+    <div class="wk-admin-photo-group">
+      <strong>统计凭证截图</strong>
+      <img id="wiki-admin-evidence-current" class="wk-admin-photo-current" alt="当前统计凭证预览" hidden>
+      <p id="wiki-admin-evidence-empty" class="wk-hint">暂无统计凭证截图</p>
+      <label class="wk-field" for="wiki-admin-evidence-file"><span>上传新统计凭证</span><input id="wiki-admin-evidence-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <img id="wiki-admin-evidence-preview" class="wk-admin-photo-preview" alt="新统计凭证预览" hidden>
+      <button id="wiki-admin-evidence-clear" type="button" class="wk-quiet" hidden>取消替换凭证</button>
+      <p id="wiki-admin-evidence-message" class="wk-hint" role="status"></p>
+      <label class="wk-consent"><input id="wiki-admin-remove-evidence" type="checkbox">移除当前统计凭证</label>
+    </div>
+  </div>
+</section><button type="submit" id="wiki-edit-save" class="wk-button">保存修改</button><p id="wiki-edit-message" role="status" tabindex="-1" class="wk-notice"></p></form></dialog></section></main><script>
 const API="https://liangyou-icon-review.maddestalistar.workers.dev/admin";
 const $=id=>document.getElementById(id);let entries=[],busy=false;
 const statusName={pending:"待审核",approved:"已通过",rejected:"已拒绝",withdrawn:"已下架"};
@@ -180,4 +219,4 @@ $("load").onclick=async()=>{
  finally{busy=false;$("load").disabled=false;render()}
 };
 $("filter").onchange=render;$("search").oninput=render;
-</script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261110.11"></script></body></html>
+</script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261111.image-replace1"></script></body></html>
