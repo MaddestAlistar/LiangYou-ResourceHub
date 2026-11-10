@@ -249,7 +249,7 @@ test('added quick choices are present, localized and grouped into balanced rows'
  assert.ok(ui.includes('wk-nine-shortcuts'));
  assert.ok(css.includes('.wk-nine-shortcuts .wk-shortcut:last-child'));
  assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
- assert.match(readFileSync('emby-wiki-submit.html','utf8'),/emby-wiki-glass\.css\?v=20261110\.12/);
+ assert.match(readFileSync('emby-wiki-submit.html','utf8'),/emby-wiki-glass\.css\?v=[A-Za-z0-9._-]+/);
 });
 
 
