@@ -98,6 +98,6 @@ export function details(item){const box=el('div',undefined,'wk-detail-body');
  if(safeEvidence(item.evidenceImageUrl)){const proof=el('div',undefined,'wk-evidence-proof');proof.append(el('strong','统计凭证截图'));const link=el('a');link.href=item.evidenceImageUrl;link.target='_blank';link.rel='noopener noreferrer nofollow';const img=el('img');img.src=item.evidenceImageUrl;img.alt='统计凭证截图，点击查看原图';img.loading='lazy';link.append(img);proof.append(link);box.append(proof)}
  box.append(links);return box;
 }
-export function safeCover(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/covers\/wiki-[a-f0-9-]+\.jpg$/.test(url)}
+export function safeCover(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/covers\/wiki-[a-f0-9-]+(?:-r[a-f0-9]{12})?\.jpg$/.test(url)}
 
-export function safeEvidence(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/evidence\/wiki-[a-f0-9-]+\.jpg$/.test(url)}
+export function safeEvidence(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/evidence\/wiki-[a-f0-9-]+(?:-r[a-f0-9]{12})?\.jpg$/.test(url)}
