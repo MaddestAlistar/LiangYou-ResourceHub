@@ -114,6 +114,14 @@
     "静态投稿": "Static submissions",
     "动态投稿": "Animated submissions"
   });
+  // Emby Wiki uses whole-string translations to avoid mixed fragments such as All分类.
+  Object.assign(translations, {
+    "把你了解的 Emby 服，整理成一份档案。": "Turn what you know about an Emby server into a useful profile.",
+    "记录资源特色、媒体库统计与开号方式。社区自助投稿，审核后公开展示。": "Share library highlights, media counts and account access details. Community submissions appear after review.",
+    "Emby Wiki 投稿 ↗": "Submit to Emby Wiki ↗",
+    "浏览档案 ↓": "Browse server profiles ↓",
+    "Emby Wiki 自助投稿入口": "Emby Wiki submission entry"
+  });
   const original = new WeakMap();
   const translatedValues = new WeakMap();
   const attributeOriginals = new WeakMap();
@@ -145,7 +153,7 @@
     let node;
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || parent.closest('script,style,textarea,code,pre,[data-site-lang],#officialFixtures,#media,.sports-match,.sports-prob,.sports-track')) continue;
+      if (!parent || parent.closest('script,style,textarea,code,pre,[data-site-lang],#officialFixtures,#media,#emby-wiki,.sports-match,.sports-prob,.sports-track')) continue;
       if (!original.has(node) || (node.nodeValue !== original.get(node) && node.nodeValue !== translatedValues.get(node))) original.set(node,node.nodeValue);
       const source = original.get(node);
       const isNewsCopy = !!parent.closest('.ly-news-item h3,.ly-news-item p,.ly-news-video-card h3,.ly-news-video-card p');
@@ -155,7 +163,7 @@
     }
     // Translate accessible labels and placeholders without changing URLs or values.
     for (const element of document.querySelectorAll('[aria-label],[title],[placeholder]')) {
-      if (element.closest('[data-site-lang],#officialFixtures,#media')) continue;
+      if (element.closest('[data-site-lang],#officialFixtures,#media,#emby-wiki')) continue;
       let record = attributeOriginals.get(element);
       if (!record) { record = {}; attributeOriginals.set(element,record); }
       for (const attr of ['aria-label','title','placeholder']) {
@@ -175,6 +183,7 @@
     language = btn.dataset.siteLang;
     localStorage.setItem('liangyou-site-language', language);
     apply();
+    window.dispatchEvent(new CustomEvent('liangyou:languagechange', {detail:{language}}));
   }));
   // Live sport/film updates can mutate hundreds of nodes at once. Coalesce
   // translation work instead of rescanning the entire document every frame.
