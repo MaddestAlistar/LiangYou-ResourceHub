@@ -28,6 +28,15 @@ async function uploadWikiImage(gh,id,encoded,folder,label,env){
  if(!upload.ok)throw Error(label+'保存失败，请保留表单重试');
  return 'https://raw.githubusercontent.com/'+env.REVIEW_REPO+'/main/'+path;
 }
+// Admin replacements use immutable, versioned names so the old screenshot remains
+// available until the entry update succeeds; a new URL also avoids stale CDN images.
+async function uploadWikiRevision(gh,id,encoded,folder,label,env){
+ const suffix=crypto.randomUUID().replace(/-/g,'').slice(0,12);
+ const path='emby-wiki/'+folder+'/'+id+'-r'+suffix+'.jpg';
+ const upload=await gh('contents/'+path,{method:'PUT',body:JSON.stringify({message:'wiki: admin replace '+folder,content:encoded})});
+ if(!upload.ok)throw Error(label+'上传失败，档案未更新，请重试');
+ return 'https://raw.githubusercontent.com/'+env.REVIEW_REPO+'/main/'+path;
+}
 function github(env,fetcher){
  if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)throw Error('投稿服务尚未配置');
  return async(path,opts={})=>fetcher('https://api.github.com/repos/'+env.REVIEW_REPO+'/'+path,{...opts,headers:{Authorization:'Bearer '+env.GITHUB_TOKEN,Accept:'application/vnd.github+json','Content-Type':'application/json','User-Agent':'LiangYou-Emby-Wiki','X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(20000)});
@@ -63,7 +72,7 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
    const items=data.items.filter(x=>!feed||x.status==='approved').map(x=>feed?publicItem(x):((({clientTag,digest,...rest})=>rest)(x))).sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
    return json({ok:true,items,updatedAt:data.updatedAt||null},200,cors);
   }
-  let body,validated,image,evidenceImage;
+  let body,validated,image,evidenceImage,adminCover='',adminEvidence=';
   try{
    body=await readBody(request);
    if(!idOK(body.id))throw Error('投稿编号无效，请刷新页面');
@@ -71,13 +80,19 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
    else{
     if(!['update','approved','rejected','withdrawn','pending'].includes(body.action))throw Error('审核操作无效');
     if(!Number.isInteger(body.version)||body.version<1)throw Error('请刷新记录后审核');
-    if(body.action==='update')validated=validateWiki(body.item);
+    if(body.action==='update'){
+     validated=validateWiki(body.item);
+     adminCover=photo(body.coverData,'新封面');
+     adminEvidence=photo(body.evidenceData,'新统计凭证');
+     if(adminCover&&body.removeCover===true)throw Error('替换封面与移除封面不能同时选择');
+     if(adminEvidence&&body.removeEvidence===true)throw Error('替换凭证与移除凭证不能同时选择');
+    }else if(body.coverData||body.evidenceData||body.removeCover||body.removeEvidence)throw Error('图片仅可在编辑档案时修改');
     if(typeof body.note!=='string'||body.note.length>500)throw Error('审核备注不能超过 500 字');
    }
   }catch(e){return json({error:e.message},400,cors)}
   const now=new Date().toISOString(),tag=admin?'':await clientTag(request,env);
   const digest=admin?'':await hash(JSON.stringify(validated)+'|'+image+'|'+evidenceImage);
-  let coverUrl='',evidenceImageUrl='';
+  let coverUrl='',evidenceImageUrl='',replacedCoverUrl='',replacedEvidenceUrl='';
   for(let attempt=0;attempt<3;attempt++){
    const {sha,data}=await load(gh),existing=data.items.find(x=>x.id===body.id);
    if(!admin){
@@ -95,8 +110,12 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
     if(body.action!=='update'&&!transitions[existing.status]?.includes(target))return json({error:'当前状态不能执行该操作，请刷新记录'},409,cors);
     if(target==='approved'&&data.items.some(x=>x.id!==existing.id&&x.status==='approved'&&x.name.toLowerCase()===(validated?.name||existing.name).toLowerCase()))return json({error:'已有同名已发布档案，请编辑现有档案或核实名称'},409,cors);
     if(validated)Object.assign(existing,validated);
-    if(body.removeCover===true)existing.coverUrl='';
-    if(body.removeEvidence===true)existing.evidenceImageUrl='';
+    if(adminCover&&!replacedCoverUrl)replacedCoverUrl=await uploadWikiRevision(gh,body.id,adminCover,'covers','新封面',env);
+    if(adminEvidence&&!replacedEvidenceUrl)replacedEvidenceUrl=await uploadWikiRevision(gh,body.id,adminEvidence,'evidence','新统计凭证',env);
+    if(replacedCoverUrl)existing.coverUrl=replacedCoverUrl;
+    else if(body.removeCover===true)existing.coverUrl='';
+    if(replacedEvidenceUrl)existing.evidenceImageUrl=replacedEvidenceUrl;
+    else if(body.removeEvidence===true)existing.evidenceImageUrl='';
     existing.status=target;existing.reviewNote=body.note.trim();existing.reviewedAt=now;existing.updatedAt=now;existing.version++;
     if(target==='approved'&&!existing.publishedAt)existing.publishedAt=now;
    }
