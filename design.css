@@ -818,3 +818,6 @@ html.cn-save-data .bookmark-dialog::backdrop {
     transform:translateY(var(--icon-lift));
   }
 }
+
+/* Co-branded Ringsbox icon has genuine transparent corners: avoid a square shadow behind them. */
+.collab-card.collab-ringsbox .collab-image-wrap img{box-shadow:none;background:transparent}
