@@ -181,6 +181,7 @@ const chessCompleted=board.events.filter(x=>x.sport==='chess'&&x.status==='finis
 // Live feeds may legitimately contain neither state between tournaments.
 // Keep both translation paths covered with test-only, deterministic samples.
 const chessTranslationSamples=[
+ {id:'test-spanish-round',league:'Benidorm Chess Open 2026 | Group A',stage:'Ronda 9',status:'live'},
  {id:'test-live',league:'Benidorm Chess Open 2026 | Group A',stage:'Round 6',status:'live'},
  {id:'test-finished',league:'Benidorm Chess Open 2026 | Group A',stage:'Round 6',status:'finished',result_detail:'1-0'}
 ];
