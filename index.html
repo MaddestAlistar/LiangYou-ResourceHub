@@ -282,50 +282,61 @@
     </section>
     <section class="section container cloud-wiki-home" id="cloud-wiki" aria-labelledby="cloud-wiki-title">
 <style>
-#cloud-wiki .cwh-shell{position:relative;overflow:hidden;border:1px solid rgba(142,182,230,.29);border-radius:26px;background:radial-gradient(ellipse at 84% 4%,rgba(58,119,188,.22),transparent 45%),linear-gradient(145deg,rgba(20,35,54,.98),rgba(13,20,33,.97));padding:clamp(21px,3.4vw,36px);margin:16px 0 22px;box-shadow:0 18px 50px rgba(0,0,0,.12)}
-#cloud-wiki .cwh-eyebrow{color:#a1c5e7;font-weight:750;letter-spacing:.17em;font-size:11px;margin:0 0 10px}
-#cloud-wiki .cwh-head{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:13px 28px}
-#cloud-wiki .cwh-head h2{margin:0 0 9px;font-size:clamp(23px,3vw,31px);letter-spacing:-.03em;color:#f4f7ff}
-#cloud-wiki .cwh-head p{color:#b5c8de;font-size:13px;line-height:1.9;max-width:750px;margin:0}
-#cloud-wiki .cwh-count{display:flex;align-items:baseline;gap:7px;padding:11px 15px;border:1px solid rgba(217,227,243,.18);border-radius:14px;background:rgba(255,255,255,.045);white-space:nowrap}
-#cloud-wiki .cwh-count strong{font-size:24px;color:#f1d49e;line-height:1}
-#cloud-wiki .cwh-count span{font-size:11px;color:#a8bfd7}
-#cloud-wiki .cwh-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(200,224,249,.22),transparent);margin:22px 0}
-#cloud-wiki .cwh-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-#cloud-wiki .cwh-card{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:170px;padding:16px;border:1px solid rgba(184,211,243,.16);border-radius:18px;background:linear-gradient(155deg,rgba(36,54,77,.77),rgba(18,28,44,.88));text-decoration:none;color:#edf4fe;transition:border-color .18s,transform .18s,background .18s}
-#cloud-wiki .cwh-card:hover,#cloud-wiki .cwh-card:focus-visible{transform:translateY(-2px);border-color:rgba(233,203,148,.57);background:linear-gradient(155deg,rgba(44,68,91,.94),rgba(24,37,57,.97));outline-offset:3px}
-#cloud-wiki .cwh-cardhead{display:flex;align-items:center;gap:9px}
-#cloud-wiki .cwh-mark{display:grid;place-items:center;flex:none;width:39px;height:39px;background:#263a57;border:1px solid rgba(171,201,237,.25);border-radius:11px;color:#c8e0ff;font-size:14px;font-weight:800}
-#cloud-wiki .cwh-card[data-type="tool"] .cwh-mark{background:#1b3c43;color:#b0e5df}
-#cloud-wiki .cwh-card h3{margin:0;font-size:14px;font-weight:730;line-height:1.35;overflow-wrap:anywhere}
-#cloud-wiki .cwh-card p{font-size:12px;color:#b4c6dc;line-height:1.7;margin:0;flex:1}
-#cloud-wiki .cwh-card small{font-size:11px;color:#edcf95}
-#cloud-wiki .cwh-foot{display:flex;justify-content:space-between;align-items:center;gap:13px;flex-wrap:wrap;margin-top:20px}
-#cloud-wiki .cwh-footnote{font-size:11px;color:#9eb4cf;line-height:1.65}
-#cloud-wiki .cwh-all{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 19px;border-radius:12px;background:linear-gradient(120deg,#f3dbad,#dbbd89);font-weight:750;color:#172234;text-decoration:none;font-size:13px;white-space:nowrap}
-#cloud-wiki .cwh-all:hover{filter:brightness(1.06)}
-@media(max-width:1040px){#cloud-wiki .cwh-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:700px){#cloud-wiki .cwh-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#cloud-wiki .cwh-card{min-height:150px;padding:13px}#cloud-wiki .cwh-count strong{font-size:21px}#cloud-wiki .cwh-head p{font-size:12px}#cloud-wiki .cwh-all{width:100%}#cloud-wiki .cwh-footnote{width:100%}}
-@media(max-width:365px){#cloud-wiki .cwh-cards{grid-template-columns:1fr}}
-@media(prefers-reduced-motion:reduce){#cloud-wiki .cwh-card{transition:none}#cloud-wiki .cwh-card:hover{transform:none}}
+#cloud-wiki{--cwh-fg:#f4f7ff;--cwh-muted:#b7c9df;--cwh-gold:#edd2a2}
+#cloud-wiki .cwh-shell{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(156,191,229,.27);border-radius:26px;background:linear-gradient(118deg,rgba(18,36,56,.98) 0%,rgba(17,29,48,.98) 55%,rgba(12,22,37,.99) 100%);box-shadow:0 18px 50px rgba(0,0,0,.17);margin:14px 0 25px;padding:clamp(22px,3.8vw,43px)}
+#cloud-wiki .cwh-shell:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 85% 15%,rgba(83,143,209,.21),transparent 52%),radial-gradient(ellipse at 15% 95%,rgba(89,69,153,.13),transparent 46%)}
+#cloud-wiki .cwh-main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(215px,.75fr);gap:clamp(20px,5vw,65px);align-items:center}
+#cloud-wiki .cwh-eyebrow{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:750;letter-spacing:.19em;color:#a9c9e9;margin:0 0 15px}
+#cloud-wiki .cwh-eyebrow:before{content:"";width:25px;height:1px;background:#d6b982}
+#cloud-wiki h2{font-size:clamp(25px,3.4vw,37px);line-height:1.3;letter-spacing:-.03em;color:var(--cwh-fg);margin:0 0 16px}
+#cloud-wiki .cwh-intro{font-size:clamp(13px,1.35vw,15px);line-height:1.95;color:var(--cwh-muted);margin:0;max-width:730px}
+#cloud-wiki .cwh-stats{display:flex;align-items:center;flex-wrap:wrap;gap:10px 25px;margin:23px 0 25px}
+#cloud-wiki .cwh-stat{display:flex;align-items:baseline;gap:7px;font-size:12px;color:#aabed7}
+#cloud-wiki .cwh-stat strong{font-size:24px;letter-spacing:-.04em;color:var(--cwh-gold)}
+#cloud-wiki .cwh-stat i{font-style:normal;font-size:13px;font-weight:680;color:#f1ddb8}
+#cloud-wiki .cwh-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+#cloud-wiki .cwh-cta{display:inline-flex;align-items:center;justify-content:center;gap:15px;min-height:47px;padding:12px 20px;border-radius:13px;background:linear-gradient(120deg,#f2ddaf,#d5b77f);color:#1a2637;font-size:13px;font-weight:770;text-decoration:none;box-shadow:0 6px 25px rgba(209,178,118,.13);transition:transform .16s,filter .16s}
+#cloud-wiki .cwh-cta:hover{filter:brightness(1.06);transform:translateY(-1px)}
+#cloud-wiki .cwh-caption{font-size:12px;color:#8fa8c3}
+#cloud-wiki .cwh-aside{padding:22px;border:1px solid rgba(179,208,243,.22);border-radius:22px;background:linear-gradient(155deg,rgba(53,74,100,.33),rgba(26,38,60,.56));box-shadow:inset 0 1px rgba(255,255,255,.07);min-width:0}
+#cloud-wiki .cwh-asidehead{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:16px;color:#bed2ec;font-size:12px;font-weight:700}
+#cloud-wiki .cwh-asidehead span:last-child{color:#e4c791;font-size:11px}
+#cloud-wiki .cwh-tags{display:flex;flex-wrap:wrap;gap:8px}
+#cloud-wiki .cwh-tags span{border:1px solid rgba(188,215,245,.24);border-radius:999px;padding:8px 11px;background:rgba(29,48,74,.64);font-size:11px;color:#dbe9f9}
+#cloud-wiki .cwh-aside p{margin:19px 0 0;padding-top:14px;border-top:1px solid rgba(194,214,242,.14);font-size:11px;color:#99b0ca;line-height:1.8}
+#cloud-wiki .cwh-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:21px;margin-top:26px;border-top:1px solid rgba(201,225,249,.14)}
+#cloud-wiki .cwh-highlight{display:grid;grid-template-columns:31px minmax(0,1fr);gap:10px;align-items:start;min-width:0}
+#cloud-wiki .cwh-icon{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:rgba(95,146,201,.13);border:1px solid rgba(158,196,237,.19);color:#cce1fa}
+#cloud-wiki .cwh-highlight b{display:block;font-size:12px;font-weight:750;color:#f0f6ff;margin-bottom:5px}
+#cloud-wiki .cwh-highlight p{margin:0;font-size:11px;line-height:1.7;color:#9cb4ce}
+@media(max-width:820px){#cloud-wiki .cwh-main{grid-template-columns:minmax(0,1fr);gap:18px}#cloud-wiki .cwh-aside{padding:14px 16px}#cloud-wiki .cwh-aside p{margin-top:11px;padding-top:10px}}
+@media(max-width:600px){#cloud-wiki .cwh-shell{border-radius:22px;padding:23px 20px}#cloud-wiki h2{font-size:24px;margin-bottom:12px}#cloud-wiki .cwh-intro{font-size:12px}#cloud-wiki .cwh-stats{gap:8px 16px;margin:17px 0 19px}#cloud-wiki .cwh-stat strong{font-size:21px}#cloud-wiki .cwh-highlights{grid-template-columns:1fr;gap:14px;margin-top:20px;padding-top:18px}#cloud-wiki .cwh-aside{display:none}#cloud-wiki .cwh-cta{width:100%}#cloud-wiki .cwh-caption{display:none}#cloud-wiki .cwh-highlight{grid-template-columns:29px 1fr}}
+@media(prefers-reduced-motion:reduce){#cloud-wiki .cwh-cta{transition:none}#cloud-wiki .cwh-cta:hover{transform:none}}
 </style>
 <div class="cwh-shell">
-  <header class="cwh-head">
-    <div><p class="cwh-eyebrow">LIANGYOU · CLOUD STORAGE WIKI</p>
+  <div class="cwh-main">
+    <div class="cwh-copy">
+      <p class="cwh-eyebrow">LIANGYOU · CLOUD STORAGE WIKI</p>
       <h2 id="cloud-wiki-title">云存储 Wiki · 云盘与挂载生态</h2>
-      <p>从国内外个人网盘、影音云存储，到 CloudDrive2、OpenList、私有云与对象存储。按类别、功能和使用场景查找，查看各产品的独立档案。</p>
+      <p class="cwh-intro">收录国内外个人云盘、影音云存储、挂载聚合工具、私有云及对象存储。快速了解产品定位、适用场景与关联生态，让云存储资料更容易查找。</p>
+      <div class="cwh-stats" aria-label="Wiki 统计">
+        <span class="cwh-stat"><strong>84</strong> 已统计 84 份档案</span>
+        <span class="cwh-stat"><strong>5</strong> 大资源类别</span>
+        <span class="cwh-stat"><i>搜索 · 分类</i> 快速查找</span>
+      </div>
+      <div class="cwh-actions"><a class="cwh-cta" href="./cloud-wiki.html">进入云存储 Wiki <span aria-hidden="true">↗</span></a><span class="cwh-caption">集中浏览 · 分类查找 · 独立档案</span></div>
     </div>
-    <div class="cwh-count" aria-label="已收录 84 项资源"><strong>84</strong><span>首批档案</span></div>
-  </header>
-  <div class="cwh-divider" aria-hidden="true"></div>
-  <div class="cwh-cards" aria-label="精选云存储资源">
-    <a class="cwh-card" href="./cloud-wiki.html?item=115%E7%94%9F%E6%B4%BB"><div class="cwh-cardhead"><span class="cwh-mark">115</span><h3>115生活</h3></div><p>大文件、云下载与原文件播放，面向个人影音及长期文件管理。</p><small>国内云盘 · 查看档案 ↗</small></a>
-    <a class="cwh-card" href="./cloud-wiki.html?item=%E9%98%BF%E9%87%8C%E4%BA%91%E7%9B%98"><div class="cwh-cardhead"><span class="cwh-mark">阿</span><h3>阿里云盘</h3></div><p>相册备份、文件同步与在线播放，兼顾日常文件管理。</p><small>国内云盘 · 查看档案 ↗</small></a>
-    <a class="cwh-card" href="./cloud-wiki.html?item=%E5%85%89%E9%B8%AD%E4%BA%91%E7%9B%98"><div class="cwh-cardhead"><span class="cwh-mark">光</span><h3>光鸭云盘</h3></div><p>以云添加、影音播放及第三方应用授权为特色的新兴云盘。</p><small>影音云盘 · 查看档案 ↗</small></a>
-    <a class="cwh-card" data-type="tool" href="./cloud-wiki.html?item=CloudDrive2"><div class="cwh-cardhead"><span class="cwh-mark">CD</span><h3>CloudDrive2</h3></div><p>多云盘挂载、WebDAV 和媒体库，连接云存储与本地设备。</p><small>挂载工具 · 查看档案 ↗</small></a>
-    <a class="cwh-card" data-type="tool" href="./cloud-wiki.html?item=OpenList"><div class="cwh-cardhead"><span class="cwh-mark">OL</span><h3>OpenList</h3></div><p>开源多存储文件列表、自建部署与 WebDAV 访问。</p><small>开源工具 · 查看档案 ↗</small></a>
+    <aside class="cwh-aside" aria-label="Wiki 收录范围">
+      <div class="cwh-asidehead"><span>收录领域 / COLLECTIONS</span><span>05 CATEGORIES</span></div>
+      <div class="cwh-tags"><span>国内外云盘</span><span>影音存储</span><span>挂载聚合</span><span>私有云 / NAS</span><span>对象存储</span></div>
+      <p>从日常文件备份到多云挂载与服务器存储，按使用目的寻找适合的方案。</p>
+    </aside>
   </div>
-  <div class="cwh-foot"><span class="cwh-footnote">五大类别 · 84 项档案 · 独立资料整理 · 暂不开放投稿</span><a class="cwh-all" href="./cloud-wiki.html">浏览全部 84 项资源 ↗</a></div>
+  <div class="cwh-highlights" aria-label="Wiki 主要用途">
+    <div class="cwh-highlight"><span class="cwh-icon" aria-hidden="true">▦</span><div><b>覆盖多类资源</b><p>个人云盘、影音云盘、挂载工具与自建方案统一索引。</p></div></div>
+    <div class="cwh-highlight"><span class="cwh-icon" aria-hidden="true">◎</span><div><b>按需求查找</b><p>按类别、功能与使用场景筛选，快速定位相关产品。</p></div></div>
+    <div class="cwh-highlight"><span class="cwh-icon" aria-hidden="true">↗</span><div><b>了解产品档案</b><p>浏览定位、核心用途、关联工具及官网入口。</p></div></div>
+  </div>
 </div>
 </section>
     <section class="section container sports-section" id="sports" aria-labelledby="sports-title">
