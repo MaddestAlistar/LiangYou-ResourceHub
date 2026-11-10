@@ -23,3 +23,25 @@
 .wk-version-head{font-size:11px;color:var(--wk-muted);text-align:right}.wk-version-row{border-top:1px solid #35465c66}.wk-version-row>span{font-size:12px;color:var(--wk-muted)}.wk-version-row strong{font-size:clamp(13px,2.6vw,20px);line-height:1.4;min-width:0;text-align:right;overflow-wrap:anywhere}
 .wk-version-other{font-size:12px;color:var(--wk-muted);margin:8px 0 0!important}
 @media(max-width:580px){.wk-submission-cols{grid-template-columns:minmax(0,1fr)}.wk-count-head,.wk-count-row{grid-template-columns:minmax(48px,.56fr) repeat(2,minmax(0,1fr));gap:5px;padding:9px 7px}.wk-count-head{font-size:11px}.wk-count-label{font-size:13px}.wk-stat-cell input{padding:9px 4px}.wk-form-section input[type="date"]{min-width:0;max-width:100%}.wk-version-row strong{font-size:15px}}
+
+/* iOS Safari native date inputs can exceed their grid track even with width:100%.
+   Use a compact, safe width on both the submission form and the admin editor. */
+.wiki .wk-field input[type="date"]{
+  display:block;
+  box-sizing:border-box;
+  width:min(250px,calc(100% - 32px)) !important;
+  max-width:min(250px,calc(100% - 32px)) !important;
+  min-width:0 !important;
+  min-inline-size:0;
+  padding-inline:10px;
+  font-size:16px;
+  text-align:left;
+}
+.wiki .wk-field input[type="date"]::-webkit-date-and-time-value{
+  min-width:0;
+  text-align:left;
+}
+.wk-date-single,.wk-submission-cols,.wk-submission-cols>.wk-field{
+  min-width:0;
+  max-width:100%;
+}
