@@ -280,17 +280,54 @@
       <p id="wiki-count" class="wk-count" role="status">正在准备服务器档案…</p><div id="wiki-list" class="wk-grid" aria-busy="true"><p class="wk-empty">正在读取档案…</p></div><button id="wiki-retry" class="wk-button wk-secondary" type="button" hidden>重新加载</button><button id="wiki-more" class="wk-button wk-secondary wk-pagination" type="button" hidden>加载更多档案</button><p class="wk-hint" style="margin:20px 0 0">媒体库数量以标注的统计日期为准；服务规则可能变化，请以官方公告为准。</p><noscript><p>请开启 JavaScript 查看服务器档案。</p></noscript></div>
       <dialog id="wiki-detail" class="wk-dialog" aria-labelledby="wiki-detail-title"><div class="wk-dialog-head"><div><p id="wiki-detail-meta" class="wk-eyebrow"></p><h2 id="wiki-detail-title">服务器档案</h2></div><button id="wiki-detail-close" type="button" class="wk-quiet" aria-label="关闭档案">关闭 ×</button></div><div id="wiki-detail-content"></div></dialog>
     </section>
-    <section class="section container" id="cloud-wiki" aria-labelledby="cloud-wiki-title">
-      <div class="cloud-wiki-feature" style="position:relative;overflow:hidden;border:1px solid rgba(124,172,232,.4);border-radius:26px;background:radial-gradient(ellipse at 85% 15%,rgba(76,125,210,.22),transparent 50%),linear-gradient(125deg,#14253b,#111927 75%);padding:clamp(22px,4vw,38px);margin:14px 0 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px">
-        <div style="max-width:690px;flex:1 1 300px">
-          <p class="eyebrow" style="color:#9bc8ff">LIANGYOU · CLOUD STORAGE WIKI</p>
-          <h2 id="cloud-wiki-title" style="margin:8px 0 12px">云存储 Wiki · 云盘与挂载生态</h2>
-          <p style="color:#bbcee4;line-height:1.85;margin:0 0 15px">从 115、阿里云盘、光鸭，到 CloudDrive2、OpenList、私有云与对象存储。首批整理 84 项资源，支持分类筛选、关键词搜索和独立档案浏览。</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;color:#b9d7f6;font-size:12px"><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">国内外云盘</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">挂载聚合</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">私有云</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">对象存储</span></div>
-        </div>
-        <a href="./cloud-wiki.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:14px;background:#d7e9ff;color:#10243e;font-weight:750;white-space:nowrap">进入云存储 Wiki ↗</a>
-      </div>
-    </section>
+    <section class="section container cloud-wiki-home" id="cloud-wiki" aria-labelledby="cloud-wiki-title">
+<style>
+#cloud-wiki .cwh-shell{position:relative;overflow:hidden;border:1px solid rgba(142,182,230,.29);border-radius:26px;background:radial-gradient(ellipse at 84% 4%,rgba(58,119,188,.22),transparent 45%),linear-gradient(145deg,rgba(20,35,54,.98),rgba(13,20,33,.97));padding:clamp(21px,3.4vw,36px);margin:16px 0 22px;box-shadow:0 18px 50px rgba(0,0,0,.12)}
+#cloud-wiki .cwh-eyebrow{color:#a1c5e7;font-weight:750;letter-spacing:.17em;font-size:11px;margin:0 0 10px}
+#cloud-wiki .cwh-head{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:13px 28px}
+#cloud-wiki .cwh-head h2{margin:0 0 9px;font-size:clamp(23px,3vw,31px);letter-spacing:-.03em;color:#f4f7ff}
+#cloud-wiki .cwh-head p{color:#b5c8de;font-size:13px;line-height:1.9;max-width:750px;margin:0}
+#cloud-wiki .cwh-count{display:flex;align-items:baseline;gap:7px;padding:11px 15px;border:1px solid rgba(217,227,243,.18);border-radius:14px;background:rgba(255,255,255,.045);white-space:nowrap}
+#cloud-wiki .cwh-count strong{font-size:24px;color:#f1d49e;line-height:1}
+#cloud-wiki .cwh-count span{font-size:11px;color:#a8bfd7}
+#cloud-wiki .cwh-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(200,224,249,.22),transparent);margin:22px 0}
+#cloud-wiki .cwh-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+#cloud-wiki .cwh-card{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:170px;padding:16px;border:1px solid rgba(184,211,243,.16);border-radius:18px;background:linear-gradient(155deg,rgba(36,54,77,.77),rgba(18,28,44,.88));text-decoration:none;color:#edf4fe;transition:border-color .18s,transform .18s,background .18s}
+#cloud-wiki .cwh-card:hover,#cloud-wiki .cwh-card:focus-visible{transform:translateY(-2px);border-color:rgba(233,203,148,.57);background:linear-gradient(155deg,rgba(44,68,91,.94),rgba(24,37,57,.97));outline-offset:3px}
+#cloud-wiki .cwh-cardhead{display:flex;align-items:center;gap:9px}
+#cloud-wiki .cwh-mark{display:grid;place-items:center;flex:none;width:39px;height:39px;background:#263a57;border:1px solid rgba(171,201,237,.25);border-radius:11px;color:#c8e0ff;font-size:14px;font-weight:800}
+#cloud-wiki .cwh-card[data-type="tool"] .cwh-mark{background:#1b3c43;color:#b0e5df}
+#cloud-wiki .cwh-card h3{margin:0;font-size:14px;font-weight:730;line-height:1.35;overflow-wrap:anywhere}
+#cloud-wiki .cwh-card p{font-size:12px;color:#b4c6dc;line-height:1.7;margin:0;flex:1}
+#cloud-wiki .cwh-card small{font-size:11px;color:#edcf95}
+#cloud-wiki .cwh-foot{display:flex;justify-content:space-between;align-items:center;gap:13px;flex-wrap:wrap;margin-top:20px}
+#cloud-wiki .cwh-footnote{font-size:11px;color:#9eb4cf;line-height:1.65}
+#cloud-wiki .cwh-all{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 19px;border-radius:12px;background:linear-gradient(120deg,#f3dbad,#dbbd89);font-weight:750;color:#172234;text-decoration:none;font-size:13px;white-space:nowrap}
+#cloud-wiki .cwh-all:hover{filter:brightness(1.06)}
+@media(max-width:1040px){#cloud-wiki .cwh-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){#cloud-wiki .cwh-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#cloud-wiki .cwh-card{min-height:150px;padding:13px}#cloud-wiki .cwh-count strong{font-size:21px}#cloud-wiki .cwh-head p{font-size:12px}#cloud-wiki .cwh-all{width:100%}#cloud-wiki .cwh-footnote{width:100%}}
+@media(max-width:365px){#cloud-wiki .cwh-cards{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#cloud-wiki .cwh-card{transition:none}#cloud-wiki .cwh-card:hover{transform:none}}
+</style>
+<div class="cwh-shell">
+  <header class="cwh-head">
+    <div><p class="cwh-eyebrow">LIANGYOU · CLOUD STORAGE WIKI</p>
+      <h2 id="cloud-wiki-title">云存储 Wiki · 云盘与挂载生态</h2>
+      <p>从国内外个人网盘、影音云存储，到 CloudDrive2、OpenList、私有云与对象存储。按类别、功能和使用场景查找，查看各产品的独立档案。</p>
+    </div>
+    <div class="cwh-count" aria-label="已收录 84 项资源"><strong>84</strong><span>首批档案</span></div>
+  </header>
+  <div class="cwh-divider" aria-hidden="true"></div>
+  <div class="cwh-cards" aria-label="精选云存储资源">
+    <a class="cwh-card" href="./cloud-wiki.html?item=115%E7%94%9F%E6%B4%BB"><div class="cwh-cardhead"><span class="cwh-mark">115</span><h3>115生活</h3></div><p>大文件、云下载与原文件播放，面向个人影音及长期文件管理。</p><small>国内云盘 · 查看档案 ↗</small></a>
+    <a class="cwh-card" href="./cloud-wiki.html?item=%E9%98%BF%E9%87%8C%E4%BA%91%E7%9B%98"><div class="cwh-cardhead"><span class="cwh-mark">阿</span><h3>阿里云盘</h3></div><p>相册备份、文件同步与在线播放，兼顾日常文件管理。</p><small>国内云盘 · 查看档案 ↗</small></a>
+    <a class="cwh-card" href="./cloud-wiki.html?item=%E5%85%89%E9%B8%AD%E4%BA%91%E7%9B%98"><div class="cwh-cardhead"><span class="cwh-mark">光</span><h3>光鸭云盘</h3></div><p>以云添加、影音播放及第三方应用授权为特色的新兴云盘。</p><small>影音云盘 · 查看档案 ↗</small></a>
+    <a class="cwh-card" data-type="tool" href="./cloud-wiki.html?item=CloudDrive2"><div class="cwh-cardhead"><span class="cwh-mark">CD</span><h3>CloudDrive2</h3></div><p>多云盘挂载、WebDAV 和媒体库，连接云存储与本地设备。</p><small>挂载工具 · 查看档案 ↗</small></a>
+    <a class="cwh-card" data-type="tool" href="./cloud-wiki.html?item=OpenList"><div class="cwh-cardhead"><span class="cwh-mark">OL</span><h3>OpenList</h3></div><p>开源多存储文件列表、自建部署与 WebDAV 访问。</p><small>开源工具 · 查看档案 ↗</small></a>
+  </div>
+  <div class="cwh-foot"><span class="cwh-footnote">五大类别 · 84 项档案 · 独立资料整理 · 暂不开放投稿</span><a class="cwh-all" href="./cloud-wiki.html">浏览全部 84 项资源 ↗</a></div>
+</div>
+</section>
     <section class="section container sports-section" id="sports" aria-labelledby="sports-title">
       <div class="sports-shell">
         <header class="sports-head">
