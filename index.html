@@ -97,6 +97,7 @@
             <a href="#resource-badges">媒体徽章</a>
             <a href="#resource-icons">媒体图标</a>
             <a href="#emby-wiki">Emby Wiki</a>
+            <a href="#cloud-wiki">云存储 Wiki</a>
             <a href="#resource-channels">频道库</a>
             <a href="#lab">资源实验室</a>
             <a href="./system-lab/">在线系统实验室</a>
@@ -278,6 +279,17 @@
       <div class="wk-tools"><input id="wiki-search" type="search" maxlength="100" placeholder="搜索服务器、资源或开号方式" aria-label="搜索 Emby 服务器"><select id="wiki-nature" aria-label="服务器性质"><option value="">全部分类</option></select><select id="wiki-sort" aria-label="档案排序"><option value="updatedAt">最近更新</option><option value="statsDate">最新统计</option><option value="name">名称排序</option></select></div>
       <p id="wiki-count" class="wk-count" role="status">正在准备服务器档案…</p><div id="wiki-list" class="wk-grid" aria-busy="true"><p class="wk-empty">正在读取档案…</p></div><button id="wiki-retry" class="wk-button wk-secondary" type="button" hidden>重新加载</button><button id="wiki-more" class="wk-button wk-secondary wk-pagination" type="button" hidden>加载更多档案</button><p class="wk-hint" style="margin:20px 0 0">媒体库数量以标注的统计日期为准；服务规则可能变化，请以官方公告为准。</p><noscript><p>请开启 JavaScript 查看服务器档案。</p></noscript></div>
       <dialog id="wiki-detail" class="wk-dialog" aria-labelledby="wiki-detail-title"><div class="wk-dialog-head"><div><p id="wiki-detail-meta" class="wk-eyebrow"></p><h2 id="wiki-detail-title">服务器档案</h2></div><button id="wiki-detail-close" type="button" class="wk-quiet" aria-label="关闭档案">关闭 ×</button></div><div id="wiki-detail-content"></div></dialog>
+    </section>
+    <section class="section container" id="cloud-wiki" aria-labelledby="cloud-wiki-title">
+      <div class="cloud-wiki-feature" style="position:relative;overflow:hidden;border:1px solid rgba(124,172,232,.4);border-radius:26px;background:radial-gradient(ellipse at 85% 15%,rgba(76,125,210,.22),transparent 50%),linear-gradient(125deg,#14253b,#111927 75%);padding:clamp(22px,4vw,38px);margin:14px 0 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px">
+        <div style="max-width:690px;flex:1 1 300px">
+          <p class="eyebrow" style="color:#9bc8ff">LIANGYOU · CLOUD STORAGE WIKI</p>
+          <h2 id="cloud-wiki-title" style="margin:8px 0 12px">云存储 Wiki · 云盘与挂载生态</h2>
+          <p style="color:#bbcee4;line-height:1.85;margin:0 0 15px">从 115、阿里云盘、光鸭，到 CloudDrive2、OpenList、私有云与对象存储。首批整理 84 项资源，支持分类筛选、关键词搜索和独立档案浏览。</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;color:#b9d7f6;font-size:12px"><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">国内外云盘</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">挂载聚合</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">私有云</span><span style="border:1px solid #ffffff30;padding:6px 10px;border-radius:999px">对象存储</span></div>
+        </div>
+        <a href="./cloud-wiki.html" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 20px;border-radius:14px;background:#d7e9ff;color:#10243e;font-weight:750;white-space:nowrap">进入云存储 Wiki ↗</a>
+      </div>
     </section>
     <section class="section container sports-section" id="sports" aria-labelledby="sports-title">
       <div class="sports-shell">
