@@ -5,7 +5,7 @@ import {serveEmbyWiki} from '../workers/emby-wiki.mjs';
 import {validateWiki,chinaDate,hasCompleteCountColumn} from '../emby-wiki-schema.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'test-only-long-admin-key-123456',GITHUB_TOKEN:'test-token',REVIEW_REPO:'MaddestAlistar/Icon-Review-Queue'};
-const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',registration:'活动开号',website:'https://example.com',channel:'@example',confirm:true});
+const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',role:'普通用户',registration:'活动开号',website:'https://example.com',channel:'@example',confirm:true});
 function database(){let state=null,sha=0,conflicts=0,fail=false,reads=0,writes=0;const assets=new Map();return {get state(){return state},set conflict(n){conflicts=n},set fail(v){fail=v},get writes(){return writes},get reads(){return reads},fetcher:async(url,options={})=>{
  const path=new URL(url).pathname.split('/contents/')[1];
  if(options.method==='PUT'){
@@ -121,4 +121,36 @@ test('card statistics render only supplied classifications and keep nonprovided 
  assert.ok(html.includes("columns.some")===false);
  assert.ok(html.includes("item[key]!==null&&item[key]!==undefined&&item[key]!==''"));
  assert.ok(html.includes("?'未提供':"));
+});
+
+test('relationship is mandatory for new submissions and admin edits, without breaking legacy feed',async()=>{
+ const full=item();
+ assert.equal(validateWiki(full).role,'普通用户');
+ for(const role of ['',null,undefined,'未知身份']){
+  assert.throws(()=>validateWiki({...full,role}),/你与服务器的关系/);
+ }
+ assert.equal(validateWiki({...full,role:''},{allowLegacyRole:true}).role,'');
+ const db=database();
+ const bad=await submit(db,{item:{...full,role:''}});
+ assert.equal(bad.status,400);
+ assert.equal(db.state,null);
+ const good=await submit(db);
+ assert.equal(good.status,201);
+ const id=(await good.json()).id;
+ const invalidUpdate=await review(db,id,'update',1,{item:{...full,role:''}});
+ assert.equal(invalidUpdate.status,400);
+ assert.equal((await review(db,id,'approved')).status,200);
+ let publicItems=await feed(db);
+ assert.equal(publicItems[0].role,'普通用户');
+ // Prior approved archives may lack this field; their public feed must stay available.
+ db.state.items[0].role='';
+ publicItems=await feed(db);
+ assert.equal(publicItems.length,1);
+ assert.equal(publicItems[0].role,'');
+});
+test('relationship selector and progress both require a real choice',()=>{
+ const ui=readFileSync('emby-wiki-ui.mjs','utf8');
+ const submit=readFileSync('emby-wiki-submit.mjs','utf8');
+ assert.ok(ui.includes("select('role','你与服务器的关系',ROLES,true)"));
+ assert.ok(submit.includes('x.submissionDate&&x.role'));
 });

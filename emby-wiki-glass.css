@@ -1,0 +1,265 @@
+/* LiangYou Emby Wiki · glass presentation (submission page only).
+   No imagery or fonts are loaded; native controls and accessibility stay intact. */
+.wiki-page{
+  --wk-bg:#0a1325;
+  --wk-panel:rgba(27,44,76,.62);
+  --wk-line:rgba(179,211,255,.24);
+  --wk-text:#f5f8ff;
+  --wk-muted:#c0cde3;
+  --wk-gold:#f3dda9;
+  --wk-accent:#a1e7e8;
+  min-height:100dvh;
+  overflow-x:clip;
+  background:
+    radial-gradient(ellipse at 4% 8%,rgba(68,134,206,.24),transparent 42%),
+    radial-gradient(ellipse at 97% 27%,rgba(122,99,210,.25),transparent 44%),
+    radial-gradient(ellipse at 55% 88%,rgba(31,140,155,.13),transparent 50%),
+    linear-gradient(152deg,#080e1b 0%,#101b34 46%,#071221 100%);
+}
+.wiki-page::before,.wiki-page::after{
+  content:"";
+  position:fixed;
+  pointer-events:none;
+  z-index:0;
+  border-radius:50%;
+}
+.wiki-page::before{
+  width:min(70vw,760px);
+  height:min(70vw,760px);
+  top:-26vw;
+  right:-22vw;
+  background:radial-gradient(circle,rgba(105,136,247,.23) 0%,rgba(116,89,207,.08) 40%,transparent 72%);
+}
+.wiki-page::after{
+  width:min(80vw,880px);
+  height:min(80vw,880px);
+  left:-32vw;
+  bottom:-36vw;
+  background:radial-gradient(circle,rgba(29,201,207,.14) 0%,rgba(39,95,176,.06) 48%,transparent 73%);
+}
+.wiki-page main.wiki{
+  position:relative;
+  z-index:1;
+  isolation:isolate;
+}
+.wiki-page .wk-top{
+  border:1px solid rgba(215,237,255,.19);
+  border-radius:18px;
+  background:linear-gradient(110deg,rgba(215,237,255,.095),rgba(106,144,220,.055));
+  -webkit-backdrop-filter:blur(16px) saturate(145%);
+  backdrop-filter:blur(16px) saturate(145%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 34px rgba(0,4,22,.20);
+  padding:14px 18px;
+}
+.wiki-page .wk-top strong{
+  color:#f9e7ba;
+  letter-spacing:.045em;
+}
+.wiki-page .wk-top a{
+  text-decoration:none;
+  color:#c5f4f1;
+  font-weight:600;
+}
+.wiki-page .wk-intro{
+  position:relative;
+  max-width:none;
+  padding:clamp(22px,4vw,40px);
+  border-radius:28px;
+  background:
+    radial-gradient(ellipse at 90% 0%,rgba(166,194,255,.15),transparent 55%),
+    linear-gradient(133deg,rgba(131,171,222,.18),rgba(43,64,111,.23) 48%,rgba(25,35,70,.29));
+  border:1px solid rgba(203,229,255,.24);
+  -webkit-backdrop-filter:blur(22px) saturate(158%);
+  backdrop-filter:blur(22px) saturate(158%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 1px 0 0 rgba(255,255,255,.04),0 22px 64px rgba(0,6,27,.25);
+  overflow:hidden;
+}
+.wiki-page .wk-intro::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.7) 36%,rgba(144,232,249,.35) 68%,transparent);
+}
+.wiki-page .wk-intro h1{
+  color:#fcfdff;
+  text-shadow:0 2px 24px rgba(139,195,255,.16);
+}
+.wiki-page .wk-intro>p:last-child{
+  color:#d1dbed;
+  max-width:760px;
+  margin-bottom:0;
+}
+.wiki-page .wk-layout{gap:22px}
+.wiki-page .wk-form-section{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  border:1px solid rgba(198,225,255,.26);
+  border-radius:25px;
+  background:
+    radial-gradient(ellipse at 95% -10%,rgba(151,188,248,.12),transparent 50%),
+    linear-gradient(137deg,rgba(100,139,197,.22),rgba(49,75,125,.17) 46%,rgba(26,39,73,.38));
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 1px 0 0 rgba(255,255,255,.07),
+    0 14px 42px rgba(0,5,26,.23),
+    0 1px 3px rgba(0,0,0,.12);
+}
+.wiki-page .wk-form-section::before{
+  content:"";
+  position:absolute;
+  top:0;left:22px;right:22px;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(229,250,255,.42) 18%,rgba(230,239,255,.18) 85%,transparent);
+}
+.wiki-page .wk-form-section h2{
+  color:#f6f9ff;
+  letter-spacing:.012em;
+  margin-bottom:23px;
+}
+.wiki-page .wk-form-section h2>span{
+  display:inline-flex;
+  min-width:35px;height:35px;
+  align-items:center;justify-content:center;
+  border-radius:11px;
+  margin-right:11px;
+  color:#c7fcf6;
+  background:linear-gradient(138deg,rgba(179,248,250,.24),rgba(143,172,246,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.19);
+  border:1px solid rgba(172,238,244,.16);
+}
+.wiki-page .wk-hint,.wiki-page .wk-field>small{color:#bacbe2}
+.wiki-page .wk-required{color:#f7dba6!important;font-weight:600}
+.wiki-page .wk-field input,
+.wiki-page .wk-field select,
+.wiki-page .wk-field textarea,
+.wiki-page .wk-stat-cell input{
+  border:1px solid rgba(192,218,250,.29);
+  border-radius:15px;
+  color:#f7faff;
+  background:linear-gradient(135deg,rgba(13,24,47,.70),rgba(25,39,70,.53));
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.07);
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.wiki-page .wk-field input:focus,
+.wiki-page .wk-field select:focus,
+.wiki-page .wk-field textarea:focus,
+.wiki-page .wk-stat-cell input:focus{
+  border-color:rgba(166,244,240,.83);
+  background:linear-gradient(135deg,rgba(20,43,71,.88),rgba(30,43,78,.72));
+  box-shadow:0 0 0 3px rgba(110,230,234,.14),inset 0 1px 0 rgba(255,255,255,.13);
+  outline:0;
+}
+.wiki-page input::placeholder,.wiki-page textarea::placeholder{color:#a9b8cd}
+.wiki-page .wk-count-table{
+  border-radius:18px;
+  border:1px solid rgba(184,214,254,.24);
+  background:linear-gradient(145deg,rgba(11,23,44,.55),rgba(32,50,83,.34));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.wiki-page .wk-count-head{
+  color:#c6faf5;
+  background:linear-gradient(118deg,rgba(151,194,234,.17),rgba(123,128,210,.16));
+  border-bottom:1px solid rgba(202,227,255,.20);
+}
+.wiki-page .wk-count-row+.wk-count-row{border-color:rgba(200,224,255,.13)}
+.wiki-page .wk-count-status[data-complete=true]{color:#baf2e4}
+.wiki-page .wk-chips span{
+  border:1px solid rgba(188,218,255,.23);
+  background:linear-gradient(150deg,rgba(170,198,242,.11),rgba(43,69,102,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09);
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.wiki-page .wk-chips input:checked+span{
+  border-color:rgba(160,248,236,.67);
+  color:#e8fffb;
+  background:linear-gradient(135deg,rgba(63,139,158,.51),rgba(73,114,173,.38));
+  box-shadow:0 0 0 1px rgba(133,241,238,.09),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.wiki-page .wk-quiet,
+.wiki-page .wk-secondary{
+  border:1px solid rgba(188,219,254,.30);
+  color:#eff8ff!important;
+  background:linear-gradient(128deg,rgba(164,206,248,.15),rgba(80,113,172,.18));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+}
+.wiki-page .wk-button:not(.wk-secondary){
+  background:linear-gradient(128deg,#fff1ca 0%,#e9f8fa 52%,#b7dedb 100%);
+  border:1px solid rgba(255,255,255,.65);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 9px 24px rgba(40,130,146,.20);
+  color:#19233a!important;
+}
+.wiki-page .wk-button,
+.wiki-page .wk-quiet{transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+@media(hover:hover){
+ .wiki-page .wk-button:hover,.wiki-page .wk-quiet:hover{transform:translateY(-1px);filter:brightness(1.08)}
+}
+.wiki-page .wk-button:active,.wiki-page .wk-quiet:active{transform:scale(.99)}
+.wiki-page .wk-aside{
+  border:1px solid rgba(198,227,254,.24);
+  border-radius:25px;
+  background:linear-gradient(143deg,rgba(99,155,206,.20),rgba(65,76,140,.22),rgba(20,43,70,.26));
+  -webkit-backdrop-filter:blur(20px) saturate(155%);
+  backdrop-filter:blur(20px) saturate(155%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.23),0 18px 48px rgba(0,4,24,.23);
+}
+.wiki-page .wk-progress{accent-color:#9be5db}
+.wiki-page .wk-consent{
+  border:1px solid rgba(194,223,255,.21);
+  border-radius:17px;
+  background:linear-gradient(122deg,rgba(153,190,240,.10),rgba(81,112,179,.08));
+  padding:15px;
+}
+.wiki-page .wk-notice{
+  background:rgba(26,52,76,.53);
+  border-color:rgba(157,218,214,.31);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+}
+.wiki-page .wk-upload-preview{background:rgba(17,32,52,.42);padding:8px;border:1px solid rgba(193,225,255,.18)}
+.wiki-page .wk-field input[type=file]{padding:10px;line-height:1.4}
+.wiki-page .wk-field input[type=file]::file-selector-button,
+.wiki-page .wk-evidence-picker input[type=file]::file-selector-button{
+  border:1px solid rgba(188,226,251,.32);
+  color:#e6f8ff;
+  background:linear-gradient(130deg,rgba(116,155,205,.30),rgba(84,112,163,.34));
+  border-radius:10px;
+  padding:9px 12px;
+  margin-right:10px;
+  font:inherit;
+  cursor:pointer;
+}
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+ .wiki-page .wk-form-section,.wiki-page .wk-intro,.wiki-page .wk-aside,.wiki-page .wk-top{background-color:#1b2d49}
+}
+@media(max-width:900px){
+ .wiki-page .wk-aside{position:static}
+}
+@media(max-width:580px){
+ .wiki-page main.wiki{padding-top:15px;padding-bottom:60px}
+ .wiki-page .wk-top{padding:12px 13px;border-radius:16px;gap:10px}
+ .wiki-page .wk-top strong{font-size:12px}
+ .wiki-page .wk-top a{font-size:12px}
+ .wiki-page .wk-intro{padding:24px 18px;border-radius:23px}
+ .wiki-page .wk-intro h1{font-size:clamp(28px,8.2vw,36px)}
+ .wiki-page .wk-form-section{padding:22px 17px;border-radius:22px}
+ .wiki-page .wk-form-section h2>span{min-width:31px;height:31px;margin-right:8px}
+ .wiki-page .wk-form-section h2{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+ .wiki-page .wk-aside{border-radius:21px}
+ .wiki-page .wk-form-section{-webkit-backdrop-filter:blur(15px) saturate(145%);backdrop-filter:blur(15px) saturate(145%)}
+ .wiki-page .wk-field input[type=date]{max-width:min(250px,calc(100% - 32px))!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .wiki-page *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+@media(prefers-reduced-transparency:reduce){
+ .wiki-page .wk-intro,.wiki-page .wk-form-section,.wiki-page .wk-aside,.wiki-page .wk-top{
+  -webkit-backdrop-filter:none;backdrop-filter:none;background:#20324e;
+ }
+}
