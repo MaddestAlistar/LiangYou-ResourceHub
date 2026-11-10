@@ -1,5 +1,5 @@
-import {NATURES} from './emby-wiki-schema.mjs?v=20261110.3';
-import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261110.3';
+import {NATURES} from './emby-wiki-schema.mjs?v=20261110.5';
+import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261110.5';
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
  let items=[],limit=6,loaded=false,loading=false;

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {serveEmbyWiki} from '../workers/emby-wiki.mjs';
-import {validateWiki,chinaDate} from '../emby-wiki-schema.mjs';
+import {validateWiki,chinaDate,hasCompleteCountColumn} from '../emby-wiki-schema.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'test-only-long-admin-key-123456',GITHUB_TOKEN:'test-token',REVIEW_REPO:'MaddestAlistar/Icon-Review-Queue'};
 const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',registration:'活动开号',website:'https://example.com',channel:'@example',confirm:true});
@@ -81,4 +81,44 @@ test('version counts, legacy role normalization and evidence screenshot upload',
  assert.equal((await review(db,id,'update',2,{item:{...item(),moviesWithVersions:30000},removeEvidence:true})).status,200);
  assert.equal((await feed(db))[0].evidenceImageUrl,'');
  assert.equal((await submit(database(),{evidenceData:'data:image/svg+xml;base64,xxx'})).status,400);
+});
+
+test('either complete statistics column is accepted without requiring the other',async()=>{
+ const multi={...item(),movies:'',series:'',moviesWithVersions:41485,seriesWithVersions:15838,episodesWithVersions:803671};
+ const plain={...item(),movies:16298,series:15708,moviesWithVersions:'',seriesWithVersions:''};
+ assert.equal(hasCompleteCountColumn(multi),true);
+ assert.equal(hasCompleteCountColumn(plain),true);
+ const result=validateWiki(multi);
+ assert.equal(result.movies,null);
+ assert.equal(result.series,null);
+ assert.equal(result.moviesWithVersions,41485);
+ assert.equal(result.seriesWithVersions,15838);
+ assert.equal(result.episodesWithVersions,803671);
+ assert.equal(validateWiki(plain).moviesWithVersions,null);
+ assert.equal(validateWiki({...multi,movies:120}).movies,120);
+ assert.equal(validateWiki({...multi,series:33}).series,33);
+ for(const patch of [
+  {movies:'',series:'',moviesWithVersions:'',seriesWithVersions:''},
+  {movies:100,series:'',moviesWithVersions:'',seriesWithVersions:20},
+  {movies:'',series:'',moviesWithVersions:100,seriesWithVersions:''},
+  {movies:'',series:'',moviesWithVersions:'',seriesWithVersions:0}
+ ])assert.throws(()=>validateWiki({...item(),...patch}),/至少完整填写一列/);
+ assert.throws(()=>validateWiki({...item(),movies:'',series:'',moviesWithVersions:0,seriesWithVersions:0}),/至少有一类数量大于 0/);
+ const db=database(),submitResult=await submit(db,{item:multi});
+ assert.equal(submitResult.status,201);
+ const id=(await submitResult.json()).id;
+ assert.equal((await review(db,id,'approved')).status,200);
+ const records=await feed(db);
+ assert.equal(records.length,1);
+ assert.equal(records[0].movies,null);
+ assert.equal(records[0].moviesWithVersions,41485);
+ assert.equal(records[0].seriesWithVersions,15838);
+ assert.equal(records[0].episodesWithVersions,803671);
+});
+test('card statistics render only supplied classifications and keep nonprovided values distinct from zero',()=>{
+ const html=readFileSync('emby-wiki-ui.mjs','utf8');
+ assert.ok(html.includes("box.classList.add('wk-version-single')"));
+ assert.ok(html.includes("columns.some")===false);
+ assert.ok(html.includes("item[key]!==null&&item[key]!==undefined&&item[key]!==''"));
+ assert.ok(html.includes("?'未提供':"));
 });

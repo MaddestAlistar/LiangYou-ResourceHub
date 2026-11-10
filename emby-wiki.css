@@ -45,3 +45,10 @@
   min-width:0;
   max-width:100%;
 }
+
+/* Version-count groups: either complete column can satisfy the requirement. */
+.wk-count-status{font-size:12px;line-height:1.6;color:var(--wk-muted);margin:0 0 16px;padding:0 2px}
+.wk-count-status[data-complete="true"]{color:var(--wk-accent)}
+.wk-version-single .wk-version-head,.wk-version-single .wk-version-row{grid-template-columns:minmax(76px,1fr) minmax(0,1.4fr)}
+.wk-version-head>span:first-child{text-align:left}
+.wk-version-stats .wk-version-head span{min-width:0;overflow-wrap:anywhere}
