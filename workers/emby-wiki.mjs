@@ -42,7 +42,7 @@ async function load(gh){
  if(data.schema!==1||!Array.isArray(data.items)||data.items.length>LIMIT)throw Error('档案数据格式异常，请联系管理员');
  return {sha,data};
 }
-const publicItem=x=>({id:x.id,...validateWiki(x,{allowLegacyRole:true}),coverUrl:x.coverUrl||'',evidenceImageUrl:x.evidenceImageUrl||'',publishedAt:x.publishedAt,updatedAt:x.updatedAt});
+const publicItem=x=>({id:x.id,...validateWiki(x,{allowLegacyRole:true,allowLegacyRetention:true}),coverUrl:x.coverUrl||'',evidenceImageUrl:x.evidenceImageUrl||'',publishedAt:x.publishedAt,updatedAt:x.updatedAt});
 async function hash(text){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),x=>x.toString(16).padStart(2,'0')).join('')}
 async function clientTag(request,env){
  const ip=request.headers.get('CF-Connecting-IP');if(!ip||!env.ADMIN_KEY)return '';

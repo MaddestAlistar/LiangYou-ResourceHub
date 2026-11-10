@@ -569,3 +569,17 @@
   .wiki-page .wk-brand strong{gap:3px 5px;font-size:11.5px}
   .wiki-page .wk-brand-amazing{font-size:10.5px;padding:3px 7px}
 }
+
+/* Retention shortcuts reuse compact glass pills; avoid narrow-screen overflow. */
+.wiki-page .wk-retention-shortcuts .wk-shortcut{
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:355px){
+ .wiki-page .wk-retention-shortcuts .wk-shortcut:last-child{
+   grid-column:auto;
+   width:100%;
+   justify-self:stretch;
+ }
+}

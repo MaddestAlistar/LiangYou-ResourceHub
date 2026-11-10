@@ -1,6 +1,6 @@
-import {validateWiki,chinaDate,hasCompleteCountColumn} from './emby-wiki-schema.mjs?v=20261110.6';
-import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261110.8';
-import {buildForm,readForm,fillForm,api,updateCountStatus} from './emby-wiki-ui.mjs?v=20261110.8';
+import {validateWiki,chinaDate,hasCompleteCountColumn} from './emby-wiki-schema.mjs?v=20261110.11';
+import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261110.11';
+import {buildForm,readForm,fillForm,api,updateCountStatus} from './emby-wiki-ui.mjs?v=20261110.11';
 const $=id=>document.getElementById(id),form=$('wiki-submit-form'),host=$('wiki-fields'),notice=$('wiki-submit-status');
 buildForm(host);
 function submissionId(){if(crypto.randomUUID)return 'wiki-'+crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return 'wiki-'+[h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-')}
@@ -12,7 +12,7 @@ function notify(message,error=false){
  notice.textContent=localizeNotice(message,language);
  notice.className='wk-notice '+(error?'wk-error':'wk-success');
 }
-function progress(){const x=readForm(host),groups=[!!(x.name.trim()&&x.nature&&x.state&&x.contents.length),!!(hasCompleteCountColumn(x)&&x.statsDate),!!x.registration.trim(),!!(x.website.trim()||x.channel.trim()||x.group.trim()||x.bot.trim()),!!(x.nickname.trim()&&x.submissionDate&&x.role)];const count=groups.filter(Boolean).length;$('wiki-progress').value=count;$('wiki-progress-label').textContent=language==='en'?'Completed '+count+' / 5 groups':'已完成 '+count+' / 5 组'}
+function progress(){const x=readForm(host),groups=[!!(x.name.trim()&&x.nature&&x.state&&x.contents.length),!!(hasCompleteCountColumn(x)&&x.statsDate),!!(x.registration.trim()&&x.retention.trim()),!!(x.website.trim()||x.channel.trim()||x.group.trim()||x.bot.trim()),!!(x.nickname.trim()&&x.submissionDate&&x.role)];const count=groups.filter(Boolean).length;$('wiki-progress').value=count;$('wiki-progress-label').textContent=language==='en'?'Completed '+count+' / 5 groups':'已完成 '+count+' / 5 组'}
 form.addEventListener('input',progress);form.addEventListener('change',progress);
 const draftKey='liangyou-emby-wiki-draft-v1';
 try{const saved=JSON.parse(localStorage.getItem(draftKey)||'null');if(saved?.item){fillForm(host,saved.item);if(/^wiki-[a-f0-9-]{36}$/.test(saved.id))id=saved.id;if(saved.coverData?.startsWith('data:image/jpeg;base64,')){image=saved.coverData;$('wiki-cover-preview').src=image;$('wiki-cover-preview').hidden=false;$('wiki-cover-remove').hidden=false}if(saved.evidenceData?.startsWith('data:image/jpeg;base64,')){evidenceImage=saved.evidenceData;$('wiki-evidence-preview').src=evidenceImage;$('wiki-evidence-preview').hidden=false;$('wiki-evidence-remove').hidden=false}notify('已恢复上次未提交的草稿。');progress()}}catch{}

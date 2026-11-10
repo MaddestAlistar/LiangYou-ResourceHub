@@ -6,7 +6,7 @@ import {validateWiki,chinaDate,hasCompleteCountColumn} from '../emby-wiki-schema
 import {localizeNotice,shortLabels} from '../emby-wiki-lang.mjs';
 const origin='https://maddestalistar.github.io';
 const env={ADMIN_KEY:'test-only-long-admin-key-123456',GITHUB_TOKEN:'test-token',REVIEW_REPO:'MaddestAlistar/Icon-Review-Queue'};
-const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',role:'普通用户',registration:'活动开号',website:'https://example.com',channel:'@example',confirm:true});
+const item=()=>({name:'测试档案',nature:'公益服',state:'正常运营',contents:['电影','电视剧'],qualities:['4K'],movies:12500,series:3200,episodes:'',others:'',statsDate:chinaDate(),submissionDate:chinaDate(),nickname:'测试用户',role:'普通用户',registration:'活动开号',retention:'签到保号',website:'https://example.com',channel:'@example',confirm:true});
 function database(){let state=null,sha=0,conflicts=0,fail=false,reads=0,writes=0;const assets=new Map();return {get state(){return state},set conflict(n){conflicts=n},set fail(v){fail=v},get writes(){return writes},get reads(){return reads},fetcher:async(url,options={})=>{
  const path=new URL(url).pathname.split('/contents/')[1];
  if(options.method==='PUT'){
@@ -193,4 +193,42 @@ test('submission shortcuts and topbar retain their compact responsive layout',()
  assert.ok(css.includes('.wiki-page .wk-shortcuts .wk-shortcut:last-child'));
  assert.ok(css.includes('.wiki-page .wk-top .wk-back{order:-1}'));
  assert.ok(css.includes('.wiki-page .wk-brand-amazing'));
+});
+
+test('required retention rules are enforced by validation, submission, and admin editor, while legacy feed survives',async()=>{
+ const entry=item();
+ assert.equal(validateWiki(entry).retention,'签到保号');
+ for(const retention of ['', ' ', null, undefined]){
+  assert.throws(()=>validateWiki({...entry,retention}),/保号规则/);
+ }
+ const legacy=validateWiki({...entry,retention:''},{allowLegacyRetention:true});
+ assert.equal(legacy.retention,'');
+ const db=database();
+ const bad=await submit(db,{item:{...entry,retention:' '}});
+ assert.equal(bad.status,400);
+ assert.equal(db.state,null);
+ const good=await submit(db);
+ assert.equal(good.status,201);
+ const id=(await good.json()).id;
+ const invalidUpdate=await review(db,id,'update',1,{item:{...entry,retention:''}});
+ assert.equal(invalidUpdate.status,400);
+ assert.equal((await review(db,id,'approved')).status,200);
+ assert.equal((await feed(db))[0].retention,'签到保号');
+ db.state.items[0].retention='';
+ const oldFeed=await feed(db);
+ assert.equal(oldFeed.length,1);
+ assert.equal(oldFeed[0].retention,'');
+});
+test('retention shortcuts and required-field progress are present, with English translations',()=>{
+ const ui=readFileSync('emby-wiki-ui.mjs','utf8');
+ const submit=readFileSync('emby-wiki-submit.mjs','utf8');
+ const lang=readFileSync('emby-wiki-lang.mjs','utf8');
+ const cases=['发电保号','7 天观影','15 天观影','21 天观影','30 天观影','签到保号','积分保号','活动保号'];
+ for(const label of cases){
+  assert.ok(ui.includes(label),'Missing shortcut '+label);
+  assert.ok(lang.includes("'"+label+"':"),'Missing translation '+label);
+ }
+ assert.ok(ui.includes("area('retention','保号规则',500,true"));
+ assert.ok(submit.includes('x.retention.trim()'));
+ assert.ok(ui.includes("data-retention-add"));
 });

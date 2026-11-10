@@ -35,7 +35,7 @@ export function publicURL(value,label='链接',telegram=false) {
  if(telegram&&!['t.me','telegram.me','www.t.me'].includes(u.hostname))throw Error(label+'请使用 Telegram 链接或 @用户名');
  return u.href;
 }
-export function validateWiki(input,{today=chinaDate(),allowLegacyRole=false}={}) {
+export function validateWiki(input,{today=chinaDate(),allowLegacyRole=false,allowLegacyRetention=false}={}) {
  const b=input||{},out={};
  out.name=text(b.name,'服务器名称',60,true);
  out.nature=choice(b.nature,NATURES,'服务器性质');
@@ -57,7 +57,8 @@ export function validateWiki(input,{today=chinaDate(),allowLegacyRole=false}={})
  }
  if(!hasCompleteCountColumn(out))throw Error('“不含多版本”或“包含多版本”至少完整填写一列的电影和剧集数量，没有的类别请填 0');
  if([out.movies,out.series,out.moviesWithVersions,out.seriesWithVersions,out.others].every(v=>!v))throw Error('媒体库统计至少有一类数量大于 0');
- for(const [k,label,max] of [['summary','服务器简介',600],['retention','保号规则',500],['network','线路与访问说明',300],['pricing','费用说明',200],['statsNote','统计口径说明',300],['extraContent','资源补充',100],['extraQuality','画质补充',100]])out[k]=text(b[k],label,max);
+ for(const [k,label,max] of [['summary','服务器简介',600],['network','线路与访问说明',300],['pricing','费用说明',200],['statsNote','统计口径说明',300],['extraContent','资源补充',100],['extraQuality','画质补充',100]])out[k]=text(b[k],label,max);
+ out.retention=text(b.retention,'保号规则',500,!allowLegacyRetention);
  out.role=choice(b.role==='站长'?'腐竹本人':b.role,ROLES,'你与服务器的关系',!allowLegacyRole);
  for(const [k,label,tg] of [['website','官方网站',false],['channel','频道',true],['group','群组',true],['bot','机器人',true],['evidence','统计凭证链接',false]])out[k]=publicURL(b[k],label,tg);
  if(!['website','channel','group','bot'].some(k=>out[k]))throw Error('官方网站、频道、群组或机器人至少填写一个，方便核验');
