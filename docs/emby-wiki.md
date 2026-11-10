@@ -22,3 +22,7 @@ node scripts/validate.mjs
 ```
 
 The existing Worker deployment workflow runs Wiki regression tests before deployment. Frontend and shared module changes trigger the existing Pages workflow. Preview-only sample records are not part of the repository or production feed.
+
+## Statistics and evidence (November 2026)
+The statistics form offers two side-by-side sets: without multiple versions (movie titles, TV titles, episode count) and including multiple versions (the same three measures). Original `movies`, `series`, and `episodes` remain the non-multi-version values for compatibility; optional `moviesWithVersions`, `seriesWithVersions`, and `episodesWithVersions` are added. Unknown values stay null rather than zero. The stats date and submission date stack on narrow mobile screens.
+Evidence may be a public HTTPS link and/or a compressed JPEG screenshot. The new `evidenceData` submission payload is validated by the Worker and saved to `emby-wiki/evidence/<id>.jpg` alongside existing covers. Metadata stores only `evidenceImageUrl`; approved feed details and the moderation view display the evidence preview. Moderators can remove its reference. Evidence and covers reside in a public GitHub repository, including before approval, so sensitive screenshot content must be masked prior to upload.

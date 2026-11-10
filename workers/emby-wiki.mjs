@@ -1,5 +1,5 @@
 import {validateWiki,chinaDate} from '../emby-wiki-schema.mjs';
-const PATH='emby-wiki/entries.json',LIMIT=300,MAX_BODY=400000;
+const PATH='emby-wiki/entries.json',LIMIT=300,MAX_BODY=700000;
 const idOK=id=>typeof id==='string'&&/^wiki-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id);
 const encode=s=>{const b=new TextEncoder().encode(s);let a='';for(let i=0;i<b.length;i+=8192)a+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(a)};
 const decode=s=>new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(s.replace(/\s/g,'')),x=>x.charCodeAt(0)));
@@ -13,12 +13,20 @@ async function readBody(request){
  const bytes=new Uint8Array(length);let offset=0;for(const p of parts){bytes.set(p,offset);offset+=p.length}
  try{return JSON.parse(new TextDecoder().decode(bytes))}catch{throw Error('投稿 JSON 无效')}
 }
-function cover(value){
+function photo(value,label='图片'){
  if(!value)return '';
- if(typeof value!=='string'||value.length>300000||!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(value))throw Error('封面须为压缩后的 JPEG 图片，最大 220 KB');
- const b64=value.split(',')[1];let bytes;try{bytes=Uint8Array.from(atob(b64),x=>x.charCodeAt(0))}catch{throw Error('封面图片格式无效')}
- if(bytes.length>220000||bytes.length<128||bytes[0]!==255||bytes[1]!==216||bytes.at(-2)!==255||bytes.at(-1)!==217)throw Error('封面图片格式或大小无效');
+ if(typeof value!=='string'||value.length>300000||!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(value))throw Error(label+'须为压缩后的 JPEG 图片，最大 220 KB');
+ const b64=value.split(',')[1];let bytes;try{bytes=Uint8Array.from(atob(b64),x=>x.charCodeAt(0))}catch{throw Error(label+'图片格式无效')}
+ if(bytes.length>220000||bytes.length<128||bytes[0]!==255||bytes[1]!==216||bytes.at(-2)!==255||bytes.at(-1)!==217)throw Error(label+'图片格式或大小无效');
  return b64;
+}
+async function uploadWikiImage(gh,id,encoded,folder,label,env){
+ const path='emby-wiki/'+folder+'/'+id+'.jpg';
+ const old=await gh('contents/'+path);
+ let sha;if(old.ok)sha=(await old.json()).sha;else if(old.status!==404)throw Error('无法读取'+label+'状态');
+ const upload=await gh('contents/'+path,{method:'PUT',body:JSON.stringify({message:'wiki: submission '+folder,content:encoded,...(sha?{sha}:{})})});
+ if(!upload.ok)throw Error(label+'保存失败，请保留表单重试');
+ return 'https://raw.githubusercontent.com/'+env.REVIEW_REPO+'/main/'+path;
 }
 function github(env,fetcher){
  if(!env.GITHUB_TOKEN||!env.REVIEW_REPO)throw Error('投稿服务尚未配置');
@@ -34,7 +42,7 @@ async function load(gh){
  if(data.schema!==1||!Array.isArray(data.items)||data.items.length>LIMIT)throw Error('档案数据格式异常，请联系管理员');
  return {sha,data};
 }
-const publicItem=x=>({id:x.id,...validateWiki(x),coverUrl:x.coverUrl||'',publishedAt:x.publishedAt,updatedAt:x.updatedAt});
+const publicItem=x=>({id:x.id,...validateWiki(x),coverUrl:x.coverUrl||'',evidenceImageUrl:x.evidenceImageUrl||'',publishedAt:x.publishedAt,updatedAt:x.updatedAt});
 async function hash(text){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),x=>x.toString(16).padStart(2,'0')).join('')}
 async function clientTag(request,env){
  const ip=request.headers.get('CF-Connecting-IP');if(!ip||!env.ADMIN_KEY)return '';
@@ -55,11 +63,11 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
    const items=data.items.filter(x=>!feed||x.status==='approved').map(x=>feed?publicItem(x):((({clientTag,digest,...rest})=>rest)(x))).sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
    return json({ok:true,items,updatedAt:data.updatedAt||null},200,cors);
   }
-  let body,validated,image;
+  let body,validated,image,evidenceImage;
   try{
    body=await readBody(request);
    if(!idOK(body.id))throw Error('投稿编号无效，请刷新页面');
-   if(!admin){if(body.company)throw Error('投稿校验失败');if(body.confirm!==true)throw Error('请确认投稿资料可以公开展示');validated=validateWiki(body.item);image=cover(body.coverData)}
+   if(!admin){if(body.company)throw Error('投稿校验失败');if(body.confirm!==true)throw Error('请确认投稿资料可以公开展示');validated=validateWiki(body.item);image=photo(body.coverData,'封面');evidenceImage=photo(body.evidenceData,'统计凭证')}
    else{
     if(!['update','approved','rejected','withdrawn','pending'].includes(body.action))throw Error('审核操作无效');
     if(!Number.isInteger(body.version)||body.version<1)throw Error('请刷新记录后审核');
@@ -68,23 +76,17 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
    }
   }catch(e){return json({error:e.message},400,cors)}
   const now=new Date().toISOString(),tag=admin?'':await clientTag(request,env);
-  const digest=admin?'':await hash(JSON.stringify(validated)+'|'+image);
-  let coverUrl='';
+  const digest=admin?'':await hash(JSON.stringify(validated)+'|'+image+'|'+evidenceImage);
+  let coverUrl='',evidenceImageUrl='';
   for(let attempt=0;attempt<3;attempt++){
    const {sha,data}=await load(gh),existing=data.items.find(x=>x.id===body.id);
    if(!admin){
     if(existing){if(existing.digest!==digest)return json({error:'这份投稿已收到。修改内容请开始新的投稿'},409,cors);return json({ok:true,id:existing.id,status:existing.status,recovered:true},200,cors)}
     if(data.items.length>=LIMIT)return json({error:'投稿队列已满，请稍后再试'},409,cors);
     if(tag&&data.items.filter(x=>x.clientTag===tag).length>=10)return json({error:'今天提交较多，请明天再试'},429,cors);
-    if(image&&!coverUrl){
-     const p='emby-wiki/covers/'+body.id+'.jpg';
-     const old=await gh('contents/'+p);let imageSha;
-     if(old.ok)imageSha=(await old.json()).sha;else if(old.status!==404)throw Error('无法读取封面状态');
-     const upload=await gh('contents/'+p,{method:'PUT',body:JSON.stringify({message:'wiki: submission cover',content:image,...(imageSha?{sha:imageSha}:{})})});
-     if(!upload.ok)throw Error('封面保存失败，请保留表单重试');
-     coverUrl='https://raw.githubusercontent.com/'+env.REVIEW_REPO+'/main/'+p;
-    }
-    data.items.push({id:body.id,...validated,coverUrl,status:'pending',version:1,submittedAt:now,updatedAt:now,digest,clientTag:tag,reviewNote:''});
+    if(image&&!coverUrl)coverUrl=await uploadWikiImage(gh,body.id,image,'covers','封面',env);
+    if(evidenceImage&&!evidenceImageUrl)evidenceImageUrl=await uploadWikiImage(gh,body.id,evidenceImage,'evidence','统计凭证',env);
+    data.items.push({id:body.id,...validated,coverUrl,evidenceImageUrl,status:'pending',version:1,submittedAt:now,updatedAt:now,digest,clientTag:tag,reviewNote:''});
    }else{
     if(!existing)return json({error:'档案不存在，请刷新列表'},404,cors);
     if(existing.version!==body.version)return json({error:'这条档案刚刚被修改，请刷新后再操作'},409,cors);
@@ -94,6 +96,7 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
     if(target==='approved'&&data.items.some(x=>x.id!==existing.id&&x.status==='approved'&&x.name.toLowerCase()===(validated?.name||existing.name).toLowerCase()))return json({error:'已有同名已发布档案，请编辑现有档案或核实名称'},409,cors);
     if(validated)Object.assign(existing,validated);
     if(body.removeCover===true)existing.coverUrl='';
+    if(body.removeEvidence===true)existing.evidenceImageUrl='';
     existing.status=target;existing.reviewNote=body.note.trim();existing.reviewedAt=now;existing.updatedAt=now;existing.version++;
     if(target==='approved'&&!existing.publishedAt)existing.publishedAt=now;
    }

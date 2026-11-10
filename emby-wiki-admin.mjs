@@ -1,5 +1,5 @@
-import {STATUS_NAMES,validateWiki} from './emby-wiki-schema.mjs';
-import {el,api,buildForm,readForm,fillForm,details,safeCover} from './emby-wiki-ui.mjs';
+import {STATUS_NAMES,validateWiki} from './emby-wiki-schema.mjs?v=20261110.3';
+import {el,api,buildForm,readForm,fillForm,details,safeCover} from './emby-wiki-ui.mjs?v=20261110.3';
 const $=id=>document.getElementById(id),host=$('wiki-admin-fields'),dialog=$('wiki-admin-edit'),list=$('wiki-admin-list');
 buildForm(host,'wiki-edit');
 let items=[],busy=false,editing=null;
@@ -7,7 +7,7 @@ function message(text,error=false){$('wiki-admin-message').textContent=text;$('w
 function key(){const value=$('key').value;if(value.length<24)throw Error('请先在上方输入管理员密钥');return value}
 function headers(){return {'Content-Type':'application/json','X-Admin-Key':key()}}
 async function load(){if(busy)return;busy=true;message('正在读取 Emby Wiki 投稿…');try{const data=await api('/emby-wiki-admin',{headers:headers()});items=data.items;message('已加载 '+items.length+' 份档案。待审核内容不会出现在网页公开板块。')}catch(e){message(e.message,true)}finally{busy=false;render()}}
-function edit(item){editing=item;fillForm(host,item);$('wiki-admin-note').value=item.reviewNote||'';$('wiki-admin-remove-cover').checked=false;$('wiki-edit-message').textContent='';$('wiki-edit-title').textContent='编辑档案 · '+item.name;dialog.showModal()}
+function edit(item){editing=item;fillForm(host,item);$('wiki-admin-note').value=item.reviewNote||'';$('wiki-admin-remove-cover').checked=false;$('wiki-admin-remove-evidence').checked=false;$('wiki-edit-message').textContent='';$('wiki-edit-title').textContent='编辑档案 · '+item.name;dialog.showModal()}
 function render(){
  const filter=$('wiki-admin-filter').value,q=$('wiki-admin-search').value.trim().toLowerCase();
  const filtered=items.filter(x=>(filter==='all'||x.status===filter)&&[x.name,x.nickname,x.id].join(' ').toLowerCase().includes(q));
@@ -33,7 +33,7 @@ $('wiki-admin-refresh').onclick=load;$('load').addEventListener('click',load);$(
 $('wiki-edit-close').onclick=()=>{if(!busy)dialog.close()};dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault()});
 $('wiki-admin-edit-form').onsubmit=async e=>{e.preventDefault();if(busy||!editing)return;let item;try{item=validateWiki(readForm(host))}catch(error){$('wiki-edit-message').textContent=error.message;$('wiki-edit-message').focus();return}
  busy=true;$('wiki-edit-save').disabled=true;$('wiki-edit-message').textContent='正在保存…';
- try{await api('/emby-wiki-admin',{method:'POST',headers:headers(),body:JSON.stringify({id:editing.id,version:editing.version,action:'update',item,note:$('wiki-admin-note').value,removeCover:$('wiki-admin-remove-cover').checked})});dialog.close();busy=false;await load();message('档案资料已更新。已发布档案会同步显示最新内容。')}
+ try{await api('/emby-wiki-admin',{method:'POST',headers:headers(),body:JSON.stringify({id:editing.id,version:editing.version,action:'update',item,note:$('wiki-admin-note').value,removeCover:$('wiki-admin-remove-cover').checked,removeEvidence:$('wiki-admin-remove-evidence').checked})});dialog.close();busy=false;await load();message('档案资料已更新。已发布档案会同步显示最新内容。')}
  catch(error){$('wiki-edit-message').textContent=error.message}
  finally{busy=false;$('wiki-edit-save').disabled=false}
 };

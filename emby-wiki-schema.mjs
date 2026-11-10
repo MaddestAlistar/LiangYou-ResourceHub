@@ -3,8 +3,8 @@ export const NATURES = ['公益服','公费服','机场服'];
 export const CONTENTS = ['电影','电视剧','动漫','综艺','纪录片','短剧','体育','音乐'];
 export const QUALITIES = ['720P','1080P','4K','原盘 / REMUX','HDR10','HDR10+','杜比视界'];
 export const STATES = ['正常运营','维护中','暂时停服','已停服'];
-export const ROLES = ['站长','管理员','普通用户','资料整理者'];
-export const COUNT_FIELDS = {movies:'电影（部）',series:'剧集（部）',episodes:'剧集总集数（集）',others:'其他媒体（项）'};
+export const ROLES = ['腐竹本人','管理员','普通用户','资料整理者'];
+export const COUNT_FIELDS = {movies:'电影（不含多版本，部）',series:'剧集（不含多版本，部）',episodes:'集数（不含多版本，集）',moviesWithVersions:'电影（包含多版本，部）',seriesWithVersions:'剧集（包含多版本，部）',episodesWithVersions:'集数（包含多版本，集）',others:'其他媒体（项）'};
 export function chinaDate(now=new Date()) { return new Date(now.getTime()+8*3600000).toISOString().slice(0,10); }
 function text(value,label,max,required=false) {
  if(value==null)value='';
@@ -53,7 +53,7 @@ export function validateWiki(input,{today=chinaDate()}={}) {
  }
  if(out.movies+out.series+(out.others||0)===0)throw Error('媒体库统计至少有一类数量大于 0');
  for(const [k,label,max] of [['summary','服务器简介',600],['retention','保号规则',500],['network','线路与访问说明',300],['pricing','费用说明',200],['statsNote','统计口径说明',300],['extraContent','资源补充',100],['extraQuality','画质补充',100]])out[k]=text(b[k],label,max);
- out.role=choice(b.role,ROLES,'投稿人身份',false);
+ out.role=choice(b.role==='站长'?'腐竹本人':b.role,ROLES,'投稿人身份',false);
  for(const [k,label,tg] of [['website','官方网站',false],['channel','频道',true],['group','群组',true],['bot','机器人',true],['evidence','统计凭证链接',false]])out[k]=publicURL(b[k],label,tg);
  if(!['website','channel','group','bot'].some(k=>out[k]))throw Error('官方网站、频道、群组或机器人至少填写一个，方便核验');
  return out;

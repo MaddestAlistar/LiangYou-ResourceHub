@@ -7,23 +7,46 @@ export function buildForm(host,prefix='wiki'){
  const area=(name,label,max,required=false,help='')=>`<label class="wk-field"><span>${label} <small class="${required?'wk-required':''}">${required?'必填':'选填'}</small></span><textarea name="${name}" maxlength="${max}" rows="3" ${required?'required':''}></textarea>${help?'<small>'+help+'</small>':''}</label>`;
  const select=(name,label,choices,required=false)=>`<label class="wk-field"><span>${label} <small class="${required?'wk-required':''}">${required?'必填':'选填'}</small></span><select name="${name}" ${required?'required':''}><option value="">请选择${required?'':'（可留空）'}</option>${choices.map(x=>`<option>${x}</option>`).join('')}</select></label>`;
  const chips=(name,label,choices,required=false)=>`<fieldset class="wk-choices"><legend>${label} <small class="${required?'wk-required':''}">${required?'必选，可多选':'选填，可多选'}</small></legend><div class="wk-chips">${choices.map(x=>`<label><input type="checkbox" name="${name}" value="${x}"><span>${x}</span></label>`).join('')}</div></fieldset>`;
+ function wikiStatsSection(prefix){
+ const values=[['movies','moviesWithVersions','电影','部',true],['series','seriesWithVersions','剧集','部',true],['episodes','episodesWithVersions','集数','集',false]];
+ const cell=(name,label,required)=>`<label class="wk-stat-cell"><span class="wk-sr-only">${label}${required?'（必填）':'（选填）'}</span><input id="${prefix}-${name}" name="${name}" type="number" inputmode="numeric" min="0" max="100000000" step="1" placeholder="${required?'必填':'选填'}" aria-label="${label}" ${required?'required':''}></label>`;
+ const rows=values.map(([plain,multi,label,unit,required])=>`<div class="wk-count-row"><div class="wk-count-label"><strong>${label}</strong><small>${unit}</small></div>${cell(plain,label+'（不含多版本）',required)}${cell(multi,label+'（包含多版本）',false)}</div>`).join('');
+ const photo=prefix==='wiki'?`<div class="wk-evidence-picker"><label for="wiki-evidence-file" class="wk-evidence-label">统计凭证截图 <small>选填</small></label><input id="wiki-evidence-file" type="file" accept="image/jpeg,image/png,image/webp"><small class="wk-hint">可上传 JPG / PNG / WebP，单张原图不超过 5 MB。上传后压缩为图片保存，审核人员可查看；也可以同时提供链接。请遮挡账号等私密内容。</small><img id="wiki-evidence-preview" class="wk-upload-preview" alt="统计凭证预览" hidden><button id="wiki-evidence-remove" type="button" class="wk-quiet" hidden>移除凭证图片</button><p id="wiki-evidence-message" class="wk-hint" role="status"></p></div>`:'';
+ return `<section class="wk-form-section"><h2><span>02</span> 媒体库统计</h2><p class="wk-hint">参照 Emby 统计填写。电影、剧集按部，集数按集；“不含多版本”的电影和剧集必填，其他数值选填。确实没有填 0，未知请留空。</p><div class="wk-count-table" role="group" aria-label="Emby 媒体库统计"><div class="wk-count-head"><span>媒体类型</span><span>不含多版本</span><span>包含多版本</span></div>${rows}</div>${input('others','其他媒体（项）',{type:'number'})}<div class="wk-date-single">${input('statsDate','统计日期',{type:'date',required:true})}</div>${area('statsNote','统计口径说明',300,false,'例如：统计是否包含动漫、短剧，以及多版本的计算方式。')}${photo}${input('evidence','统计凭证链接',{max:500,placeholder:'可选：公开统计截图或公告的 HTTPS 链接'})}</section>`;
+}
  host.innerHTML=`<section class="wk-form-section"><h2><span>01</span> 服务器资料</h2>${input('name','服务器名称',{max:60,required:true,placeholder:'填写播放器中显示的名称'})}<div class="wk-cols">${select('nature','服务器性质',NATURES,true)}${select('state','运营状态',STATES,true)}</div>${chips('contents','资源内容',CONTENTS,true)}${input('extraContent','其他资源内容',{max:100})}${chips('qualities','画质与规格',QUALITIES)}${input('extraQuality','画质补充',{max:100})}</section>
- <section class="wk-form-section"><h2><span>02</span> 媒体库统计</h2><p class="wk-hint">按 Emby 实际统计填写；电影按部，剧集按部。没有该类别填 0，未知不要填 0。其他媒体为主的服务器请填写其他数量。</p><div class="wk-cols">${Object.entries(COUNT_FIELDS).map(([k,label])=>input(k,label,{type:'number',required:['movies','series'].includes(k)})).join('')}</div>${input('statsDate','统计日期',{type:'date',required:true})}${area('statsNote','统计口径说明',300,false,'例如：是否含动漫、短剧；多版本是否重复计数。')}${input('evidence','统计凭证链接',{max:500,placeholder:'可填写公开统计截图或公告的 HTTPS 链接'})}</section>
+ ${wikiStatsSection(prefix)}
  <section class="wk-form-section"><h2><span>03</span> 开号与使用</h2>${area('registration','开号条件',500,true,'说明如何获取账号、目前是否开放。可点击下面的常用方式后补充。')}<div class="wk-shortcuts">${['开放注册','活动','抽奖','付费','签到开号','邀请','暂不开注'].map(x=>`<button type="button" class="wk-quiet" data-add="${x}">${x}</button>`).join('')}</div>${area('retention','保号规则',500,false,'留空显示“未提供”，不等同于无需保号。')}${input('pricing','费用说明',{max:200,placeholder:'例如月费、年费或公益免费；请注明币种'})}${area('network','线路与访问说明',300,false,'例如：直连情况、运营商差异、是否需要代理。')}</section>
  <section class="wk-form-section"><h2><span>04</span> 公开入口与简介</h2><p class="wk-hint">以下四种入口至少填写一个。仅填写官方网站或公开社区入口，不填写服务器登录地址、账号、密码或 API Key。</p>${input('website','官方网站',{max:500,placeholder:'https://…'})}<div class="wk-cols">${input('channel','Telegram 频道',{max:500,placeholder:'@用户名 或 https://t.me/…'})}${input('group','Telegram 群组',{max:500,placeholder:'@用户名 或邀请链接'})}</div>${input('bot','Telegram 机器人',{max:500,placeholder:'@用户名 或 https://t.me/…'})}${area('summary','服务器简介',600,false,'简要介绍资源特色、更新情况等，避免夸大。')}</section>
- <section class="wk-form-section"><h2><span>05</span> 投稿信息</h2><div class="wk-cols">${input('nickname','投稿人昵称',{max:40,required:true,help:'昵称会随档案公开展示。'})}${input('submissionDate','投稿日期',{type:'date',required:true})}</div>${select('role','你与服务器的关系',ROLES)}</section>`;
+ <section class="wk-form-section"><h2><span>05</span> 投稿信息</h2><div class="wk-cols wk-submission-cols">${input('nickname','投稿人昵称',{max:40,required:true,help:'昵称会随档案公开展示。'})}${input('submissionDate','投稿日期',{type:'date',required:true})}</div>${select('role','你与服务器的关系',ROLES)}</section>`;
  host.querySelectorAll('input[type=date]').forEach(x=>x.value=chinaDate());
  host.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const t=host.querySelector('[name=registration]');t.value=[...new Set([...t.value.split('、').filter(Boolean),b.dataset.add])].join('、');t.dispatchEvent(new Event('input',{bubbles:true}))});
 }
 export function readForm(host){const out={contents:[],qualities:[]};for(const n of host.querySelectorAll('[name]')){if(n.type==='checkbox'){if(n.checked&&Array.isArray(out[n.name]))out[n.name].push(n.value)}else out[n.name]=n.value}return out}
 export function fillForm(host,item){for(const n of host.querySelectorAll('[name]')){if(n.type==='checkbox')n.checked=(item[n.name]||[]).includes(n.value);else n.value=item[n.name]??''}}
-export function stats(item){const box=el('div',undefined,'wk-stats');for(const k of ['movies','series']){const unit=k==='movies'?'电影 · 部':'剧集 · 部',cell=el('div');cell.append(el('strong',Number(item[k]).toLocaleString('zh-CN')),el('span',unit));box.append(cell)}if(item.others!=null){const cell=el('div');cell.append(el('strong',Number(item.others).toLocaleString('zh-CN')),el('span','其他 · 项'));box.append(cell)}return box}
+export function stats(item){
+ const box=el('div',undefined,'wk-stats wk-version-stats');
+ const head=el('div',undefined,'wk-version-head');
+ for(const text of ['','不含多版本','包含多版本'])head.append(el('span',text));
+ box.append(head);
+ const value=k=>item[k]===null||item[k]===undefined||item[k]===''?'—':Number(item[k]).toLocaleString('zh-CN');
+ for(const [label,a,b] of [['电影（部）','movies','moviesWithVersions'],['剧集（部）','series','seriesWithVersions'],['集数（集）','episodes','episodesWithVersions']]){
+  const row=el('div',undefined,'wk-version-row');
+  row.append(el('span',label),el('strong',value(a)),el('strong',value(b)));
+  box.append(row);
+ }
+ if(item.others!=null){const other=el('p','其他媒体 '+value('others')+' 项','wk-version-other');box.append(other)}
+ return box;
+}
 export function details(item){const box=el('div',undefined,'wk-detail-body');
  box.append(stats(item));
  const dl=el('dl');
- const fields=[['统计日期',item.statsDate],['剧集总集数',item.episodes==null?'未提供':item.episodes.toLocaleString('zh-CN')+' 集'],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',item.nickname+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
+ const fields=[['统计日期',item.statsDate],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',item.nickname+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
  for(const [k,v] of fields){dl.append(el('dt',k),el('dd',v))}box.append(dl);
  const links=el('div',undefined,'wk-links');for(const [k,label] of [['website','官方网站'],['channel','频道'],['group','群组'],['bot','机器人'],['evidence','统计凭证']]){if(!item[k])continue;try{const a=el('a',label+' ↗','wk-button wk-secondary');a.href=publicURL(item[k],label,['channel','group','bot'].includes(k));a.target='_blank';a.rel='noopener noreferrer nofollow';links.append(a)}catch{}}
+ if(safeEvidence(item.evidenceImageUrl)){const proof=el('div',undefined,'wk-evidence-proof');proof.append(el('strong','统计凭证截图'));const link=el('a');link.href=item.evidenceImageUrl;link.target='_blank';link.rel='noopener noreferrer nofollow';const img=el('img');img.src=item.evidenceImageUrl;img.alt='统计凭证截图，点击查看原图';img.loading='lazy';link.append(img);proof.append(link);box.append(proof)}
  box.append(links);return box;
 }
 export function safeCover(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/covers\/wiki-[a-f0-9-]+\.jpg$/.test(url)}
+
+export function safeEvidence(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/evidence\/wiki-[a-f0-9-]+\.jpg$/.test(url)}

@@ -3,3 +3,23 @@
 @media(max-width:580px){.wiki-page main{padding:20px 14px 50px}.wk-top{margin-bottom:28px;font-size:13px}.wk-shell{padding:20px 14px;border-radius:20px}.wk-tools{grid-template-columns:1fr 1fr}.wk-tools input{grid-column:1/-1}.wk-grid,.wk-admin-grid{grid-template-columns:1fr}.wk-head .wk-button{width:100%}.wk-cta{padding:22px 18px}.wk-cta .wk-actions>*{flex:1;font-size:13px}.wk-form-section{padding:20px 16px}.wk-cols{gap:10px}.wk-field{font-size:13px}.wk-cols .wk-field>span>small{display:block;margin:2px 0 0}.wk-dialog{padding:18px}.wk-dialog-head{top:-18px}.wk-detail-body dl{grid-template-columns:84px minmax(0,1fr);gap:13px 10px}.wk-stats strong{font-size:24px}.wk-form-section h2{margin-bottom:18px}.wk-intro{margin-bottom:20px}.wk-card-content{padding:18px}}
 
 @media(max-width:580px){.wk-aside{padding:16px 18px}.wk-aside>.wk-hint:last-of-type,.wk-aside>a{display:none}.wk-aside .wk-eyebrow{margin-bottom:5px}.wk-aside #wiki-progress-label{display:block;margin-bottom:0}}
+
+/* Emby Wiki responsive form and version-aware statistics */
+.wk-layout,.wk-form-section,#wiki-submit-form,#wiki-fields,.wk-field{min-width:0;max-width:100%}
+.wk-cols{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+.wk-field input[type="date"]{display:block;min-width:0;max-width:100%;width:100%;box-sizing:border-box;padding-inline:12px;font-size:16px}
+.wk-count-table{margin:12px 0 20px;border:1px solid var(--wk-line);border-radius:13px;overflow:hidden;background:#0d1929}
+.wk-count-head,.wk-count-row{display:grid;grid-template-columns:minmax(56px,.65fr) repeat(2,minmax(0,1fr));align-items:center;gap:8px;padding:10px 12px}
+.wk-count-head{background:#1e3046;font-size:12px;color:var(--wk-accent);font-weight:700;text-align:center}
+.wk-count-head span:first-child{text-align:left}
+.wk-count-row+.wk-count-row{border-top:1px solid #314358}
+.wk-count-label{font-size:14px}.wk-count-label strong{display:block}.wk-count-label small{display:block;font-size:11px;color:var(--wk-muted);font-weight:400}
+.wk-stat-cell{display:block;min-width:0}.wk-stat-cell input{width:100%;min-width:0;max-width:100%;padding:10px 8px;min-height:44px;font-size:16px;text-align:center;font-variant-numeric:tabular-nums}
+.wk-stat-cell input::placeholder{font-size:12px;color:#8998ab}
+.wk-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.wk-date-single{max-width:100%;min-width:0}.wk-evidence-picker{min-width:0;margin:6px 0 18px}.wk-evidence-label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}.wk-evidence-label small{font-size:11px;font-weight:400;color:var(--wk-muted)}
+.wk-evidence-picker>small{display:block;margin:6px 0}.wk-evidence-proof{margin:18px 0;display:grid;gap:10px}.wk-evidence-proof>strong{font-size:14px}.wk-evidence-proof img{display:block;max-width:100%;max-height:310px;object-fit:contain;border:1px solid var(--wk-line);border-radius:10px}
+.wk-version-stats{display:block;padding:8px 0;overflow:hidden}.wk-version-head,.wk-version-row{display:grid;grid-template-columns:minmax(64px,1fr) repeat(2,minmax(0,1.2fr));align-items:center;gap:6px;padding:7px 0}
+.wk-version-head{font-size:11px;color:var(--wk-muted);text-align:right}.wk-version-row{border-top:1px solid #35465c66}.wk-version-row>span{font-size:12px;color:var(--wk-muted)}.wk-version-row strong{font-size:clamp(13px,2.6vw,20px);line-height:1.4;min-width:0;text-align:right;overflow-wrap:anywhere}
+.wk-version-other{font-size:12px;color:var(--wk-muted);margin:8px 0 0!important}
+@media(max-width:580px){.wk-submission-cols{grid-template-columns:minmax(0,1fr)}.wk-count-head,.wk-count-row{grid-template-columns:minmax(48px,.56fr) repeat(2,minmax(0,1fr));gap:5px;padding:9px 7px}.wk-count-head{font-size:11px}.wk-count-label{font-size:13px}.wk-stat-cell input{padding:9px 4px}.wk-form-section input[type="date"]{min-width:0;max-width:100%}.wk-version-row strong{font-size:15px}}
