@@ -183,3 +183,14 @@ test('registration shortcuts have localized compact glass pills and toggleable s
  assert.ok(css.includes('.wk-shortcuts .wk-shortcut[aria-pressed="true"]'));
  assert.ok(css.includes('.wk-lang-switch button[aria-pressed="true"]'));
 });
+
+test('submission shortcuts and topbar retain their compact responsive layout',()=>{
+ const html=readFileSync('emby-wiki-submit.html','utf8');
+ const css=readFileSync('emby-wiki-glass.css','utf8');
+ assert.match(html,/emby-wiki-glass\.css\?v=20261110\.9/);
+ assert.ok(css.includes('.wiki-page .wk-shortcut-glyph{display:none}'));
+ assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert.ok(css.includes('.wiki-page .wk-shortcuts .wk-shortcut:last-child'));
+ assert.ok(css.includes('.wiki-page .wk-top .wk-back{order:-1}'));
+ assert.ok(css.includes('.wiki-page .wk-brand-amazing'));
+});
