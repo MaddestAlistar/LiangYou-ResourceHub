@@ -1,5 +1,5 @@
 import {validateWiki,chinaDate,hasCompleteCountColumn} from './emby-wiki-schema.mjs?v=20261110.11';
-import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261110.12';
+import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261110.wiki-en1';
 import {buildForm,readForm,fillForm,api,updateCountStatus} from './emby-wiki-ui.mjs?v=20261110.12';
 const $=id=>document.getElementById(id),form=$('wiki-submit-form'),host=$('wiki-fields'),notice=$('wiki-submit-status');
 buildForm(host);
