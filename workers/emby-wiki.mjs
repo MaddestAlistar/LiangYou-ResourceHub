@@ -72,7 +72,7 @@ export async function serveEmbyWiki(request,env,{origin='',allowed='https://madd
    const items=data.items.filter(x=>!feed||x.status==='approved').map(x=>feed?publicItem(x):((({clientTag,digest,...rest})=>rest)(x))).sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
    return json({ok:true,items,updatedAt:data.updatedAt||null},200,cors);
   }
-  let body,validated,image,evidenceImage,adminCover='',adminEvidence=';
+  let body,validated,image,evidenceImage,adminCover='',adminEvidence='';
   try{
    body=await readBody(request);
    if(!idOK(body.id))throw Error('投稿编号无效，请刷新页面');
