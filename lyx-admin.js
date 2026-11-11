@@ -7,7 +7,7 @@
  const field=id=>$('lyx-'+id),val=id=>field(id).value.trim();
  const initialIcon='assets/lyx/shangdaoji.svg';
  const empty=()=>({id:'',name:'',category:'',subtitle:'',version:'',platform:'iOS',tagline:'',summary:'',tags:[],scores:[80,80,80,80,80,80],review:'',icon:initialIcon,status:'draft',order:items.length+1});
- const safeIcon=url=>typeof url==='string'&&(/^(assets\/lyx\/[a-z0-9._\/-]+\.(svg|png|webp))$/i.test(url)||/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(url))?url:initialIcon;
+ const safeIcon=url=>typeof url==='string'&&(/^(assets\/(?:lyx|collabs)\/[a-z0-9._\/-]+\.(svg|png|webp))$/i.test(url)||/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(url))?url:initialIcon;
 
  // Native <select> controls open an iOS-friendly picker; custom values remain editable.
  const CUSTOM='__custom__';
