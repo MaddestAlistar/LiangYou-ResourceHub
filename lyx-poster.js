@@ -25,7 +25,7 @@ for(let i=0;i<6;i++){const pt=p(i,R);line(ctx,x,y,pt[0],pt[1],"#459de788",1)}
 const g=ctx.createLinearGradient(x-R,y-R,x+R,y+R);g.addColorStop(0,"#37ffffaa");g.addColorStop(.55,"#0dbaff99");g.addColorStop(1,"#466aff86");poly(sc.map(v=>v/100*R),"#77f8ff",g,3);
 for(let i=0;i<6;i++){const z=p(i,sc[i]/100*R);ctx.beginPath();ctx.arc(z[0],z[1],5,0,Math.PI*2);ctx.fillStyle="#f9ffff";ctx.shadowColor="#66eaff";ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0}ctx.restore()}
 function imageFit(ctx,img,x,y,w,h,r){ctx.save();rounded(ctx,x,y,w,h,r);ctx.clip();const ir=img.width/img.height,box=w/h;const dw=ir>box?h*ir:w,dh=ir>box?h:w/ir;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore()}
-function pictureURL(v){v=String(v||"");if(/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(v))return v;if(/^assets\/lyx\/[a-zA-Z0-9._/-]+\.(?:png|webp|svg)$/.test(v)&&!v.includes(".."))return "./"+v;return "./assets/lyx/shangdaoji.svg"}
+function pictureURL(v){v=String(v||"");if(/^data:image\/(?:webp|png|jpeg);base64,[a-zA-Z0-9+/=]+$/.test(v))return v;if(/^assets\/(?:lyx|collabs)\/[a-zA-Z0-9._/-]+\.(?:png|webp|svg)$/.test(v)&&!v.includes(".."))return "./"+v;return "./assets/lyx/shangdaoji.svg"}
 function imageFrom(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("图片加载失败"));img.src=src})}
 async function loadPicture(src){
  // The initial icon and author avatar are SVG wrappers around original WebP.
@@ -54,7 +54,7 @@ async function renderPoster(r){
  const heading=ctx.createLinearGradient(140,45,955,140);heading.addColorStop(0,"#e9f9ff");heading.addColorStop(.6,"#fff");heading.addColorStop(1,"#66e6ff");
  txt(ctx,"良友APP指南",540,99,65,heading,900,"center");txt(ctx,"AMAZING GUIDE",540,143,31,"#cfebff",780,"center");
  fill(ctx,260,158,560,45,"#0b4ca0dd",25);ctx.strokeStyle="#64daff";ctx.lineWidth=2;rounded(ctx,260,158,560,45,25);ctx.stroke();
- txt(ctx,"良友科技原创 · LYX 六维体验评分标准",540,188,23,"#ecfaff",720,"center");
+ txt(ctx,(Array.isArray(r.tags)&&r.tags.includes("资料初评"))?"良友联名 · 资料初评（待真机复核）":"良友科技原创 · LYX 六维体验评分标准",540,188,23,"#ecfaff",720,"center");
  // Application identity panel
  glowPanel(ctx,34,228,412,406,28);glowPanel(ctx,458,228,588,406,28);
  if(appImg){imageFit(ctx,appImg,65,265,125,125,25)}else{fill(ctx,65,265,125,125,"#ebf6ff",24);fit(ctx,r.name?.slice(0,3)||"APP",78,340,99,28,18,"#122447")}
@@ -105,7 +105,7 @@ async function renderPoster(r){
  fit(ctx,AUTHOR_NAME,396,1250,542,49,34,"#ffffff",900);
  fill(ctx,398,1282,460,55,"#155faccc",26);ctx.strokeStyle="#7edbff";ctx.lineWidth=2;rounded(ctx,398,1282,460,55,26);ctx.stroke();
  txt(ctx,"小红书号："+AUTHOR_ID,626,1318,27,"#ffffff",720,"center");
- txt(ctx,"良友科技 · 真实体验 · 独立评价",540,1410,18,"#c4eaff",650,"center");
+ txt(ctx,(Array.isArray(r.tags)&&r.tags.includes("资料初评"))?"公开资料初评 · 联名不加分 · 待实测复核":"良友科技 · 真实体验 · 独立评价",540,1410,18,"#c4eaff",650,"center");
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("PNG 导出失败")),"image/png"));
  return blob;
 }
