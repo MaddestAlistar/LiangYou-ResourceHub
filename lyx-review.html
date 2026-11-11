@@ -66,8 +66,8 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 #posterDialog h2{margin:0;font-size:19px;letter-spacing:.02em}
 #posterDialog .poster-close{color:#cce9ff;border:1px solid #76b9ff88;background:#163c7b;border-radius:50%;width:36px;height:36px;min-width:36px;padding:0;font-size:23px;line-height:1}
 #posterDialog .poster-intro{color:#b4d2f3;font-size:12px;line-height:1.7;margin:0 0 12px}
-#posterDialog .poster-image-frame{background:#061431;border:1px solid #489dff99;border-radius:12px;padding:7px;margin:0 auto;max-width:320px;min-height:170px;display:flex;justify-content:center;align-items:center}
-#posterDialog .poster-image-frame img{width:100%;height:auto;display:block;max-height:min(56dvh,560px);object-fit:contain;box-shadow:0 0 18px #389bff30;border-radius:5px}
+#posterDialog .poster-image-frame{background:#061431;border:1px solid #489dff99;border-radius:12px;padding:7px;margin:0 auto;max-width:380px;min-height:170px;display:flex;justify-content:center;align-items:center}
+#posterDialog .poster-image-frame img{width:100%;height:auto;display:block;max-height:min(64dvh,610px);object-fit:contain;box-shadow:0 0 18px #389bff30;border-radius:5px;cursor:zoom-in}
 #posterDialog .poster-image-frame img[hidden]{display:none!important}
 #posterDialog #posterStatus{font-size:12px;line-height:1.65;min-height:22px;text-align:center;color:#c6dffe;margin:10px 0}
 #posterDialog .poster-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
@@ -75,7 +75,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 #posterDialog .poster-actions button:first-child{background:linear-gradient(105deg,#0fbcde,#1462d3 66%,#6246da);border-color:#76edff;color:#fff}
 #posterDialog .poster-actions button:disabled{opacity:.45;cursor:not-allowed}
 #posterDialog .poster-foot{font-size:11px;color:#9ebadd;line-height:1.65;margin:10px 0 0;text-align:center}
-@media(max-width:420px){#posterDialog{padding:12px}#posterDialog .poster-image-frame{max-width:280px}#posterDialog .poster-actions button{font-size:12px;padding:11px 5px}}
+@media(max-width:420px){#posterDialog{padding:12px}#posterDialog .poster-image-frame{max-width:100%}#posterDialog .poster-actions button{font-size:12px;padding:11px 5px}}
 </style>
 </head>
 <body>
@@ -114,7 +114,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
     <button class="poster-action" id="posterCopyLink" type="button" disabled>复制详情链接</button>
     <button id="posterCloseSecondary" type="button">关闭预览</button>
   </div>
-  <p class="poster-foot">2160 × 2880 · 2 倍超清 PNG。iPhone 也可长按预览图保存到照片。</p>
+  <p class="poster-foot">2160 × 2880 · 2 倍超清 PNG。点击海报查看原图，iPhone 可长按保存。</p>
 </dialog>
 
 <script>
@@ -170,6 +170,6 @@ window.addEventListener("hashchange",function(){route(true)});
 fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(7000)}).then(function(r){if(!r.ok)throw new Error("实时评测服务 HTTP "+r.status);return r.json()}).then(function(d){if(!d.ok)throw new Error(d.error||"实时评测服务失败");return d}).catch(function(){return fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("静态评测 HTTP "+r.status);return r.json()})}).then(function(data){REVIEWS=(Array.isArray(data.reviews)?data.reviews:[]).filter(function(r){return r&&r.status==="published"&&/^[a-z0-9-]{1,80}$/.test(r.id)}).sort(function(a,b){return Number(a.order||999)-Number(b.order||999)});renderList();route(false)}).catch(function(err){listNode.innerHTML='<div class="panel review-empty">评测资料暂时读取失败，请刷新网页重试。<br><small>'+esc(err.message)+'</small></div>';route(false)});
 })();
 </script>
-<script src="./lyx-poster.js?v=20261112.poster2" defer></script>
+<script src="./lyx-poster.js?v=20261112.poster3" defer></script>
 </body>
 </html>
