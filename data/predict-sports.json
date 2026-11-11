@@ -2,14 +2,14 @@
   "schema": 1,
   "source": "Predict.fun API",
   "source_type": "prediction_market",
-  "generated_at": "2026-11-11T01:16:01Z",
+  "generated_at": "2026-11-11T05:43:48Z",
   "interval_hours": 2,
   "status": "ok",
   "sources": [
     {
       "tag": "predict-categories",
       "status": "ok",
-      "received": 1600,
+      "received": 1590,
       "verified_matches": 39
     }
   ],
@@ -25,31 +25,31 @@
       "outcomes": [
         {
           "name": "Ground Zero Gaming",
-          "probability": 0.775,
+          "probability": 0.805,
           "market_id": "3950613",
-          "best_bid": 0.77,
-          "best_ask": 0.78,
-          "best_bid_size": 1.29,
-          "best_ask_size": 512.13
+          "best_bid": 0.79,
+          "best_ask": 0.82,
+          "best_bid_size": 200.0,
+          "best_ask_size": 415.51
         },
         {
           "name": "Frank Esports",
-          "probability": 0.225,
+          "probability": 0.195,
           "market_id": "3950613",
-          "best_bid": 0.22,
-          "best_ask": 0.23,
-          "best_bid_size": 512.13,
-          "best_ask_size": 1.29
+          "best_bid": 0.18,
+          "best_ask": 0.21,
+          "best_bid_size": 415.51,
+          "best_ask_size": 200.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/lol-gz-fnk-2026-11-11",
       "stats": {
-        "volume_24h_usd": 719.99,
-        "volume_total_usd": 724.36,
-        "liquidity_usd": 12968.83
+        "volume_24h_usd": 2999.93,
+        "volume_total_usd": 3021.45,
+        "liquidity_usd": 12196.94
       }
     },
     {
@@ -63,31 +63,30 @@
       "outcomes": [
         {
           "name": "Nothin'Here",
-          "probability": 0.08,
+          "probability": 0.095,
           "market_id": "4468969",
-          "best_bid": 0.05,
-          "best_ask": 0.11,
-          "best_bid_size": 550.78,
-          "best_ask_size": 2250.0
+          "best_bid": 0.09,
+          "best_ask": 0.1,
+          "best_bid_size": 69.76,
+          "best_ask_size": 300.0
         },
         {
           "name": "Saigon Warrior",
-          "probability": 0.92,
+          "probability": 0.905,
           "market_id": "4468969",
-          "best_bid": 0.89,
-          "best_ask": 0.95,
-          "best_bid_size": 2250.0,
-          "best_ask_size": 550.78
+          "best_bid": 0.9,
+          "best_ask": 0.91,
+          "best_bid_size": 300.0,
+          "best_ask_size": 69.76
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/lol-nh1-sgw-2026-11-12",
       "stats": {
-        "volume_24h_usd": 1177.4,
-        "volume_total_usd": 1182.77,
-        "liquidity_usd": 1231.69
+        "volume_24h_usd": 6060.54,
+        "liquidity_usd": 3163.58
       }
     },
     {
@@ -105,8 +104,8 @@
           "market_id": "4438532",
           "best_bid": 0.37,
           "best_ask": 0.38,
-          "best_bid_size": 678285.76,
-          "best_ask_size": 578306.08
+          "best_bid_size": 563696.25,
+          "best_ask_size": 570061.85
         },
         {
           "name": "Gen.G Esports",
@@ -114,170 +113,18 @@
           "market_id": "4438532",
           "best_bid": 0.62,
           "best_ask": 0.63,
-          "best_bid_size": 578306.08,
-          "best_ask_size": 678285.76
+          "best_bid_size": 570061.85,
+          "best_ask_size": 563696.25
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/lol-blg-gen-2026-11-14",
       "stats": {
-        "volume_24h_usd": 64767.96,
-        "volume_total_usd": 341827.62,
-        "liquidity_usd": 673079.98
-      }
-    },
-    {
-      "id": "predict-692444",
-      "title": "Clippers vs. Suns",
-      "category": "basketball",
-      "league": "NBA",
-      "best_of": null,
-      "competition": null,
-      "start_time": "2026-11-11T02:00:00Z",
-      "outcomes": [
-        {
-          "name": "Clippers",
-          "probability": 0.385,
-          "market_id": "4028282",
-          "best_bid": 0.38,
-          "best_ask": 0.39,
-          "best_bid_size": 160907.66,
-          "best_ask_size": 252838.21
-        },
-        {
-          "name": "Suns",
-          "probability": 0.615,
-          "market_id": "4028282",
-          "best_bid": 0.61,
-          "best_ask": 0.62,
-          "best_bid_size": 252838.21,
-          "best_ask_size": 160907.66
-        }
-      ],
-      "checked_at": "2026-11-11T01:16:01Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/nba-lac-phx-2026-11-10",
-      "stats": {
-        "volume_24h_usd": 8221.6,
-        "volume_total_usd": 8272.1,
-        "liquidity_usd": 299224.64
-      }
-    },
-    {
-      "id": "predict-692446",
-      "title": "Heat vs. Jazz",
-      "category": "basketball",
-      "league": "NBA",
-      "best_of": null,
-      "competition": null,
-      "start_time": "2026-11-11T02:00:00Z",
-      "outcomes": [
-        {
-          "name": "Heat",
-          "probability": 0.765,
-          "market_id": "4028284",
-          "best_bid": 0.76,
-          "best_ask": 0.77,
-          "best_bid_size": 257206.78,
-          "best_ask_size": 71275.67
-        },
-        {
-          "name": "Jazz",
-          "probability": 0.235,
-          "market_id": "4028284",
-          "best_bid": 0.23,
-          "best_ask": 0.24,
-          "best_bid_size": 71275.67,
-          "best_ask_size": 257206.78
-        }
-      ],
-      "checked_at": "2026-11-11T01:16:01Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/nba-mia-uta-2026-11-10",
-      "stats": {
-        "volume_24h_usd": 44768.27,
-        "volume_total_usd": 45982.53,
-        "liquidity_usd": 473630.09
-      }
-    },
-    {
-      "id": "predict-692454",
-      "title": "Magic vs. Kings",
-      "category": "basketball",
-      "league": "NBA",
-      "best_of": null,
-      "competition": null,
-      "start_time": "2026-11-11T03:00:00Z",
-      "outcomes": [
-        {
-          "name": "Magic",
-          "probability": 0.655,
-          "market_id": "4028295",
-          "best_bid": 0.65,
-          "best_ask": 0.66,
-          "best_bid_size": 239559.93,
-          "best_ask_size": 147315.19
-        },
-        {
-          "name": "Kings",
-          "probability": 0.345,
-          "market_id": "4028295",
-          "best_bid": 0.34,
-          "best_ask": 0.35,
-          "best_bid_size": 147315.19,
-          "best_ask_size": 239559.93
-        }
-      ],
-      "checked_at": "2026-11-11T01:16:01Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/nba-orl-sac-2026-11-10",
-      "stats": {
-        "volume_24h_usd": 33939.08,
-        "volume_total_usd": 34062.07,
-        "liquidity_usd": 526038.15
-      }
-    },
-    {
-      "id": "predict-692455",
-      "title": "Thunder vs. Trail Blazers",
-      "category": "basketball",
-      "league": "NBA",
-      "best_of": null,
-      "competition": null,
-      "start_time": "2026-11-11T04:00:00Z",
-      "outcomes": [
-        {
-          "name": "Thunder",
-          "probability": 0.535,
-          "market_id": "4028296",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 230918.14,
-          "best_ask_size": 198233.8
-        },
-        {
-          "name": "Trail Blazers",
-          "probability": 0.465,
-          "market_id": "4028296",
-          "best_bid": 0.46,
-          "best_ask": 0.47,
-          "best_bid_size": 198233.8,
-          "best_ask_size": 230918.14
-        }
-      ],
-      "checked_at": "2026-11-11T01:16:01Z",
-      "verification": "open_match_winner_market",
-      "provider": "predict",
-      "source_url": "https://predict.fun/market/nba-okc-por-2026-11-10",
-      "stats": {
-        "volume_24h_usd": 19182.39,
-        "volume_total_usd": 19240.2,
-        "liquidity_usd": 386294.7
+        "volume_24h_usd": 83240.94,
+        "volume_total_usd": 372561.87,
+        "liquidity_usd": 627977.61
       }
     },
     {
@@ -291,31 +138,31 @@
       "outcomes": [
         {
           "name": "Wizards",
-          "probability": 0.375,
+          "probability": 0.415,
           "market_id": "4028016",
-          "best_bid": 0.37,
-          "best_ask": 0.38,
-          "best_bid_size": 1081.0,
-          "best_ask_size": 300.0
+          "best_bid": 0.41,
+          "best_ask": 0.42,
+          "best_bid_size": 1165.68,
+          "best_ask_size": 242550.16
         },
         {
           "name": "Pacers",
-          "probability": 0.625,
+          "probability": 0.585,
           "market_id": "4028016",
-          "best_bid": 0.62,
-          "best_ask": 0.63,
-          "best_bid_size": 300.0,
-          "best_ask_size": 1081.0
+          "best_bid": 0.58,
+          "best_ask": 0.59,
+          "best_bid_size": 242550.16,
+          "best_ask_size": 1165.68
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-was-ind-2026-11-11",
       "stats": {
-        "volume_24h_usd": 172.46,
-        "volume_total_usd": 196.35,
-        "liquidity_usd": 19555.13
+        "volume_24h_usd": 293.42,
+        "volume_total_usd": 321.55,
+        "liquidity_usd": 222593.3
       }
     },
     {
@@ -329,31 +176,31 @@
       "outcomes": [
         {
           "name": "Cavaliers",
-          "probability": 0.365,
+          "probability": 0.395,
           "market_id": "4028025",
-          "best_bid": 0.36,
-          "best_ask": 0.37,
-          "best_bid_size": 12087.62,
-          "best_ask_size": 0.77
+          "best_bid": 0.39,
+          "best_ask": 0.4,
+          "best_bid_size": 160545.43,
+          "best_ask_size": 247806.71
         },
         {
           "name": "Knicks",
-          "probability": 0.635,
+          "probability": 0.605,
           "market_id": "4028025",
-          "best_bid": 0.63,
-          "best_ask": 0.64,
-          "best_bid_size": 0.77,
-          "best_ask_size": 12087.62
+          "best_bid": 0.6,
+          "best_ask": 0.61,
+          "best_bid_size": 247806.71,
+          "best_ask_size": 160545.43
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-cle-nyk-2026-11-11",
       "stats": {
-        "volume_24h_usd": 1582.77,
-        "volume_total_usd": 1616.31,
-        "liquidity_usd": 13690.15
+        "volume_24h_usd": 4636.11,
+        "volume_total_usd": 4955.88,
+        "liquidity_usd": 197865.59
       }
     },
     {
@@ -367,31 +214,31 @@
       "outcomes": [
         {
           "name": "Celtics",
-          "probability": 0.645,
+          "probability": 0.715,
           "market_id": "4028029",
-          "best_bid": 0.64,
-          "best_ask": 0.65,
-          "best_bid_size": 500.0,
-          "best_ask_size": 406.0
+          "best_bid": 0.71,
+          "best_ask": 0.72,
+          "best_bid_size": 251550.0,
+          "best_ask_size": 101815.89
         },
         {
           "name": "Raptors",
-          "probability": 0.355,
+          "probability": 0.285,
           "market_id": "4028029",
-          "best_bid": 0.35,
-          "best_ask": 0.36,
-          "best_bid_size": 406.0,
-          "best_ask_size": 500.0
+          "best_bid": 0.28,
+          "best_ask": 0.29,
+          "best_bid_size": 101815.89,
+          "best_ask_size": 251550.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-bos-tor-2026-11-11",
       "stats": {
-        "volume_24h_usd": 372.83,
-        "volume_total_usd": 382.66,
-        "liquidity_usd": 26447.91
+        "volume_24h_usd": 1136.78,
+        "volume_total_usd": 1168.24,
+        "liquidity_usd": 295097.67
       }
     },
     {
@@ -405,31 +252,31 @@
       "outcomes": [
         {
           "name": "Lakers",
-          "probability": 0.885,
+          "probability": 0.835,
           "market_id": "4028008",
-          "best_bid": 0.88,
-          "best_ask": 0.89,
-          "best_bid_size": 500.0,
-          "best_ask_size": 647.85
+          "best_bid": 0.83,
+          "best_ask": 0.84,
+          "best_bid_size": 245676.07,
+          "best_ask_size": 47636.61
         },
         {
           "name": "Bucks",
-          "probability": 0.115,
+          "probability": 0.165,
           "market_id": "4028008",
-          "best_bid": 0.11,
-          "best_ask": 0.12,
-          "best_bid_size": 647.85,
-          "best_ask_size": 500.0
+          "best_bid": 0.16,
+          "best_ask": 0.17,
+          "best_bid_size": 47636.61,
+          "best_ask_size": 245676.07
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-lal-mil-2026-11-11",
       "stats": {
-        "volume_24h_usd": 715.49,
-        "volume_total_usd": 720.75,
-        "liquidity_usd": 37282.98
+        "volume_24h_usd": 1296.31,
+        "volume_total_usd": 1499.15,
+        "liquidity_usd": 295483.08
       }
     },
     {
@@ -447,8 +294,8 @@
           "market_id": "4028011",
           "best_bid": 0.36,
           "best_ask": 0.37,
-          "best_bid_size": 198.0,
-          "best_ask_size": 1000.0
+          "best_bid_size": 145178.11,
+          "best_ask_size": 251625.0
         },
         {
           "name": "Pelicans",
@@ -456,18 +303,18 @@
           "market_id": "4028011",
           "best_bid": 0.63,
           "best_ask": 0.64,
-          "best_bid_size": 1000.0,
-          "best_ask_size": 198.0
+          "best_bid_size": 251625.0,
+          "best_ask_size": 145178.11
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-bkn-nop-2026-11-11",
       "stats": {
-        "volume_24h_usd": 93.25,
-        "volume_total_usd": 95.69,
-        "liquidity_usd": 17554.21
+        "volume_24h_usd": 159.26,
+        "volume_total_usd": 179.13,
+        "liquidity_usd": 188363.89
       }
     },
     {
@@ -481,31 +328,31 @@
       "outcomes": [
         {
           "name": "Spurs",
-          "probability": 0.885,
+          "probability": 0.895,
           "market_id": "4028026",
-          "best_bid": 0.88,
-          "best_ask": 0.89,
-          "best_bid_size": 1000.0,
-          "best_ask_size": 2518.0
+          "best_bid": 0.89,
+          "best_ask": 0.9,
+          "best_bid_size": 234653.35,
+          "best_ask_size": 1780.57
         },
         {
           "name": "Bulls",
-          "probability": 0.115,
+          "probability": 0.105,
           "market_id": "4028026",
-          "best_bid": 0.11,
-          "best_ask": 0.12,
-          "best_bid_size": 2518.0,
-          "best_ask_size": 1000.0
+          "best_bid": 0.1,
+          "best_ask": 0.11,
+          "best_bid_size": 1780.57,
+          "best_ask_size": 234653.35
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-sas-chi-2026-11-11",
       "stats": {
-        "volume_24h_usd": 1320.63,
-        "volume_total_usd": 1526.51,
-        "liquidity_usd": 100429.19
+        "volume_24h_usd": 2389.17,
+        "volume_total_usd": 2813.24,
+        "liquidity_usd": 369158.74
       }
     },
     {
@@ -519,31 +366,31 @@
       "outcomes": [
         {
           "name": "Nuggets",
-          "probability": 0.585,
+          "probability": 0.595,
           "market_id": "4028291",
-          "best_bid": 0.58,
-          "best_ask": 0.59,
-          "best_bid_size": 10.0,
-          "best_ask_size": 196.43
+          "best_bid": 0.59,
+          "best_ask": 0.6,
+          "best_bid_size": 245039.85,
+          "best_ask_size": 165863.45
         },
         {
           "name": "Grizzlies",
-          "probability": 0.415,
+          "probability": 0.405,
           "market_id": "4028291",
-          "best_bid": 0.41,
-          "best_ask": 0.42,
-          "best_bid_size": 196.43,
-          "best_ask_size": 10.0
+          "best_bid": 0.4,
+          "best_ask": 0.41,
+          "best_bid_size": 165863.45,
+          "best_ask_size": 245039.85
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-den-mem-2026-11-11",
       "stats": {
-        "volume_24h_usd": 236.79,
-        "volume_total_usd": 263.66,
-        "liquidity_usd": 20164.39
+        "volume_24h_usd": 241.45,
+        "volume_total_usd": 380.32,
+        "liquidity_usd": 282988.45
       }
     },
     {
@@ -561,8 +408,8 @@
           "market_id": "4028023",
           "best_bid": 0.61,
           "best_ask": 0.62,
-          "best_bid_size": 10.0,
-          "best_ask_size": 50.0
+          "best_bid_size": 1289.02,
+          "best_ask_size": 154808.45
         },
         {
           "name": "Jazz",
@@ -570,94 +417,170 @@
           "market_id": "4028023",
           "best_bid": 0.38,
           "best_ask": 0.39,
-          "best_bid_size": 50.0,
-          "best_ask_size": 10.0
+          "best_bid_size": 154808.45,
+          "best_ask_size": 1289.02
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nba-orl-uta-2026-11-11",
       "stats": {
-        "volume_24h_usd": 59.98,
-        "volume_total_usd": 59.98,
-        "liquidity_usd": 5655.56
+        "volume_24h_usd": 71.57,
+        "volume_total_usd": 89.06,
+        "liquidity_usd": 267003.8
       }
     },
     {
-      "id": "predict-681002",
-      "title": "Counter-Strike: Legacy vs FURIA (BO3) - BLAST Rivals Group A",
-      "category": "esports",
-      "league": "其他电竞",
-      "best_of": 3,
-      "competition": "BLAST Rivals Group A",
-      "start_time": "2026-11-11T02:00:00Z",
+      "id": "predict-692452",
+      "title": "Warriors vs. Rockets",
+      "category": "basketball",
+      "league": "NBA",
+      "best_of": null,
+      "competition": null,
+      "start_time": "2026-11-12T02:30:00Z",
       "outcomes": [
         {
-          "name": "Legacy",
-          "probability": 0.275,
-          "market_id": "3944850",
-          "best_bid": 0.27,
-          "best_ask": 0.28,
-          "best_bid_size": 115829.92,
-          "best_ask_size": 14297.94
+          "name": "Warriors",
+          "probability": 0.335,
+          "market_id": "4028292",
+          "best_bid": 0.33,
+          "best_ask": 0.34,
+          "best_bid_size": 130061.23,
+          "best_ask_size": 251670.1
         },
         {
-          "name": "FURIA",
-          "probability": 0.725,
-          "market_id": "3944850",
-          "best_bid": 0.72,
-          "best_ask": 0.73,
-          "best_bid_size": 14297.94,
-          "best_ask_size": 115829.92
+          "name": "Rockets",
+          "probability": 0.665,
+          "market_id": "4028292",
+          "best_bid": 0.66,
+          "best_ask": 0.67,
+          "best_bid_size": 251670.1,
+          "best_ask_size": 130061.23
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
-      "source_url": "https://predict.fun/market/cs2-lgc-furia-2026-11-10",
+      "source_url": "https://predict.fun/market/nba-gsw-hou-2026-11-11",
       "stats": {
-        "volume_24h_usd": 13449.19,
-        "volume_total_usd": 14095.53,
-        "liquidity_usd": 91937.53
+        "volume_24h_usd": 2231.99,
+        "volume_total_usd": 3049.89,
+        "liquidity_usd": 153793.89
       }
     },
     {
-      "id": "predict-681489",
-      "title": "Counter-Strike: Vitality vs Team Falcons (BO3) - BLAST Rivals Group A",
-      "category": "esports",
-      "league": "其他电竞",
-      "best_of": 3,
-      "competition": "BLAST Rivals Group A",
-      "start_time": "2026-11-11T04:30:00Z",
+      "id": "predict-692449",
+      "title": "Thunder vs. Trail Blazers",
+      "category": "basketball",
+      "league": "NBA",
+      "best_of": null,
+      "competition": null,
+      "start_time": "2026-11-12T03:00:00Z",
       "outcomes": [
         {
-          "name": "Vitality",
-          "probability": 0.695,
-          "market_id": "3947606",
-          "best_bid": 0.69,
-          "best_ask": 0.7,
-          "best_bid_size": 1114.69,
-          "best_ask_size": 1220.83
+          "name": "Thunder",
+          "probability": 0.525,
+          "market_id": "4028287",
+          "best_bid": 0.52,
+          "best_ask": 0.53,
+          "best_bid_size": 497.92,
+          "best_ask_size": 38.86
         },
         {
-          "name": "Team Falcons",
-          "probability": 0.305,
-          "market_id": "3947606",
-          "best_bid": 0.3,
-          "best_ask": 0.31,
-          "best_bid_size": 1220.83,
-          "best_ask_size": 1114.69
+          "name": "Trail Blazers",
+          "probability": 0.475,
+          "market_id": "4028287",
+          "best_bid": 0.47,
+          "best_ask": 0.48,
+          "best_bid_size": 38.86,
+          "best_ask_size": 497.92
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
-      "source_url": "https://predict.fun/market/cs2-vit-fal2-2026-11-11",
+      "source_url": "https://predict.fun/market/nba-okc-por-2026-11-11",
       "stats": {
-        "volume_24h_usd": 1136.75,
-        "volume_total_usd": 2461.2,
-        "liquidity_usd": 181013.62
+        "volume_24h_usd": 3264.35,
+        "volume_total_usd": 3409.32,
+        "liquidity_usd": 239077.23
+      }
+    },
+    {
+      "id": "predict-692437",
+      "title": "Pistons vs. Wizards",
+      "category": "basketball",
+      "league": "NBA",
+      "best_of": null,
+      "competition": null,
+      "start_time": "2026-11-13T00:00:00Z",
+      "outcomes": [
+        {
+          "name": "Pistons",
+          "probability": 0.775,
+          "market_id": "4028275",
+          "best_bid": 0.77,
+          "best_ask": 0.78,
+          "best_bid_size": 300.0,
+          "best_ask_size": 205.0
+        },
+        {
+          "name": "Wizards",
+          "probability": 0.225,
+          "market_id": "4028275",
+          "best_bid": 0.22,
+          "best_ask": 0.23,
+          "best_bid_size": 205.0,
+          "best_ask_size": 300.0
+        }
+      ],
+      "checked_at": "2026-11-11T05:43:48Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-det-was-2026-11-12",
+      "stats": {
+        "volume_24h_usd": 53.56,
+        "volume_total_usd": 56.16,
+        "liquidity_usd": 10323.46
+      }
+    },
+    {
+      "id": "predict-692441",
+      "title": "Raptors vs. 76ers",
+      "category": "basketball",
+      "league": "NBA",
+      "best_of": null,
+      "competition": null,
+      "start_time": "2026-11-13T00:00:00Z",
+      "outcomes": [
+        {
+          "name": "Raptors",
+          "probability": 0.185,
+          "market_id": "4028279",
+          "best_bid": 0.18,
+          "best_ask": 0.19,
+          "best_bid_size": 7.0,
+          "best_ask_size": 1796.37
+        },
+        {
+          "name": "76ers",
+          "probability": 0.815,
+          "market_id": "4028279",
+          "best_bid": 0.81,
+          "best_ask": 0.82,
+          "best_bid_size": 1796.37,
+          "best_ask_size": 7.0
+        }
+      ],
+      "checked_at": "2026-11-11T05:43:48Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/nba-tor-phi-2026-11-12",
+      "stats": {
+        "volume_24h_usd": 594.47,
+        "volume_total_usd": 598.86,
+        "liquidity_usd": 4067.28
       }
     },
     {
@@ -675,8 +598,8 @@
           "market_id": "3949882",
           "best_bid": 0.83,
           "best_ask": 0.84,
-          "best_bid_size": 460.24,
-          "best_ask_size": 6423.0
+          "best_bid_size": 854.04,
+          "best_ask_size": 8205.2
         },
         {
           "name": "FUT Esports",
@@ -684,18 +607,18 @@
           "market_id": "3949882",
           "best_bid": 0.16,
           "best_ask": 0.17,
-          "best_bid_size": 6423.0,
-          "best_ask_size": 460.24
+          "best_bid_size": 8205.2,
+          "best_ask_size": 854.04
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-ts7-fut-2026-11-11",
       "stats": {
-        "volume_24h_usd": 48229.04,
-        "volume_total_usd": 59353.6,
-        "liquidity_usd": 245072.0
+        "volume_24h_usd": 57762.03,
+        "volume_total_usd": 69510.24,
+        "liquidity_usd": 320952.4
       }
     },
     {
@@ -709,31 +632,31 @@
       "outcomes": [
         {
           "name": "UPGRADE",
-          "probability": 0.57,
+          "probability": 0.56,
           "market_id": "4458813",
           "best_bid": 0.54,
-          "best_ask": 0.6,
-          "best_bid_size": 247.0,
-          "best_ask_size": 1020.0
+          "best_ask": 0.58,
+          "best_bid_size": 292.47,
+          "best_ask_size": 400.0
         },
         {
           "name": "Butterfly",
-          "probability": 0.43,
+          "probability": 0.44,
           "market_id": "4458813",
-          "best_bid": 0.4,
+          "best_bid": 0.42,
           "best_ask": 0.46,
-          "best_bid_size": 1020.0,
-          "best_ask_size": 247.0
+          "best_bid_size": 400.0,
+          "best_ask_size": 292.47
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-upgrad-btf-2026-11-11",
       "stats": {
         "volume_24h_usd": 2.62,
         "volume_total_usd": 2.62,
-        "liquidity_usd": 6008.1
+        "liquidity_usd": 6515.27
       }
     },
     {
@@ -747,29 +670,29 @@
       "outcomes": [
         {
           "name": "ex-RUSTEC",
-          "probability": 0.57,
+          "probability": 0.6,
           "market_id": "4460020",
-          "best_bid": 0.52,
+          "best_bid": 0.58,
           "best_ask": 0.62,
-          "best_bid_size": 486.09,
+          "best_bid_size": 300.0,
           "best_ask_size": 600.0
         },
         {
           "name": "Sökerorg",
-          "probability": 0.43,
+          "probability": 0.4,
           "market_id": "4460020",
           "best_bid": 0.38,
-          "best_ask": 0.48,
+          "best_ask": 0.42,
           "best_bid_size": 600.0,
-          "best_ask_size": 486.09
+          "best_ask_size": 300.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-rustec-skr2-2026-11-11",
       "stats": {
-        "liquidity_usd": 3712.65
+        "liquidity_usd": 5703.83
       }
     },
     {
@@ -783,31 +706,31 @@
       "outcomes": [
         {
           "name": "MOUZ",
-          "probability": 0.775,
+          "probability": 0.785,
           "market_id": "3951085",
-          "best_bid": 0.77,
-          "best_ask": 0.78,
-          "best_bid_size": 2197.67,
-          "best_ask_size": 1618.8
+          "best_bid": 0.78,
+          "best_ask": 0.79,
+          "best_bid_size": 4423.22,
+          "best_ask_size": 501.74
         },
         {
           "name": "G2",
-          "probability": 0.225,
+          "probability": 0.215,
           "market_id": "3951085",
-          "best_bid": 0.22,
-          "best_ask": 0.23,
-          "best_bid_size": 1618.8,
-          "best_ask_size": 2197.67
+          "best_bid": 0.21,
+          "best_ask": 0.22,
+          "best_bid_size": 501.74,
+          "best_ask_size": 4423.22
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-mouz-g2-2026-11-11",
       "stats": {
-        "volume_24h_usd": 4033.99,
-        "volume_total_usd": 5217.98,
-        "liquidity_usd": 208069.71
+        "volume_24h_usd": 23545.77,
+        "volume_total_usd": 25082.25,
+        "liquidity_usd": 124762.62
       }
     },
     {
@@ -821,29 +744,29 @@
       "outcomes": [
         {
           "name": "PuckChamp",
-          "probability": 0.445,
+          "probability": 0.555,
           "market_id": "4459312",
-          "best_bid": 0.42,
-          "best_ask": 0.47,
-          "best_bid_size": 83.38,
-          "best_ask_size": 3.31
+          "best_bid": 0.51,
+          "best_ask": 0.6,
+          "best_bid_size": 700.0,
+          "best_ask_size": 144.0
         },
         {
           "name": "Spirit Academy",
-          "probability": 0.555,
+          "probability": 0.445,
           "market_id": "4459312",
-          "best_bid": 0.53,
-          "best_ask": 0.58,
-          "best_bid_size": 3.31,
-          "best_ask_size": 83.38
+          "best_bid": 0.4,
+          "best_ask": 0.49,
+          "best_bid_size": 144.0,
+          "best_ask_size": 700.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/dota2-pckcp-spirit1-2026-11-11",
       "stats": {
-        "liquidity_usd": 868.35
+        "liquidity_usd": 1407.92
       }
     },
     {
@@ -857,29 +780,31 @@
       "outcomes": [
         {
           "name": "Xipto Esports",
-          "probability": 0.335,
+          "probability": 0.345,
           "market_id": "4483947",
-          "best_bid": 0.33,
-          "best_ask": 0.34,
-          "best_bid_size": 144.23,
-          "best_ask_size": 178.47
+          "best_bid": 0.34,
+          "best_ask": 0.35,
+          "best_bid_size": 1200.0,
+          "best_ask_size": 486.56
         },
         {
           "name": "LEGION",
-          "probability": 0.665,
+          "probability": 0.655,
           "market_id": "4483947",
-          "best_bid": 0.66,
-          "best_ask": 0.67,
-          "best_bid_size": 178.47,
-          "best_ask_size": 144.23
+          "best_bid": 0.65,
+          "best_ask": 0.66,
+          "best_bid_size": 486.56,
+          "best_ask_size": 1200.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/dota2-xe-legion1-2026-11-11",
       "stats": {
-        "liquidity_usd": 3240.03
+        "volume_24h_usd": 8.74,
+        "volume_total_usd": 8.74,
+        "liquidity_usd": 7682.45
       }
     },
     {
@@ -893,29 +818,29 @@
       "outcomes": [
         {
           "name": "G2 Ares",
-          "probability": 0.465,
+          "probability": 0.46,
           "market_id": "4386941",
-          "best_bid": 0.44,
+          "best_bid": 0.43,
           "best_ask": 0.49,
-          "best_bid_size": 85.0,
+          "best_bid_size": 429.26,
           "best_ask_size": 500.0
         },
         {
           "name": "Lunacy Team",
-          "probability": 0.535,
+          "probability": 0.54,
           "market_id": "4386941",
           "best_bid": 0.51,
-          "best_ask": 0.56,
+          "best_ask": 0.57,
           "best_bid_size": 500.0,
-          "best_ask_size": 85.0
+          "best_ask_size": 429.26
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-g2a-lt-2026-11-11",
       "stats": {
-        "liquidity_usd": 1553.26
+        "liquidity_usd": 2257.29
       }
     },
     {
@@ -929,29 +854,29 @@
       "outcomes": [
         {
           "name": "EAC",
-          "probability": 0.345,
+          "probability": 0.35,
           "market_id": "4444545",
           "best_bid": 0.31,
-          "best_ask": 0.38,
-          "best_bid_size": 83.0,
-          "best_ask_size": 450.73
+          "best_ask": 0.39,
+          "best_bid_size": 465.7,
+          "best_ask_size": 236.0
         },
         {
           "name": "Eyeballers",
-          "probability": 0.655,
+          "probability": 0.65,
           "market_id": "4444545",
-          "best_bid": 0.62,
+          "best_bid": 0.61,
           "best_ask": 0.69,
-          "best_bid_size": 450.73,
-          "best_ask_size": 83.0
+          "best_bid_size": 236.0,
+          "best_ask_size": 465.7
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-eac-eye-2026-11-11",
       "stats": {
-        "liquidity_usd": 1180.52
+        "liquidity_usd": 1305.01
       }
     },
     {
@@ -965,29 +890,29 @@
       "outcomes": [
         {
           "name": "Phantom",
-          "probability": 0.84,
+          "probability": 0.825,
           "market_id": "4458830",
-          "best_bid": 0.82,
+          "best_bid": 0.79,
           "best_ask": 0.86,
-          "best_bid_size": 481.85,
-          "best_ask_size": 599.0
+          "best_bid_size": 14.99,
+          "best_ask_size": 800.26
         },
         {
           "name": "Drama eSports",
-          "probability": 0.16,
+          "probability": 0.175,
           "market_id": "4458830",
           "best_bid": 0.14,
-          "best_ask": 0.18,
-          "best_bid_size": 599.0,
-          "best_ask_size": 481.85
+          "best_ask": 0.21,
+          "best_bid_size": 800.26,
+          "best_ask_size": 14.99
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-pha-drama-2026-11-11",
       "stats": {
-        "liquidity_usd": 8000.7
+        "liquidity_usd": 5906.21
       }
     },
     {
@@ -1001,31 +926,103 @@
       "outcomes": [
         {
           "name": "GenOne",
-          "probability": 0.515,
+          "probability": 0.525,
           "market_id": "4459365",
-          "best_bid": 0.5,
+          "best_bid": 0.52,
           "best_ask": 0.53,
-          "best_bid_size": 258.0,
+          "best_bid_size": 54.92,
           "best_ask_size": 200.0
         },
         {
           "name": "Inner Circle Academy",
-          "probability": 0.485,
+          "probability": 0.475,
           "market_id": "4459365",
           "best_bid": 0.47,
-          "best_ask": 0.5,
+          "best_ask": 0.48,
           "best_bid_size": 200.0,
-          "best_ask_size": 258.0
+          "best_ask_size": 54.92
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cs2-g1-innerc-2026-11-11",
       "stats": {
         "volume_24h_usd": 3.55,
         "volume_total_usd": 3.58,
-        "liquidity_usd": 3624.31
+        "liquidity_usd": 5284.71
+      }
+    },
+    {
+      "id": "predict-742212",
+      "title": "Counter-Strike: Nexus vs MOUZ NXT (BO3) - CCT Europe Group Stage",
+      "category": "esports",
+      "league": "其他电竞",
+      "best_of": 3,
+      "competition": "CCT Europe Group Stage",
+      "start_time": "2026-11-11T12:00:00Z",
+      "outcomes": [
+        {
+          "name": "Nexus",
+          "probability": 0.76,
+          "market_id": "4459966",
+          "best_bid": 0.75,
+          "best_ask": 0.77,
+          "best_bid_size": 496.0,
+          "best_ask_size": 78.0
+        },
+        {
+          "name": "mouz NXT",
+          "probability": 0.24,
+          "market_id": "4459966",
+          "best_bid": 0.23,
+          "best_ask": 0.25,
+          "best_bid_size": 78.0,
+          "best_ask_size": 496.0
+        }
+      ],
+      "checked_at": "2026-11-11T05:43:48Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/cs2-nxs1-mouzn-2026-11-11",
+      "stats": {
+        "liquidity_usd": 6999.37
+      }
+    },
+    {
+      "id": "predict-742029",
+      "title": "Dota 2: Inner Circle vs Xipto Esports (BO3) - Asgard Championship Group A",
+      "category": "esports",
+      "league": "其他电竞",
+      "best_of": 3,
+      "competition": "Asgard Championship Group A",
+      "start_time": "2026-11-11T13:00:00Z",
+      "outcomes": [
+        {
+          "name": "Inner Circle",
+          "probability": 0.395,
+          "market_id": "4459270",
+          "best_bid": 0.36,
+          "best_ask": 0.43,
+          "best_bid_size": 603.58,
+          "best_ask_size": 40.88
+        },
+        {
+          "name": "Xipto Esports",
+          "probability": 0.605,
+          "market_id": "4459270",
+          "best_bid": 0.57,
+          "best_ask": 0.64,
+          "best_bid_size": 40.88,
+          "best_ask_size": 603.58
+        }
+      ],
+      "checked_at": "2026-11-11T05:43:48Z",
+      "verification": "open_match_winner_market",
+      "provider": "predict",
+      "source_url": "https://predict.fun/market/dota2-ic-xe-2026-11-11",
+      "stats": {
+        "liquidity_usd": 1387.13
       }
     },
     {
@@ -1039,31 +1036,31 @@
       "outcomes": [
         {
           "name": "Alejandro Tabilo",
-          "probability": 0.415,
+          "probability": 0.41,
           "market_id": "4480139",
-          "best_bid": 0.41,
+          "best_bid": 0.4,
           "best_ask": 0.42,
-          "best_bid_size": 17.34,
-          "best_ask_size": 169.08
+          "best_bid_size": 1001.92,
+          "best_ask_size": 288.0
         },
         {
           "name": "Lorenzo Sonego",
-          "probability": 0.585,
+          "probability": 0.59,
           "market_id": "4480139",
           "best_bid": 0.58,
-          "best_ask": 0.59,
-          "best_bid_size": 169.08,
-          "best_ask_size": 17.34
+          "best_ask": 0.6,
+          "best_bid_size": 288.0,
+          "best_ask_size": 1001.92
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-sonego-tabilo-2026-11-11",
       "stats": {
-        "volume_24h_usd": 171.37,
-        "volume_total_usd": 171.37,
-        "liquidity_usd": 17795.26
+        "volume_24h_usd": 253.88,
+        "volume_total_usd": 253.88,
+        "liquidity_usd": 19861.02
       }
     },
     {
@@ -1081,8 +1078,8 @@
           "market_id": "4455482",
           "best_bid": 0.25,
           "best_ask": 0.26,
-          "best_bid_size": 555.13,
-          "best_ask_size": 558.06
+          "best_bid_size": 474.8,
+          "best_ask_size": 584.16
         },
         {
           "name": "Taylor Fritz",
@@ -1090,18 +1087,18 @@
           "market_id": "4455482",
           "best_bid": 0.74,
           "best_ask": 0.75,
-          "best_bid_size": 558.06,
-          "best_ask_size": 555.13
+          "best_bid_size": 584.16,
+          "best_ask_size": 474.8
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-fritz-norrie-2026-11-11",
       "stats": {
         "volume_24h_usd": 7.72,
         "volume_total_usd": 7.72,
-        "liquidity_usd": 23574.77
+        "liquidity_usd": 27365.2
       }
     },
     {
@@ -1119,8 +1116,8 @@
           "market_id": "4455484",
           "best_bid": 0.66,
           "best_ask": 0.67,
-          "best_bid_size": 1002.55,
-          "best_ask_size": 21.03
+          "best_bid_size": 943.72,
+          "best_ask_size": 306.1
         },
         {
           "name": "Borna Gojo",
@@ -1128,18 +1125,18 @@
           "market_id": "4455484",
           "best_bid": 0.33,
           "best_ask": 0.34,
-          "best_bid_size": 21.03,
-          "best_ask_size": 1002.55
+          "best_bid_size": 306.1,
+          "best_ask_size": 943.72
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-gojo-humbert-2026-11-11",
       "stats": {
-        "volume_24h_usd": 104.13,
-        "volume_total_usd": 104.13,
-        "liquidity_usd": 13557.45
+        "volume_24h_usd": 119.06,
+        "volume_total_usd": 119.06,
+        "liquidity_usd": 17484.15
       }
     },
     {
@@ -1153,29 +1150,29 @@
       "outcomes": [
         {
           "name": "Casper Ruud",
-          "probability": 0.775,
+          "probability": 0.78,
           "market_id": "4480133",
           "best_bid": 0.77,
-          "best_ask": 0.78,
-          "best_bid_size": 176.25,
-          "best_ask_size": 177.09
+          "best_ask": 0.79,
+          "best_bid_size": 754.99,
+          "best_ask_size": 1102.38
         },
         {
           "name": "Alexander Shevchenko",
-          "probability": 0.225,
+          "probability": 0.22,
           "market_id": "4480133",
-          "best_bid": 0.22,
+          "best_bid": 0.21,
           "best_ask": 0.23,
-          "best_bid_size": 177.09,
-          "best_ask_size": 176.25
+          "best_bid_size": 1102.38,
+          "best_ask_size": 754.99
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-shevche-ruud-2026-11-11",
       "stats": {
-        "liquidity_usd": 11044.6
+        "liquidity_usd": 12230.94
       }
     },
     {
@@ -1189,29 +1186,29 @@
       "outcomes": [
         {
           "name": "Miomir Kecmanovic",
-          "probability": 0.285,
+          "probability": 0.295,
           "market_id": "4484699",
           "best_bid": 0.26,
-          "best_ask": 0.31,
-          "best_bid_size": 146.16,
-          "best_ask_size": 21.73
+          "best_ask": 0.33,
+          "best_bid_size": 140.91,
+          "best_ask_size": 1406.82
         },
         {
           "name": "Holger Rune",
-          "probability": 0.715,
+          "probability": 0.705,
           "market_id": "4484699",
-          "best_bid": 0.69,
+          "best_bid": 0.67,
           "best_ask": 0.74,
-          "best_bid_size": 21.73,
-          "best_ask_size": 146.16
+          "best_bid_size": 1406.82,
+          "best_ask_size": 140.91
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/atp-kecmano-rune-2026-11-11",
       "stats": {
-        "liquidity_usd": 3555.13
+        "liquidity_usd": 8866.35
       }
     },
     {
@@ -1225,31 +1222,31 @@
       "outcomes": [
         {
           "name": "Karolina Muchova",
-          "probability": 0.575,
+          "probability": 0.585,
           "market_id": "4390830",
-          "best_bid": 0.57,
-          "best_ask": 0.58,
-          "best_bid_size": 506.66,
-          "best_ask_size": 469.08
+          "best_bid": 0.58,
+          "best_ask": 0.59,
+          "best_bid_size": 389.08,
+          "best_ask_size": 1027.02
         },
         {
           "name": "Elina Svitolina",
-          "probability": 0.425,
+          "probability": 0.415,
           "market_id": "4390830",
-          "best_bid": 0.42,
-          "best_ask": 0.43,
-          "best_bid_size": 469.08,
-          "best_ask_size": 506.66
+          "best_bid": 0.41,
+          "best_ask": 0.42,
+          "best_bid_size": 1027.02,
+          "best_ask_size": 389.08
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/wta-svitoli-muchova-2026-11-10",
       "stats": {
         "volume_24h_usd": 40.47,
         "volume_total_usd": 40.47,
-        "liquidity_usd": 14716.15
+        "liquidity_usd": 19209.46
       }
     },
     {
@@ -1267,8 +1264,8 @@
           "market_id": "4390720",
           "best_bid": 0.49,
           "best_ask": 0.5,
-          "best_bid_size": 318.6,
-          "best_ask_size": 930.6
+          "best_bid_size": 468.6,
+          "best_ask_size": 935.6
         },
         {
           "name": "Aryna Sabalenka",
@@ -1276,18 +1273,18 @@
           "market_id": "4390720",
           "best_bid": 0.5,
           "best_ask": 0.51,
-          "best_bid_size": 930.6,
-          "best_ask_size": 318.6
+          "best_bid_size": 935.6,
+          "best_ask_size": 468.6
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/wta-sabalen-andreev-2026-11-10",
       "stats": {
         "volume_24h_usd": 18.18,
         "volume_total_usd": 18.18,
-        "liquidity_usd": 16047.73
+        "liquidity_usd": 19784.1
       }
     },
     {
@@ -1301,29 +1298,29 @@
       "outcomes": [
         {
           "name": "Rockets",
-          "probability": 0.845,
+          "probability": 0.84,
           "market_id": "4182970",
-          "best_bid": 0.84,
+          "best_bid": 0.83,
           "best_ask": 0.85,
-          "best_bid_size": 233.0,
-          "best_ask_size": 2356.04
+          "best_bid_size": 2924.04,
+          "best_ask_size": 57330.68
         },
         {
           "name": "Minutemen",
-          "probability": 0.155,
+          "probability": 0.16,
           "market_id": "4182970",
           "best_bid": 0.15,
-          "best_ask": 0.16,
-          "best_bid_size": 2356.04,
-          "best_ask_size": 233.0
+          "best_ask": 0.17,
+          "best_bid_size": 57330.68,
+          "best_ask_size": 2924.04
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cfb-umass-toledo-2026-11-11",
       "stats": {
-        "liquidity_usd": 21631.53
+        "liquidity_usd": 36069.83
       }
     },
     {
@@ -1341,8 +1338,8 @@
           "market_id": "4183368",
           "best_bid": 0.1,
           "best_ask": 0.11,
-          "best_bid_size": 2340.0,
-          "best_ask_size": 341.0
+          "best_bid_size": 3271.94,
+          "best_ask_size": 2349.0
         },
         {
           "name": "Chippewas",
@@ -1350,16 +1347,16 @@
           "market_id": "4183368",
           "best_bid": 0.89,
           "best_ask": 0.9,
-          "best_bid_size": 341.0,
-          "best_ask_size": 2340.0
+          "best_bid_size": 2349.0,
+          "best_ask_size": 3271.94
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cfb-sacst-cmich-2026-11-11",
       "stats": {
-        "liquidity_usd": 11996.03
+        "liquidity_usd": 21503.21
       }
     },
     {
@@ -1373,29 +1370,29 @@
       "outcomes": [
         {
           "name": "Cardinals",
-          "probability": 0.455,
+          "probability": 0.475,
           "market_id": "4184116",
-          "best_bid": 0.45,
-          "best_ask": 0.46,
-          "best_bid_size": 2350.0,
-          "best_ask_size": 2416.0
+          "best_bid": 0.47,
+          "best_ask": 0.48,
+          "best_bid_size": 2422.01,
+          "best_ask_size": 2284.0
         },
         {
           "name": "Bulls",
-          "probability": 0.545,
+          "probability": 0.525,
           "market_id": "4184116",
-          "best_bid": 0.54,
-          "best_ask": 0.55,
-          "best_bid_size": 2416.0,
-          "best_ask_size": 2350.0
+          "best_bid": 0.52,
+          "best_ask": 0.53,
+          "best_bid_size": 2284.0,
+          "best_ask_size": 2422.01
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cfb-buf-ballst-2026-11-11",
       "stats": {
-        "liquidity_usd": 65603.89
+        "liquidity_usd": 103362.71
       }
     },
     {
@@ -1413,8 +1410,8 @@
           "market_id": "4183788",
           "best_bid": 0.61,
           "best_ask": 0.63,
-          "best_bid_size": 100.0,
-          "best_ask_size": 234.0
+          "best_bid_size": 112.35,
+          "best_ask_size": 279.35
         },
         {
           "name": "Bulls",
@@ -1422,16 +1419,16 @@
           "market_id": "4183788",
           "best_bid": 0.37,
           "best_ask": 0.39,
-          "best_bid_size": 234.0,
-          "best_ask_size": 100.0
+          "best_bid_size": 279.35,
+          "best_ask_size": 112.35
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/cfb-mphs-sfl-2026-11-12",
       "stats": {
-        "liquidity_usd": 3457.62
+        "liquidity_usd": 3599.52
       }
     },
     {
@@ -1449,8 +1446,8 @@
           "market_id": "3704415",
           "best_bid": 0.56,
           "best_ask": 0.57,
-          "best_bid_size": 116.0,
-          "best_ask_size": 128.09
+          "best_bid_size": 2371.0,
+          "best_ask_size": 2383.09
         },
         {
           "name": "Washington Commanders",
@@ -1458,16 +1455,16 @@
           "market_id": "3704415",
           "best_bid": 0.43,
           "best_ask": 0.44,
-          "best_bid_size": 128.09,
-          "best_ask_size": 116.0
+          "best_bid_size": 2383.09,
+          "best_ask_size": 2371.0
         }
       ],
-      "checked_at": "2026-11-11T01:16:01Z",
+      "checked_at": "2026-11-11T05:43:48Z",
       "verification": "open_match_winner_market",
       "provider": "predict",
       "source_url": "https://predict.fun/market/nfl-was-nyg-2026-11-13",
       "stats": {
-        "liquidity_usd": 12694.32
+        "liquidity_usd": 14843.06
       }
     }
   ],
