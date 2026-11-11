@@ -102,6 +102,9 @@ function stage(value,sport,language='zh'){
  const raw=blank(value);
  if(!raw||language!=='zh')return raw;
  if(sport==='chess'){
+   // A chess stage can be a player pairing rather than a named round.
+   // Preserve both proper names and label the stage in Chinese.
+   if(/\b(?:vs\.?|versus)\b/i.test(raw)&&!/[\u3400-\u9fff]/.test(raw))return '对局：'+raw;
    return raw.replace(/\b(?:Round|Ronda|Ronde)\s*(?:[:：]\s*)?(\d+)\b/gi,'第$1轮')
     .replace(/\bGame\s*(\d+)\b/gi,'第$1局')
     .replace(/\bMatch\s*(\d+)\b/gi,'第$1场')
