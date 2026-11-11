@@ -4,7 +4,7 @@
 var box=document.getElementById("lyx-review-spot");if(!box)return;
 var weights=[.30,.20,.20,.10,.10,.10];
 function txt(node,s){if(node)node.textContent=s}
-function safeIcon(url){url=String(url||"");return /^assets\/lyx\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(url)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(url)?url:"assets/lyx/shangdaoji.svg"}
+function safeIcon(url){url=String(url||"");return /^assets\/(?:lyx|collabs)\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(url)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(url)?url:"assets/lyx/shangdaoji.svg"}
 fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(6500)})
 .then(function(r){if(!r.ok)throw Error("Worker HTTP "+r.status);return r.json()})
 .then(function(d){if(!d.ok)throw Error(d.error||"Worker failed");return d})
