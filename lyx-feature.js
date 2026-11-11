@@ -5,8 +5,10 @@ var box=document.getElementById("lyx-review-spot");if(!box)return;
 var weights=[.30,.20,.20,.10,.10,.10];
 function txt(node,s){if(node)node.textContent=s}
 function safeIcon(url){url=String(url||"");return /^assets\/lyx\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(url)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(url)?url:"assets/lyx/shangdaoji.svg"}
-fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"})
-.then(function(r){if(!r.ok)throw Error("HTTP "+r.status);return r.json()})
+fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(6500)})
+.then(function(r){if(!r.ok)throw Error("Worker HTTP "+r.status);return r.json()})
+.then(function(d){if(!d.ok)throw Error(d.error||"Worker failed");return d})
+.catch(function(){return fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw Error("HTTP "+r.status);return r.json()})})
 .then(function(d){
  var items=(Array.isArray(d.reviews)?d.reviews:[]).filter(function(a){return a&&a.status==="published"}).sort(function(a,b){return Number(a.order||999)-Number(b.order||999)});
  if(!items.length){box.querySelector(".lyx-preview").hidden=true;txt(box.querySelector(".lyx-micro"),"暂无公开评测，进入中心可查看后续更新。");return}
