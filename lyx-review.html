@@ -76,6 +76,23 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 #posterDialog .poster-actions button:disabled{opacity:.45;cursor:not-allowed}
 #posterDialog .poster-foot{font-size:11px;color:#9ebadd;line-height:1.65;margin:10px 0 0;text-align:center}
 @media(max-width:420px){#posterDialog{padding:12px}#posterDialog .poster-image-frame{max-width:100%}#posterDialog .poster-actions button{font-size:12px;padding:11px 5px}}
+
+/* Partner apps: compact guide cards, preserving the original featured review. */
+.review-method-note{max-width:890px;margin:0 auto 18px;padding:13px 16px;border:1px solid #7cafe65b;border-radius:14px;background:#15356278;color:#c5dcf4;font-size:12px;line-height:1.85}
+.review-bucket-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:30px auto 13px;max-width:890px}
+.review-bucket-head h2{font-size:19px;margin:0 0 5px;color:#f6faff}
+.review-bucket-head p{color:#a9cbef;font-size:12px;margin:0;line-height:1.65}
+.review-bucket-head a{font-size:12px;color:#a0dcff;white-space:nowrap}
+.review-grid{max-width:890px;margin:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.mini-review{width:100%;padding:15px;display:flex;gap:12px;align-items:flex-start;text-align:left;font:inherit;color:#f2f8ff;background:linear-gradient(145deg,#163b7e,#091b48 86%);border:1px solid #6da9f077;border-radius:16px;cursor:pointer;min-width:0;box-shadow:inset 0 1px #fff2}
+.mini-review:hover,.mini-review:focus-visible{border-color:#8cecff;box-shadow:0 0 19px #248dff47}
+.mini-review .app-photo{width:58px;height:58px;flex-shrink:0;object-fit:cover;border-radius:14px;background:#f6f8ff}
+.mini-review .mini-body{min-width:0;flex:1}
+.mini-review .mini-name{display:block;font-size:15px;font-weight:850;line-height:1.45;margin-bottom:5px;overflow-wrap:anywhere}
+.mini-review .mini-meta{font-size:11px;color:#afd0ee;line-height:1.65;display:block}
+.mini-review .mini-flag{font-size:10px;color:#a9e5ff;display:block;margin-top:7px}
+.mini-review .mini-score{display:grid;place-items:center;min-width:57px;min-height:57px;border-radius:50%;border:3px solid #65cbfc;box-shadow:0 0 0 2px #5688e5;background:#071e4c;font-size:24px;font-weight:900;font-variant-numeric:tabular-nums}
+@media(max-width:620px){.review-grid{grid-template-columns:1fr}.mini-review{padding:13px}.review-bucket-head{align-items:flex-start}.review-bucket-head h2{font-size:18px}}
 </style>
 </head>
 <body>
@@ -84,6 +101,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 <main>
 <section class="page" id="listView" aria-label="良友APP指南评测列表">
 <div class="lead"><div class="kicker">LIANGYOU TECH · APP DISCOVERY &amp; REVIEWS</div><h1>良友APP指南<span class="guide-en">Amazing Guide</span></h1><p>良友科技原创 · APP 综合体验评价标准<br>从真实功能、使用效率到系统适配，六个维度评估应用体验</p><div class="chips"><span class="chip">六维加权评分</span><span class="chip">独立体验简评</span><span class="chip">透明推荐等级</span></div></div>
+<p class="review-method-note">联名收录说明：以下联名应用为基于公开产品资料的编辑初评，未完成逐项真机实测；稳定性和隐私表现仍待核验。联名合作不作为评分加分项，分数及结论会随验证结果调整。</p>
 <div id="reviewList" aria-live="polite" style="max-width:890px;margin:auto;color:#bcdaf5">正在载入已发布评测…</div>
 <div class="home-bottom">
 <div class="panel mini"><h3>✦ LYX 体验推荐等级</h3><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div></div>
@@ -125,13 +143,17 @@ var WEIGHTS=[.30,.20,.20,.10,.10,.10],REVIEWS=[],CURRENT=null;
 var list=document.getElementById("listView"),detail=document.getElementById("detailView"),listNode=document.getElementById("reviewList"),svg=document.getElementById("radar");
 var dialog=document.getElementById("standardDialog");
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
-function icon(v){v=String(v||"");return (/^assets\/lyx\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(v)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(v))?v:"assets/lyx/shangdaoji.svg"}
+function icon(v){v=String(v||"");return (/^assets\/(?:lyx|collabs)\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(v)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(v))?v:"assets/lyx/shangdaoji.svg"}
 function scoresOf(r){return Array.from({length:6},function(_,i){return Math.max(0,Math.min(100,Number(r.scores&&r.scores[i])||0))})}
 function result(r){return scoresOf(r).reduce(function(n,s,i){return n+s*WEIGHTS[i]},0)}
 function tier(s){if(s>=90)return ["旗舰推荐","90–100"];if(s>=85)return ["优选推荐","85–89"];if(s>=80)return ["值得尝试","80–84"];if(s>=70)return ["可以尝试","70–79"];return ["暂不推荐","70 以下"]}
 function image(r){return '<img class="app-icon app-photo" src="'+esc(icon(r.icon))+'" alt="'+esc(r.name)+' 应用图标" loading="lazy">'}
 function card(r){var s=result(r),t=tier(s);return '<article class="panel feature review-card"><div class="feature-head"><b>良友APP指南 · 应用体验档案</b><span class="highlight">'+t[0]+'</span></div><div class="feature-main"><div><div class="app-title">'+image(r)+'<div><h2>'+esc(r.name)+'</h2><div class="subtitle">'+esc(r.category||"应用")+' · '+esc(r.subtitle||"体验评测")+'<br>'+esc(r.version||"")+' · '+esc(r.platform||"")+'</div></div></div><p class="app-desc">'+esc(r.summary||"查看完整评测，了解应用功能及使用体验。")+'</p><div class="tags">'+(Array.isArray(r.tags)?r.tags:[]).slice(0,6).map(function(t){return '<span>'+esc(t)+'</span>'}).join("")+'</div></div><div class="score-side"><div class="score-ring"><div class="score-core"><b>'+s.toFixed(0)+'</b><span>/ 100</span></div></div><div class="score-name">'+t[0]+'</div><div class="note">LYX '+s.toFixed(1)+' 分</div></div></div><div class="feature-actions"><button class="act" type="button" data-review-id="'+esc(r.id)+'">查看完整评测　›</button><span class="note">六维雷达图 · 加权评分 · 良友简评</span></div></article>'}
-function renderList(){if(!REVIEWS.length){listNode.innerHTML='<div class="panel review-empty">目前还没有已发布的评测。</div>';return}listNode.innerHTML=REVIEWS.map(card).join("")}
+function isPartner(r){return Array.isArray(r.tags)&&r.tags.includes("良友联名")}
+function miniCard(r){var s=result(r);return '<button class="mini-review" type="button" data-review-id="'+esc(r.id)+'" aria-label="查看'+esc(r.name)+'的初评详情"><img class="app-photo" src="'+esc(icon(r.icon))+'" alt="" loading="lazy"><span class="mini-body"><strong class="mini-name">'+esc(r.name)+'</strong><span class="mini-meta">'+esc(r.category||"应用")+' · '+esc(r.subtitle||"应用指南")+'</span><span class="mini-flag">良友联名 · 资料初评 · 待实测</span></span><span class="mini-score">'+s.toFixed(0)+'</span></button>'}
+function renderList(){if(!REVIEWS.length){listNode.innerHTML='<div class="panel review-empty">目前还没有已发布的评测。</div>';return}
+var partners=REVIEWS.filter(isPartner),other=REVIEWS.filter(function(r){return !isPartner(r)});
+listNode.innerHTML=other.map(card).join("")+(partners.length?'<div class="review-bucket-head"><div><h2>良友联名 · 应用初评</h2><p>已收录 '+partners.length+' 款 · 依据公开资料整理，后续逐项复核</p></div><a href="./#collabs">查看联名作品</a></div><div class="review-grid">'+partners.map(miniCard).join("")+'</div>':'')}
 function node(tag,attrs,txt){var e=document.createElementNS("http://www.w3.org/2000/svg",tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k])});if(txt)e.textContent=txt;svg.appendChild(e);return e}
 function radar(scores){svg.textContent="";var cx=170,cy=153,r=100;
 function pos(i,d){var t=-Math.PI/2+i*Math.PI/3;return [cx+Math.cos(t)*d,cy+Math.sin(t)*d]}
@@ -151,7 +173,7 @@ document.getElementById("result").textContent=s.toFixed(1);
 document.getElementById("calculation").textContent=sc.map(function(v,i){return v+'×'+WEIGHTS[i].toFixed(2)}).join(" + ");
 document.querySelector(".review").innerHTML=String(r.review||"暂无简评").split(/\n\s*\n/).filter(Boolean).map(function(p){return "<p>"+esc(p).replace(/\n/g,"<br>")+"</p>"}).join("");
 document.querySelectorAll(".level").forEach(function(el,i){el.classList.toggle("on",i===([90,85,80,70].findIndex(function(n){return s>=n})) )});
-var notice=document.querySelector("#detailView .levels + .formula-small");if(notice)notice.textContent="70 分以下：暂不推荐。维度评分及评语为独立评价资料，可依据实际体验持续修订。";
+var notice=document.querySelector("#detailView .levels + .formula-small");if(notice)notice.textContent=isPartner(r)?"良友联名应用 · 资料初评，尚未完成逐项真机验证。联名合作不参与加分，当前分数仅供参考，后续可按实测结果调整。":"70 分以下：暂不推荐。维度评分及评语为独立评价资料，可依据实际体验持续修订。";
 document.title=r.name+" · 良友APP指南 Amazing Guide";
 }
 function route(scroll){var hash=decodeURIComponent(location.hash.slice(1));var isDetail=hash.indexOf("detail")===0;
