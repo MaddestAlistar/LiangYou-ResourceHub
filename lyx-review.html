@@ -171,6 +171,6 @@ window.addEventListener("hashchange",function(){route(true)});
 fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(7000)}).then(function(r){if(!r.ok)throw new Error("实时评测服务 HTTP "+r.status);return r.json()}).then(function(d){if(!d.ok)throw new Error(d.error||"实时评测服务失败");return d}).catch(function(){return fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("静态评测 HTTP "+r.status);return r.json()})}).then(function(data){REVIEWS=(Array.isArray(data.reviews)?data.reviews:[]).filter(function(r){return r&&r.status==="published"&&/^[a-z0-9-]{1,80}$/.test(r.id)}).sort(function(a,b){return Math.round((result(b)-result(a))*10)||Number(a.order||999)-Number(b.order||999)});renderList();route(false)}).catch(function(err){listNode.innerHTML='<div class="panel review-empty">评测资料暂时读取失败，请刷新网页重试。<br><small>'+esc(err.message)+'</small></div>';route(false)});
 })();
 </script>
-<script src="./lyx-poster.js?v=20261112.poster3" defer></script>
+<script src="./lyx-poster.js?v=20261112.poster4" defer></script>
 </body>
 </html>
