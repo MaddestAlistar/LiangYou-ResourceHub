@@ -23,6 +23,8 @@ jobs:
           package-manager-cache: false
       - name: Check JavaScript syntax
         run: |
+          node --check lyx-poster.js
+          node --test scripts/test_lyx_poster.mjs
           node --check media-intel.js
           node --check media-shortdrama.js
           node --check media-shortdrama-player.js
