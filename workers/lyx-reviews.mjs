@@ -97,6 +97,7 @@ export async function serveLyxReviews(request,env,{origin="",allowed="https://ma
      }else{
        if(i<0)return json({ok:false,error:"档案不存在，请刷新"},404,cors);
        if(data.reviews[i].updatedAt!==body.expectedUpdatedAt)return json({ok:false,error:"这份评测已被其他管理员修改，请刷新后重新编辑，避免覆盖"},409,cors);
+       submitted.updatedAt=new Date(Math.max(Date.now(),Date.parse(data.reviews[i].updatedAt)+1)).toISOString();
        data.reviews[i]=submitted;
      }
      data.updatedAt=submitted.updatedAt;
