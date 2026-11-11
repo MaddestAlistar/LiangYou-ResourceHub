@@ -17,7 +17,7 @@ fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:
  var nameNode=box.querySelector(".lyx-appname");if(nameNode){nameNode.textContent=a.name;var sub=document.createElement("small");sub.textContent=(a.category||"")+(a.subtitle?" · "+a.subtitle:"");nameNode.appendChild(sub)}
  txt(box.querySelector(".lyx-score strong"),s.toFixed(0));
  txt(box.querySelector(".lyx-rank"),rank+" · "+range+" 分");
- txt(box.querySelector(".lyx-hint"),"LYX 已发布 "+items.length+" 份应用评测");
+ txt(box.querySelector(".lyx-hint"),"良友APP指南已发布 "+items.length+" 份应用评测");
  box.querySelector(".lyx-preview").setAttribute("aria-label","本期评测："+a.name+"，综合评分 "+s.toFixed(1)+"，"+rank);
 }).catch(function(){ /* Static accessible fallback is already present in HTML. */ });
 })();
