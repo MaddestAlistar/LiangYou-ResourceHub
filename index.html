@@ -100,6 +100,7 @@
             <a href="#cloud-wiki">云存储 Wiki</a>
             <a href="#resource-channels">频道库</a>
             <a href="#lab">资源实验室</a>
+            <a href="#lyx-review-spot">LYX 体验评分</a>
             <a href="./system-lab/">在线系统实验室</a>
             <a href="./icon-submit.html">图标投稿</a>
           </div>
@@ -665,6 +666,50 @@
     </section>
     <section class="roadmap-section" id="lab" aria-labelledby="roadmap-title"><div class="container"><span id="roadmap" class="lab-anchor" aria-hidden="true"></span>
       <div class="section-heading"><div><p class="eyebrow">RESOURCE LAB · 良友科技</p><h2 id="roadmap-title">资源实验室</h2><p class="section-description">围绕影视播放、IPTV、科技资讯、主题美化与网络配置，把分散的实用工具和资源整理成可持续维护的开放目录。六类资源统一提供 JSON 索引，方便查询、复制与二次开发。</p></div><span class="planned-label">6 大资源方向 · JSON 开放目录</span></div>
+      
+      <style>
+/* LYX review feature: separate editorial entry, not a seventh JSON catalog item. */
+#lyx-review-spot{scroll-margin-top:120px}
+.lyx-lab-feature{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:18px;align-items:center;margin:24px 0 28px;padding:clamp(20px,3vw,34px);border:1px solid rgba(69,187,255,.65);border-radius:24px;background:radial-gradient(ellipse at 100% 0,rgba(88,50,224,.38),transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(0,178,255,.28),transparent 46%),linear-gradient(130deg,#10336b,#091b47 55%,#071536);box-shadow:inset 0 1px rgba(186,246,255,.25),0 15px 42px #001a384d,0 0 20px #0c8bff26}
+.lyx-lab-feature:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#74f2ff,transparent)}
+.lyx-lab-feature .lyx-kicker{font-size:11px;font-weight:850;letter-spacing:.13em;color:#83ddff}
+.lyx-lab-feature h3{font-size:clamp(23px,2.8vw,34px);line-height:1.3;margin:13px 0 11px;color:#f6faff}
+.lyx-lab-feature p{font-size:13px;line-height:1.9;color:#c6defa;margin:0}
+.lyx-lab-feature .lyx-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 20px}
+.lyx-lab-feature .lyx-chip{font-size:10px;color:#c8efff;border:1px solid #66c2ff61;border-radius:999px;padding:5px 9px;background:#2363a347}
+.lyx-lab-feature .lyx-open{display:inline-flex;gap:14px;align-items:center;justify-content:center;min-height:43px;border-radius:11px;border:1px solid #73e7ff;padding:10px 17px;color:#fff;font-size:13px;font-weight:800;text-decoration:none;background:linear-gradient(110deg,#16c8ee,#1e78f1 65%,#684ee3);box-shadow:0 6px 22px #037bff5c;transition:transform .18s ease,filter .18s ease}
+.lyx-lab-feature .lyx-open:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.lyx-lab-feature .lyx-micro{margin-left:12px;font-size:11px;color:#96bce4}
+.lyx-lab-feature .lyx-preview{justify-self:stretch;min-width:0;padding:17px;border:1px solid #80b6ff6d;border-radius:18px;background:linear-gradient(140deg,#0e3b86b0,#081b4baa);box-shadow:inset 0 1px #a6eaff2e;text-align:center}
+.lyx-lab-feature .lyx-preview-row{display:flex;gap:12px;justify-content:center;align-items:center}
+.lyx-lab-feature .lyx-appicon{width:59px;height:59px;display:grid;place-items:center;background:#f7faff;color:#10121a;border:5px solid #d5eaff;border-radius:17px;box-shadow:0 0 0 3px #277bd3,0 0 20px #1489ff66;font-weight:850;font-size:12px}
+.lyx-lab-feature .lyx-appname{text-align:left;font-size:18px;font-weight:800;color:white}
+.lyx-lab-feature .lyx-appname small{display:block;font-size:11px;font-weight:500;margin-top:5px;color:#aacef2}
+.lyx-lab-feature .lyx-score{margin:17px auto 9px;width:116px;height:116px;padding:7px;border-radius:100%;background:conic-gradient(from 200deg,#8d62ee,#54f1ff,#2874fb,#a779ff);box-shadow:0 0 23px #128bff7b}
+.lyx-lab-feature .lyx-score-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:100%;background:radial-gradient(circle at 50% 20%,#164690,#051333 85%)}
+.lyx-lab-feature .lyx-score-inner strong{font-style:italic;font-size:46px;line-height:1.05;color:#fff}
+.lyx-lab-feature .lyx-score-inner span{font-size:12px;color:#b5d9ff}
+.lyx-lab-feature .lyx-rank{font-size:12px;font-weight:800;color:#bceeff}
+.lyx-lab-feature .lyx-hint{font-size:10px;color:#9dbadf;margin-top:7px}
+@media(max-width:760px){.lyx-lab-feature{grid-template-columns:1fr;gap:14px}.lyx-lab-feature .lyx-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px}.lyx-lab-feature .lyx-score{width:70px;height:70px;margin:0;padding:5px;flex-shrink:0}.lyx-lab-feature .lyx-score-inner strong{font-size:25px}.lyx-lab-feature .lyx-score-inner span{font-size:9px}.lyx-lab-feature .lyx-preview-row{justify-content:flex-start}.lyx-lab-feature .lyx-appicon{width:45px;height:45px;border-radius:12px;font-size:10px;box-shadow:0 0 0 2px #277bd3}.lyx-lab-feature .lyx-appname{font-size:15px}.lyx-lab-feature .lyx-rank{font-size:11px}.lyx-lab-feature .lyx-hint{display:none}}
+@media(max-width:420px){.lyx-lab-feature{padding:19px 16px}.lyx-lab-feature h3{font-size:23px}.lyx-lab-feature .lyx-micro{display:block;margin:10px 0 0}}
+@media(prefers-reduced-motion:reduce){.lyx-lab-feature .lyx-open{transition:none}}
+</style>
+      <article class="lyx-lab-feature" id="lyx-review-spot" aria-labelledby="lyx-review-heading">
+        <div class="lyx-lab-copy">
+          <div class="lyx-kicker">LIANGYOU TECH · EXPERIENCE INDEX / LYX</div>
+          <h3 id="lyx-review-heading">LYX 体验评分中心</h3>
+          <p>一款 App 好不好用，不止看一个总分。用六维雷达、公开权重和良友简评，清楚呈现功能、便捷性、稳定性、适配体验与隐私表现。</p>
+          <div class="lyx-chip-row" aria-label="评测特色"><span class="lyx-chip">六维雷达图</span><span class="lyx-chip">加权评分公式</span><span class="lyx-chip">独立体验简评</span><span class="lyx-chip">四档推荐标准</span></div>
+          <a class="lyx-open" href="./lyx-review.html" aria-label="进入 LYX 体验评分中心，查看上岛记完整评测">进入体验评分中心 <span aria-hidden="true">›</span></a><span class="lyx-micro">点击卡片进入一级菜单，再查看完整评测</span>
+        </div>
+        <div class="lyx-preview" aria-label="本期评测：上岛记，综合评分90分，旗舰推荐">
+          <div class="lyx-preview-row"><div class="lyx-appicon" aria-hidden="true">上岛记</div><div class="lyx-appname">上岛记<small>生活服务 · 信息助手</small></div></div>
+          <div class="lyx-score"><div class="lyx-score-inner"><strong>90</strong><span>/ 100</span></div></div>
+          <div><div class="lyx-rank">♛ 旗舰推荐 · 90–100 分</div><div class="lyx-hint">LYX 应用体验评分 · 001</div></div>
+        </div>
+      </article>
+      
       <div class="roadmap-grid" id="roadmapGrid"></div>
       <div class="roadmap-bottom"><p>JSON 统一整理资源数据、属性和文件地址；不同 App 的原生导入格式各不相同，具体请参阅对应仓库说明。</p><a class="text-link" href="https://github.com/MaddestAlistar/LiangYou-ResourceHub/issues" target="_blank" rel="noopener noreferrer">参与完善资源 <span aria-hidden="true">↗</span></a></div>
     </div></section>
