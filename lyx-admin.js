@@ -122,7 +122,7 @@
  const scoreNode=$('lyx-scores');
  scoreNode.innerHTML=AXES.map((name,i)=>'<label class="lyx-score-field">'+name+' <small>权重 '+Math.round(WEIGHTS[i]*100)+'%</small><input id="lyx-s'+i+'" type="number" required min="0" max="100" step="0.1" value="80"></label>').join('');
  function scores(){return AXES.map((_,i)=>{const el=$('lyx-s'+i),n=Number(el.value);if(el.value.trim()===''||!Number.isFinite(n)||n<0||n>100)throw Error('六维评分需填写 0–100');return n})}
- function calc(sc){return sc.reduce((n,x,i)=>n+x*WEIGHTS[i],0)}
+ function calc(sc){return Math.round(sc.reduce((n,x,i)=>n+x*WEIGHTS[i],0)*10)/10}
  function rank(s){return s>=90?'旗舰推荐':s>=85?'优选推荐':s>=80?'值得尝试':s>=70?'可以尝试':'暂不推荐'}
  function updateScore(){try{const total=calc(scores());$('lyx-total').textContent=total.toFixed(1)+' / 100';$('lyx-rank').textContent=rank(total)}catch{$('lyx-total').textContent='—';$('lyx-rank').textContent='请完整填写六项分数'}}
  scoreNode.addEventListener('input',updateScore);
