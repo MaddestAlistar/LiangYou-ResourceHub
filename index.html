@@ -30,6 +30,7 @@
   <script src="./tech-news.js?v=20261030.china-media3" defer></script>
   <script src="./ly-video.js?v=20261030.china-media2" defer></script>
   <script src="./site-i18n.js?v=20261110.wiki-en1" defer></script>
+  <script src="./lyx-feature.js?v=20261112.1" defer></script>
   <script src="./navigation.js?v=20261028.1" defer></script>
   <script src="./bookmark.js?v=20261028.1" defer></script>
   <script src="./design.js?v=20261029.fasticons1" defer></script>
@@ -694,6 +695,22 @@
 @media(max-width:760px){.lyx-lab-feature{grid-template-columns:1fr;gap:14px}.lyx-lab-feature .lyx-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px}.lyx-lab-feature .lyx-score{width:70px;height:70px;margin:0;padding:5px;flex-shrink:0}.lyx-lab-feature .lyx-score-inner strong{font-size:25px}.lyx-lab-feature .lyx-score-inner span{font-size:9px}.lyx-lab-feature .lyx-preview-row{justify-content:flex-start}.lyx-lab-feature .lyx-appicon{width:45px;height:45px;border-radius:12px;font-size:10px;box-shadow:0 0 0 2px #277bd3}.lyx-lab-feature .lyx-appname{font-size:15px}.lyx-lab-feature .lyx-rank{font-size:11px}.lyx-lab-feature .lyx-hint{display:none}}
 @media(max-width:420px){.lyx-lab-feature{padding:19px 16px}.lyx-lab-feature h3{font-size:23px}.lyx-lab-feature .lyx-micro{display:block;margin:10px 0 0}}
 @media(prefers-reduced-motion:reduce){.lyx-lab-feature .lyx-open{transition:none}}
+
+/* LYX editorial card: blend with the Resource Lab charcoal-and-champagne palette. */
+.lyx-lab-feature{border-color:rgba(190,164,128,.5);background:radial-gradient(ellipse at 100% 0,rgba(57,61,88,.38),transparent 53%),radial-gradient(ellipse at 8% 100%,rgba(34,53,76,.32),transparent 46%),linear-gradient(145deg,#22232a,#1b1e24 61%,#181b21);box-shadow:0 12px 32px #0004,inset 0 1px #f0dfc61a}
+.lyx-lab-feature:before{background:linear-gradient(90deg,transparent,#bda17e88,transparent)}
+.lyx-lab-feature .lyx-kicker{color:#d9bf98;font-size:10px;letter-spacing:.095em}
+.lyx-lab-feature h3{color:#f3eee5;font-size:clamp(21px,2.5vw,28px);margin:10px 0 10px}
+.lyx-lab-feature p{color:#b9b6b4;font-size:12px;line-height:1.85}
+.lyx-lab-feature .lyx-chip{border-color:#8d7d6859;background:#bca17c13;color:#d4cab9}
+.lyx-lab-feature .lyx-open{border-color:#b9a081a6;background:linear-gradient(117deg,#514739,#786042);color:#fff1d7;box-shadow:0 6px 15px #0003}
+.lyx-lab-feature .lyx-micro{color:#aaa69d}
+.lyx-lab-feature .lyx-preview{border:1px solid #6c61565e;background:linear-gradient(130deg,#272b33,#1b2028);box-shadow:inset 0 1px #fff2}
+.lyx-lab-feature img.lyx-appicon{display:block;object-fit:cover;padding:0;background:#fff;border:0;box-shadow:0 0 0 2px #82715e,0 4px 13px #0006}
+.lyx-lab-feature .lyx-appname{color:#f4f0e7}.lyx-lab-feature .lyx-appname small{color:#b6b5b7}
+.lyx-lab-feature .lyx-score{background:conic-gradient(from 210deg,#7e71aa,#5baecd,#ad92ac,#c3a77b,#7e71aa);box-shadow:0 0 14px #287abd3c}
+.lyx-lab-feature .lyx-score-inner{background:radial-gradient(circle at 50% 15%,#2a3c55,#131c2a 84%)}
+.lyx-lab-feature .lyx-rank{color:#e2c89b}.lyx-lab-feature .lyx-hint{color:#aea79e}
 </style>
       <article class="lyx-lab-feature" id="lyx-review-spot" aria-labelledby="lyx-review-heading">
         <div class="lyx-lab-copy">
@@ -704,7 +721,7 @@
           <a class="lyx-open" href="./lyx-review.html" aria-label="进入 LYX 体验评分中心，查看上岛记完整评测">进入体验评分中心 <span aria-hidden="true">›</span></a><span class="lyx-micro">点击卡片进入一级菜单，再查看完整评测</span>
         </div>
         <div class="lyx-preview" aria-label="本期评测：上岛记，综合评分90分，旗舰推荐">
-          <div class="lyx-preview-row"><div class="lyx-appicon" aria-hidden="true">上岛记</div><div class="lyx-appname">上岛记<small>生活服务 · 信息助手</small></div></div>
+          <div class="lyx-preview-row"><img class="lyx-appicon" id="lyxFeaturedIcon" src="./assets/lyx/shangdaoji.svg" width="59" height="59" loading="lazy" decoding="async" alt="上岛记原版应用图标"><div class="lyx-appname">上岛记<small>生活服务 · 信息助手</small></div></div>
           <div class="lyx-score"><div class="lyx-score-inner"><strong>90</strong><span>/ 100</span></div></div>
           <div><div class="lyx-rank">♛ 旗舰推荐 · 90–100 分</div><div class="lyx-hint">LYX 应用体验评分 · 001</div></div>
         </div>
