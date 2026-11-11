@@ -34,6 +34,8 @@ jobs:
         run: node --test scripts/test_tech_news.mjs
       - name: Verify Emby Wiki submission and moderation
         run: node --test scripts/test_emby_wiki.mjs
+      - name: Verify LYX CMS authorization and publishing
+        run: node --test scripts/test_lyx_reviews.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
