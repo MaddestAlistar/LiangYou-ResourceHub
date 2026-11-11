@@ -89,6 +89,13 @@
 #lyx-admin .lyx-preview{background:#0b294b;border:1px solid #5599cf;border-radius:13px;margin-top:18px;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 #lyx-admin .lyx-preview h3{margin:0 0 12px}
 #lyx-admin .lyx-preview p{line-height:1.85;color:#caddeb;font-size:13px}
+
+/* LYX editor: thumb-friendly preset dropdowns with optional custom fields. */
+#lyx-admin .lyx-grid select{display:block;width:100%;min-width:0;min-height:45px;padding:10px 38px 10px 12px;font:inherit;font-size:16px;line-height:1.4;color:#f6f8ff;border:1px solid #4b5f76;border-radius:10px;background-color:#0b1523;appearance:auto}
+#lyx-admin .lyx-grid select:focus-visible{outline:2px solid #e5c98e;outline-offset:2px}
+#lyx-admin .lyx-choice input:not([hidden]){margin-top:3px;min-height:44px;font-size:16px}
+#lyx-admin .lyx-choice input[hidden]{display:none!important}
+#lyx-admin .lyx-choice select:disabled{opacity:.65}
 @media(max-width:750px){#lyx-admin .lyx-columns{grid-template-columns:1fr}#lyx-admin .lyx-records{grid-template-columns:repeat(2,minmax(0,1fr));max-height:240px}}
 @media(max-width:520px){#lyx-admin .lyx-grid{grid-template-columns:1fr}#lyx-admin .lyx-scores{grid-template-columns:1fr 1fr}#lyx-admin .lyx-records{grid-template-columns:1fr}#lyx-admin .lyx-edit{padding:12px}#lyx-admin .lyx-grid label.full{grid-column:1/-1}}
 </style></head><body><main><a href="./#library">← 返回资源中心</a><h1>良友投稿 · 审核后台</h1><nav class="wk-admin-toplinks" aria-label="后台管理栏目"><a href="#items">图标审核</a><a href="#tech-news-admin">新闻管理</a><a href="#emby-wiki-admin">Emby Wiki 审核</a><a href="#lyx-admin">LYX 评分管理</a></nav><p class="muted">仅管理员使用。查看待审核图标；点击「通过并发布」将同步正式图标库及两份订阅 JSON，拒绝只处理未发布投稿；「下架」会移除两份订阅中的记录，保留原图片。所有投稿的图片和审核记录始终保留在 Icon-Review-Queue；可用状态筛选查看。</p><section class="panel"><label for="key">管理员密钥（仅本次页面使用，不保存到浏览器）</label><div class="row"><input id="key" type="password" autocomplete="off" placeholder="粘贴 Cloudflare ADMIN_KEY"><button id="load">进入后台 / 刷新</button></div><p id="message" class="muted" role="status">请先在 Cloudflare Worker 设置 ADMIN_KEY 加密密钥。</p></section><section class="panel icon-review-filter-panel" aria-label="图标审核筛选"><div class="row"><label>状态筛选 <select id="filter"><option value="pending">待审核</option><option value="all">全部</option><option value="approved">已通过</option><option value="rejected">已拒绝</option><option value="withdrawn">已下架</option></select></label><label>搜索名称 / 批次 <input id="search" placeholder="搜索图标名称、作者或批次"></label></div></section><p id="count" class="muted"></p><div id="items"></div><section class="panel tech-news-admin-panel" id="tech-news-admin" aria-labelledby="tech-news-admin-heading">
@@ -166,12 +173,12 @@
  <div class="lyx-edit"><h3 id="lyx-edit-label">新增应用评测</h3>
  <form id="lyx-form" hidden><div class="lyx-grid">
  <label>档案 ID（新增后不可修改）<input id="lyx-id" required pattern="[a-z0-9-]{1,80}" maxlength="80" placeholder="例如 shangdaoji"></label>
- <label>展示排序<input id="lyx-order" type="number" required min="1" max="999" value="1"></label>
+ <label class="lyx-choice">展示排序<select id="lyx-order-pick" required aria-label="选择展示排序"><option value="1">第 1 位</option></select><input id="lyx-order" type="number" min="1" max="999" inputmode="numeric" placeholder="输入 1–999 的排序数字" aria-label="自定义展示排序" hidden></label>
  <label>应用名称 *<input id="lyx-name" required maxlength="70" placeholder="应用名称"></label>
- <label>应用分类 *<input id="lyx-category" required maxlength="50" placeholder="生活服务"></label>
- <label>应用定位<input id="lyx-subtitle" maxlength="60" placeholder="信息助手"></label>
+ <label class="lyx-choice">应用分类 *<select id="lyx-category-pick" required aria-label="选择应用分类"><option value="">请选择应用分类</option></select><input id="lyx-category" maxlength="50" placeholder="填写其他应用分类" aria-label="自定义应用分类" hidden></label>
+ <label class="lyx-choice">应用定位<select id="lyx-subtitle-pick" aria-label="选择应用定位"><option value="">不填写应用定位</option></select><input id="lyx-subtitle" maxlength="60" placeholder="填写其他应用定位" aria-label="自定义应用定位" hidden></label>
  <label>版本号<input id="lyx-version" maxlength="30" placeholder="v2.4.1"></label>
- <label>支持平台<input id="lyx-platform" maxlength="80" placeholder="iOS / iPadOS"></label>
+ <label class="lyx-choice">支持平台<select id="lyx-platform-pick" aria-label="选择支持平台"><option value="">暂不填写</option></select><input id="lyx-platform" maxlength="80" placeholder="例如 iOS / Android / Web" aria-label="自定义支持平台组合" hidden></label>
  <label>评分短评<input id="lyx-tagline" maxlength="100" placeholder="识别高效 · 功能完整 · 体验优秀"></label>
  <label class="full">首页卡片简介 *<textarea id="lyx-summary" required maxlength="800" rows="3" placeholder="突出用途与主要亮点"></textarea></label>
  <label class="full">标签（逗号分隔，最多 10 项）<input id="lyx-tags" maxlength="300" placeholder="本地识别，灵动岛，Apple Watch"></label>
@@ -283,4 +290,4 @@ $("load").onclick=async()=>{
  finally{busy=false;$("load").disabled=false;render()}
 };
 $("filter").onchange=render;$("search").oninput=render;
-</script><script src="./lyx-admin.js?v=20261112.1" defer></script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261111.image-replace1"></script></body></html>
+</script><script src="./lyx-admin.js?v=20261112.selects2" defer></script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261111.image-replace1"></script></body></html>
