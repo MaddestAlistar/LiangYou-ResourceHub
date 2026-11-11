@@ -12,7 +12,7 @@ fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:
 .then(function(d){
  var items=(Array.isArray(d.reviews)?d.reviews:[]).filter(function(a){return a&&a.status==="published"}).sort(function(a,b){var score=function(r){return (r.scores||[]).reduce(function(n,v,i){return n+Number(v||0)*(weights[i]||0)},0)};return Math.round((score(b)-score(a))*10)||Number(a.order||999)-Number(b.order||999)});
  if(!items.length){box.querySelector(".lyx-preview").hidden=true;txt(box.querySelector(".lyx-micro"),"暂无公开评测，进入中心可查看后续更新。");return}
- var a=items[0],s=(a.scores||[]).reduce(function(n,v,i){return n+Number(v||0)*(weights[i]||0)},0),rank=s>=90?"旗舰推荐":s>=85?"优选推荐":s>=80?"值得尝试":s>=70?"可以尝试":"暂不推荐",range=s>=90?"90–100":s>=85?"85–89":s>=80?"80–84":s>=70?"70–79":"70 以下";
+ var a=items[0],s=Math.round((a.scores||[]).reduce(function(n,v,i){return n+Number(v||0)*(weights[i]||0)},0)*10)/10,rank=s>=90?"旗舰推荐":s>=85?"优选推荐":s>=80?"值得尝试":s>=70?"可以尝试":"暂不推荐",range=s>=90?"90–100":s>=85?"85–89":s>=80?"80–84":s>=70?"70–79":"70 以下";
  var img=box.querySelector("#lyxFeaturedIcon");if(img){img.src="./"+safeIcon(a.icon);if(String(a.icon||"").startsWith("data:"))img.src=a.icon;img.alt=a.name+" 应用图标"}
  var nameNode=box.querySelector(".lyx-appname");if(nameNode){nameNode.textContent=a.name;var sub=document.createElement("small");sub.textContent=(a.category||"")+(a.subtitle?" · "+a.subtitle:"");nameNode.appendChild(sub)}
  txt(box.querySelector(".lyx-score strong"),s.toFixed(0));
