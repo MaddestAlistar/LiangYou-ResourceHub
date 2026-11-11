@@ -8,7 +8,7 @@ const AUTHOR="./assets/lyx/author-avatar.svg",AUTHOR_NAME="@良哥看未来",AUT
 const $=id=>document.getElementById(id);
 let objectUrl=null,generatedBlob=null,filename="良友APP指南-分享海报.png",working=false;
 function grade(s){return s>=90?["旗舰推荐","90–100"]:s>=85?["优选推荐","85–89"]:s>=80?["值得尝试","80–84"]:s>=70?["可以尝试","70–79"]:["暂不推荐","70 以下"]}
-function scoreData(r){const sc=WEIGHTS.map((_,i)=>Math.max(0,Math.min(100,Number(r.scores?.[i])||0)));return {sc,total:sc.reduce((n,v,i)=>n+v*WEIGHTS[i],0)}}
+function scoreData(r){const sc=WEIGHTS.map((_,i)=>Math.max(0,Math.min(100,Number(r.scores?.[i])||0)));return {sc,total:Math.round(sc.reduce((n,v,i)=>n+v*WEIGHTS[i],0)*10)/10}}
 function rounded(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.lineTo(x+w-rr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+rr);ctx.lineTo(x+w,y+h-rr);ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);ctx.lineTo(x+rr,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-rr);ctx.lineTo(x,y+rr);ctx.quadraticCurveTo(x,y,x+rr,y);ctx.closePath()}
 function glowPanel(ctx,x,y,w,h,r=22){ctx.save();ctx.shadowColor="#159eff";ctx.shadowBlur=22;const g=ctx.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,"#11458fa6");g.addColorStop(.6,"#071e58ef");g.addColorStop(1,"#102e82e8");rounded(ctx,x,y,w,h,r);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle="#72c6ff";ctx.stroke();ctx.restore();
 ctx.save();ctx.beginPath();ctx.moveTo(x+r,y+2);ctx.lineTo(x+w-r,y+2);ctx.strokeStyle="#a5efff9e";ctx.lineWidth=2;ctx.stroke();ctx.restore()}
@@ -100,7 +100,7 @@ async function renderPoster(r){
  glowPanel(ctx,55,1150,971,222,95);
  const halo=ctx.createRadialGradient(250,1261,20,250,1261,132);halo.addColorStop(0,"#86efff66");halo.addColorStop(1,"transparent");ctx.fillStyle=halo;ctx.fillRect(111,1125,280,275);
  ctx.save();ctx.shadowBlur=19;ctx.shadowColor="#4dfaff";ctx.beginPath();ctx.arc(250,1261,92,0,Math.PI*2);ctx.fillStyle="#d8f4ff";ctx.fill();ctx.restore();
- ctx.save();ctx.beginPath();ctx.arc(250,1261,86,0,Math.PI*2);ctx.clip();ctx.drawImage(avatarImg,164,1175,172,172);ctx.restore();
+ ctx.save();ctx.beginPath();ctx.arc(250,1261,86,0,Math.PI*2);ctx.clip();const avatarTrim=Math.round(Math.min(avatarImg.width,avatarImg.height)*.085);ctx.drawImage(avatarImg,avatarTrim,avatarTrim,avatarImg.width-avatarTrim*2,avatarImg.height-avatarTrim*2,164,1175,172,172);ctx.restore();
  line(ctx,365,1201,365,1333,"#91d5ff",2);
  fit(ctx,AUTHOR_NAME,396,1250,542,49,34,"#ffffff",900);
  fill(ctx,398,1282,460,55,"#155faccc",26);ctx.strokeStyle="#7edbff";ctx.lineWidth=2;rounded(ctx,398,1282,460,55,26);ctx.stroke();
