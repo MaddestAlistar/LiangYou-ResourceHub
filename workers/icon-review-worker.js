@@ -2,6 +2,7 @@ import { serveEmbyWiki } from "./emby-wiki.mjs";
 import { inspectImage } from "../icon-image.mjs";
 import { inspectEmbeddedMotion, inspectUploadedMotionVideo } from "../icon-motion.mjs";
 import { serveTechNews } from "./tech-news.mjs";
+import { serveLyxReviews } from "./lyx-reviews.mjs";
 import { isUUID, submitBatchItem } from "./icon-batch-submission.mjs";
 import { validEmail, sealEmail, adminMetadata } from "./icon-contact.mjs";
 import { publishIcon, withdrawIcon, renameIcon, githubClient, encode, VERSION } from "./icon-publisher.mjs";
@@ -17,6 +18,7 @@ export default {async fetch(request,env){
  const url=new URL(request.url);
  if(["/emby-wiki-submit","/emby-wiki-feed","/emby-wiki-admin"].includes(url.pathname))return await serveEmbyWiki(request,env,{origin,allowed});
  if(url.pathname==="/news-feed"||url.pathname==="/news-admin"||url.pathname==="/news-video-upload"||url.pathname==="/news-image-upload")return await serveTechNews(request,env,{origin,allowed});
+ if(url.pathname==="/lyx-feed"||url.pathname==="/lyx-admin")return await serveLyxReviews(request,env,{origin,allowed});
  // Public liveness/version only; no credentials, configuration or queue data.
  if(request.method==="GET"&&url.pathname==="/health")return reply({ok:true,version:VERSION},200,origin===allowed?origin:"");
  if(origin!==allowed)return reply({error:"Origin not allowed"},403,"null");
