@@ -1,12 +1,12 @@
 /* LYX review poster generator. Pure client-side canvas, no account or third-party render service. */
 (function(){
 "use strict";
-const SIZE={w:1080,h:1440},FONT='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
+const SIZE={w:1080,h:1440},EXPORT_SCALE=2,FONT='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
 const WEIGHTS=[.30,.20,.20,.10,.10,.10];
 const AXES=["功能丰富度","使用便捷性","稳定与流畅","系统融合度","设备适配性","隐私与安全"];
 const AUTHOR="./assets/lyx/author-avatar.svg",AUTHOR_NAME="@良哥看未来",AUTHOR_ID="116584042";
 const $=id=>document.getElementById(id);
-let objectUrl=null,generatedBlob=null,filename="LYX-体验评分.png",working=false;
+let objectUrl=null,generatedBlob=null,filename="良友APP指南-分享海报.png",working=false;
 function grade(s){return s>=90?["旗舰推荐","90–100"]:s>=85?["优选推荐","85–89"]:s>=80?["值得尝试","80–84"]:s>=70?["可以尝试","70–79"]:["暂不推荐","70 以下"]}
 function scoreData(r){const sc=WEIGHTS.map((_,i)=>Math.max(0,Math.min(100,Number(r.scores?.[i])||0)));return {sc,total:sc.reduce((n,v,i)=>n+v*WEIGHTS[i],0)}}
 function rounded(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.lineTo(x+w-rr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+rr);ctx.lineTo(x+w,y+h-rr);ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);ctx.lineTo(x+rr,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-rr);ctx.lineTo(x,y+rr);ctx.quadraticCurveTo(x,y,x+rr,y);ctx.closePath()}
@@ -42,7 +42,7 @@ function drawReview(ctx,review,x,y,width){
  wrapped(ctx,clean,x,y,width,{size:font,lineHeight:lh,maxLines,color:"#e8f5ff"});
 }
 async function renderPoster(r){
- const {w,h}=SIZE,canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;const ctx=canvas.getContext("2d");if(!ctx)throw Error("此浏览器不支持海报绘制");
+ const {w,h}=SIZE,canvas=document.createElement("canvas");canvas.width=w*EXPORT_SCALE;canvas.height=h*EXPORT_SCALE;const ctx=canvas.getContext("2d");if(!ctx)throw Error("此浏览器不支持海报绘制");ctx.setTransform(EXPORT_SCALE,0,0,EXPORT_SCALE,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  const {sc,total}=scoreData(r),[rank,interval]=grade(total);
  const [appImg,avatarImg]=await Promise.all([loadPicture(pictureURL(r.icon)).catch(()=>null),loadPicture(AUTHOR)]);
  // Backdrop
@@ -52,9 +52,9 @@ async function renderPoster(r){
  ctx.save();ctx.shadowColor="#21aaff";ctx.shadowBlur=20;ctx.beginPath();ctx.moveTo(0,150);ctx.bezierCurveTo(270,-20,760,-5,1080,154);ctx.strokeStyle="#4fe8ffcc";ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.moveTo(0,1275);ctx.bezierCurveTo(330,1178,660,1401,1080,1278);ctx.strokeStyle="#2dbfffbb";ctx.lineWidth=3;ctx.stroke();ctx.restore();
  // Brand header
  const heading=ctx.createLinearGradient(140,45,955,140);heading.addColorStop(0,"#e9f9ff");heading.addColorStop(.6,"#fff");heading.addColorStop(1,"#66e6ff");
- txt(ctx,"LYX 体验评分体系",540,99,65,heading,900,"center");txt(ctx,"L I A N G Y O U   T E C H   E X P E R I E N C E   I N D E X",540,139,16,"#cfebff",600,"center");
+ txt(ctx,"良友APP指南",540,99,65,heading,900,"center");txt(ctx,"AMAZING GUIDE",540,143,31,"#cfebff",780,"center");
  fill(ctx,260,158,560,45,"#0b4ca0dd",25);ctx.strokeStyle="#64daff";ctx.lineWidth=2;rounded(ctx,260,158,560,45,25);ctx.stroke();
- txt(ctx,"良友科技原创 · APP 综合体验评价标准",540,188,23,"#ecfaff",720,"center");
+ txt(ctx,"良友科技原创 · LYX 六维体验评分标准",540,188,23,"#ecfaff",720,"center");
  // Application identity panel
  glowPanel(ctx,34,228,412,406,28);glowPanel(ctx,458,228,588,406,28);
  if(appImg){imageFit(ctx,appImg,65,265,125,125,25)}else{fill(ctx,65,265,125,125,"#ebf6ff",24);fit(ctx,r.name?.slice(0,3)||"APP",78,340,99,28,18,"#122447")}
@@ -116,21 +116,21 @@ async function open(r){
  const dlg=$("posterDialog");if(!dlg){alert("海报组件未载入，请刷新后重试");return}
  dlg.showModal();dlg.querySelectorAll(".poster-action").forEach(b=>b.disabled=true);
  const pic=$("posterPreview");pic.hidden=true;pic.removeAttribute("src");
- message("正在根据「"+r.name+"」的实时评分生成 1080×1440 海报…");working=true;
+ message("正在根据「"+r.name+"」的实时评分生成 2160×2880 超清海报…");working=true;
  try{
   const blob=await renderPoster(r);if(objectUrl)URL.revokeObjectURL(objectUrl);
   objectUrl=URL.createObjectURL(blob);generatedBlob=blob;
-  filename="LYX-"+cleanFilename(r.name)+"-体验评分-小红书.png";
-  pic.src=objectUrl;pic.alt=r.name+" LYX 体验评分小红书海报预览";pic.hidden=false;
+  filename="良友APP指南-"+cleanFilename(r.name)+"-小红书超清海报.png";
+  pic.src=objectUrl;pic.alt=r.name+" 良友APP指南 Amazing Guide 小红书海报预览";pic.hidden=false;
   dlg.querySelectorAll(".poster-action").forEach(b=>b.disabled=false);
-  message("已生成 1080×1440 PNG。可保存、长按图片存储到相册，或使用系统分享。");
+  message("已生成 2160×2880 PNG 超清原图。预览会缩小显示，保存和分享均使用完整分辨率。");
  }catch(e){message("海报生成失败："+(e?.message||"未知错误")+"。请刷新后重试。")}
  finally{working=false}
 }
 function save(){if(!objectUrl)return;const a=document.createElement("a");a.href=objectUrl;a.download=filename;document.body.appendChild(a);a.click();a.remove();message("已请求保存 PNG。如果 iPhone 没有直接保存到相册，请长按上方海报或点击「系统分享」。")}
 async function share(){
  if(!generatedBlob)return;const file=new File([generatedBlob],filename,{type:"image/png"});
- if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){try{await navigator.share({files:[file],title:"LYX 体验评分海报"});return}catch(e){if(e.name==="AbortError")return}}
+ if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){try{await navigator.share({files:[file],title:"良友APP指南 Amazing Guide"});return}catch(e){if(e.name==="AbortError")return}}
  message("此浏览器暂不支持直接分享图片。请长按海报保存，或使用「保存 PNG」后再分享。");
 }
 async function copy(){try{await navigator.clipboard.writeText(location.href);message("已复制当前 App 的评测详情链接。")}catch{message("复制未成功，请从浏览器地址栏复制当前详情链接。")}}
