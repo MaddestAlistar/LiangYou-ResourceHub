@@ -48,6 +48,15 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 @media(max-width:520px){.wrap{padding:16px 12px 42px}.top{margin-bottom:12px}.logo{font-size:16px}.topnav .navbtn{padding:8px 10px;font-size:11px}.lead{margin:23px auto 24px}.lead p{font-size:12px}.panel{border-radius:17px}.feature{padding:16px}.feature-main{grid-template-columns:minmax(0,1fr) 112px;gap:7px}.app-icon{width:56px;height:56px;border:4px solid #e5edff;border-radius:14px;box-shadow:0 0 0 3px #3877bc,0 0 18px #288eff88}.app-icon div{font-size:8px}.app-icon small{padding:3px 2px;font-size:7px}.app-icon strong{font-size:8px;padding:6px 3px}.app-title{gap:11px}.app-title h2{font-size:21px}.subtitle{font-size:10px}.app-desc{margin:16px 0 11px;font-size:11px}.score-ring{width:104px;padding:7px}.score-core b{font-size:42px}.score-core span{font-size:12px}.score-name{font-size:10px;padding:5px 7px}.score-side{gap:9px}.feature-actions{flex-direction:column;align-items:stretch}.feature-actions .note{text-align:center}.mini{padding:16px}.tiers{gap:5px}.tier b{font-size:11px}.tier small{font-size:9px}.detail-top{grid-template-columns:minmax(0,1fr) 112px;padding:16px}.detail-top .app-title h2{font-size:21px}.radar-wrap{grid-template-columns:1fr}.radar-svg{max-width:340px;margin:auto}.bars{grid-template-columns:1fr 1fr;gap:10px}.formula{font-size:20px}.levels{gap:6px}.level{padding:12px 3px}.level b{font-size:12px}.level span{font-size:11px}.level small{font-size:9px}}
 @media(max-width:340px){.feature-main{grid-template-columns:1fr 89px}.score-ring{width:86px}.score-core b{font-size:34px}.score-name{font-size:9px}.detail-top{grid-template-columns:1fr 90px}.detail-top .app-icon{width:48px;height:48px}.levels{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Dynamically populated reviews */
+.review-empty{padding:30px;text-align:center;color:#b8d6f3;line-height:1.9}
+.review-status{color:#c6e8ff;font-size:11px;margin-top:10px}
+.app-icon.app-photo{padding:0;border:0;object-fit:cover;background:transparent;border-radius:20px;box-shadow:0 0 0 3px #3877bc,0 0 17px #298cff88}
+.review-card{margin-bottom:16px}
+.review-card .app-title h2{overflow-wrap:anywhere}
+#detailView .detail-top .app-photo{height:78px}
+@media(max-width:520px){.app-icon.app-photo{width:56px;height:56px;border-radius:14px}#detailView .detail-top .app-photo{height:56px}.review-card{margin-bottom:12px}}
 </style>
 </head>
 <body>
@@ -56,13 +65,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 <main>
 <section class="page" id="listView" aria-label="LYX 一级菜单">
 <div class="lead"><div class="kicker">LIANGYOU TECH EXPERIENCE INDEX</div><h1>LYX 应用体验评分体系</h1><p>良友科技原创 · APP 综合体验评价标准<br>从真实功能、使用效率到系统适配，六个维度评估应用体验</p><div class="chips"><span class="chip">六维加权评分</span><span class="chip">独立体验简评</span><span class="chip">透明推荐等级</span></div></div>
-<article class="panel feature"><div class="feature-head"><b>01 · 应用体验档案</b><span class="highlight">♛ 旗舰推荐</span></div>
-<div class="feature-main">
-<div><div class="app-title"><div class="app-icon" aria-label="上岛记应用图标"><div><small>取码</small><strong>上岛记</strong></div></div><div><h2>上岛记</h2><div class="subtitle">生活服务 · 信息助手<br>v2.4.1 · iOS / iPadOS</div></div></div>
-<p class="app-desc">专注日常高频信息管理，离线识别并整理取餐码、快递码、排队号和票据信息，通过灵动岛、实时活动及桌面组件让常用信息随时可见。</p>
-<div class="tags"><span>本地识别</span><span>灵动岛</span><span>锁屏组件</span><span>Apple Watch</span></div></div>
-<div class="score-side"><div class="score-ring"><div class="score-core"><b class="score-number">90</b><span>/ 100</span></div></div><div class="score-name">旗舰推荐</div><div class="note">LYX 90.0 分</div></div>
-</div><div class="feature-actions"><button class="act" id="enterDetail" type="button">查看完整评测　›</button><span class="note">完整六维雷达图、加权公式与良友简评</span></div></article>
+<div id="reviewList" aria-live="polite" style="max-width:890px;margin:auto;color:#bcdaf5">正在载入已发布评测…</div>
 <div class="home-bottom">
 <div class="panel mini"><h3>✦ LYX 推荐等级</h3><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div></div>
 <div class="panel mini"><h3>⬡ 评分逻辑</h3><p>六维体验 × 对应权重，满分 100 分。每项得分均可追溯，低于 70 分暂不推荐。</p></div></div>
@@ -83,28 +86,54 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 <script>
 (function(){
 "use strict";
-var axes=[["功能丰富度",92,.30],["使用便捷性",91,.20],["稳定与流畅",86,.20],["系统融合度",91,.10],["设备适配性",89,.10],["隐私与安全",90,.10]];
-var score=axes.reduce(function(s,a){return s+a[1]*a[2]},0);
-document.querySelectorAll(".score-number").forEach(function(el){el.textContent=score.toFixed(0)});
-document.getElementById("result").textContent=score.toFixed(1);
-document.getElementById("calculation").textContent=axes.map(function(a){return a[1]+"×"+a[2].toFixed(2)}).join(" + ");
-document.getElementById("scoreBars").innerHTML=axes.map(function(a){return '<div><div class="bar-head"><span>'+a[0]+' · '+Math.round(a[2]*100)+'%</span><b>'+a[1]+'</b></div><div class="track"><div class="fill" style="width:'+a[1]+'%"></div></div></div>'}).join("");
-var svg=document.getElementById("radar"),ns="http://www.w3.org/2000/svg",cx=170,cy=153,r=100;
-function pos(i,v){var t=-Math.PI/2+i*Math.PI/3;return [cx+Math.cos(t)*v,cy+Math.sin(t)*v]}
-function points(v){return v.map(function(x,i){return pos(i,x).join(",")}).join(" ")}
-function node(tag,attrs,text){var e=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k])});if(text)e.textContent=text;svg.appendChild(e);return e}
-for(var j=1;j<=5;j++)node("polygon",{points:points(Array(6).fill(r*j/5)),fill:"none",stroke:j===5?"#8feeff":"#347fcb","stroke-opacity":j===5?".9":".42","stroke-width":j===5?"1.8":"1"});
-axes.forEach(function(a,i){var p=pos(i,r);node("line",{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:"#55b3ed","stroke-opacity":".35"});});
-node("polygon",{points:points(axes.map(function(a){return r*a[1]/100})),fill:"#18cfff", "fill-opacity":".34",stroke:"#73efff","stroke-width":"2.5"});
-axes.forEach(function(a,i){var p=pos(i,r*a[1]/100);node("circle",{cx:p[0],cy:p[1],r:3.6,fill:"#fff",stroke:"#45ecff","stroke-width":"1.5"})});
+var AXES=["功能丰富度","使用便捷性","稳定与流畅","系统融合度","设备适配性","隐私与安全"];
+var WEIGHTS=[.30,.20,.20,.10,.10,.10],REVIEWS=[],CURRENT=null;
+var list=document.getElementById("listView"),detail=document.getElementById("detailView"),listNode=document.getElementById("reviewList"),svg=document.getElementById("radar");
+var dialog=document.getElementById("standardDialog");
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function icon(v){v=String(v||"");return (/^assets\/lyx\/[a-z0-9._/-]+\.(svg|png|webp)$/i.test(v)||/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(v))?v:"assets/lyx/shangdaoji.svg"}
+function scoresOf(r){return Array.from({length:6},function(_,i){return Math.max(0,Math.min(100,Number(r.scores&&r.scores[i])||0))})}
+function result(r){return scoresOf(r).reduce(function(n,s,i){return n+s*WEIGHTS[i]},0)}
+function tier(s){if(s>=90)return ["旗舰推荐","90–100"];if(s>=85)return ["优选推荐","85–89"];if(s>=80)return ["值得尝试","80–84"];if(s>=70)return ["可以尝试","70–79"];return ["暂不推荐","70 以下"]}
+function image(r){return '<img class="app-icon app-photo" src="'+esc(icon(r.icon))+'" alt="'+esc(r.name)+' 应用图标" loading="lazy">'}
+function card(r){var s=result(r),t=tier(s);return '<article class="panel feature review-card"><div class="feature-head"><b>LYX · 应用体验档案</b><span class="highlight">'+t[0]+'</span></div><div class="feature-main"><div><div class="app-title">'+image(r)+'<div><h2>'+esc(r.name)+'</h2><div class="subtitle">'+esc(r.category||"应用")+' · '+esc(r.subtitle||"体验评测")+'<br>'+esc(r.version||"")+' · '+esc(r.platform||"")+'</div></div></div><p class="app-desc">'+esc(r.summary||"查看完整评测，了解应用功能及使用体验。")+'</p><div class="tags">'+(Array.isArray(r.tags)?r.tags:[]).slice(0,6).map(function(t){return '<span>'+esc(t)+'</span>'}).join("")+'</div></div><div class="score-side"><div class="score-ring"><div class="score-core"><b>'+s.toFixed(0)+'</b><span>/ 100</span></div></div><div class="score-name">'+t[0]+'</div><div class="note">LYX '+s.toFixed(1)+' 分</div></div></div><div class="feature-actions"><button class="act" type="button" data-review-id="'+esc(r.id)+'">查看完整评测　›</button><span class="note">六维雷达图 · 加权评分 · 良友简评</span></div></article>'}
+function renderList(){if(!REVIEWS.length){listNode.innerHTML='<div class="panel review-empty">目前还没有已发布的评测。</div>';return}listNode.innerHTML=REVIEWS.map(card).join("")}
+function node(tag,attrs,txt){var e=document.createElementNS("http://www.w3.org/2000/svg",tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k])});if(txt)e.textContent=txt;svg.appendChild(e);return e}
+function radar(scores){svg.textContent="";var cx=170,cy=153,r=100;
+function pos(i,d){var t=-Math.PI/2+i*Math.PI/3;return [cx+Math.cos(t)*d,cy+Math.sin(t)*d]}
+function pts(a){return a.map(function(d,i){return pos(i,d).join(",")}).join(" ")}
+for(var j=1;j<=5;j++)node("polygon",{points:pts(Array(6).fill(r*j/5)),fill:"none",stroke:j===5?"#8feeff":"#347fcb","stroke-opacity":j===5?".9":".42","stroke-width":j===5?"1.8":"1"});
+scores.forEach(function(_,i){var p=pos(i,r);node("line",{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:"#55b3ed","stroke-opacity":".35"})});
+node("polygon",{points:pts(scores.map(function(s){return r*s/100})),fill:"#18cfff","fill-opacity":".34",stroke:"#73efff","stroke-width":"2.5"});
+scores.forEach(function(s,i){var p=pos(i,r*s/100);node("circle",{cx:p[0],cy:p[1],r:3.6,fill:"#fff",stroke:"#45ecff","stroke-width":"1.5"})});
 [["丰富",170,24],["便捷",288,82],["流畅",287,230],["融合",170,294],["适配",54,230],["隐私",54,82]].forEach(function(a){node("text",{x:a[1],y:a[2],fill:"#b7e9ff","text-anchor":"middle","font-size":"12","font-weight":"700"},a[0])});
-var list=document.getElementById("listView"),detail=document.getElementById("detailView");
-function route(scroll){var d=location.hash==="#detail";list.hidden=d;detail.hidden=!d;document.title=d?"上岛记 · LYX 评测详情":"LYX 体验评分体系 · 良友科技";if(scroll!==false)window.scrollTo({top:0,behavior:"instant"})}
-document.getElementById("enterDetail").addEventListener("click",function(){location.hash="detail"});
-document.getElementById("returnList").addEventListener("click",function(){location.hash="home"});
-addEventListener("hashchange",function(){route(true)});route(false);
-var modal=document.getElementById("standardDialog");document.getElementById("standardBtn").onclick=function(){modal.showModal()};document.getElementById("closeDialog").onclick=function(){modal.close()};
-document.getElementById("shareDetail").onclick=async function(){var url=location.href.replace(/#.*$/,"")+"#detail";if(navigator.share){try{await navigator.share({title:"上岛记 · LYX 体验评分",url:url});return}catch(e){}}try{await navigator.clipboard.writeText(url);this.textContent="已复制 ✓"}catch(e){this.textContent="请复制地址栏链接"}};
+}
+function renderDetail(r){CURRENT=r;var s=result(r),t=tier(s),sc=scoresOf(r);
+var top=document.querySelector(".detail-top");
+top.innerHTML='<div><div class="app-title">'+image(r)+'<div><h2>'+esc(r.name)+'</h2><div class="subtitle">'+esc(r.category||"")+' · '+esc(r.subtitle||"")+'<br>'+esc(r.version||"")+' · '+esc(r.platform||"")+'</div></div></div><p>'+esc(r.tagline||"独立评价 · 真实体验")+'</p></div><div class="score-side"><div class="score-ring"><div class="score-core"><b>'+s.toFixed(0)+'</b><span>/ 100</span></div></div><div class="score-name">♛ '+t[0]+'</div></div>';
+radar(sc);
+document.getElementById("scoreBars").innerHTML=sc.map(function(v,i){return '<div><div class="bar-head"><span>'+AXES[i]+' · '+Math.round(WEIGHTS[i]*100)+'%</span><b>'+v+'</b></div><div class="track"><div class="fill" style="width:'+v+'%"></div></div></div>'}).join("");
+document.getElementById("result").textContent=s.toFixed(1);
+document.getElementById("calculation").textContent=sc.map(function(v,i){return v+'×'+WEIGHTS[i].toFixed(2)}).join(" + ");
+document.querySelector(".review").innerHTML=String(r.review||"暂无简评").split(/\n\s*\n/).filter(Boolean).map(function(p){return "<p>"+esc(p).replace(/\n/g,"<br>")+"</p>"}).join("");
+document.querySelectorAll(".level").forEach(function(el,i){el.classList.toggle("on",i===([90,85,80,70].findIndex(function(n){return s>=n})) )});
+var notice=document.querySelector("#detailView .levels + .formula-small");if(notice)notice.textContent="70 分以下：暂不推荐。维度评分及评语为独立评价资料，可依据实际体验持续修订。";
+document.title=r.name+" · LYX 体验评分详情";
+}
+function route(scroll){var hash=decodeURIComponent(location.hash.slice(1));var isDetail=hash.indexOf("detail")===0;
+var id=hash.startsWith("detail/")?hash.slice(7):REVIEWS[0]&&REVIEWS[0].id;
+var r=REVIEWS.find(function(a){return a.id===id})||REVIEWS[0];if(isDetail&&!r)isDetail=false;
+list.hidden=isDetail;detail.hidden=!isDetail;
+if(isDetail){renderDetail(r)}else document.title="LYX 体验评分体系 · 良友科技";
+if(scroll!==false)window.scrollTo({top:0,behavior:"instant"});
+}
+listNode.addEventListener("click",function(e){var b=e.target.closest("button[data-review-id]");if(!b)return;location.hash="detail/"+encodeURIComponent(b.getAttribute("data-review-id"))});
+document.getElementById("returnList").onclick=function(){location.hash="home"};
+document.getElementById("standardBtn").onclick=function(){dialog.showModal()};
+document.getElementById("closeDialog").onclick=function(){dialog.close()};
+document.getElementById("shareDetail").onclick=async function(){var url=location.href;if(navigator.share){try{await navigator.share({title:(CURRENT&&CURRENT.name||"LYX")+" 体验评分",url:url});return}catch(e){}}try{await navigator.clipboard.writeText(url);this.textContent="已复制 ✓"}catch(e){this.textContent="请复制地址栏链接"}};
+window.addEventListener("hashchange",function(){route(true)});
+fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){REVIEWS=(Array.isArray(data.reviews)?data.reviews:[]).filter(function(r){return r&&r.status==="published"&&/^[a-z0-9-]{1,80}$/.test(r.id)}).sort(function(a,b){return Number(a.order||999)-Number(b.order||999)});renderList();route(false)}).catch(function(err){listNode.innerHTML='<div class="panel review-empty">评测资料暂时读取失败，请刷新网页重试。<br><small>'+esc(err.message)+'</small></div>';route(false)});
 })();
 </script>
 </body>
