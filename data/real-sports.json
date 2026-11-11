@@ -2,58 +2,362 @@
   "schema": 1,
   "fixture_schema_version": 11,
   "source_type": "official_fixtures",
-  "generated_at": "2026-11-11T06:11:30Z",
+  "generated_at": "2026-11-11T12:51:25Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "api-sports",
       "status": "partial",
-      "count": 288,
+      "count": 287,
       "failed_groups": 10
     },
     {
       "tag": "pandascore",
       "status": "ok",
-      "count": 81,
+      "count": 85,
       "failed_groups": 0
     }
   ],
   "status": "partial",
   "events": [
     {
-      "id": "basketball-519692",
-      "provider": "api-sports",
-      "sport": "basketball",
-      "league": "NBA",
-      "stage": "2026-2027",
-      "start_time": "2026-11-11T04:00:00Z",
-      "status": "live",
-      "status_detail": "Quarter 4",
-      "home": "Portland Trail Blazers",
-      "away": "Oklahoma City Thunder",
-      "score_home": 99,
-      "score_away": 84,
-      "prominence": 410,
-      "source_url": "https://www.api-basketball.com/"
-    },
-    {
-      "id": "panda-1762451",
+      "id": "panda-1766738",
       "provider": "pandascore",
-      "sport": "esports",
-      "league": "BLAST Rivals",
-      "stage": "Group A",
-      "tournament_id": 22269,
-      "tournament_name": "Group A",
-      "start_time": "2026-11-11T04:15:00Z",
+      "sport": "lol",
+      "league": "LCP",
+      "stage": "Playoffs",
+      "tournament_id": 22293,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T09:00:00Z",
       "status": "live",
       "status_detail": "",
-      "home": "Vitality",
-      "away": "Team Falcons",
+      "home": "Ground Zero Gaming",
+      "away": "Frank Esports",
+      "score_home": 2,
+      "score_away": 2,
+      "best_of": 5,
+      "winner_id": null,
+      "prominence": 385,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1791664",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "DreamLeague",
+      "stage": "Group A",
+      "tournament_id": 22389,
+      "tournament_name": "Group A",
+      "start_time": "2026-11-11T10:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "PlayTime",
+      "away": "Team Synapse",
       "score_home": 1,
-      "score_away": 0,
+      "score_away": 1,
       "best_of": 3,
       "winner_id": null,
       "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1791731",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "DreamLeague",
+      "stage": "Group B",
+      "tournament_id": 22390,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-11T10:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "HULIGANI",
+      "away": "Yakult Brothers",
+      "score_home": 1,
+      "score_away": 1,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1791732",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "DreamLeague",
+      "stage": "Group B",
+      "tournament_id": 22390,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-11T10:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "CyberHero",
+      "away": "Inner Circle x Insanity",
+      "score_home": 1,
+      "score_away": 1,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1791733",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "DreamLeague",
+      "stage": "Group B",
+      "tournament_id": 22390,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-11T10:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "InterActive Philippines",
+      "away": "Zero Tenacity",
+      "score_home": 1,
+      "score_away": 1,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1788763",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "United21",
+      "stage": "Group B",
+      "tournament_id": 22372,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-11T11:45:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "Esport Academy Copenhagen",
+      "away": "EYEBALLERS",
+      "score_home": 0,
+      "score_away": 1,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1786819",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "CCT Europe",
+      "stage": "Group Stage",
+      "tournament_id": 22355,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "GenOne",
+      "away": "Inner Circle Academy",
+      "score_home": 0,
+      "score_away": 1,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1789148",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "CCT Europe",
+      "stage": "Group Stage",
+      "tournament_id": 22376,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "Nexus",
+      "away": "MOUZ NXT",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1789501",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "European Pro League",
+      "stage": "Group D",
+      "tournament_id": 22382,
+      "tournament_name": "Group D",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "G2 Ares",
+      "away": "Lunacy Team",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1796478",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "NODWIN Clutch Series",
+      "stage": "Group Stage",
+      "tournament_id": 22413,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "Phantom",
+      "away": "Drama eSports",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1802911",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asia Pacific Predator League",
+      "stage": "Playoffs",
+      "tournament_id": 22428,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "Xipto Esports",
+      "away": "Salamander",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1802912",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asia Pacific Predator League",
+      "stage": "Playoffs",
+      "tournament_id": 22428,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "Fourdaboy",
+      "away": "Sharper Esport",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1802914",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asia Pacific Predator League",
+      "stage": "Playoffs",
+      "tournament_id": 22428,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "1DAY24",
+      "away": "GODX",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1802915",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asia Pacific Predator League",
+      "stage": "Playoffs",
+      "tournament_id": 22428,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "OneOPae",
+      "away": "NongKaiTod",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1804305",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asia Pacific Predator League",
+      "stage": "Playoffs",
+      "tournament_id": 22424,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "GAS Esports",
+      "away": "Surprise",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1804961",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Exort Fiesta",
+      "stage": "Group D",
+      "tournament_id": 22434,
+      "tournament_name": "Group D",
+      "start_time": "2026-11-11T12:00:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "ex-Sashi Academy",
+      "away": "Ducks",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1786538",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Media Eleague",
+      "stage": "Playoffs",
+      "tournament_id": 22350,
+      "tournament_name": "Playoffs",
+      "start_time": "2026-11-11T12:15:00Z",
+      "status": "live",
+      "status_detail": "",
+      "home": "LenS Team",
+      "away": "iLTW TEAM",
+      "score_home": 0,
+      "score_away": 0,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
       "source_url": "https://www.pandascore.co/"
     },
     {
@@ -285,26 +589,6 @@
       "source_url": "https://www.api-basketball.com/"
     },
     {
-      "id": "panda-1766738",
-      "provider": "pandascore",
-      "sport": "lol",
-      "league": "LCP",
-      "stage": "Playoffs",
-      "tournament_id": 22293,
-      "tournament_name": "Playoffs",
-      "start_time": "2026-11-11T09:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "Ground Zero Gaming",
-      "away": "Frank Esports",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 5,
-      "winner_id": null,
-      "prominence": 385,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
       "id": "panda-1766741",
       "provider": "pandascore",
       "sport": "lol",
@@ -345,126 +629,6 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1762459",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "BLAST Rivals",
-      "stage": "Group B",
-      "tournament_id": 22270,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T07:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "Spirit",
-      "away": "FUT Esports",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1762460",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "BLAST Rivals",
-      "stage": "Group B",
-      "tournament_id": 22270,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T09:30:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "MOUZ",
-      "away": "G2",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1791664",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "DreamLeague",
-      "stage": "Group A",
-      "tournament_id": 22389,
-      "tournament_name": "Group A",
-      "start_time": "2026-11-11T10:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "PlayTime",
-      "away": "Team Synapse",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1791731",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "DreamLeague",
-      "stage": "Group B",
-      "tournament_id": 22390,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T10:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "HULIGANI",
-      "away": "Yakult Brothers",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1791732",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "DreamLeague",
-      "stage": "Group B",
-      "tournament_id": 22390,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T10:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "CyberHero",
-      "away": "Inner Circle x Insanity",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1791733",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "DreamLeague",
-      "stage": "Group B",
-      "tournament_id": 22390,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T10:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "InterActive Philippines",
-      "away": "Zero Tenacity",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 310,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
       "id": "panda-1791667",
       "provider": "pandascore",
       "sport": "esports",
@@ -472,7 +636,7 @@
       "stage": "Group A",
       "tournament_id": 22389,
       "tournament_name": "Group A",
-      "start_time": "2026-11-11T13:00:00Z",
+      "start_time": "2026-11-11T14:00:00Z",
       "status": "scheduled",
       "status_detail": "",
       "home": "PlayTime",
@@ -492,7 +656,7 @@
       "stage": "Group B",
       "tournament_id": 22390,
       "tournament_name": "Group B",
-      "start_time": "2026-11-11T13:00:00Z",
+      "start_time": "2026-11-11T14:00:00Z",
       "status": "scheduled",
       "status_detail": "",
       "home": "HULIGANI",
@@ -512,7 +676,7 @@
       "stage": "Group B",
       "tournament_id": 22390,
       "tournament_name": "Group B",
-      "start_time": "2026-11-11T13:00:00Z",
+      "start_time": "2026-11-11T14:00:00Z",
       "status": "scheduled",
       "status_detail": "",
       "home": "InterActive Philippines",
@@ -657,6 +821,86 @@
       "status_detail": "",
       "home": "potn9ki",
       "away": "Power Rangers",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1762452",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "BLAST Rivals",
+      "stage": "Group A",
+      "tournament_id": 22269,
+      "tournament_name": "Group A",
+      "start_time": "2026-11-12T02:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Legacy",
+      "away": "Team Falcons",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1762453",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "BLAST Rivals",
+      "stage": "Group A",
+      "tournament_id": 22269,
+      "tournament_name": "Group A",
+      "start_time": "2026-11-12T04:30:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "FURIA",
+      "away": "Vitality",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1762461",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "BLAST Rivals",
+      "stage": "Group B",
+      "tournament_id": 22270,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-12T07:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "FUT Esports",
+      "away": "MOUZ",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 310,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1762462",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "BLAST Rivals",
+      "stage": "Group B",
+      "tournament_id": 22270,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-12T09:30:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Spirit",
+      "away": "G2",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -873,78 +1117,18 @@
       "source_url": "https://www.api-basketball.com/"
     },
     {
-      "id": "panda-1788754",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "United21",
-      "stage": "Group A",
-      "tournament_id": 22371,
-      "tournament_name": "Group A",
-      "start_time": "2026-11-11T09:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "9INE Academy",
-      "away": "Teletubisie",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1789147",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "CCT Europe",
-      "stage": "Group Stage",
-      "tournament_id": 22376,
-      "tournament_name": "Group Stage",
-      "start_time": "2026-11-11T09:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "ex-RUSTEC",
-      "away": "Sökerorg",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1796477",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "NODWIN Clutch Series",
-      "stage": "Group Stage",
-      "tournament_id": 22413,
-      "tournament_name": "Group Stage",
-      "start_time": "2026-11-11T09:00:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "UPGRADE",
-      "away": "Butterfly",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1785750",
+      "id": "panda-1785751",
       "provider": "pandascore",
       "sport": "esports",
       "league": "Asgard Championship",
       "stage": "Group A",
       "tournament_id": 22347,
       "tournament_name": "Group A",
-      "start_time": "2026-11-11T10:00:00Z",
+      "start_time": "2026-11-11T13:00:00Z",
       "status": "scheduled",
       "status_detail": "",
-      "home": "PuckChamp",
-      "away": "Spirit Academy",
+      "home": "Inner Circle x Insanity",
+      "away": "Xipto Esports",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -953,18 +1137,18 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1792510",
+      "id": "panda-1792501",
       "provider": "pandascore",
       "sport": "esports",
       "league": "1win Essence",
-      "stage": "Group B",
-      "tournament_id": 22395,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T10:00:00Z",
+      "stage": "Group A",
+      "tournament_id": 22394,
+      "tournament_name": "Group A",
+      "start_time": "2026-11-11T13:00:00Z",
       "status": "scheduled",
       "status_detail": "",
-      "home": "Xipto Esports",
-      "away": "LEGION",
+      "home": "Froglings",
+      "away": "CyberHero",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -973,58 +1157,18 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1788763",
+      "id": "panda-1804306",
       "provider": "pandascore",
       "sport": "esports",
-      "league": "United21",
-      "stage": "Group B",
-      "tournament_id": 22372,
-      "tournament_name": "Group B",
-      "start_time": "2026-11-11T11:30:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "Esport Academy Copenhagen",
-      "away": "EYEBALLERS",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1789501",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "European Pro League",
-      "stage": "Group D",
-      "tournament_id": 22382,
-      "tournament_name": "Group D",
-      "start_time": "2026-11-11T11:30:00Z",
-      "status": "scheduled",
-      "status_detail": "",
-      "home": "G2 Ares",
-      "away": "Lunacy Team",
-      "score_home": null,
-      "score_away": null,
-      "best_of": 3,
-      "winner_id": null,
-      "prominence": 90,
-      "source_url": "https://www.pandascore.co/"
-    },
-    {
-      "id": "panda-1786538",
-      "provider": "pandascore",
-      "sport": "esports",
-      "league": "Media Eleague",
+      "league": "Asia Pacific Predator League",
       "stage": "Playoffs",
-      "tournament_id": 22350,
+      "tournament_id": 22424,
       "tournament_name": "Playoffs",
-      "start_time": "2026-11-11T12:00:00Z",
+      "start_time": "2026-11-11T14:30:00Z",
       "status": "scheduled",
       "status_detail": "",
-      "home": "LenS Team",
-      "away": "iLTW TEAM",
+      "home": "Rojali",
+      "away": "Straight outta PIK",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -1033,18 +1177,158 @@
       "source_url": "https://www.pandascore.co/"
     },
     {
-      "id": "panda-1786819",
+      "id": "panda-1786820",
       "provider": "pandascore",
       "sport": "esports",
       "league": "CCT Europe",
       "stage": "Group Stage",
       "tournament_id": 22355,
       "tournament_name": "Group Stage",
-      "start_time": "2026-11-11T12:00:00Z",
+      "start_time": "2026-11-11T15:00:00Z",
       "status": "scheduled",
       "status_detail": "",
-      "home": "GenOne",
-      "away": "Inner Circle Academy",
+      "home": "Nexus",
+      "away": "BakS eSports",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1789149",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "CCT Europe",
+      "stage": "Group Stage",
+      "tournament_id": 22376,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T15:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "FORZE Reload",
+      "away": "MASONIC",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1796479",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "NODWIN Clutch Series",
+      "stage": "Group Stage",
+      "tournament_id": 22413,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T15:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "ex-INOX Division",
+      "away": "33",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1804960",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Exort Fiesta",
+      "stage": "Group C",
+      "tournament_id": 22433,
+      "tournament_name": "Group C",
+      "start_time": "2026-11-11T15:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Ryvex",
+      "away": "evermore",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1777592",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Elisa Open Suomi",
+      "stage": "Group Stage",
+      "tournament_id": 22329,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T15:30:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "SINQU",
+      "away": "KUUSAMO.gg",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1805621",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "ESEA",
+      "stage": "Regular Season",
+      "tournament_id": 22135,
+      "tournament_name": "Regular Season",
+      "start_time": "2026-11-11T15:45:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Spirit Academy Green",
+      "away": "banda chuya",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 1,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1785766",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "Asgard Championship",
+      "stage": "Group B",
+      "tournament_id": 22348,
+      "tournament_name": "Group B",
+      "start_time": "2026-11-11T16:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "Team Lynx",
+      "away": "Team Synapse",
+      "score_home": null,
+      "score_away": null,
+      "best_of": 3,
+      "winner_id": null,
+      "prominence": 90,
+      "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "panda-1786724",
+      "provider": "pandascore",
+      "sport": "esports",
+      "league": "CCT South America",
+      "stage": "Group Stage",
+      "tournament_id": 22353,
+      "tournament_name": "Group Stage",
+      "start_time": "2026-11-11T16:00:00Z",
+      "status": "scheduled",
+      "status_detail": "",
+      "home": "QUINTESSÊNCIA",
+      "away": "underw0rld",
       "score_home": null,
       "score_away": null,
       "best_of": 3,
@@ -1091,6 +1375,22 @@
       "winner_id": 137271,
       "prominence": 90,
       "source_url": "https://www.pandascore.co/"
+    },
+    {
+      "id": "basketball-519692",
+      "provider": "api-sports",
+      "sport": "basketball",
+      "league": "NBA",
+      "stage": "2026-2027",
+      "start_time": "2026-11-11T04:00:00Z",
+      "status": "finished",
+      "status_detail": "Game Finished",
+      "home": "Portland Trail Blazers",
+      "away": "Oklahoma City Thunder",
+      "score_home": 123,
+      "score_away": 103,
+      "prominence": 410,
+      "source_url": "https://www.api-basketball.com/"
     },
     {
       "id": "basketball-532916",
@@ -1215,8 +1515,8 @@
       "status_detail": "Game Finished",
       "home": "UNLV Lady Rebels W",
       "away": "Arizona State W",
-      "score_home": 65,
-      "score_away": 58,
+      "score_home": 58,
+      "score_away": 65,
       "prominence": 220,
       "source_url": "https://www.api-basketball.com/"
     },
@@ -1329,22 +1629,6 @@
       "away": "Weber State",
       "score_home": 85,
       "score_away": 64,
-      "prominence": 220,
-      "source_url": "https://www.api-basketball.com/"
-    },
-    {
-      "id": "basketball-526591",
-      "provider": "api-sports",
-      "sport": "basketball",
-      "league": "NCAA",
-      "stage": "2026-2027",
-      "start_time": "2026-11-11T02:00:00Z",
-      "status": "finished",
-      "status_detail": "Game Finished",
-      "home": "Virginia",
-      "away": "Bucknell",
-      "score_home": 95,
-      "score_away": 61,
       "prominence": 220,
       "source_url": "https://www.api-basketball.com/"
     }
@@ -1613,6 +1897,270 @@
       "prominence": 460
     },
     {
+      "tournament_id": 21726,
+      "title": "LPL · Playoffs",
+      "rounds": [
+        {
+          "round": "Final",
+          "matches": [
+            {
+              "home": "Bilibili Gaming",
+              "away": "Anyone's Legend",
+              "score_home": 1,
+              "score_away": 3,
+              "match_id": "1643093",
+              "previous_matches": [
+                {
+                  "match_id": "1643092",
+                  "type": "winner"
+                },
+                {
+                  "match_id": "1643099",
+                  "type": "winner"
+                }
+              ],
+              "best_of": 5,
+              "start_time": "2026-09-13T09:00:00Z",
+              "winner": "Anyone's Legend"
+            }
+          ]
+        },
+        {
+          "round": "Lower Bracket / Final",
+          "matches": [
+            {
+              "home": "Anyone's Legend",
+              "away": "Invictus Gaming",
+              "score_home": 3,
+              "score_away": 2,
+              "match_id": "1643099",
+              "previous_matches": [
+                {
+                  "match_id": "1643092",
+                  "type": "loser"
+                },
+                {
+                  "match_id": "1643098",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-12T09:00:00Z",
+              "winner": "Anyone's Legend"
+            }
+          ]
+        },
+        {
+          "round": "Lower Bracket / Quarterfinals",
+          "matches": [
+            {
+              "home": "Ninjas in Pyjamas",
+              "away": "LGD Gaming",
+              "score_home": 2,
+              "score_away": 3,
+              "match_id": "1643097",
+              "previous_matches": [
+                {
+                  "match_id": "1643090",
+                  "type": "loser"
+                },
+                {
+                  "match_id": "1643095",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-06T10:00:00Z",
+              "winner": "LGD Gaming"
+            },
+            {
+              "home": "Invictus Gaming",
+              "away": "Team WE",
+              "score_home": 3,
+              "score_away": 1,
+              "match_id": "1643096",
+              "previous_matches": [
+                {
+                  "match_id": "1643091",
+                  "type": "loser"
+                },
+                {
+                  "match_id": "1643094",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-06T06:00:00Z",
+              "winner": "Invictus Gaming"
+            }
+          ]
+        },
+        {
+          "round": "Lower Bracket / Round 1",
+          "matches": [
+            {
+              "home": "Ninjas in Pyjamas",
+              "away": "JD Gaming",
+              "score_home": 3,
+              "score_away": 0,
+              "match_id": "1643095",
+              "previous_matches": [
+                {
+                  "match_id": "1643089",
+                  "type": "loser"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-05T11:00:00Z",
+              "winner": "Ninjas in Pyjamas"
+            },
+            {
+              "home": "Invictus Gaming",
+              "away": "Top Esports",
+              "score_home": 3,
+              "score_away": 2,
+              "match_id": "1643094",
+              "previous_matches": [
+                {
+                  "match_id": "1643088",
+                  "type": "loser"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-05T06:00:00Z",
+              "winner": "Invictus Gaming"
+            }
+          ]
+        },
+        {
+          "round": "Lower Bracket / Semifinals",
+          "matches": [
+            {
+              "home": "Invictus Gaming",
+              "away": "LGD Gaming",
+              "score_home": 3,
+              "score_away": 0,
+              "match_id": "1643098",
+              "previous_matches": [
+                {
+                  "match_id": "1643096",
+                  "type": "winner"
+                },
+                {
+                  "match_id": "1643097",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "lower",
+              "best_of": 5,
+              "start_time": "2026-09-08T09:00:00Z",
+              "winner": "Invictus Gaming"
+            }
+          ]
+        },
+        {
+          "round": "Upper Bracket / Final",
+          "matches": [
+            {
+              "home": "Anyone's Legend",
+              "away": "Bilibili Gaming",
+              "score_home": 0,
+              "score_away": 3,
+              "match_id": "1643092",
+              "previous_matches": [
+                {
+                  "match_id": "1643090",
+                  "type": "winner"
+                },
+                {
+                  "match_id": "1643091",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "upper",
+              "best_of": 5,
+              "start_time": "2026-09-07T09:00:00Z",
+              "winner": "Bilibili Gaming"
+            }
+          ]
+        },
+        {
+          "round": "Upper Bracket / Quarterfinals",
+          "matches": [
+            {
+              "home": "JD Gaming",
+              "away": "Team WE",
+              "score_home": 1,
+              "score_away": 3,
+              "match_id": "1643089",
+              "bracket_side": "upper",
+              "best_of": 5,
+              "start_time": "2026-08-30T09:00:00Z",
+              "winner": "Team WE"
+            },
+            {
+              "home": "Top Esports",
+              "away": "LGD Gaming",
+              "score_home": 2,
+              "score_away": 3,
+              "match_id": "1643088",
+              "bracket_side": "upper",
+              "best_of": 5,
+              "start_time": "2026-08-29T09:00:00Z",
+              "winner": "LGD Gaming"
+            }
+          ]
+        },
+        {
+          "round": "Upper Bracket / Semifinals",
+          "matches": [
+            {
+              "home": "Bilibili Gaming",
+              "away": "Team WE",
+              "score_home": 3,
+              "score_away": 1,
+              "match_id": "1643091",
+              "previous_matches": [
+                {
+                  "match_id": "1643089",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "upper",
+              "best_of": 5,
+              "start_time": "2026-09-03T09:10:00Z",
+              "winner": "Bilibili Gaming"
+            },
+            {
+              "home": "Anyone's Legend",
+              "away": "LGD Gaming",
+              "score_home": 3,
+              "score_away": 1,
+              "match_id": "1643090",
+              "previous_matches": [
+                {
+                  "match_id": "1643088",
+                  "type": "winner"
+                }
+              ],
+              "bracket_side": "upper",
+              "best_of": 5,
+              "start_time": "2026-09-04T09:10:00Z",
+              "winner": "Anyone's Legend"
+            }
+          ]
+        }
+      ],
+      "provider": "pandascore",
+      "sport": "lol",
+      "prominence": 430
+    },
+    {
       "tournament_id": 21722,
       "title": "LCK · Playoffs",
       "rounds": [
@@ -1819,308 +2367,6 @@
       "prominence": 430
     },
     {
-      "tournament_id": 20643,
-      "title": "LPL · Playoffs",
-      "rounds": [
-        {
-          "round": "Final",
-          "matches": [
-            {
-              "home": "Top Esports",
-              "away": "Bilibili Gaming",
-              "score_home": 0,
-              "score_away": 3,
-              "match_id": "1422523",
-              "previous_matches": [
-                {
-                  "match_id": "1422521",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422522",
-                  "type": "winner"
-                }
-              ],
-              "best_of": 5,
-              "start_time": "2026-06-14T08:15:00Z",
-              "winner": "Bilibili Gaming"
-            }
-          ]
-        },
-        {
-          "round": "Lower Bracket / Final",
-          "matches": [
-            {
-              "home": "Team WE",
-              "away": "Bilibili Gaming",
-              "score_home": 2,
-              "score_away": 3,
-              "match_id": "1422522",
-              "previous_matches": [
-                {
-                  "match_id": "1422521",
-                  "type": "loser"
-                },
-                {
-                  "match_id": "1422520",
-                  "type": "winner"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-13T08:30:00Z",
-              "winner": "Bilibili Gaming"
-            }
-          ]
-        },
-        {
-          "round": "Lower Bracket / Quarterfinals",
-          "matches": [
-            {
-              "home": "JD Gaming",
-              "away": "Bilibili Gaming",
-              "score_home": 1,
-              "score_away": 3,
-              "match_id": "1422519",
-              "previous_matches": [
-                {
-                  "match_id": "1422515",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422516",
-                  "type": "loser"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-06T09:00:00Z",
-              "winner": "Bilibili Gaming"
-            },
-            {
-              "home": "Anyone's Legend",
-              "away": "LGD Gaming",
-              "score_home": 3,
-              "score_away": 0,
-              "match_id": "1422518",
-              "previous_matches": [
-                {
-                  "match_id": "1422514",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422517",
-                  "type": "loser"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-05T09:00:00Z",
-              "winner": "Anyone's Legend"
-            }
-          ]
-        },
-        {
-          "round": "Lower Bracket / Round 1",
-          "matches": [
-            {
-              "home": "EDward Gaming",
-              "away": "Bilibili Gaming",
-              "score_home": 0,
-              "score_away": 3,
-              "match_id": "1422515",
-              "previous_matches": [
-                {
-                  "match_id": "1422513",
-                  "type": "loser"
-                },
-                {
-                  "match_id": "1422512",
-                  "type": "loser"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-03T09:00:00Z",
-              "winner": "Bilibili Gaming"
-            },
-            {
-              "home": "ThunderTalk Gaming",
-              "away": "LGD Gaming",
-              "score_home": 2,
-              "score_away": 3,
-              "match_id": "1422514",
-              "previous_matches": [
-                {
-                  "match_id": "1422511",
-                  "type": "loser"
-                },
-                {
-                  "match_id": "1422510",
-                  "type": "loser"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-02T09:00:00Z",
-              "winner": "LGD Gaming"
-            }
-          ]
-        },
-        {
-          "round": "Lower Bracket / Semifinals",
-          "matches": [
-            {
-              "home": "Anyone's Legend",
-              "away": "Bilibili Gaming",
-              "score_home": 0,
-              "score_away": 3,
-              "match_id": "1422520",
-              "previous_matches": [
-                {
-                  "match_id": "1422518",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422519",
-                  "type": "winner"
-                }
-              ],
-              "bracket_side": "lower",
-              "best_of": 5,
-              "start_time": "2026-06-08T09:00:00Z",
-              "winner": "Bilibili Gaming"
-            }
-          ]
-        },
-        {
-          "round": "Upper Bracket / Final",
-          "matches": [
-            {
-              "home": "Top Esports",
-              "away": "Team WE",
-              "score_home": 3,
-              "score_away": 0,
-              "match_id": "1422521",
-              "previous_matches": [
-                {
-                  "match_id": "1422517",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422516",
-                  "type": "winner"
-                }
-              ],
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-06-07T09:00:00Z",
-              "winner": "Top Esports"
-            }
-          ]
-        },
-        {
-          "round": "Upper Bracket / Quarterfinals",
-          "matches": [
-            {
-              "home": "Bilibili Gaming",
-              "away": "Team WE",
-              "score_home": 1,
-              "score_away": 3,
-              "match_id": "1422513",
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-05-30T09:30:00Z",
-              "winner": "Team WE"
-            },
-            {
-              "home": "Anyone's Legend",
-              "away": "EDward Gaming",
-              "score_home": 3,
-              "score_away": 0,
-              "match_id": "1422512",
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-05-30T06:00:00Z",
-              "winner": "Anyone's Legend"
-            },
-            {
-              "home": "Top Esports",
-              "away": "LGD Gaming",
-              "score_home": 3,
-              "score_away": 0,
-              "match_id": "1422511",
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-05-29T10:15:00Z",
-              "winner": "Top Esports"
-            },
-            {
-              "home": "JD Gaming",
-              "away": "ThunderTalk Gaming",
-              "score_home": 3,
-              "score_away": 1,
-              "match_id": "1422510",
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-05-29T06:00:00Z",
-              "winner": "JD Gaming"
-            }
-          ]
-        },
-        {
-          "round": "Upper Bracket / Semifinals",
-          "matches": [
-            {
-              "home": "Anyone's Legend",
-              "away": "Team WE",
-              "score_home": 0,
-              "score_away": 3,
-              "match_id": "1422517",
-              "previous_matches": [
-                {
-                  "match_id": "1422513",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422512",
-                  "type": "winner"
-                }
-              ],
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-06-01T09:00:00Z",
-              "winner": "Team WE"
-            },
-            {
-              "home": "JD Gaming",
-              "away": "Top Esports",
-              "score_home": 1,
-              "score_away": 3,
-              "match_id": "1422516",
-              "previous_matches": [
-                {
-                  "match_id": "1422511",
-                  "type": "winner"
-                },
-                {
-                  "match_id": "1422510",
-                  "type": "winner"
-                }
-              ],
-              "bracket_side": "upper",
-              "best_of": 5,
-              "start_time": "2026-05-31T09:10:00Z",
-              "winner": "Top Esports"
-            }
-          ]
-        }
-      ],
-      "provider": "pandascore",
-      "sport": "lol",
-      "prominence": 430
-    },
-    {
       "tournament_id": 22430,
       "title": "PGL · Playoffs",
       "rounds": [
@@ -2309,11 +2555,11 @@
               "match_id": "1589549",
               "previous_matches": [
                 {
-                  "match_id": "1589547",
+                  "match_id": "1589546",
                   "type": "loser"
                 },
                 {
-                  "match_id": "1589546",
+                  "match_id": "1589547",
                   "type": "loser"
                 }
               ],
@@ -3073,6 +3319,47 @@
       "prominence": 325
     },
     {
+      "id": "panda-22270",
+      "title": "BLAST Rivals · Group B",
+      "kind": "esports",
+      "provider": "pandascore",
+      "league": "BLAST Rivals",
+      "stage": "Group B",
+      "phase_group": "",
+      "groups": [
+        {
+          "rank": 1,
+          "team": "G2",
+          "wins": null,
+          "losses": null,
+          "group": ""
+        },
+        {
+          "rank": 1,
+          "team": "MOUZ",
+          "wins": null,
+          "losses": null,
+          "group": ""
+        },
+        {
+          "rank": 3,
+          "team": "FUT Esports",
+          "wins": null,
+          "losses": null,
+          "group": ""
+        },
+        {
+          "rank": 3,
+          "team": "Spirit",
+          "wins": null,
+          "losses": null,
+          "group": ""
+        }
+      ],
+      "sport": "esports",
+      "prominence": 310
+    },
+    {
       "id": "panda-22389",
       "title": "DreamLeague · Group A",
       "kind": "esports",
@@ -3139,78 +3426,9 @@
         }
       ],
       "sport": "esports",
-      "prominence": 310
-    },
-    {
-      "id": "panda-22390",
-      "title": "DreamLeague · Group B",
-      "kind": "esports",
-      "provider": "pandascore",
-      "league": "DreamLeague",
-      "stage": "Group B",
-      "phase_group": "",
-      "groups": [
-        {
-          "rank": 1,
-          "team": "CyberHero",
-          "wins": 4,
-          "losses": 0,
-          "group": ""
-        },
-        {
-          "rank": 2,
-          "team": "Inner Circle x Insanity",
-          "wins": 4,
-          "losses": 0,
-          "group": ""
-        },
-        {
-          "rank": 3,
-          "team": "PuckChamp",
-          "wins": 4,
-          "losses": 1,
-          "group": ""
-        },
-        {
-          "rank": 4,
-          "team": "Zero Tenacity",
-          "wins": 2,
-          "losses": 2,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "HULIGANI",
-          "wins": 1,
-          "losses": 2,
-          "group": ""
-        },
-        {
-          "rank": 6,
-          "team": "InterActive Philippines",
-          "wins": 1,
-          "losses": 3,
-          "group": ""
-        },
-        {
-          "rank": 7,
-          "team": "Amaru Gaming",
-          "wins": 1,
-          "losses": 4,
-          "group": ""
-        },
-        {
-          "rank": 8,
-          "team": "Yakult Brothers",
-          "wins": 0,
-          "losses": 5,
-          "group": ""
-        }
-      ],
-      "sport": "esports",
       "prominence": 310,
       "status": "stale",
-      "verified_at": "2026-11-10T10:02:40Z"
+      "verified_at": "2026-11-11T06:11:30Z"
     }
   ],
   "phase_coverage": {
@@ -3219,7 +3437,7 @@
     "lpl_ascend": true,
     "lpl_nirvana": true
   },
-  "verified_bracket_edges": 59,
+  "verified_bracket_edges": 55,
   "stage_matches": [
     {
       "id": "stage-1710932",
