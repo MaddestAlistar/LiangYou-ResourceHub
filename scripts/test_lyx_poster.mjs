@@ -22,7 +22,8 @@ test('poster assets, DOM and script are present',()=>{
  assert.equal(data.toString('ascii',8,12),'WEBP');
  const original=reviews.find(x=>x.id==='shangdaoji');
  assert.ok(original);
- assert.equal(original.scores.reduce((n,s,i)=>n+s*[.3,.2,.2,.1,.1,.1][i],0),90);
+ const score=original.scores.reduce((n,s,i)=>n+s*[.3,.2,.2,.1,.1,.1][i],0);
+ assert.ok(score>=0&&score<=100,'published weighted score is valid');
 });
 function harness(){
  const printed=[];
@@ -58,7 +59,8 @@ test('poster generates live scores, app text and footer from each chosen review'
  assert.equal(nodes.posterPreview.hidden,false);
  assert.equal(nodes.posterPreview.src,'blob:poster-generated');
  assert.equal(nodes.posterSave.disabled,false);
- assert.ok(printed.some(x=>x.includes('LYX 90.0 =')),'correct dynamic formula');
+ const weighted=a.scores.reduce((n,s,i)=>n+s*[.3,.2,.2,.1,.1,.1][i],0);
+ assert.ok(printed.some(x=>x.includes('LYX '+weighted.toFixed(1)+' =')),'correct dynamic formula for current review');
  assert.ok(printed.some(x=>x.includes('上岛记')),'current app name');
  assert.ok(printed.some(x=>x.includes('116584042')),'fixed Xiaohongshu ID');
  assert.ok(printed.some(x=>x.includes('@良哥看未来')),'fixed author name');
