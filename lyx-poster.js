@@ -138,6 +138,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  const dlg=$("posterDialog");if(!dlg)return;
  $("posterClose").onclick=()=>dlg.close();$("posterCloseSecondary").onclick=()=>dlg.close();
  $("posterSave").onclick=save;$("posterNativeShare").onclick=share;$("posterCopyLink").onclick=copy;
+  $("posterPreview").onclick=()=>{if(objectUrl)window.open(objectUrl,"_blank","noopener")};
  dlg.addEventListener("close",()=>{if(!working){/* Keep blob until next generation for iOS download reliability. */}});
 });
 window.LYXPoster={open};
