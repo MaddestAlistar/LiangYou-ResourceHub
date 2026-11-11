@@ -26,7 +26,7 @@ function validate(row){
  if(!Array.isArray(row.scores)||row.scores.length!==6||row.scores.some(x=>typeof x!=='number'||!Number.isFinite(x)||x<0||x>100))throw Error("六项评分必须填写 0–100");
  if(!Array.isArray(row.tags)||row.tags.length>10||row.tags.some(x=>!check(x,30)))throw Error("功能标签不合法");
  const icon=row.icon||"assets/lyx/shangdaoji.svg";
- if(typeof icon!=='string'||icon.length>160000||!/^(assets\/lyx\/[a-zA-Z0-9_.\/-]+\.(?:svg|png|webp)|data:image\/webp;base64,[A-Za-z0-9+/]+=*)$/.test(icon)||icon.includes(".."))throw Error("应用图标格式无效");
+ if(typeof icon!=='string'||icon.length>160000||!/^(assets\/(?:lyx|collabs)\/[a-zA-Z0-9_.\/-]+\.(?:svg|png|webp)|data:image\/webp;base64,[A-Za-z0-9+/]+=*)$/.test(icon)||icon.includes(".."))throw Error("应用图标格式无效");
  if(icon.startsWith("data:")){
   const raw=atob(icon.split(",")[1]);
   if(raw.length>110000||raw.length<80||raw.slice(0,4)!=="RIFF"||raw.slice(8,12)!=="WEBP")throw Error("上传图标须为有效 WebP 且小于 110KB");
