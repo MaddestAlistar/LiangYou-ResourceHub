@@ -97,6 +97,9 @@
   fillPositions();
   for(const key of ['category','subtitle','platform']){
    field(key+'-pick').addEventListener('change',()=>{
+    // Switching to "Other" starts a fresh custom answer, while old custom
+    // values loaded from published records are preserved by chooseChoice().
+    if(field(key+'-pick').value===CUSTOM)field(key).value='';
     syncChoice(key);
     if(key==='category')fillPositions('');
    });
