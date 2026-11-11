@@ -696,22 +696,34 @@
 @media(max-width:420px){.lyx-lab-feature{padding:19px 16px}.lyx-lab-feature h3{font-size:23px}.lyx-lab-feature .lyx-micro{display:block;margin:10px 0 0}}
 @media(prefers-reduced-motion:reduce){.lyx-lab-feature .lyx-open{transition:none}}
 
-/* LYX editorial card: blend with the Resource Lab charcoal-and-champagne palette. */
-.lyx-lab-feature{border-color:rgba(190,164,128,.5);background:radial-gradient(ellipse at 100% 0,rgba(57,61,88,.38),transparent 53%),radial-gradient(ellipse at 8% 100%,rgba(34,53,76,.32),transparent 46%),linear-gradient(145deg,#22232a,#1b1e24 61%,#181b21);box-shadow:0 12px 32px #0004,inset 0 1px #f0dfc61a}
-.lyx-lab-feature:before{background:linear-gradient(90deg,transparent,#bda17e88,transparent)}
-.lyx-lab-feature .lyx-kicker{color:#d9bf98;font-size:10px;letter-spacing:.095em}
-.lyx-lab-feature .lyx-guide-en{display:block;margin-top:5px;font-size:.62em;letter-spacing:.035em;font-weight:700;color:#d9bf98}
-.lyx-lab-feature h3{color:#f3eee5;font-size:clamp(21px,2.5vw,28px);margin:10px 0 10px}
-.lyx-lab-feature p{color:#b9b6b4;font-size:12px;line-height:1.85}
-.lyx-lab-feature .lyx-chip{border-color:#8d7d6859;background:#bca17c13;color:#d4cab9}
-.lyx-lab-feature .lyx-open{border-color:#b9a081a6;background:linear-gradient(117deg,#514739,#786042);color:#fff1d7;box-shadow:0 6px 15px #0003}
-.lyx-lab-feature .lyx-micro{color:#aaa69d}
-.lyx-lab-feature .lyx-preview{border:1px solid #6c61565e;background:linear-gradient(130deg,#272b33,#1b2028);box-shadow:inset 0 1px #fff2}
-.lyx-lab-feature img.lyx-appicon{display:block;object-fit:cover;padding:0;background:#fff;border:0;box-shadow:0 0 0 2px #82715e,0 4px 13px #0006}
-.lyx-lab-feature .lyx-appname{color:#f4f0e7}.lyx-lab-feature .lyx-appname small{color:#b6b5b7}
-.lyx-lab-feature .lyx-score{background:conic-gradient(from 210deg,#7e71aa,#5baecd,#ad92ac,#c3a77b,#7e71aa);box-shadow:0 0 14px #287abd3c}
-.lyx-lab-feature .lyx-score-inner{background:radial-gradient(circle at 50% 15%,#2a3c55,#131c2a 84%)}
-.lyx-lab-feature .lyx-rank{color:#e2c89b}.lyx-lab-feature .lyx-hint{color:#aea79e}
+/* LiangYou App Guide: align with the site's navy glass resource cards. */
+.lyx-lab-feature{
+  border:1px solid rgba(150,151,171,.48);
+  border-radius:26px;
+  background:
+    radial-gradient(ellipse at 90% 4%,rgba(134,118,131,.20),transparent 48%),
+    radial-gradient(ellipse at 3% 77%,rgba(36,89,157,.21),transparent 54%),
+    linear-gradient(145deg,#263853 0%,#1b2b45 32%,#131f35 66%,#0d172b 100%);
+  box-shadow:0 16px 38px rgba(2,8,23,.24),inset 0 1px rgba(226,235,255,.13);
+}
+.lyx-lab-feature:before{background:linear-gradient(90deg,transparent,rgba(184,199,226,.40),transparent)}
+.lyx-lab-feature:after{
+  content:"";position:absolute;right:-112px;top:-110px;width:350px;height:350px;
+  border:1px solid rgba(186,199,229,.11);border-radius:50%;pointer-events:none;
+}
+.lyx-lab-feature .lyx-kicker{color:#d0def2;font-size:10px;letter-spacing:.14em}
+.lyx-lab-feature .lyx-guide-en{display:block;margin-top:5px;font-size:.62em;letter-spacing:.035em;font-weight:700;color:#b9d5f5}
+.lyx-lab-feature h3{color:#f6f9ff;font-size:clamp(21px,2.5vw,28px);margin:10px 0}
+.lyx-lab-feature p{color:#c8d5e8;font-size:12px;line-height:1.85}
+.lyx-lab-feature .lyx-chip{border:1px solid rgba(166,187,222,.26);background:rgba(160,189,232,.075);color:#d6e1f2}
+.lyx-lab-feature .lyx-open{border-color:rgba(154,188,239,.56);background:linear-gradient(120deg,#436795,#2c4977);color:#fff;box-shadow:inset 0 1px rgba(240,247,255,.14),0 6px 18px rgba(2,14,37,.25)}
+.lyx-lab-feature .lyx-micro{color:#aabdd7}
+.lyx-lab-feature .lyx-preview{border:1px solid rgba(160,185,221,.24);background:linear-gradient(135deg,rgba(143,170,210,.13),rgba(16,34,61,.44));box-shadow:inset 0 1px rgba(241,247,255,.09)}
+.lyx-lab-feature img.lyx-appicon{display:block;object-fit:cover;padding:0;background:#fff;border:0;box-shadow:0 0 0 2px rgba(151,182,224,.55),0 4px 13px rgba(2,12,31,.38)}
+.lyx-lab-feature .lyx-appname{color:#f6f9ff}.lyx-lab-feature .lyx-appname small{color:#b9cce8}
+.lyx-lab-feature .lyx-score{background:conic-gradient(from 210deg,#7aadd6,#86b6e8,#b19ed3,#d1b79b,#7aadd6);box-shadow:0 0 16px rgba(85,148,217,.22)}
+.lyx-lab-feature .lyx-score-inner{background:radial-gradient(circle at 50% 15%,#264b78,#12243f 85%)}
+.lyx-lab-feature .lyx-rank{color:#e5d7c2}.lyx-lab-feature .lyx-hint{color:#aabdd7}
 </style>
       <article class="lyx-lab-feature" id="lyx-review-spot" aria-labelledby="lyx-review-heading">
         <div class="lyx-lab-copy">
