@@ -129,7 +129,7 @@
  function render(){
   const wrap=$('lyx-records');wrap.replaceChildren();
   if(!items.length){const p=document.createElement('p');p.className='muted';p.textContent='暂无记录。点击「新增评测」开始。';wrap.append(p);return}
-  items.slice().sort((a,b)=>(a.order??999)-(b.order??999)).forEach(x=>{
+  items.slice().sort((a,b)=>Math.round((calc(b.scores)-calc(a.scores))*10)||(a.order??999)-(b.order??999)).forEach(x=>{
    const b=document.createElement('button');b.type='button';b.className='lyx-record'+(editing?.id===x.id?' selected':'');
    const img=document.createElement('img');img.src=x.icon?.startsWith('data:')?x.icon:'./'+safeIcon(x.icon);img.alt='';
    const info=document.createElement('span');const title=document.createElement('strong');title.textContent=x.name;const sub=document.createElement('small');sub.textContent=calc(x.scores).toFixed(1)+' 分 · '+(x.status==='published'?'已发布':'草稿');info.append(title,sub);b.append(img,info);b.onclick=()=>select(x);wrap.append(b);
