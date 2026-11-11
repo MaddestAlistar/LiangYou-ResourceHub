@@ -36,7 +36,7 @@ async function loadPicture(src){
 function panelTitle(ctx,name,x,y,w){txt(ctx,name,x,y,26,"#f0fbff",850);line(ctx,x,y+14,x+w,y+14,"#6eaeea88",1)}
 function tierBox(ctx,x,y,w,h,title,subtitle,active){glowPanel(ctx,x,y,w,h,13);if(active){ctx.save();ctx.shadowColor="#41edff";ctx.shadowBlur=22;fill(ctx,x+2,y+2,w-4,h-4,"#1373efaa",11);ctx.restore();ctx.strokeStyle="#93efff";ctx.lineWidth=2;rounded(ctx,x+1,y+1,w-2,h-2,12);ctx.stroke()}txt(ctx,title,x+w/2,y+36,20,"#f8fdff",800,"center");txt(ctx,subtitle,x+w/2,y+68,17,active?"#fff":"#c9e5ff",750,"center")}
 function drawReview(ctx,review,x,y,width){
- const font=21,lh=31,maxLines=8;
+ const font=21,lh=29,maxLines=8;
  const paragraphs=String(review||"暂无简评").split(/\n\s*\n/).filter(Boolean);
  const clean=paragraphs.join("\n");
  wrapped(ctx,clean,x,y,width,{size:font,lineHeight:lh,maxLines,color:"#e8f5ff"});
@@ -136,7 +136,7 @@ async function share(){
 async function copy(){try{await navigator.clipboard.writeText(location.href);message("已复制当前 App 的评测详情链接。")}catch{message("复制未成功，请从浏览器地址栏复制当前详情链接。")}}
 document.addEventListener("DOMContentLoaded",()=>{
  const dlg=$("posterDialog");if(!dlg)return;
- $("posterClose").onclick=()=>dlg.close();
+ $("posterClose").onclick=()=>dlg.close();$("posterCloseSecondary").onclick=()=>dlg.close();
  $("posterSave").onclick=save;$("posterNativeShare").onclick=share;$("posterCopyLink").onclick=copy;
  dlg.addEventListener("close",()=>{if(!working){/* Keep blob until next generation for iOS download reliability. */}});
 });
