@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071330">
-<meta name="description" content="良友科技 LYX 应用体验评分：上岛记六维雷达、综合评分、加权公式及良友简评">
-<title>LYX 体验评分体系 · 良友科技</title>
+<meta name="description" content="良友APP指南 Amazing Guide：原创 LYX 六维体验评分、应用评测、雷达图、加权公式及良友简评">
+<title>良友APP指南 Amazing Guide · 良友科技</title>
 <style>
 :root{color-scheme:dark;--bg:#05102b;--line:#4fafff77;--cyan:#5ceeff;--muted:#acc8e9;--panel:linear-gradient(137deg,rgba(17,59,137,.95),rgba(8,24,69,.96) 60%,rgba(14,33,87,.97));font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box}
@@ -16,6 +16,7 @@ a{color:inherit}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-
 .topnav{display:flex;gap:9px;flex-wrap:wrap}.navbtn{display:inline-block;border:1px solid #6badff62;background:#153c7c66;border-radius:24px;padding:10px 14px;text-decoration:none;font-size:12px;color:#daecff}.navbtn:hover{background:#2065ac80}
 .page[hidden]{display:none!important}.lead{text-align:center;margin:38px auto 27px}.kicker{font-size:11px;letter-spacing:.2em;color:#7ee6ff;font-weight:800}
 h1{font-size:clamp(31px,5vw,59px);letter-spacing:.02em;margin:9px 0 8px;line-height:1.2;background:linear-gradient(100deg,#fff,#d6eaff 45%,#77dfff 77%,#b8a0ff);color:transparent;background-clip:text}
+.lead h1 .guide-en{display:block;margin-top:5px;font-size:clamp(21px,3vw,34px);letter-spacing:.085em;line-height:1.35;font-weight:750}
 .lead p{color:#b6cff3;font-size:13px;margin:0;line-height:1.75}.chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:18px}.chip{padding:6px 11px;border:1px solid #6bc4ff55;background:#1d64b034;border-radius:999px;font-size:11px;color:#bfeeff}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:21px;box-shadow:0 10px 35px #0004,inset 0 1px #ffffff1a,0 0 30px #0b8dff19;overflow:hidden;position:relative}
 .panel:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#70faff,transparent);pointer-events:none}
@@ -79,16 +80,16 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 </head>
 <body>
 <div class="wrap">
-<header class="top"><a class="logo" href="./#lab">良友科技 <b>LYX</b></a><nav class="topnav" aria-label="评测导航"><a class="navbtn" href="./#lab">← 返回资源实验室</a><button class="navbtn" id="standardBtn" type="button">评分标准 ⓘ</button></nav></header>
+<header class="top"><a class="logo" href="./#lab">良友科技 <b>APP GUIDE</b></a><nav class="topnav" aria-label="评测导航"><a class="navbtn" href="./#lab">← 返回资源实验室</a><button class="navbtn" id="standardBtn" type="button">评分标准 ⓘ</button></nav></header>
 <main>
-<section class="page" id="listView" aria-label="LYX 一级菜单">
-<div class="lead"><div class="kicker">LIANGYOU TECH EXPERIENCE INDEX</div><h1>LYX 应用体验评分体系</h1><p>良友科技原创 · APP 综合体验评价标准<br>从真实功能、使用效率到系统适配，六个维度评估应用体验</p><div class="chips"><span class="chip">六维加权评分</span><span class="chip">独立体验简评</span><span class="chip">透明推荐等级</span></div></div>
+<section class="page" id="listView" aria-label="良友APP指南评测列表">
+<div class="lead"><div class="kicker">LIANGYOU TECH · APP DISCOVERY &amp; REVIEWS</div><h1>良友APP指南<span class="guide-en">Amazing Guide</span></h1><p>良友科技原创 · APP 综合体验评价标准<br>从真实功能、使用效率到系统适配，六个维度评估应用体验</p><div class="chips"><span class="chip">六维加权评分</span><span class="chip">独立体验简评</span><span class="chip">透明推荐等级</span></div></div>
 <div id="reviewList" aria-live="polite" style="max-width:890px;margin:auto;color:#bcdaf5">正在载入已发布评测…</div>
 <div class="home-bottom">
-<div class="panel mini"><h3>✦ LYX 推荐等级</h3><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div></div>
+<div class="panel mini"><h3>✦ LYX 体验推荐等级</h3><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div></div>
 <div class="panel mini"><h3>⬡ 评分逻辑</h3><p>六维体验 × 对应权重，满分 100 分。每项得分均可追溯，低于 70 分暂不推荐。</p></div></div>
 </section>
-<section class="page" id="detailView" hidden aria-label="LYX 二级菜单：上岛记评测详情">
+<section class="page" id="detailView" hidden aria-label="良友APP指南评测详情">
 <div class="details-head"><button class="back" id="returnList" type="button">← 返回评测列表</button><h1>应用评测详情</h1><button class="back" id="shareDetail" type="button" aria-label="生成当前应用的小红书评分海报">生成海报 ↗</button></div>
 <div class="panel detail-top"><div><div class="app-title"><div class="app-icon" aria-label="上岛记应用图标"><div><small>取码</small><strong>上岛记</strong></div></div><div><h2>上岛记</h2><div class="subtitle">生活服务 · 信息助手<br>v2.4.1 · iOS / iPadOS</div></div></div><p>识别高效 · 功能完整 · 体验优秀</p></div><div class="score-side"><div class="score-ring"><div class="score-core"><b class="score-number">90</b><span>/ 100</span></div></div><div class="score-name">♛ 旗舰推荐</div></div></div>
 <div class="panel block" style="margin-top:17px"><h2><span>⬡</span>六维体验雷达</h2><div class="radar-wrap"><svg class="radar-svg" id="radar" viewBox="0 0 340 310" role="img" aria-label="六维评分雷达图" xmlns="http://www.w3.org/2000/svg"></svg><div class="bars" id="scoreBars"></div></div></div>
@@ -100,12 +101,12 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 </section>
 </main><footer class="footer">良友科技 · 真实体验 · 独立评价</footer>
 </div>
-<dialog id="standardDialog"><h2>LYX · 综合体验评分标准</h2><p>六维评分：功能丰富度 30%、使用便捷性 20%、稳定与流畅 20%、系统融合度 10%、设备适配性 10%、隐私与安全 10%。综合分为加权求和，结果保留一位小数。</p><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div><p>70 分以下暂不推荐。</p><button class="act" id="closeDialog" type="button">关闭</button></dialog>
+<dialog id="standardDialog"><h2>良友APP指南 · LYX 评分标准</h2><p>六维评分：功能丰富度 30%、使用便捷性 20%、稳定与流畅 20%、系统融合度 10%、设备适配性 10%、隐私与安全 10%。综合分为加权求和，结果保留一位小数。</p><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div><p>70 分以下暂不推荐。</p><button class="act" id="closeDialog" type="button">关闭</button></dialog>
 
 <dialog id="posterDialog" aria-label="自动生成小红书评分海报">
-  <header><h2>LYX · 小红书评分海报</h2><button class="poster-close" id="posterClose" type="button" aria-label="关闭海报预览">×</button></header>
+  <header><h2>良友APP指南 · 分享海报</h2><button class="poster-close" id="posterClose" type="button" aria-label="关闭海报预览">×</button></header>
   <p class="poster-intro">根据当前 App 的最新评测数据自动生成，包含六维雷达、评分公式、简评、推荐等级及固定作者头像。</p>
-  <div class="poster-image-frame"><img id="posterPreview" alt="自动生成的 LYX 体验评分海报" hidden></div>
+  <div class="poster-image-frame"><img id="posterPreview" alt="自动生成的良友APP指南 Amazing Guide 海报" hidden></div>
   <p id="posterStatus" role="status" aria-live="polite">选择应用详情中的「生成海报」即可预览。</p>
   <div class="poster-actions">
     <button class="poster-action" id="posterSave" type="button" disabled>保存 PNG</button>
@@ -113,7 +114,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
     <button class="poster-action" id="posterCopyLink" type="button" disabled>复制详情链接</button>
     <button id="posterCloseSecondary" type="button">关闭预览</button>
   </div>
-  <p class="poster-foot">1080 × 1440 · 竖版高清 PNG。iPhone 也可长按预览图保存到照片。</p>
+  <p class="poster-foot">2160 × 2880 · 2 倍超清 PNG。iPhone 也可长按预览图保存到照片。</p>
 </dialog>
 
 <script>
@@ -129,7 +130,7 @@ function scoresOf(r){return Array.from({length:6},function(_,i){return Math.max(
 function result(r){return scoresOf(r).reduce(function(n,s,i){return n+s*WEIGHTS[i]},0)}
 function tier(s){if(s>=90)return ["旗舰推荐","90–100"];if(s>=85)return ["优选推荐","85–89"];if(s>=80)return ["值得尝试","80–84"];if(s>=70)return ["可以尝试","70–79"];return ["暂不推荐","70 以下"]}
 function image(r){return '<img class="app-icon app-photo" src="'+esc(icon(r.icon))+'" alt="'+esc(r.name)+' 应用图标" loading="lazy">'}
-function card(r){var s=result(r),t=tier(s);return '<article class="panel feature review-card"><div class="feature-head"><b>LYX · 应用体验档案</b><span class="highlight">'+t[0]+'</span></div><div class="feature-main"><div><div class="app-title">'+image(r)+'<div><h2>'+esc(r.name)+'</h2><div class="subtitle">'+esc(r.category||"应用")+' · '+esc(r.subtitle||"体验评测")+'<br>'+esc(r.version||"")+' · '+esc(r.platform||"")+'</div></div></div><p class="app-desc">'+esc(r.summary||"查看完整评测，了解应用功能及使用体验。")+'</p><div class="tags">'+(Array.isArray(r.tags)?r.tags:[]).slice(0,6).map(function(t){return '<span>'+esc(t)+'</span>'}).join("")+'</div></div><div class="score-side"><div class="score-ring"><div class="score-core"><b>'+s.toFixed(0)+'</b><span>/ 100</span></div></div><div class="score-name">'+t[0]+'</div><div class="note">LYX '+s.toFixed(1)+' 分</div></div></div><div class="feature-actions"><button class="act" type="button" data-review-id="'+esc(r.id)+'">查看完整评测　›</button><span class="note">六维雷达图 · 加权评分 · 良友简评</span></div></article>'}
+function card(r){var s=result(r),t=tier(s);return '<article class="panel feature review-card"><div class="feature-head"><b>良友APP指南 · 应用体验档案</b><span class="highlight">'+t[0]+'</span></div><div class="feature-main"><div><div class="app-title">'+image(r)+'<div><h2>'+esc(r.name)+'</h2><div class="subtitle">'+esc(r.category||"应用")+' · '+esc(r.subtitle||"体验评测")+'<br>'+esc(r.version||"")+' · '+esc(r.platform||"")+'</div></div></div><p class="app-desc">'+esc(r.summary||"查看完整评测，了解应用功能及使用体验。")+'</p><div class="tags">'+(Array.isArray(r.tags)?r.tags:[]).slice(0,6).map(function(t){return '<span>'+esc(t)+'</span>'}).join("")+'</div></div><div class="score-side"><div class="score-ring"><div class="score-core"><b>'+s.toFixed(0)+'</b><span>/ 100</span></div></div><div class="score-name">'+t[0]+'</div><div class="note">LYX '+s.toFixed(1)+' 分</div></div></div><div class="feature-actions"><button class="act" type="button" data-review-id="'+esc(r.id)+'">查看完整评测　›</button><span class="note">六维雷达图 · 加权评分 · 良友简评</span></div></article>'}
 function renderList(){if(!REVIEWS.length){listNode.innerHTML='<div class="panel review-empty">目前还没有已发布的评测。</div>';return}listNode.innerHTML=REVIEWS.map(card).join("")}
 function node(tag,attrs,txt){var e=document.createElementNS("http://www.w3.org/2000/svg",tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k])});if(txt)e.textContent=txt;svg.appendChild(e);return e}
 function radar(scores){svg.textContent="";var cx=170,cy=153,r=100;
@@ -151,13 +152,13 @@ document.getElementById("calculation").textContent=sc.map(function(v,i){return v
 document.querySelector(".review").innerHTML=String(r.review||"暂无简评").split(/\n\s*\n/).filter(Boolean).map(function(p){return "<p>"+esc(p).replace(/\n/g,"<br>")+"</p>"}).join("");
 document.querySelectorAll(".level").forEach(function(el,i){el.classList.toggle("on",i===([90,85,80,70].findIndex(function(n){return s>=n})) )});
 var notice=document.querySelector("#detailView .levels + .formula-small");if(notice)notice.textContent="70 分以下：暂不推荐。维度评分及评语为独立评价资料，可依据实际体验持续修订。";
-document.title=r.name+" · LYX 体验评分详情";
+document.title=r.name+" · 良友APP指南 Amazing Guide";
 }
 function route(scroll){var hash=decodeURIComponent(location.hash.slice(1));var isDetail=hash.indexOf("detail")===0;
 var id=hash.startsWith("detail/")?hash.slice(7):REVIEWS[0]&&REVIEWS[0].id;
 var r=REVIEWS.find(function(a){return a.id===id})||REVIEWS[0];if(isDetail&&!r)isDetail=false;
 list.hidden=isDetail;detail.hidden=!isDetail;
-if(isDetail){renderDetail(r)}else document.title="LYX 体验评分体系 · 良友科技";
+if(isDetail){renderDetail(r)}else document.title="良友APP指南 Amazing Guide · 良友科技";
 if(scroll!==false)window.scrollTo({top:0,behavior:"instant"});
 }
 listNode.addEventListener("click",function(e){var b=e.target.closest("button[data-review-id]");if(!b)return;location.hash="detail/"+encodeURIComponent(b.getAttribute("data-review-id"))});
@@ -169,6 +170,6 @@ window.addEventListener("hashchange",function(){route(true)});
 fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(7000)}).then(function(r){if(!r.ok)throw new Error("实时评测服务 HTTP "+r.status);return r.json()}).then(function(d){if(!d.ok)throw new Error(d.error||"实时评测服务失败");return d}).catch(function(){return fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("静态评测 HTTP "+r.status);return r.json()})}).then(function(data){REVIEWS=(Array.isArray(data.reviews)?data.reviews:[]).filter(function(r){return r&&r.status==="published"&&/^[a-z0-9-]{1,80}$/.test(r.id)}).sort(function(a,b){return Number(a.order||999)-Number(b.order||999)});renderList();route(false)}).catch(function(err){listNode.innerHTML='<div class="panel review-empty">评测资料暂时读取失败，请刷新网页重试。<br><small>'+esc(err.message)+'</small></div>';route(false)});
 })();
 </script>
-<script src="./lyx-poster.js?v=20261112.poster1" defer></script>
+<script src="./lyx-poster.js?v=20261112.poster2" defer></script>
 </body>
 </html>
