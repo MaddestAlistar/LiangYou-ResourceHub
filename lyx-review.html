@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071330">
+<meta name="description" content="良友科技 LYX 应用体验评分：上岛记六维雷达、综合评分、加权公式及良友简评">
+<title>LYX 体验评分体系 · 良友科技</title>
+<style>
+:root{color-scheme:dark;--bg:#05102b;--line:#4fafff77;--cyan:#5ceeff;--muted:#acc8e9;--panel:linear-gradient(137deg,rgba(17,59,137,.95),rgba(8,24,69,.96) 60%,rgba(14,33,87,.97));font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse 85% 48% at -18% -8%,#124fa6 0%,transparent 71%),radial-gradient(ellipse 65% 42% at 110% -6%,#4924aa88,transparent 80%),linear-gradient(145deg,#071b43 0%,#030b21 57%,#090d31);color:#f7fcff;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0 0 auto;height:210px;background:linear-gradient(115deg,transparent,#269ef522,transparent 74%);border-bottom:1px solid #17b9ff55;pointer-events:none;z-index:-1}
+a{color:inherit}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid #80f0ff;outline-offset:3px}
+.wrap{max-width:1120px;padding:24px clamp(13px,3.2vw,32px) 64px;margin:auto}
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap}
+.logo{font-size:18px;font-weight:900;letter-spacing:.045em;text-decoration:none}.logo b{font-size:20px;font-style:italic;background:linear-gradient(120deg,#a0e7ff,#3c91ff,#b39bff);color:transparent;background-clip:text}
+.topnav{display:flex;gap:9px;flex-wrap:wrap}.navbtn{display:inline-block;border:1px solid #6badff62;background:#153c7c66;border-radius:24px;padding:10px 14px;text-decoration:none;font-size:12px;color:#daecff}.navbtn:hover{background:#2065ac80}
+.page[hidden]{display:none!important}.lead{text-align:center;margin:38px auto 27px}.kicker{font-size:11px;letter-spacing:.2em;color:#7ee6ff;font-weight:800}
+h1{font-size:clamp(31px,5vw,59px);letter-spacing:.02em;margin:9px 0 8px;line-height:1.2;background:linear-gradient(100deg,#fff,#d6eaff 45%,#77dfff 77%,#b8a0ff);color:transparent;background-clip:text}
+.lead p{color:#b6cff3;font-size:13px;margin:0;line-height:1.75}.chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:18px}.chip{padding:6px 11px;border:1px solid #6bc4ff55;background:#1d64b034;border-radius:999px;font-size:11px;color:#bfeeff}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:21px;box-shadow:0 10px 35px #0004,inset 0 1px #ffffff1a,0 0 30px #0b8dff19;overflow:hidden;position:relative}
+.panel:before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#70faff,transparent);pointer-events:none}
+.feature{max-width:890px;margin:auto;padding:clamp(17px,3vw,27px)}.feature-head{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#8edcff;font-size:11px;letter-spacing:.05em;margin-bottom:21px}.highlight{background:linear-gradient(110deg,#147bd4,#1254ca);border:1px solid #65eaff77;border-radius:99px;padding:6px 10px;font-size:11px;color:white}
+.feature-main{display:grid;grid-template-columns:minmax(0,1fr) 178px;gap:15px}.app-title{display:flex;align-items:center;gap:15px}.app-icon{display:grid;place-items:center;width:78px;height:78px;border:6px solid #dfe9ff;box-shadow:0 0 0 5px #397bce,0 0 24px #338fffaa;background:#fff;color:#111;border-radius:22px;flex-shrink:0}
+.app-icon div{display:flex;align-items:center;border:1px solid #141414;border-radius:9px;overflow:hidden;font-size:9px;white-space:nowrap}.app-icon small{padding:5px 4px;color:#333}.app-icon strong{font-size:11px;background:#101010;color:#fff;padding:8px 5px}
+.app-title h2{font-size:26px;letter-spacing:.06em;margin:0 0 5px}.subtitle{color:#98c8f3;font-size:11px;line-height:1.7}.app-desc{font-size:12px;color:#d0e2f8;line-height:1.9;margin:19px 0 15px}.tags{display:flex;flex-wrap:wrap;gap:7px}.tags span{font-size:10px;border:1px solid #7dc9fa55;border-radius:8px;padding:6px 9px;color:#b7dffd;background:#2074c022}
+.score-side{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:11px}
+.score-ring{width:153px;aspect-ratio:1;border-radius:50%;padding:10px;background:conic-gradient(from 210deg,#a26aff,#4ce6ff,#078fff,#9e6cff,#a26aff);box-shadow:0 0 32px #0477ff77,0 0 9px #62edff;display:grid;place-items:center}
+.score-core{background:radial-gradient(circle at 50% 25%,#164e9a,#07112b 74%);border-radius:50%;width:100%;height:100%;display:flex;justify-content:center;align-items:center;flex-direction:column}
+.score-core b{font-style:italic;font-size:63px;line-height:1.05;background:linear-gradient(#fff,#bce8ff);background-clip:text;color:transparent}.score-core span{font-size:15px;color:#cde7ff;font-style:italic}
+.score-name{border:1px solid #62c4ff;box-shadow:0 0 16px #008fff70;background:#165badb0;border-radius:30px;padding:7px 16px;font-size:13px;font-weight:800}
+.act{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:45px;border:1px solid #6bdfff;border-radius:13px;background:linear-gradient(105deg,#14c8ed,#1874e6 60%,#7453da);color:white;box-shadow:0 7px 23px #0d83ff6a;text-decoration:none;font-weight:800;padding:12px 20px;cursor:pointer;font-size:13px}
+.act:hover{filter:brightness(1.13)}.feature-actions{display:flex;gap:10px;align-items:center;margin-top:21px}.note{font-size:11px;color:#94badc}
+.home-bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:890px;margin:18px auto 0}.mini{padding:20px}.mini h3{font-size:15px;margin:0 0 10px}.mini p{color:#a8caef;font-size:12px;line-height:1.85;margin:0}
+.tiers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.tier{border:1px solid #6dafe872;padding:10px 5px;text-align:center;border-radius:11px;background:#1b4a9260}.tier.sel{border-color:#62edff;background:linear-gradient(145deg,#0ba2ff,#124bc5);box-shadow:0 0 13px #299bff80}.tier b{font-size:13px;display:block;white-space:nowrap}.tier small{font-size:10px;color:#daecff}
+.details-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px;flex-wrap:wrap}.details-head h1{font-size:clamp(24px,4vw,34px);margin:0}.back{font-size:12px;border:1px solid #68c4ff70;background:#12499380;border-radius:10px;color:#d5efff;padding:9px 13px;cursor:pointer}
+.detail-top{display:grid;grid-template-columns:1fr 170px;align-items:center;gap:14px;padding:19px 24px}.detail-top p{color:#afcdef;font-size:12px;margin:11px 0 0}.detail-top .app-title{gap:17px}
+.content-grid{display:grid;grid-template-columns:1.18fr .82fr;gap:16px;margin-top:17px}.block{padding:20px 22px}.block h2{font-size:18px;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #73baff40}.block h2 span{color:#56dbff;margin-right:8px}
+.radar-wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:10px;align-items:center}.radar-svg{width:100%;height:auto;max-height:270px}.bars{display:grid;gap:11px}
+.bar-head{display:flex;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:5px}.bar-head span{color:#c5dbf8}.bar-head b{color:#e8f8ff}
+.track{height:7px;border-radius:20px;background:#254a83;overflow:hidden}.fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#46ecff,#278dff,#af89ff)}
+.formula{font-family:Georgia,"Times New Roman",serif;text-align:center;padding:13px;background:#124a9166;border:1px solid #6bdbff75;border-radius:13px;font-size:23px;color:#e6f6ff}
+.formula-small{font-size:12px;color:#a7c7ea;line-height:1.8;margin:11px 0}.calc{border:1px solid #58b9ff8c;background:#135a9b74;border-radius:12px;padding:12px;color:#bdf9ff;line-height:1.9;font-size:12px;overflow-wrap:anywhere}
+.review{font-size:13px;line-height:2;color:#e4efff}.review p{margin:0 0 8px}.review ul{padding-left:20px;margin:6px 0}.review li{margin:8px 0}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.level{border:1px solid #629bea88;border-radius:14px;text-align:center;padding:14px 6px;background:#0a2b6c70}.level.on{border-color:#71faff;background:linear-gradient(130deg,#108bfa,#164fbd);box-shadow:0 0 15px #298eff77}.level b{display:block;font-size:15px}.level span{display:block;margin-top:5px;font-size:13px;font-weight:800}.level small{display:block;margin-top:5px;font-size:10px;color:#cbdff6}
+.footer{text-align:center;margin-top:36px;color:#8dcdf8;font-size:12px;letter-spacing:.1em}
+dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(145deg,#15478a,#061532);color:white;max-width:min(480px,calc(100vw - 30px));box-shadow:0 20px 80px #000b;padding:23px}dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}dialog h2{margin-top:0;font-size:19px}dialog p{color:#c1d9f4;font-size:12px;line-height:1.85}
+@media(max-width:760px){.content-grid{grid-template-columns:1fr}.block{padding:17px}.home-bottom{grid-template-columns:1fr}.details-head{align-items:center}.details-head h1{font-size:24px}}
+@media(max-width:520px){.wrap{padding:16px 12px 42px}.top{margin-bottom:12px}.logo{font-size:16px}.topnav .navbtn{padding:8px 10px;font-size:11px}.lead{margin:23px auto 24px}.lead p{font-size:12px}.panel{border-radius:17px}.feature{padding:16px}.feature-main{grid-template-columns:minmax(0,1fr) 112px;gap:7px}.app-icon{width:56px;height:56px;border:4px solid #e5edff;border-radius:14px;box-shadow:0 0 0 3px #3877bc,0 0 18px #288eff88}.app-icon div{font-size:8px}.app-icon small{padding:3px 2px;font-size:7px}.app-icon strong{font-size:8px;padding:6px 3px}.app-title{gap:11px}.app-title h2{font-size:21px}.subtitle{font-size:10px}.app-desc{margin:16px 0 11px;font-size:11px}.score-ring{width:104px;padding:7px}.score-core b{font-size:42px}.score-core span{font-size:12px}.score-name{font-size:10px;padding:5px 7px}.score-side{gap:9px}.feature-actions{flex-direction:column;align-items:stretch}.feature-actions .note{text-align:center}.mini{padding:16px}.tiers{gap:5px}.tier b{font-size:11px}.tier small{font-size:9px}.detail-top{grid-template-columns:minmax(0,1fr) 112px;padding:16px}.detail-top .app-title h2{font-size:21px}.radar-wrap{grid-template-columns:1fr}.radar-svg{max-width:340px;margin:auto}.bars{grid-template-columns:1fr 1fr;gap:10px}.formula{font-size:20px}.levels{gap:6px}.level{padding:12px 3px}.level b{font-size:12px}.level span{font-size:11px}.level small{font-size:9px}}
+@media(max-width:340px){.feature-main{grid-template-columns:1fr 89px}.score-ring{width:86px}.score-core b{font-size:34px}.score-name{font-size:9px}.detail-top{grid-template-columns:1fr 90px}.detail-top .app-icon{width:48px;height:48px}.levels{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><a class="logo" href="./#lab">良友科技 <b>LYX</b></a><nav class="topnav" aria-label="评测导航"><a class="navbtn" href="./#lab">← 返回资源实验室</a><button class="navbtn" id="standardBtn" type="button">评分标准 ⓘ</button></nav></header>
+<main>
+<section class="page" id="listView" aria-label="LYX 一级菜单">
+<div class="lead"><div class="kicker">LIANGYOU TECH EXPERIENCE INDEX</div><h1>LYX 应用体验评分体系</h1><p>良友科技原创 · APP 综合体验评价标准<br>从真实功能、使用效率到系统适配，六个维度评估应用体验</p><div class="chips"><span class="chip">六维加权评分</span><span class="chip">独立体验简评</span><span class="chip">透明推荐等级</span></div></div>
+<article class="panel feature"><div class="feature-head"><b>01 · 应用体验档案</b><span class="highlight">♛ 旗舰推荐</span></div>
+<div class="feature-main">
+<div><div class="app-title"><div class="app-icon" aria-label="上岛记应用图标"><div><small>取码</small><strong>上岛记</strong></div></div><div><h2>上岛记</h2><div class="subtitle">生活服务 · 信息助手<br>v2.4.1 · iOS / iPadOS</div></div></div>
+<p class="app-desc">专注日常高频信息管理，离线识别并整理取餐码、快递码、排队号和票据信息，通过灵动岛、实时活动及桌面组件让常用信息随时可见。</p>
+<div class="tags"><span>本地识别</span><span>灵动岛</span><span>锁屏组件</span><span>Apple Watch</span></div></div>
+<div class="score-side"><div class="score-ring"><div class="score-core"><b class="score-number">90</b><span>/ 100</span></div></div><div class="score-name">旗舰推荐</div><div class="note">LYX 90.0 分</div></div>
+</div><div class="feature-actions"><button class="act" id="enterDetail" type="button">查看完整评测　›</button><span class="note">完整六维雷达图、加权公式与良友简评</span></div></article>
+<div class="home-bottom">
+<div class="panel mini"><h3>✦ LYX 推荐等级</h3><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div></div>
+<div class="panel mini"><h3>⬡ 评分逻辑</h3><p>六维体验 × 对应权重，满分 100 分。每项得分均可追溯，低于 70 分暂不推荐。</p></div></div>
+</section>
+<section class="page" id="detailView" hidden aria-label="LYX 二级菜单：上岛记评测详情">
+<div class="details-head"><button class="back" id="returnList" type="button">← 返回评测列表</button><h1>应用评测详情</h1><button class="back" id="shareDetail" type="button">分享 ↗</button></div>
+<div class="panel detail-top"><div><div class="app-title"><div class="app-icon" aria-label="上岛记应用图标"><div><small>取码</small><strong>上岛记</strong></div></div><div><h2>上岛记</h2><div class="subtitle">生活服务 · 信息助手<br>v2.4.1 · iOS / iPadOS</div></div></div><p>识别高效 · 功能完整 · 体验优秀</p></div><div class="score-side"><div class="score-ring"><div class="score-core"><b class="score-number">90</b><span>/ 100</span></div></div><div class="score-name">♛ 旗舰推荐</div></div></div>
+<div class="panel block" style="margin-top:17px"><h2><span>⬡</span>六维体验雷达</h2><div class="radar-wrap"><svg class="radar-svg" id="radar" viewBox="0 0 340 310" role="img" aria-label="六维评分雷达图" xmlns="http://www.w3.org/2000/svg"></svg><div class="bars" id="scoreBars"></div></div></div>
+<div class="content-grid">
+<div class="panel block"><h2><span>▤</span>评分逻辑与公式</h2><div class="formula">LYX = ∑ (Sᵢ × Wᵢ)</div><p class="formula-small">Sᵢ：第 i 项维度评分（0–100 分）<br>Wᵢ：对应权重（权重之和为 1）</p><div class="calc"><b id="result">90.0</b> = <span id="calculation"></span></div><p class="formula-small">权重分配：功能 30% · 便捷 20% · 稳定 20% · 系统融合 10% · 设备 10% · 隐私 10%</p></div>
+<div class="panel block"><h2><span>✎</span>良友简评</h2><div class="review"><p>上岛记是一款侧重日常信息管理效率的实用工具，可在设备本地识别并整理取餐码、快递码、排队号、车票机票、验证码、二维码与备忘信息。</p><p>它通过灵动岛、实时活动、锁屏与桌面小组件展示重要内容，并兼容 Apple Watch，支持来源标识自定义和智能分类，让不同场景的信息更容易查找。</p><p>本地完成识别和数据处理也是它的一项优势。整体定位清晰，功能覆盖丰富，适合需要频繁查看取件、排队或票据信息的用户。</p></div></div>
+</div>
+<div class="panel block" style="margin-top:17px"><h2><span>✦</span>综合推荐等级</h2><div class="levels"><div class="level on"><b>90–100</b><span>旗舰推荐</span><small>体验优秀</small></div><div class="level"><b>85–89</b><span>优选推荐</span><small>表现良好</small></div><div class="level"><b>80–84</b><span>值得尝试</span><small>满足主要需求</small></div><div class="level"><b>70–79</b><span>可以尝试</span><small>基本需求</small></div></div><p class="formula-small" style="margin-bottom:0">70 分以下：暂不推荐。评分为体验评价示例，维度分数仍需通过实际测试持续核实。</p></div>
+</section>
+</main><footer class="footer">良友科技 · 真实体验 · 独立评价</footer>
+</div>
+<dialog id="standardDialog"><h2>LYX · 综合体验评分标准</h2><p>六维评分：功能丰富度 30%、使用便捷性 20%、稳定与流畅 20%、系统融合度 10%、设备适配性 10%、隐私与安全 10%。综合分为加权求和，结果保留一位小数。</p><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div><p>70 分以下暂不推荐。</p><button class="act" id="closeDialog" type="button">关闭</button></dialog>
+<script>
+(function(){
+"use strict";
+var axes=[["功能丰富度",92,.30],["使用便捷性",91,.20],["稳定与流畅",86,.20],["系统融合度",91,.10],["设备适配性",89,.10],["隐私与安全",90,.10]];
+var score=axes.reduce(function(s,a){return s+a[1]*a[2]},0);
+document.querySelectorAll(".score-number").forEach(function(el){el.textContent=score.toFixed(0)});
+document.getElementById("result").textContent=score.toFixed(1);
+document.getElementById("calculation").textContent=axes.map(function(a){return a[1]+"×"+a[2].toFixed(2)}).join(" + ");
+document.getElementById("scoreBars").innerHTML=axes.map(function(a){return '<div><div class="bar-head"><span>'+a[0]+' · '+Math.round(a[2]*100)+'%</span><b>'+a[1]+'</b></div><div class="track"><div class="fill" style="width:'+a[1]+'%"></div></div></div>'}).join("");
+var svg=document.getElementById("radar"),ns="http://www.w3.org/2000/svg",cx=170,cy=153,r=100;
+function pos(i,v){var t=-Math.PI/2+i*Math.PI/3;return [cx+Math.cos(t)*v,cy+Math.sin(t)*v]}
+function points(v){return v.map(function(x,i){return pos(i,x).join(",")}).join(" ")}
+function node(tag,attrs,text){var e=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k])});if(text)e.textContent=text;svg.appendChild(e);return e}
+for(var j=1;j<=5;j++)node("polygon",{points:points(Array(6).fill(r*j/5)),fill:"none",stroke:j===5?"#8feeff":"#347fcb","stroke-opacity":j===5?".9":".42","stroke-width":j===5?"1.8":"1"});
+axes.forEach(function(a,i){var p=pos(i,r);node("line",{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:"#55b3ed","stroke-opacity":".35"});});
+node("polygon",{points:points(axes.map(function(a){return r*a[1]/100})),fill:"#18cfff", "fill-opacity":".34",stroke:"#73efff","stroke-width":"2.5"});
+axes.forEach(function(a,i){var p=pos(i,r*a[1]/100);node("circle",{cx:p[0],cy:p[1],r:3.6,fill:"#fff",stroke:"#45ecff","stroke-width":"1.5"})});
+[["丰富",170,24],["便捷",288,82],["流畅",287,230],["融合",170,294],["适配",54,230],["隐私",54,82]].forEach(function(a){node("text",{x:a[1],y:a[2],fill:"#b7e9ff","text-anchor":"middle","font-size":"12","font-weight":"700"},a[0])});
+var list=document.getElementById("listView"),detail=document.getElementById("detailView");
+function route(scroll){var d=location.hash==="#detail";list.hidden=d;detail.hidden=!d;document.title=d?"上岛记 · LYX 评测详情":"LYX 体验评分体系 · 良友科技";if(scroll!==false)window.scrollTo({top:0,behavior:"instant"})}
+document.getElementById("enterDetail").addEventListener("click",function(){location.hash="detail"});
+document.getElementById("returnList").addEventListener("click",function(){location.hash="home"});
+addEventListener("hashchange",function(){route(true)});route(false);
+var modal=document.getElementById("standardDialog");document.getElementById("standardBtn").onclick=function(){modal.showModal()};document.getElementById("closeDialog").onclick=function(){modal.close()};
+document.getElementById("shareDetail").onclick=async function(){var url=location.href.replace(/#.*$/,"")+"#detail";if(navigator.share){try{await navigator.share({title:"上岛记 · LYX 体验评分",url:url});return}catch(e){}}try{await navigator.clipboard.writeText(url);this.textContent="已复制 ✓"}catch(e){this.textContent="请复制地址栏链接"}};
+})();
+</script>
+</body>
+</html>
