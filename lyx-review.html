@@ -57,6 +57,24 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 .review-card .app-title h2{overflow-wrap:anywhere}
 #detailView .detail-top .app-photo{height:78px}
 @media(max-width:520px){.app-icon.app-photo{width:56px;height:56px;border-radius:14px}#detailView .detail-top .app-photo{height:56px}.review-card{margin-bottom:12px}}
+
+/* Portrait Xiaohongshu share poster modal */
+#posterDialog{width:min(440px,calc(100vw - 20px));max-width:min(440px,calc(100vw - 20px));max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;padding:16px;background:linear-gradient(165deg,#102e75,#071738 75%,#0b1b46);border:1px solid #7ccfff;border-radius:22px}
+#posterDialog::backdrop{background:#030b1ddc;backdrop-filter:blur(6px)}
+#posterDialog header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+#posterDialog h2{margin:0;font-size:19px;letter-spacing:.02em}
+#posterDialog .poster-close{color:#cce9ff;border:1px solid #76b9ff88;background:#163c7b;border-radius:50%;width:36px;height:36px;min-width:36px;padding:0;font-size:23px;line-height:1}
+#posterDialog .poster-intro{color:#b4d2f3;font-size:12px;line-height:1.7;margin:0 0 12px}
+#posterDialog .poster-image-frame{background:#061431;border:1px solid #489dff99;border-radius:12px;padding:7px;margin:0 auto;max-width:320px;min-height:170px;display:flex;justify-content:center;align-items:center}
+#posterDialog .poster-image-frame img{width:100%;height:auto;display:block;max-height:min(56dvh,560px);object-fit:contain;box-shadow:0 0 18px #389bff30;border-radius:5px}
+#posterDialog .poster-image-frame img[hidden]{display:none!important}
+#posterDialog #posterStatus{font-size:12px;line-height:1.65;min-height:22px;text-align:center;color:#c6dffe;margin:10px 0}
+#posterDialog .poster-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+#posterDialog .poster-actions button{min-width:0;border:1px solid #71c1fa;border-radius:11px;padding:11px 7px;color:#e9f8ff;background:#1255a8;font-size:12px;font-weight:750}
+#posterDialog .poster-actions button:first-child{background:linear-gradient(105deg,#0fbcde,#1462d3 66%,#6246da);border-color:#76edff;color:#fff}
+#posterDialog .poster-actions button:disabled{opacity:.45;cursor:not-allowed}
+#posterDialog .poster-foot{font-size:11px;color:#9ebadd;line-height:1.65;margin:10px 0 0;text-align:center}
+@media(max-width:420px){#posterDialog{padding:12px}#posterDialog .poster-image-frame{max-width:280px}#posterDialog .poster-actions button{font-size:12px;padding:11px 5px}}
 </style>
 </head>
 <body>
@@ -71,7 +89,7 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 <div class="panel mini"><h3>⬡ 评分逻辑</h3><p>六维体验 × 对应权重，满分 100 分。每项得分均可追溯，低于 70 分暂不推荐。</p></div></div>
 </section>
 <section class="page" id="detailView" hidden aria-label="LYX 二级菜单：上岛记评测详情">
-<div class="details-head"><button class="back" id="returnList" type="button">← 返回评测列表</button><h1>应用评测详情</h1><button class="back" id="shareDetail" type="button">分享 ↗</button></div>
+<div class="details-head"><button class="back" id="returnList" type="button">← 返回评测列表</button><h1>应用评测详情</h1><button class="back" id="shareDetail" type="button" aria-label="生成当前应用的小红书评分海报">生成海报 ↗</button></div>
 <div class="panel detail-top"><div><div class="app-title"><div class="app-icon" aria-label="上岛记应用图标"><div><small>取码</small><strong>上岛记</strong></div></div><div><h2>上岛记</h2><div class="subtitle">生活服务 · 信息助手<br>v2.4.1 · iOS / iPadOS</div></div></div><p>识别高效 · 功能完整 · 体验优秀</p></div><div class="score-side"><div class="score-ring"><div class="score-core"><b class="score-number">90</b><span>/ 100</span></div></div><div class="score-name">♛ 旗舰推荐</div></div></div>
 <div class="panel block" style="margin-top:17px"><h2><span>⬡</span>六维体验雷达</h2><div class="radar-wrap"><svg class="radar-svg" id="radar" viewBox="0 0 340 310" role="img" aria-label="六维评分雷达图" xmlns="http://www.w3.org/2000/svg"></svg><div class="bars" id="scoreBars"></div></div></div>
 <div class="content-grid">
@@ -83,6 +101,21 @@ dialog{border:1px solid #75daff;border-radius:18px;background:linear-gradient(14
 </main><footer class="footer">良友科技 · 真实体验 · 独立评价</footer>
 </div>
 <dialog id="standardDialog"><h2>LYX · 综合体验评分标准</h2><p>六维评分：功能丰富度 30%、使用便捷性 20%、稳定与流畅 20%、系统融合度 10%、设备适配性 10%、隐私与安全 10%。综合分为加权求和，结果保留一位小数。</p><div class="tiers"><div class="tier sel"><b>90–100</b><small>旗舰推荐</small></div><div class="tier"><b>85–89</b><small>优选推荐</small></div><div class="tier"><b>80–84</b><small>值得尝试</small></div><div class="tier"><b>70–79</b><small>可以尝试</small></div></div><p>70 分以下暂不推荐。</p><button class="act" id="closeDialog" type="button">关闭</button></dialog>
+
+<dialog id="posterDialog" aria-label="自动生成小红书评分海报">
+  <header><h2>LYX · 小红书评分海报</h2><button class="poster-close" id="posterClose" type="button" aria-label="关闭海报预览">×</button></header>
+  <p class="poster-intro">根据当前 App 的最新评测数据自动生成，包含六维雷达、评分公式、简评、推荐等级及固定作者头像。</p>
+  <div class="poster-image-frame"><img id="posterPreview" alt="自动生成的 LYX 体验评分海报" hidden></div>
+  <p id="posterStatus" role="status" aria-live="polite">选择应用详情中的「生成海报」即可预览。</p>
+  <div class="poster-actions">
+    <button class="poster-action" id="posterSave" type="button" disabled>保存 PNG</button>
+    <button class="poster-action" id="posterNativeShare" type="button" disabled>系统分享图片</button>
+    <button class="poster-action" id="posterCopyLink" type="button" disabled>复制详情链接</button>
+    <button id="posterCloseSecondary" type="button">关闭预览</button>
+  </div>
+  <p class="poster-foot">1080 × 1440 · 竖版高清 PNG。iPhone 也可长按预览图保存到照片。</p>
+</dialog>
+
 <script>
 (function(){
 "use strict";
@@ -131,10 +164,11 @@ listNode.addEventListener("click",function(e){var b=e.target.closest("button[dat
 document.getElementById("returnList").onclick=function(){location.hash="home"};
 document.getElementById("standardBtn").onclick=function(){dialog.showModal()};
 document.getElementById("closeDialog").onclick=function(){dialog.close()};
-document.getElementById("shareDetail").onclick=async function(){var url=location.href;if(navigator.share){try{await navigator.share({title:(CURRENT&&CURRENT.name||"LYX")+" 体验评分",url:url});return}catch(e){}}try{await navigator.clipboard.writeText(url);this.textContent="已复制 ✓"}catch(e){this.textContent="请复制地址栏链接"}};
+document.getElementById("shareDetail").onclick=function(){if(CURRENT&&window.LYXPoster)window.LYXPoster.open(CURRENT);else alert("海报功能尚未载入，请刷新网页后重试。")};
 window.addEventListener("hashchange",function(){route(true)});
 fetch("https://liangyou-icon-review.maddestalistar.workers.dev/lyx-feed",{cache:"no-store",signal:AbortSignal.timeout(7000)}).then(function(r){if(!r.ok)throw new Error("实时评测服务 HTTP "+r.status);return r.json()}).then(function(d){if(!d.ok)throw new Error(d.error||"实时评测服务失败");return d}).catch(function(){return fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("静态评测 HTTP "+r.status);return r.json()})}).then(function(data){REVIEWS=(Array.isArray(data.reviews)?data.reviews:[]).filter(function(r){return r&&r.status==="published"&&/^[a-z0-9-]{1,80}$/.test(r.id)}).sort(function(a,b){return Number(a.order||999)-Number(b.order||999)});renderList();route(false)}).catch(function(err){listNode.innerHTML='<div class="panel review-empty">评测资料暂时读取失败，请刷新网页重试。<br><small>'+esc(err.message)+'</small></div>';route(false)});
 })();
 </script>
+<script src="./lyx-poster.js?v=20261112.poster1" defer></script>
 </body>
 </html>
