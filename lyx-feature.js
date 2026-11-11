@@ -12,8 +12,7 @@ fetch("./data/lyx-reviews.json?ts="+Date.now(),{cache:"no-store"})
  if(!items.length){box.querySelector(".lyx-preview").hidden=true;txt(box.querySelector(".lyx-micro"),"暂无公开评测，进入中心可查看后续更新。");return}
  var a=items[0],s=(a.scores||[]).reduce(function(n,v,i){return n+Number(v||0)*(weights[i]||0)},0),rank=s>=90?"旗舰推荐":s>=85?"优选推荐":s>=80?"值得尝试":s>=70?"可以尝试":"暂不推荐",range=s>=90?"90–100":s>=85?"85–89":s>=80?"80–84":s>=70?"70–79":"70 以下";
  var img=box.querySelector("#lyxFeaturedIcon");if(img){img.src="./"+safeIcon(a.icon);if(String(a.icon||"").startsWith("data:"))img.src=a.icon;img.alt=a.name+" 应用图标"}
- txt(box.querySelector(".lyx-appname"),a.name);
- var small=box.querySelector(".lyx-appname small");if(small){box.querySelector(".lyx-appname").appendChild(small);txt(small,(a.category||"")+(a.subtitle?" · "+a.subtitle:""))}
+ var nameNode=box.querySelector(".lyx-appname");if(nameNode){nameNode.textContent=a.name;var sub=document.createElement("small");sub.textContent=(a.category||"")+(a.subtitle?" · "+a.subtitle:"");nameNode.appendChild(sub)}
  txt(box.querySelector(".lyx-score strong"),s.toFixed(0));
  txt(box.querySelector(".lyx-rank"),rank+" · "+range+" 分");
  txt(box.querySelector(".lyx-hint"),"LYX 已发布 "+items.length+" 份应用评测");
