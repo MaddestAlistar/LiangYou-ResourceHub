@@ -90,6 +90,16 @@ export function stats(item){
  return box;
 }
 export function details(item){const box=el('div',undefined,'wk-detail-body');
+ if(safeCover(item.coverUrl)||item.summary){
+  const hero=el('div',undefined,'wk-detail-hero');
+  if(safeCover(item.coverUrl)){
+   const image=el('img',undefined,'wk-detail-cover');
+   image.src=item.coverUrl;image.alt=item.name+'封面';image.loading='lazy';
+   image.onerror=()=>image.remove();hero.append(image);
+  }
+  if(item.summary)hero.append(el('p',item.summary));
+  box.append(hero);
+ }
  box.append(stats(item));
  const dl=el('dl');
  const fields=[['统计日期',item.statsDate],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',item.nickname+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
