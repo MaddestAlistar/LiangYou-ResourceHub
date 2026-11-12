@@ -1,6 +1,6 @@
 import {validateWiki,chinaDate,hasCompleteCountColumn} from './emby-wiki-schema.mjs?v=20261110.11';
-import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261110.wiki-en1';
-import {buildForm,readForm,fillForm,api,updateCountStatus} from './emby-wiki-ui.mjs?v=20261110.12';
+import {preferredLanguage,setPreferredLanguage,applyLanguage,localizeNotice} from './emby-wiki-lang.mjs?v=20261112.square1';
+import {buildForm,readForm,fillForm,api,updateCountStatus} from './emby-wiki-ui.mjs?v=20261112.detail1';
 const $=id=>document.getElementById(id),form=$('wiki-submit-form'),host=$('wiki-fields'),notice=$('wiki-submit-status');
 buildForm(host);
 function submissionId(){if(crypto.randomUUID)return 'wiki-'+crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return 'wiki-'+[h.slice(0,8),h.slice(8,12),h.slice(12,16),h.slice(16,20),h.slice(20)].join('-')}
