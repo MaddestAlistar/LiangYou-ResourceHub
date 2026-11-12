@@ -157,7 +157,7 @@ if(root){
    const state=el('span',t(x.state),'wk-directory-status');
    if(x.state==='正常运营')state.classList.add('is-active');
    badges.append(el('span',t(x.nature),'wk-directory-nature'),state);
-   intro.append(badges);header.append(cover,intro);
+   header.append(cover,intro);
    const counts=el('div',undefined,'wk-directory-counts');
    for(const [label,plain,multi] of [
     [language==='en'?'Movies':'电影','movies','moviesWithVersions'],
@@ -170,7 +170,7 @@ if(root){
    const footer=el('div',undefined,'wk-directory-footer');
    footer.append(el('span',(language==='en'?'Stats: ':'统计 ')+(x.statsDate||'—')));
    footer.append(el('span',language==='en'?'View details ↗':'查看详情 ↗','wk-directory-link'));
-   button.append(header,counts,footer);card.append(button);list.append(card);
+   button.append(header,badges,counts,footer);card.append(button);list.append(card);
   }
  }
  function renderError(){
