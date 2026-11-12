@@ -65,7 +65,7 @@ def get_events(tag_slug):
             "tag_slug": tag_slug,
             "active": "true", "closed": "false",
             "limit": page_size, "offset": page*page_size,
-            "order": "volume24hr", "ascending": "false",
+            "order": "volume_24hr", "ascending": "false",
             "end_date_min": dt.datetime.now(UTC).isoformat()
         })
         request = Request(BASE + "?" + query, headers={
@@ -85,7 +85,7 @@ def get_events(tag_slug):
                     if gathered:
                         print(f"{tag_slug}: optional page failed; using verified preceding page",flush=True)
                         return gathered
-                    raise RuntimeError(f"Gamma request failed for {tag_slug}") from None
+                    raise RuntimeError(f"Gamma request failed for {tag_slug}: {type(exc).__name__}: {exc}") from None
                 time.sleep(1+attempt)
         if len(events) < page_size:
             break
