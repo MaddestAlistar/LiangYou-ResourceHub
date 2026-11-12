@@ -3,7 +3,7 @@ import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261111.imag
 
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
- let items=[],limit=6,loaded=false,loading=false,activeItem=null,loadError='';
+ let items=[],limit=8,loaded=false,loading=false,activeItem=null,loadError='';
  let language='zh';
  try{language=localStorage.getItem('liangyou-site-language')==='en'?'en':'zh'}catch{}
  const list=$('wiki-list'),search=$('wiki-search'),nature=$('wiki-nature'),sort=$('wiki-sort'),more=$('wiki-more'),dialog=$('wiki-detail');
@@ -91,6 +91,7 @@ if(root){
   $('wiki-detail-meta').textContent=t(item.nature)+' · '+t(item.state);
   $('wiki-detail-content').replaceChildren(localizeDisplay(details(item)));
   if(show&&!dialog.open)dialog.showModal();
+  if(show)dialog.scrollTop=0;
  }
  $('wiki-detail-close').onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{activeItem=null});
@@ -130,27 +131,46 @@ if(root){
    list.append(box);
    return;
   }
+  const numberFormat=new Intl.NumberFormat(language==='en'?'en-US':'zh-CN',{notation:'compact',maximumFractionDigits:1});
+  const metric=(item,plain,multi)=>{
+   const value=item[plain]??item[multi];
+   return value===null||value===undefined||value===''?'—':numberFormat.format(Number(value));
+  };
   for(const x of filtered.slice(0,limit)){
-   const card=el('article',undefined,'wk-card');
-   if(safeCover(x.coverUrl)){
-    const img=el('img',undefined,'wk-cover');img.src=x.coverUrl;
-    img.alt=x.name+(language==='en'?' cover':'封面');img.loading='lazy';img.onerror=()=>img.remove();
-    card.append(img);
-   }
-   const content=el('div',undefined,'wk-card-content'),badges=el('div',undefined,'wk-badges');
-   badges.append(el('span',t(x.nature),'wk-badge'),el('span',t(x.state),'wk-badge'));
-   const specs=[...(x.contents||[]),...(x.qualities||[])].map(t).join(' · ');
-   content.append(badges,el('h3',x.name),el('p',specs,'wk-card-description'),
-    localizeDisplay(stats(x)),el('p',(language==='en'?'Statistics: ':'统计于 ')+x.statsDate,'wk-hint'));
-   content.append(
-    el('p',x.summary||(language==='en'?'Account access: ':'开号：')+x.registration,'wk-card-description'),
-    el('p',x.nickname+' · '+(language==='en'?'Submitted: ':'投稿于 ')+x.submissionDate,'wk-hint')
-   );
-   const button=el('button',language==='en'?'View Full Profile ↗':'查看完整档案 ↗','wk-button wk-secondary');
+   const card=el('article',undefined,'wk-card wk-directory-card');
+   const button=el('button',undefined,'wk-directory-action');
    button.type='button';
-   button.setAttribute('aria-label',language==='en'?'View profile for '+x.name:'查看 '+x.name+' 的完整档案');
+   button.setAttribute('aria-label',language==='en'?'View full profile for '+x.name:'查看 '+x.name+' 的完整档案');
    button.onclick=()=>open(x);
-   content.append(button);card.append(content);list.append(card);
+   const header=el('div',undefined,'wk-directory-header');
+   const cover=el('div',undefined,'wk-directory-cover');
+   const initials=el('span',x.name.trim().slice(0,2)||'LY','wk-directory-initials');
+   cover.append(initials);
+   if(safeCover(x.coverUrl)){
+    const img=el('img',undefined,'wk-directory-image');
+    img.src=x.coverUrl;img.alt='';img.loading='lazy';img.decoding='async';
+    img.onerror=()=>img.remove();cover.append(img);
+   }
+   const intro=el('div',undefined,'wk-directory-intro');
+   intro.append(el('h3',x.name));
+   const badges=el('div',undefined,'wk-directory-badges');
+   const state=el('span',t(x.state),'wk-directory-status');
+   if(x.state==='正常运营')state.classList.add('is-active');
+   badges.append(el('span',t(x.nature),'wk-directory-nature'),state);
+   intro.append(badges);header.append(cover,intro);
+   const counts=el('div',undefined,'wk-directory-counts');
+   for(const [label,plain,multi] of [
+    [language==='en'?'Movies':'电影','movies','moviesWithVersions'],
+    [language==='en'?'Series':'剧集','series','seriesWithVersions']
+   ]){
+    const cell=el('div',undefined,'wk-directory-count');
+    cell.append(el('span',label),el('strong',metric(x,plain,multi)));
+    counts.append(cell);
+   }
+   const footer=el('div',undefined,'wk-directory-footer');
+   footer.append(el('span',(language==='en'?'Stats: ':'统计 ')+(x.statsDate||'—')));
+   footer.append(el('span',language==='en'?'View details ↗':'查看详情 ↗','wk-directory-link'));
+   button.append(header,counts,footer);card.append(button);list.append(card);
   }
  }
  function renderError(){
@@ -169,9 +189,9 @@ if(root){
  }
  window.addEventListener('liangyou:languagechange',e=>syncLanguage(e.detail?.language));
  window.addEventListener('storage',e=>{if(e.key==='liangyou-site-language')syncLanguage(e.newValue)});
- const changed=()=>{limit=6;render()};
+ const changed=()=>{limit=8;render()};
  search.oninput=changed;nature.onchange=changed;sort.onchange=changed;
- more.onclick=()=>{limit+=6;render()};
+ more.onclick=()=>{limit+=8;render()};
  async function load(){
   if(loading)return;
   loading=true;loadError='';
