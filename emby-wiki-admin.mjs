@@ -28,11 +28,12 @@ function clearPhoto(kind){
  $('wiki-admin-'+kind+'-clear').hidden=true;$('wiki-admin-'+kind+'-message').textContent='';
  syncPhotoSave();
 }
-async function compressAdminPhoto(file){
+async function compressAdminPhoto(file,{square=false}={}){
  if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>5000000)throw Error('请选择不超过 5 MB 的 JPG、PNG 或 WebP 图片');
  const url=URL.createObjectURL(file),img=new Image();
  try{
   img.src=url;await img.decode();
+  if(square&&(img.naturalWidth!==img.naturalHeight||img.naturalWidth<320))throw Error('服务器封面必须为 1:1 正方形图片，且至少 320×320 像素');
   if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>40000000)throw Error('图片尺寸过大，请先缩小图片');
   let size=1200;
   while(size>=480){
@@ -56,7 +57,7 @@ for(const kind of ['cover','evidence']){
   if(!file){syncPhotoSave();messageNode.textContent='';return}
   state.busy=true;syncPhotoSave();messageNode.textContent='正在处理图片…';
   try{
-   const data=await compressAdminPhoto(file);if(run!==state.run)return;
+   const data=await compressAdminPhoto(file,{square:kind==='cover'});if(run!==state.run)return;
    state.data=data;$('wiki-admin-remove-'+kind).checked=false;
    preview.src=data;preview.hidden=false;$('wiki-admin-'+kind+'-clear').hidden=false;
    messageNode.textContent='新图片已就绪，约 '+Math.round(data.length*.75/1000)+' KB。保存修改后才会正式替换。';
