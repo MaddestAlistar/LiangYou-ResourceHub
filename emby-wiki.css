@@ -52,3 +52,98 @@
 .wk-version-single .wk-version-head,.wk-version-single .wk-version-row{grid-template-columns:minmax(76px,1fr) minmax(0,1.4fr)}
 .wk-version-head>span:first-child{text-align:left}
 .wk-version-stats .wk-version-head span{min-width:0;overflow-wrap:anywhere}
+
+/* 2026-11-12 · Compact Emby Wiki directory: all covers are shown 1:1.
+   Scoped to the public directory so the admin review cards remain unchanged. */
+#emby-wiki .wk-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+#emby-wiki .wk-directory-card{
+  min-width:0;min-height:176px;overflow:hidden;
+  border:1px solid rgba(132,162,193,.24);border-radius:18px;
+  background:linear-gradient(155deg,rgba(31,49,72,.96),rgba(14,27,44,.98));
+  box-shadow:0 5px 24px rgba(0,0,0,.12);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
+}
+#emby-wiki .wk-directory-action{
+  -webkit-appearance:none;appearance:none;box-sizing:border-box;border:0;
+  display:flex;flex-direction:column;gap:12px;height:100%;width:100%;padding:14px;
+  background:transparent;color:var(--wk-text);font:inherit;text-align:left;
+  cursor:pointer;min-width:0
+}
+#emby-wiki .wk-directory-header{display:flex;align-items:center;gap:11px;min-width:0}
+#emby-wiki .wk-directory-cover{
+  position:relative;display:grid;place-items:center;isolation:isolate;
+  width:68px;height:68px;aspect-ratio:1/1;flex:none;overflow:hidden;border-radius:15px;
+  border:1px solid rgba(184,207,231,.16);
+  background:linear-gradient(140deg,#294866,#172d49 56%,#314c60)
+}
+#emby-wiki .wk-directory-initials{font-size:19px;font-weight:800;letter-spacing:.03em;color:#d5e4f4}
+#emby-wiki .wk-directory-image{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+#emby-wiki .wk-directory-intro{min-width:0;flex:1}
+#emby-wiki .wk-directory-intro h3{
+  margin:0 0 7px;font-size:15px;line-height:1.35;font-weight:760;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;overflow-wrap:anywhere
+}
+#emby-wiki .wk-directory-badges{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+#emby-wiki .wk-directory-nature,#emby-wiki .wk-directory-status{
+  display:inline-block;border-radius:7px;padding:3px 6px;
+  font-size:10px;line-height:1.3;white-space:nowrap
+}
+#emby-wiki .wk-directory-nature{color:#d1c0ed;background:rgba(149,111,207,.17)}
+#emby-wiki .wk-directory-status{color:#c1cad8;background:rgba(135,154,182,.14)}
+#emby-wiki .wk-directory-status.is-active{color:#a7e5d1;background:rgba(67,175,139,.16)}
+#emby-wiki .wk-directory-counts{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+  border:1px solid rgba(150,181,211,.12);border-radius:12px;
+  background:rgba(4,16,30,.27);padding:10px 11px
+}
+#emby-wiki .wk-directory-count{min-width:0;display:flex;flex-direction:column;gap:3px}
+#emby-wiki .wk-directory-count>span{font-size:11px;color:#9bb2c7}
+#emby-wiki .wk-directory-count>strong{
+  color:#edce90;font-weight:760;line-height:1.2;font-size:20px;
+  font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis
+}
+#emby-wiki .wk-directory-footer{
+  margin-top:auto;display:flex;justify-content:space-between;align-items:center;
+  gap:8px;color:#9eb1c6;font-size:10.5px;min-width:0
+}
+#emby-wiki .wk-directory-footer>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#emby-wiki .wk-directory-link{color:#c5dfec;white-space:nowrap;font-weight:680}
+@media(hover:hover){
+  #emby-wiki .wk-directory-card:hover{
+    transform:translateY(-3px);border-color:rgba(160,211,231,.65);
+    box-shadow:0 14px 35px rgba(0,0,0,.24)
+  }
+}
+#emby-wiki .wk-directory-action:focus-visible{
+  outline:2px solid #a8e5ed;outline-offset:-4px;border-radius:18px
+}
+#emby-wiki .wk-detail-hero{display:flex;gap:16px;align-items:center;margin:5px 0 20px}
+#emby-wiki .wk-detail-hero .wk-detail-cover{
+  width:96px;height:96px;flex:none;aspect-ratio:1/1;object-fit:cover;
+  border-radius:17px;border:1px solid var(--wk-line);background:#172a3a
+}
+#emby-wiki .wk-detail-hero p{margin:0;line-height:1.6;font-size:14px;overflow-wrap:anywhere;color:var(--wk-muted)}
+.wiki-page #wiki-cover-preview{
+  display:block;width:min(220px,100%);aspect-ratio:1/1;height:auto;
+  max-height:none;object-fit:cover;border-radius:15px
+}
+.wiki-page #wiki-cover-preview[hidden]{display:none}
+@media(max-width:1080px){#emby-wiki .wk-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){#emby-wiki .wk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){
+  #emby-wiki .wk-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #emby-wiki .wk-directory-card{min-height:164px;border-radius:15px}
+  #emby-wiki .wk-directory-action{padding:11px;gap:10px}
+  #emby-wiki .wk-directory-header{gap:8px}
+  #emby-wiki .wk-directory-cover{width:53px;height:53px;border-radius:12px}
+  #emby-wiki .wk-directory-initials{font-size:15px}
+  #emby-wiki .wk-directory-intro h3{font-size:13.5px;margin-bottom:5px}
+  #emby-wiki .wk-directory-nature,#emby-wiki .wk-directory-status{padding:2px 4px;font-size:9px}
+  #emby-wiki .wk-directory-counts{padding:8px;gap:6px}
+  #emby-wiki .wk-directory-count>strong{font-size:18px}
+  #emby-wiki .wk-directory-footer{font-size:9px}
+  #emby-wiki .wk-detail-hero .wk-detail-cover{width:75px;height:75px}
+}
+@media(max-width:355px){#emby-wiki .wk-grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){#emby-wiki .wk-directory-card{transition:none}}
