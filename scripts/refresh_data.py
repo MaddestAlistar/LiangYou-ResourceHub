@@ -111,8 +111,9 @@ def main():
         print('REFRESH_WATCHDOG_STATUS_UPDATED', flush=True)
     else:
         print('REFRESH_WATCHDOG_NO_CHANGES', flush=True)
-    # Optional official fixtures must not break the six established working feeds.
-    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles', 'media')))
+    # Independent sports probability feeds are external/optional: keep their failed
+    # status and next-heartbeat retry, but do not block verified Apple/game updates.
+    return int(any(e['status'] == 'failed' for k,e in jobs.items() if k not in ('sports', 'fixtures', 'extras', 'board', 'nba', 'odds', 'chess_profiles', 'media')))
 
 if __name__ == '__main__':
     raise SystemExit(main())
