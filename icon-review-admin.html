@@ -48,6 +48,7 @@
 .wk-admin-photo-group input[type=file]{display:block;width:100%;min-width:0;padding:10px 7px;border:1px solid #465c7a;border-radius:10px;background:#101b2a;color:#d8e6f8;font-size:12px}
 .wk-admin-photo-group img{width:100%;max-height:200px;object-fit:contain;border-radius:10px;border:1px solid rgba(154,188,225,.23);background:rgba(10,18,32,.5)}
 .wk-admin-photo-group .wk-admin-photo-preview{border-color:rgba(214,178,115,.7);background:#19263a}
+#wiki-admin-cover-current,#wiki-admin-cover-preview{width:min(200px,100%);aspect-ratio:1/1;max-height:none;object-fit:cover}
 .wk-admin-photo-group img[hidden],.wk-admin-photo-group button[hidden],.wk-admin-photo-group label[hidden],.wk-admin-photo-group p[hidden]{display:none!important}
 .wk-admin-photo-group .wk-quiet{align-self:flex-start}
 @media(max-width:680px){.wk-admin-photo-grid{grid-template-columns:1fr}.wk-admin-photo-tools{padding:12px}.wk-admin-photo-group{padding:11px}}
@@ -149,7 +150,7 @@
       <strong>封面图片</strong>
       <img id="wiki-admin-cover-current" class="wk-admin-photo-current" alt="当前封面预览" hidden>
       <p id="wiki-admin-cover-empty" class="wk-hint">暂无封面</p>
-      <label class="wk-field" for="wiki-admin-cover-file"><span>上传新封面</span><input id="wiki-admin-cover-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <label class="wk-field" for="wiki-admin-cover-file"><span>上传新封面</span><input id="wiki-admin-cover-file" type="file" accept="image/jpeg,image/png,image/webp"><small>仅支持 1:1 正方形封面（至少 320×320 像素），建议 720×720；不符合比例将拒绝上传。</small></label>
       <img id="wiki-admin-cover-preview" class="wk-admin-photo-preview" alt="新封面预览" hidden>
       <button id="wiki-admin-cover-clear" type="button" class="wk-quiet" hidden>取消替换封面</button>
       <p id="wiki-admin-cover-message" class="wk-hint" role="status"></p>
@@ -290,4 +291,4 @@ $("load").onclick=async()=>{
  finally{busy=false;$("load").disabled=false;render()}
 };
 $("filter").onchange=render;$("search").oninput=render;
-</script><script src="./lyx-admin.js?v=20261112.selects3" defer></script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261111.image-replace1"></script></body></html>
+</script><script src="./lyx-admin.js?v=20261112.selects3" defer></script><script src="./tech-news-admin.js?v=20261030.news-photo1" defer></script><script type="module" src="./emby-wiki-admin.mjs?v=20261112.square1"></script></body></html>
