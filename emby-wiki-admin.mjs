@@ -1,5 +1,5 @@
 import {STATUS_NAMES,validateWiki} from './emby-wiki-schema.mjs?v=20261110.11';
-import {el,api,buildForm,readForm,fillForm,details,safeCover,safeEvidence} from './emby-wiki-ui.mjs?v=20261111.image1';
+import {el,api,buildForm,readForm,fillForm,details,safeCover,safeEvidence} from './emby-wiki-ui.mjs?v=20261112.detail1';
 const $=id=>document.getElementById(id),host=$('wiki-admin-fields'),dialog=$('wiki-admin-edit'),list=$('wiki-admin-list');
 buildForm(host,'wiki-edit');
 let items=[],busy=false,editing=null;
