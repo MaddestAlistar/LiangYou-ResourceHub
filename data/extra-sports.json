@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-12T01:53:07Z",
+  "generated_at": "2026-11-12T09:35:52Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-12T01:53:07Z"
+      "verified_at": "2026-11-12T09:35:52Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 14,
       "standings": 5,
-      "verified_at": "2026-11-12T01:53:07Z"
+      "verified_at": "2026-11-12T09:35:52Z"
     }
   ],
   "status": "ok",
@@ -285,6 +285,24 @@
         {
           "team": "Los Angeles Lakers",
           "group": "Western Conference",
+          "wins": 11,
+          "losses": 2,
+          "played": 13,
+          "win_pct": 0.8462,
+          "rank": 1
+        },
+        {
+          "team": "San Antonio Spurs",
+          "group": "Western Conference",
+          "wins": 10,
+          "losses": 2,
+          "played": 12,
+          "win_pct": 0.8333,
+          "rank": 2
+        },
+        {
+          "team": "Boston Celtics",
+          "group": "Eastern Conference",
           "wins": 10,
           "losses": 2,
           "played": 12,
@@ -292,22 +310,13 @@
           "rank": 1
         },
         {
-          "team": "Boston Celtics",
-          "group": "Eastern Conference",
-          "wins": 9,
-          "losses": 2,
-          "played": 11,
-          "win_pct": 0.8182,
-          "rank": 1
-        },
-        {
-          "team": "San Antonio Spurs",
+          "team": "Houston Rockets",
           "group": "Western Conference",
           "wins": 9,
-          "losses": 2,
-          "played": 11,
-          "win_pct": 0.8182,
-          "rank": 2
+          "losses": 3,
+          "played": 12,
+          "win_pct": 0.75,
+          "rank": 3
         },
         {
           "team": "Philadelphia 76ers",
@@ -325,34 +334,16 @@
           "losses": 3,
           "played": 11,
           "win_pct": 0.7273,
-          "rank": 3
+          "rank": 4
         },
         {
-          "team": "Golden State Warriors",
+          "team": "Portland Trail Blazers",
           "group": "Western Conference",
           "wins": 8,
           "losses": 3,
           "played": 11,
           "win_pct": 0.7273,
-          "rank": 3
-        },
-        {
-          "team": "Houston Rockets",
-          "group": "Western Conference",
-          "wins": 8,
-          "losses": 3,
-          "played": 11,
-          "win_pct": 0.7273,
-          "rank": 3
-        },
-        {
-          "team": "Oklahoma City Thunder",
-          "group": "Western Conference",
-          "wins": 8,
-          "losses": 3,
-          "played": 11,
-          "win_pct": 0.7273,
-          "rank": 3
+          "rank": 4
         },
         {
           "team": "Detroit Pistons",
@@ -364,22 +355,31 @@
           "rank": 3
         },
         {
+          "team": "Golden State Warriors",
+          "group": "Western Conference",
+          "wins": 8,
+          "losses": 4,
+          "played": 12,
+          "win_pct": 0.6667,
+          "rank": 6
+        },
+        {
+          "team": "Oklahoma City Thunder",
+          "group": "Western Conference",
+          "wins": 8,
+          "losses": 4,
+          "played": 12,
+          "win_pct": 0.6667,
+          "rank": 6
+        },
+        {
           "team": "Memphis Grizzlies",
           "group": "Western Conference",
           "wins": 7,
-          "losses": 3,
-          "played": 10,
-          "win_pct": 0.7,
-          "rank": 7
-        },
-        {
-          "team": "Portland Trail Blazers",
-          "group": "Western Conference",
-          "wins": 7,
-          "losses": 3,
-          "played": 10,
-          "win_pct": 0.7,
-          "rank": 7
+          "losses": 4,
+          "played": 11,
+          "win_pct": 0.6364,
+          "rank": 8
         },
         {
           "team": "Dallas Mavericks",
@@ -388,16 +388,16 @@
           "losses": 4,
           "played": 11,
           "win_pct": 0.6364,
-          "rank": 9
+          "rank": 8
         },
         {
-          "team": "New York Knicks",
-          "group": "Eastern Conference",
+          "team": "Denver Nuggets",
+          "group": "Western Conference",
           "wins": 6,
           "losses": 4,
           "played": 10,
           "win_pct": 0.6,
-          "rank": 4
+          "rank": 10
         },
         {
           "team": "Atlanta Hawks",
@@ -406,28 +406,28 @@
           "losses": 5,
           "played": 12,
           "win_pct": 0.5833,
+          "rank": 4
+        },
+        {
+          "team": "New York Knicks",
+          "group": "Eastern Conference",
+          "wins": 6,
+          "losses": 5,
+          "played": 11,
+          "win_pct": 0.5455,
           "rank": 5
         },
         {
-          "team": "Denver Nuggets",
-          "group": "Western Conference",
-          "wins": 5,
-          "losses": 4,
-          "played": 9,
-          "win_pct": 0.5556,
-          "rank": 10
-        },
-        {
-          "team": "Toronto Raptors",
+          "team": "Cleveland Cavaliers",
           "group": "Eastern Conference",
-          "wins": 5,
-          "losses": 5,
-          "played": 10,
+          "wins": 6,
+          "losses": 6,
+          "played": 12,
           "win_pct": 0.5,
           "rank": 6
         },
         {
-          "team": "Cleveland Cavaliers",
+          "team": "Toronto Raptors",
           "group": "Eastern Conference",
           "wins": 5,
           "losses": 6,
@@ -454,16 +454,7 @@
           "rank": 11
         },
         {
-          "team": "New Orleans Pelicans",
-          "group": "Western Conference",
-          "wins": 4,
-          "losses": 7,
-          "played": 11,
-          "win_pct": 0.3636,
-          "rank": 12
-        },
-        {
-          "team": "Washington Wizards",
+          "team": "Orlando Magic",
           "group": "Eastern Conference",
           "wins": 4,
           "losses": 7,
@@ -481,22 +472,40 @@
           "rank": 9
         },
         {
-          "team": "Orlando Magic",
+          "team": "Indiana Pacers",
           "group": "Eastern Conference",
-          "wins": 3,
-          "losses": 7,
-          "played": 10,
-          "win_pct": 0.3,
+          "wins": 4,
+          "losses": 8,
+          "played": 12,
+          "win_pct": 0.3333,
           "rank": 11
         },
         {
-          "team": "Indiana Pacers",
+          "team": "Washington Wizards",
+          "group": "Eastern Conference",
+          "wins": 4,
+          "losses": 8,
+          "played": 12,
+          "win_pct": 0.3333,
+          "rank": 11
+        },
+        {
+          "team": "New Orleans Pelicans",
+          "group": "Western Conference",
+          "wins": 4,
+          "losses": 8,
+          "played": 12,
+          "win_pct": 0.3333,
+          "rank": 12
+        },
+        {
+          "team": "Brooklyn Nets",
           "group": "Eastern Conference",
           "wins": 3,
           "losses": 8,
           "played": 11,
           "win_pct": 0.2727,
-          "rank": 12
+          "rank": 13
         },
         {
           "team": "LA Clippers",
@@ -508,30 +517,12 @@
           "rank": 13
         },
         {
-          "team": "Brooklyn Nets",
-          "group": "Eastern Conference",
-          "wins": 2,
-          "losses": 8,
-          "played": 10,
-          "win_pct": 0.2,
-          "rank": 13
-        },
-        {
           "team": "Chicago Bulls",
           "group": "Eastern Conference",
           "wins": 1,
-          "losses": 8,
-          "played": 9,
-          "win_pct": 0.1111,
-          "rank": 14
-        },
-        {
-          "team": "Utah Jazz",
-          "group": "Western Conference",
-          "wins": 1,
-          "losses": 10,
-          "played": 11,
-          "win_pct": 0.0909,
+          "losses": 9,
+          "played": 10,
+          "win_pct": 0.1,
           "rank": 14
         },
         {
@@ -544,18 +535,27 @@
           "rank": 14
         },
         {
+          "team": "Utah Jazz",
+          "group": "Western Conference",
+          "wins": 1,
+          "losses": 11,
+          "played": 12,
+          "win_pct": 0.0833,
+          "rank": 15
+        },
+        {
           "team": "Milwaukee Bucks",
           "group": "Eastern Conference",
           "wins": 1,
-          "losses": 10,
-          "played": 11,
-          "win_pct": 0.0909,
+          "losses": 11,
+          "played": 12,
+          "win_pct": 0.0833,
           "rank": 15
         }
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     },
     {
@@ -767,7 +767,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     },
     {
@@ -979,7 +979,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     },
     {
@@ -1171,7 +1171,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     },
     {
@@ -1383,7 +1383,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     },
     {
@@ -1575,7 +1575,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-12T01:53:07Z",
+      "verified_at": "2026-11-12T09:35:52Z",
       "status": "ok"
     }
   ],
