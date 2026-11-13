@@ -63,6 +63,8 @@ jobs:
           THE_GUARDIAN_API_KEY: ${{ secrets.THE_GUARDIAN_API_KEY || secrets.GUARDIAN_API_KEY }}
           MEDIA_DIRECT_BATCH: '12'
         run: node scripts/refresh_media_direct.mjs
+      - name: Keep the published film snapshot within its safe size budget
+        run: python scripts/compact_media_title_coverage.py
       - name: Validate snapshot identity and size
         run: |
           python - <<'PY'
@@ -116,6 +118,7 @@ jobs:
               ensure_ascii=False,separators=(',',':'))+'\n')
           print('COVERAGE_MERGED',len(items))
           PY
+            python scripts/compact_media_title_coverage.py
             git add data/media-title-coverage.json
             if git diff --cached --quiet; then break; fi
             git commit -m 'Refresh all-film title coverage cache [skip ci]'
