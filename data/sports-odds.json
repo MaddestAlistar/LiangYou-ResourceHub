@@ -2,25 +2,25 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-13T22:53:35Z",
+  "generated_at": "2026-11-14T06:18:08Z",
   "quota_month": "2026-11",
-  "monthly_credits": 75,
+  "monthly_credits": 77,
   "monthly_cap": 210,
-  "provider_remaining": 424,
+  "provider_remaining": 422,
   "last_checked": {
-    "basketball_nba": "2026-11-13T22:53:35Z",
-    "soccer_epl": "2026-11-13T16:49:37Z",
+    "basketball_nba": "2026-11-14T06:18:08Z",
+    "soccer_epl": "2026-11-14T06:18:08Z",
     "soccer_uefa_champs_league": "2026-11-13T08:46:02Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 9
+      "count": 5
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "recent",
+      "status": "ok",
       "count": 0
     },
     {
@@ -31,193 +31,109 @@
   ],
   "events": [
     {
-      "id": "odds-6669b911691463c669a5c10574742e8e",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Indiana Pacers",
-      "away": "New York Knicks",
-      "start_time": "2026-11-14T00:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Indiana Pacers",
-          "decimal": 3.71
-        },
-        {
-          "name": "New York Knicks",
-          "decimal": 1.3
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:32Z"
-    },
-    {
-      "id": "odds-76416359b5453c01968e94702a375f16",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Orlando Magic",
-      "away": "Milwaukee Bucks",
-      "start_time": "2026-11-14T00:10:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Milwaukee Bucks",
-          "decimal": 4.3
-        },
-        {
-          "name": "Orlando Magic",
-          "decimal": 1.24
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:33Z"
-    },
-    {
-      "id": "odds-80ffc963f864f3d4fcefa82fd02b7d7b",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Chicago Bulls",
-      "away": "Atlanta Hawks",
-      "start_time": "2026-11-14T01:10:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Atlanta Hawks",
-          "decimal": 1.34
-        },
-        {
-          "name": "Chicago Bulls",
-          "decimal": 3.35
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:33Z"
-    },
-    {
-      "id": "odds-58b860d500be69ebf853926aa1ac8271",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Miami Heat",
-      "away": "Cleveland Cavaliers",
-      "start_time": "2026-11-14T01:10:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Cleveland Cavaliers",
-          "decimal": 2.14
-        },
-        {
-          "name": "Miami Heat",
-          "decimal": 1.75
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:33Z"
-    },
-    {
-      "id": "odds-8a40b260e8fa0d67c1f2bc2b39a24982",
+      "id": "odds-6cb4c8feeadd57aa6ab46ebdee60818a",
       "provider": "the-odds-api",
       "sport": "basketball",
       "league": "NBA",
       "home": "New Orleans Pelicans",
-      "away": "Memphis Grizzlies",
-      "start_time": "2026-11-14T01:10:00Z",
+      "away": "Denver Nuggets",
+      "start_time": "2026-11-15T00:10:00Z",
       "bookmaker": "FanDuel",
       "outcomes": [
         {
-          "name": "Memphis Grizzlies",
-          "decimal": 1.61
+          "name": "Denver Nuggets",
+          "decimal": 1.17
         },
         {
           "name": "New Orleans Pelicans",
-          "decimal": 2.38
+          "decimal": 5.3
         }
       ],
-      "quote_at": "2026-11-13T22:53:33Z"
+      "quote_at": "2026-11-14T06:17:54Z"
     },
     {
-      "id": "odds-d04acca7f0f369fc53bf04cd3357cb0d",
+      "id": "odds-2cc2c254049b0bd0a6219f70cbb0b69a",
       "provider": "the-odds-api",
       "sport": "basketball",
       "league": "NBA",
-      "home": "Houston Rockets",
-      "away": "Utah Jazz",
-      "start_time": "2026-11-14T01:40:00Z",
+      "home": "Cleveland Cavaliers",
+      "away": "Dallas Mavericks",
+      "start_time": "2026-11-15T00:40:00Z",
       "bookmaker": "FanDuel",
       "outcomes": [
         {
-          "name": "Houston Rockets",
-          "decimal": 1.09
+          "name": "Cleveland Cavaliers",
+          "decimal": 1.79
         },
         {
-          "name": "Utah Jazz",
+          "name": "Dallas Mavericks",
+          "decimal": 2.08
+        }
+      ],
+      "quote_at": "2026-11-14T06:17:54Z"
+    },
+    {
+      "id": "odds-a7cb6062530bd69eb6caee84a015abd0",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Memphis Grizzlies",
+      "away": "Brooklyn Nets",
+      "start_time": "2026-11-15T01:10:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Brooklyn Nets",
+          "decimal": 2.8
+        },
+        {
+          "name": "Memphis Grizzlies",
+          "decimal": 1.47
+        }
+      ],
+      "quote_at": "2026-11-14T06:17:54Z"
+    },
+    {
+      "id": "odds-5773e80d52d3fba36b11be38ded62790",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Minnesota Timberwolves",
+      "away": "Chicago Bulls",
+      "start_time": "2026-11-15T01:10:00Z",
+      "bookmaker": "FanDuel",
+      "outcomes": [
+        {
+          "name": "Chicago Bulls",
           "decimal": 8.0
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:33Z"
-    },
-    {
-      "id": "odds-1fae7f34ec6035dffa74feb148ee26c7",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "San Antonio Spurs",
-      "away": "Golden State Warriors",
-      "start_time": "2026-11-14T02:40:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Golden State Warriors",
-          "decimal": 5.87
         },
         {
-          "name": "San Antonio Spurs",
-          "decimal": 1.15
+          "name": "Minnesota Timberwolves",
+          "decimal": 1.09
         }
       ],
-      "quote_at": "2026-11-13T22:53:32Z"
+      "quote_at": "2026-11-14T06:17:54Z"
     },
     {
-      "id": "odds-a51c350318d7570c2b74af08eedb9fcd",
+      "id": "odds-cb06267ae037a883ae6f71078d6e2aaa",
       "provider": "the-odds-api",
       "sport": "basketball",
       "league": "NBA",
-      "home": "Sacramento Kings",
-      "away": "Portland Trail Blazers",
-      "start_time": "2026-11-14T03:10:00Z",
+      "home": "Miami Heat",
+      "away": "Detroit Pistons",
+      "start_time": "2026-11-15T01:10:00Z",
       "bookmaker": "FanDuel",
       "outcomes": [
         {
-          "name": "Portland Trail Blazers",
-          "decimal": 1.22
+          "name": "Detroit Pistons",
+          "decimal": 1.57
         },
         {
-          "name": "Sacramento Kings",
-          "decimal": 4.6
+          "name": "Miami Heat",
+          "decimal": 2.48
         }
       ],
-      "quote_at": "2026-11-13T22:53:33Z"
-    },
-    {
-      "id": "odds-5344669fd560d317ffaee0a1d16be7c8",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Los Angeles Clippers",
-      "away": "Oklahoma City Thunder",
-      "start_time": "2026-11-14T03:40:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Los Angeles Clippers",
-          "decimal": 3.25
-        },
-        {
-          "name": "Oklahoma City Thunder",
-          "decimal": 1.36
-        }
-      ],
-      "quote_at": "2026-11-13T22:53:33Z"
+      "quote_at": "2026-11-14T06:17:54Z"
     }
   ]
 }
