@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-14T18:30:15Z",
+  "generated_at": "2026-11-15T01:05:47Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-14T18:30:15Z"
+      "verified_at": "2026-11-15T01:05:47Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
-      "count": 83,
+      "count": 89,
       "standings": 5,
-      "verified_at": "2026-11-14T18:30:15Z"
+      "verified_at": "2026-11-15T01:05:47Z"
     }
   ],
   "status": "ok",
@@ -28,12 +28,12 @@
       "league": "Campeonato Brasileiro Série A",
       "stage": "Regular Season",
       "start_time": "2026-11-14T21:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Mirassol FC",
       "away": "CA Mineiro",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -46,12 +46,12 @@
       "league": "Campeonato Brasileiro Série A",
       "stage": "Regular Season",
       "start_time": "2026-11-14T23:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Chapecoense AF",
       "away": "CR Vasco da Gama",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -1514,6 +1514,114 @@
       "winner_id": null,
       "prominence": 130,
       "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-558519",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Serie A",
+      "stage": "Regular Season",
+      "start_time": "2026-11-23T19:45:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "AC Monza",
+      "away": "ACF Fiorentina",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-560649",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Premier League",
+      "stage": "Regular Season",
+      "start_time": "2026-11-23T20:00:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "Brentford FC",
+      "away": "Everton FC",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-564757",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "La Liga",
+      "stage": "Regular Season",
+      "start_time": "2026-11-23T20:00:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "Levante UD",
+      "away": "Elche CF",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 190,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-555097",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Campeonato Brasileiro Série A",
+      "stage": "Regular Season",
+      "start_time": "2026-11-23T22:30:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "SC Internacional",
+      "away": "EC Vitória",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 130,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-555093",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Campeonato Brasileiro Série A",
+      "stage": "Regular Season",
+      "start_time": "2026-11-23T23:00:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "Botafogo FR",
+      "away": "São Paulo FC",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 130,
+      "source_url": "https://www.football-data.org/"
+    },
+    {
+      "id": "football-data-555099",
+      "provider": "football-data",
+      "sport": "football",
+      "league": "Campeonato Brasileiro Série A",
+      "stage": "Regular Season",
+      "start_time": "2026-11-24T00:00:00Z",
+      "status": "scheduled",
+      "status_detail": "TIMED",
+      "home": "Santos FC",
+      "away": "Grêmio FBPA",
+      "score_home": null,
+      "score_away": null,
+      "best_of": null,
+      "winner_id": null,
+      "prominence": 130,
+      "source_url": "https://www.football-data.org/"
     }
   ],
   "standings": [
@@ -1797,7 +1905,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     },
     {
@@ -2009,7 +2117,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     },
     {
@@ -2221,7 +2329,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     },
     {
@@ -2413,7 +2521,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     },
     {
@@ -2625,7 +2733,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     },
     {
@@ -2817,7 +2925,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-14T18:30:15Z",
+      "verified_at": "2026-11-15T01:05:47Z",
       "status": "ok"
     }
   ],
