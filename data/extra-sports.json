@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-15T01:05:47Z",
+  "generated_at": "2026-11-15T07:07:12Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-15T01:05:47Z"
+      "verified_at": "2026-11-15T07:07:12Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 89,
       "standings": 5,
-      "verified_at": "2026-11-15T01:05:47Z"
+      "verified_at": "2026-11-15T07:07:12Z"
     }
   ],
   "status": "ok",
@@ -46,12 +46,12 @@
       "league": "Campeonato Brasileiro Série A",
       "stage": "Regular Season",
       "start_time": "2026-11-14T23:30:00Z",
-      "status": "live",
-      "status_detail": "IN_PLAY",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Chapecoense AF",
       "away": "CR Vasco da Gama",
       "score_home": 0,
-      "score_away": 1,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -1678,15 +1678,6 @@
           "rank": 2
         },
         {
-          "team": "Minnesota Timberwolves",
-          "group": "Western Conference",
-          "wins": 9,
-          "losses": 3,
-          "played": 12,
-          "win_pct": 0.75,
-          "rank": 4
-        },
-        {
           "team": "Portland Trail Blazers",
           "group": "Western Conference",
           "wins": 9,
@@ -1696,22 +1687,40 @@
           "rank": 4
         },
         {
-          "team": "Detroit Pistons",
-          "group": "Eastern Conference",
-          "wins": 8,
-          "losses": 3,
-          "played": 11,
-          "win_pct": 0.7273,
-          "rank": 3
+          "team": "Minnesota Timberwolves",
+          "group": "Western Conference",
+          "wins": 9,
+          "losses": 4,
+          "played": 13,
+          "win_pct": 0.6923,
+          "rank": 5
         },
         {
           "team": "Memphis Grizzlies",
           "group": "Western Conference",
+          "wins": 9,
+          "losses": 4,
+          "played": 13,
+          "win_pct": 0.6923,
+          "rank": 5
+        },
+        {
+          "team": "Detroit Pistons",
+          "group": "Eastern Conference",
           "wins": 8,
           "losses": 4,
           "played": 12,
           "win_pct": 0.6667,
-          "rank": 6
+          "rank": 3
+        },
+        {
+          "team": "Denver Nuggets",
+          "group": "Western Conference",
+          "wins": 7,
+          "losses": 4,
+          "played": 11,
+          "win_pct": 0.6364,
+          "rank": 7
         },
         {
           "team": "Golden State Warriors",
@@ -1720,7 +1729,7 @@
           "losses": 5,
           "played": 13,
           "win_pct": 0.6154,
-          "rank": 7
+          "rank": 8
         },
         {
           "team": "Oklahoma City Thunder",
@@ -1729,28 +1738,28 @@
           "losses": 5,
           "played": 13,
           "win_pct": 0.6154,
-          "rank": 7
+          "rank": 8
         },
         {
-          "team": "Denver Nuggets",
-          "group": "Western Conference",
-          "wins": 6,
-          "losses": 4,
-          "played": 10,
-          "win_pct": 0.6,
-          "rank": 9
+          "team": "Atlanta Hawks",
+          "group": "Eastern Conference",
+          "wins": 7,
+          "losses": 6,
+          "played": 13,
+          "win_pct": 0.5385,
+          "rank": 4
         },
         {
           "team": "Dallas Mavericks",
           "group": "Western Conference",
           "wins": 7,
-          "losses": 5,
-          "played": 12,
-          "win_pct": 0.5833,
+          "losses": 6,
+          "played": 13,
+          "win_pct": 0.5385,
           "rank": 10
         },
         {
-          "team": "Atlanta Hawks",
+          "team": "Miami Heat",
           "group": "Eastern Conference",
           "wins": 7,
           "losses": 6,
@@ -1765,25 +1774,16 @@
           "losses": 6,
           "played": 12,
           "win_pct": 0.5,
-          "rank": 5
-        },
-        {
-          "team": "Miami Heat",
-          "group": "Eastern Conference",
-          "wins": 6,
-          "losses": 6,
-          "played": 12,
-          "win_pct": 0.5,
-          "rank": 5
+          "rank": 7
         },
         {
           "team": "Cleveland Cavaliers",
           "group": "Eastern Conference",
-          "wins": 6,
+          "wins": 7,
           "losses": 7,
-          "played": 13,
-          "win_pct": 0.4615,
-          "rank": 7
+          "played": 14,
+          "win_pct": 0.5,
+          "rank": 6
         },
         {
           "team": "Phoenix Suns",
@@ -1843,19 +1843,10 @@
           "team": "New Orleans Pelicans",
           "group": "Western Conference",
           "wins": 4,
-          "losses": 9,
-          "played": 13,
-          "win_pct": 0.3077,
+          "losses": 10,
+          "played": 14,
+          "win_pct": 0.2857,
           "rank": 12
-        },
-        {
-          "team": "Brooklyn Nets",
-          "group": "Eastern Conference",
-          "wins": 3,
-          "losses": 8,
-          "played": 11,
-          "win_pct": 0.2727,
-          "rank": 13
         },
         {
           "team": "LA Clippers",
@@ -1867,13 +1858,22 @@
           "rank": 13
         },
         {
+          "team": "Brooklyn Nets",
+          "group": "Eastern Conference",
+          "wins": 3,
+          "losses": 9,
+          "played": 12,
+          "win_pct": 0.25,
+          "rank": 13
+        },
+        {
           "team": "Chicago Bulls",
           "group": "Eastern Conference",
-          "wins": 2,
+          "wins": 3,
           "losses": 9,
-          "played": 11,
-          "win_pct": 0.1818,
-          "rank": 14
+          "played": 12,
+          "win_pct": 0.25,
+          "rank": 13
         },
         {
           "team": "Sacramento Kings",
@@ -1905,7 +1905,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     },
     {
@@ -2117,7 +2117,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     },
     {
@@ -2329,7 +2329,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     },
     {
@@ -2521,7 +2521,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     },
     {
@@ -2733,7 +2733,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     },
     {
@@ -2925,7 +2925,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-15T01:05:47Z",
+      "verified_at": "2026-11-15T07:07:12Z",
       "status": "ok"
     }
   ],
