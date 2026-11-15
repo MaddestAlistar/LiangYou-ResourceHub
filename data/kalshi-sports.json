@@ -3,7 +3,7 @@
   "coverage_schema_version": 2,
   "source": "Kalshi public market API",
   "source_type": "prediction_market",
-  "generated_at": "2026-11-15T10:52:07Z",
+  "generated_at": "2026-11-15T12:52:33Z",
   "interval_hours": 2,
   "status": "ok",
   "link_schema_version": 2,
@@ -66,17 +66,17 @@
     {
       "tag": "KXCS2GAME",
       "status": "ok",
-      "received": 66
+      "received": 58
     },
     {
       "tag": "KXDOTA2GAME",
       "status": "ok",
-      "received": 20
+      "received": 18
     },
     {
       "tag": "KXVALORANTGAME",
       "status": "ok",
-      "received": 11
+      "received": 9
     },
     {
       "tag": "KXNFLGAME",
@@ -132,33 +132,33 @@
       "outcomes": [
         {
           "name": "Indiana",
-          "probability": 0.28,
+          "probability": 0.275,
           "market_id": "KXNBAGAME-26NOV15INDPHI-IND",
           "best_bid": 0.27,
-          "best_ask": 0.29,
-          "best_bid_size": 26349.3,
-          "best_ask_size": 66771.85,
-          "last_price": 0.29,
-          "previous_price": 0.22
+          "best_ask": 0.28,
+          "best_bid_size": 632.19,
+          "best_ask_size": 240241.58,
+          "last_price": 0.28,
+          "previous_price": 0.23
         },
         {
           "name": "Philadelphia",
-          "probability": 0.715,
+          "probability": 0.725,
           "market_id": "KXNBAGAME-26NOV15INDPHI-PHI",
-          "best_bid": 0.71,
-          "best_ask": 0.72,
-          "best_bid_size": 10530.98,
-          "best_ask_size": 40499.79,
-          "last_price": 0.72,
-          "previous_price": 0.79
+          "best_bid": 0.72,
+          "best_ask": 0.73,
+          "best_bid_size": 27344.95,
+          "best_ask_size": 5253.16,
+          "last_price": 0.73,
+          "previous_price": 0.8
         }
       ],
       "stats": {
-        "volume_24h_contracts": 130661.93,
-        "volume_total_contracts": 141796.81,
-        "open_interest_contracts": 106998.76
+        "volume_24h_contracts": 283014.13,
+        "volume_total_contracts": 295211.94,
+        "open_interest_contracts": 248971.52
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15indphi"
@@ -212,51 +212,51 @@
         "volume_total_contracts": 3582.1,
         "open_interest_contracts": 2598.38
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxmlsgame/major-league-soccer-game/kxmlsgame-26nov19orlcin"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150300furiats",
-      "title": "FURIA vs. Spirit",
+      "id": "kalshi-kxcs2game-26nov1504004mabt",
+      "title": "Four Magic vs. ABT Esports",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T12:00:00Z",
+      "start_time": "2026-11-15T13:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "FURIA",
-          "probability": 0.975,
-          "market_id": "KXCS2GAME-26NOV150300FURIATS-FURIA",
-          "best_bid": 0.97,
-          "best_ask": 0.98,
-          "best_bid_size": 126.0,
-          "best_ask_size": 357.48,
-          "last_price": 0.98
+          "name": "Four Magic",
+          "probability": 0.495,
+          "market_id": "KXCS2GAME-26NOV1504004MABT-4M",
+          "best_bid": 0.46,
+          "best_ask": 0.53,
+          "best_bid_size": 494.0,
+          "best_ask_size": 405.0,
+          "last_price": 0.53
         },
         {
-          "name": "Spirit",
-          "probability": 0.02,
-          "market_id": "KXCS2GAME-26NOV150300FURIATS-TS",
-          "best_bid": 0.01,
-          "best_ask": 0.03,
-          "best_bid_size": 133.94,
-          "best_ask_size": 503.05,
-          "last_price": 0.03
+          "name": "ABT Esports",
+          "probability": 0.505,
+          "market_id": "KXCS2GAME-26NOV1504004MABT-ABT",
+          "best_bid": 0.5,
+          "best_ask": 0.51,
+          "best_bid_size": 50.0,
+          "best_ask_size": 65.0,
+          "last_price": 0.52
         }
       ],
       "stats": {
-        "volume_24h_contracts": 806058.25,
-        "volume_total_contracts": 817893.78,
-        "open_interest_contracts": 542075.32
+        "volume_24h_contracts": 180.03,
+        "volume_total_contracts": 180.03,
+        "open_interest_contracts": 180.03
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150300furiats"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov1504004mabt"
     },
     {
       "id": "kalshi-kxatpmatch-26nov15zvejod",
@@ -270,12 +270,12 @@
       "outcomes": [
         {
           "name": "Alexander Zverev",
-          "probability": 0.715,
+          "probability": 0.725,
           "market_id": "KXATPMATCH-26NOV15ZVEJOD-ZVE",
-          "best_bid": 0.71,
-          "best_ask": 0.72,
-          "best_bid_size": 18081.87,
-          "best_ask_size": 10.0,
+          "best_bid": 0.72,
+          "best_ask": 0.73,
+          "best_bid_size": 3032.03,
+          "best_ask_size": 79762.88,
           "last_price": 0.73,
           "previous_price": 0.69
         },
@@ -285,18 +285,18 @@
           "market_id": "KXATPMATCH-26NOV15ZVEJOD-JOD",
           "best_bid": 0.28,
           "best_ask": 0.29,
-          "best_bid_size": 2535.35,
-          "best_ask_size": 187512.84,
-          "last_price": 0.28,
+          "best_bid_size": 160.35,
+          "best_ask_size": 193737.31,
+          "last_price": 0.29,
           "previous_price": 0.32
         }
       ],
       "stats": {
-        "volume_24h_contracts": 101880.84,
-        "volume_total_contracts": 105244.03,
-        "open_interest_contracts": 95204.66
+        "volume_24h_contracts": 124374.52,
+        "volume_total_contracts": 128145.39,
+        "open_interest_contracts": 117738.41
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov15zvejod"
@@ -317,9 +317,9 @@
           "market_id": "KXNBAGAME-26NOV15LALPHX-LAL",
           "best_bid": 0.59,
           "best_ask": 0.6,
-          "best_bid_size": 18.72,
-          "best_ask_size": 38219.1,
-          "last_price": 0.59,
+          "best_bid_size": 17591.06,
+          "best_ask_size": 73633.22,
+          "last_price": 0.6,
           "previous_price": 0.65
         },
         {
@@ -328,18 +328,18 @@
           "market_id": "KXNBAGAME-26NOV15LALPHX-PHX",
           "best_bid": 0.4,
           "best_ask": 0.41,
-          "best_bid_size": 1555.7,
-          "best_ask_size": 479.64,
+          "best_bid_size": 5693.92,
+          "best_ask_size": 85781.12,
           "last_price": 0.41,
-          "previous_price": 0.36
+          "previous_price": 0.35
         }
       ],
       "stats": {
-        "volume_24h_contracts": 122574.91,
-        "volume_total_contracts": 177899.53,
-        "open_interest_contracts": 147661.65
+        "volume_24h_contracts": 135251.25,
+        "volume_total_contracts": 192220.44,
+        "open_interest_contracts": 161295.77
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15lalphx"
@@ -372,7 +372,7 @@
           "best_bid": 0.23,
           "best_ask": 0.25,
           "best_bid_size": 1750.61,
-          "best_ask_size": 5783.86,
+          "best_ask_size": 5785.86,
           "last_price": 0.25,
           "previous_price": 0.25
         },
@@ -382,25 +382,25 @@
           "market_id": "KXMLSGAME-26NOV19SEARSL-RSL",
           "best_bid": 0.26,
           "best_ask": 0.27,
-          "best_bid_size": 1920.66,
-          "best_ask_size": 2487.11,
+          "best_bid_size": 1921.66,
+          "best_ask_size": 2485.11,
           "last_price": 0.27,
           "previous_price": 0.27
         }
       ],
       "stats": {
-        "volume_24h_contracts": 264.7,
-        "volume_total_contracts": 2625.45,
-        "open_interest_contracts": 1652.57
+        "volume_24h_contracts": 266.7,
+        "volume_total_contracts": 2627.45,
+        "open_interest_contracts": 1654.57
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxmlsgame/major-league-soccer-game/kxmlsgame-26nov19searsl"
     },
     {
-      "id": "kalshi-kxcs2game-26nov1504004mabt",
-      "title": "Four Magic vs. ABT Esports",
+      "id": "kalshi-kxcs2game-26nov150400apogeepriv",
+      "title": "Apogee Esports vs. PRIVATE",
       "category": "esports",
       "league": "CS2",
       "start_time": "2026-11-15T13:00:00Z",
@@ -409,35 +409,36 @@
       "competition": null,
       "outcomes": [
         {
-          "name": "Four Magic",
-          "probability": 0.485,
-          "market_id": "KXCS2GAME-26NOV1504004MABT-4M",
-          "best_bid": 0.41,
-          "best_ask": 0.56,
-          "best_bid_size": 47.0,
-          "best_ask_size": 5.0,
-          "last_price": 0.53
+          "name": "Apogee Esports",
+          "probability": 0.5,
+          "market_id": "KXCS2GAME-26NOV150400APOGEEPRIV-APOGEE",
+          "best_bid": 0.49,
+          "best_ask": 0.51,
+          "best_bid_size": 637.0,
+          "best_ask_size": 550.03,
+          "last_price": 0.49
         },
         {
-          "name": "ABT Esports",
+          "name": "PRIVATE",
           "probability": 0.5,
-          "market_id": "KXCS2GAME-26NOV1504004MABT-ABT",
-          "best_bid": 0.44,
-          "best_ask": 0.56,
-          "best_bid_size": 9.0,
-          "best_ask_size": 38.0,
-          "last_price": 0.64
+          "market_id": "KXCS2GAME-26NOV150400APOGEEPRIV-PRIV",
+          "best_bid": 0.49,
+          "best_ask": 0.51,
+          "best_bid_size": 448.0,
+          "best_ask_size": 637.0,
+          "last_price": 0.5,
+          "previous_price": 0.41
         }
       ],
       "stats": {
-        "volume_24h_contracts": 60.03,
-        "volume_total_contracts": 60.03,
-        "open_interest_contracts": 60.03
+        "volume_24h_contracts": 1278.74,
+        "volume_total_contracts": 1399.74,
+        "open_interest_contracts": 1075.74
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov1504004mabt"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400apogeepriv"
     },
     {
       "id": "kalshi-kxnflgame-26nov15nedet",
@@ -455,8 +456,8 @@
           "market_id": "KXNFLGAME-26NOV15NEDET-DET",
           "best_bid": 0.57,
           "best_ask": 0.58,
-          "best_bid_size": 95301.35,
-          "best_ask_size": 3710627.56,
+          "best_bid_size": 164492.09,
+          "best_ask_size": 4135785.46,
           "last_price": 0.58,
           "previous_price": 0.58
         },
@@ -466,18 +467,18 @@
           "market_id": "KXNFLGAME-26NOV15NEDET-NE",
           "best_bid": 0.42,
           "best_ask": 0.43,
-          "best_bid_size": 542275.81,
-          "best_ask_size": 2349865.91,
+          "best_bid_size": 922927.67,
+          "best_ask_size": 2851953.57,
           "last_price": 0.43,
           "previous_price": 0.43
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1212025.4,
-        "volume_total_contracts": 1726521.59,
-        "open_interest_contracts": 1612079.01
+        "volume_24h_contracts": 1404038.26,
+        "volume_total_contracts": 1929252.2,
+        "open_interest_contracts": 1810411.1
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15nedet"
@@ -494,33 +495,33 @@
       "outcomes": [
         {
           "name": "Charlotte",
-          "probability": 0.485,
+          "probability": 0.495,
           "market_id": "KXNBAGAME-26NOV15CHALAC-CHA",
-          "best_bid": 0.48,
-          "best_ask": 0.49,
-          "best_bid_size": 25990.26,
-          "best_ask_size": 60885.34,
-          "last_price": 0.49,
-          "previous_price": 0.43
+          "best_bid": 0.49,
+          "best_ask": 0.5,
+          "best_bid_size": 44450.13,
+          "best_ask_size": 57823.7,
+          "last_price": 0.5,
+          "previous_price": 0.42
         },
         {
           "name": "Los Angeles C",
-          "probability": 0.515,
+          "probability": 0.505,
           "market_id": "KXNBAGAME-26NOV15CHALAC-LAC",
-          "best_bid": 0.51,
-          "best_ask": 0.52,
-          "best_bid_size": 9743.05,
-          "best_ask_size": 88430.85,
-          "last_price": 0.52,
+          "best_bid": 0.5,
+          "best_ask": 0.51,
+          "best_bid_size": 11541.91,
+          "best_ask_size": 162421.66,
+          "last_price": 0.5,
           "previous_price": 0.6
         }
       ],
       "stats": {
-        "volume_24h_contracts": 22172.36,
-        "volume_total_contracts": 25761.46,
-        "open_interest_contracts": 22088.23
+        "volume_24h_contracts": 30108.65,
+        "volume_total_contracts": 33577.94,
+        "open_interest_contracts": 29079.7
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15chalac"
@@ -537,14 +538,14 @@
       "outcomes": [
         {
           "name": "Bayern Munich",
-          "probability": 0.895,
+          "probability": 0.9,
           "market_id": "KXBUNDESLIGAGAME-26NOV20BMUKOE-BMU",
           "best_bid": 0.89,
-          "best_ask": 0.9,
-          "best_bid_size": 2327.92,
-          "best_ask_size": 363.0,
+          "best_ask": 0.91,
+          "best_bid_size": 2866.92,
+          "best_ask_size": 5505.9,
           "last_price": 0.89,
-          "previous_price": 0.89
+          "previous_price": 0.9
         },
         {
           "name": "平局",
@@ -563,63 +564,62 @@
           "market_id": "KXBUNDESLIGAGAME-26NOV20BMUKOE-KOE",
           "best_bid": 0.03,
           "best_ask": 0.04,
-          "best_bid_size": 36127.17,
-          "best_ask_size": 8635.08,
+          "best_bid_size": 36124.97,
+          "best_ask_size": 8637.02,
           "last_price": 0.04,
           "previous_price": 0.04
         }
       ],
       "stats": {
-        "volume_24h_contracts": 8690.53,
+        "volume_24h_contracts": 8622.38,
         "volume_total_contracts": 40296.27,
         "open_interest_contracts": 32050.88
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov20bmukoe"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400apogeepriv",
-      "title": "Apogee Esports vs. PRIVATE",
+      "id": "kalshi-kxdota2game-26nov150500glpari",
+      "title": "GamerLegion vs. PARIVISION",
       "category": "esports",
-      "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "league": "Dota 2",
+      "start_time": "2026-11-15T14:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Apogee Esports",
-          "probability": 0.49,
-          "market_id": "KXCS2GAME-26NOV150400APOGEEPRIV-APOGEE",
-          "best_bid": 0.47,
-          "best_ask": 0.51,
-          "best_bid_size": 1947.0,
-          "best_ask_size": 373.0,
-          "last_price": 0.49
+          "name": "GamerLegion",
+          "probability": 0.245,
+          "market_id": "KXDOTA2GAME-26NOV150500GLPARI-GL",
+          "best_bid": 0.23,
+          "best_ask": 0.26,
+          "best_bid_size": 1658.0,
+          "best_ask_size": 2234.0,
+          "last_price": 0.25
         },
         {
-          "name": "PRIVATE",
-          "probability": 0.51,
-          "market_id": "KXCS2GAME-26NOV150400APOGEEPRIV-PRIV",
-          "best_bid": 0.5,
-          "best_ask": 0.52,
-          "best_bid_size": 318.0,
-          "best_ask_size": 738.65,
-          "last_price": 0.52,
-          "previous_price": 0.41
+          "name": "PARIVISION",
+          "probability": 0.75,
+          "market_id": "KXDOTA2GAME-26NOV150500GLPARI-PARI",
+          "best_bid": 0.74,
+          "best_ask": 0.76,
+          "best_bid_size": 496.02,
+          "best_ask_size": 1721.82,
+          "last_price": 0.74
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1260.14,
-        "volume_total_contracts": 1381.14,
-        "open_interest_contracts": 1094.34
+        "volume_24h_contracts": 134660.38,
+        "volume_total_contracts": 136051.3,
+        "open_interest_contracts": 107013.1
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400apogeepriv"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150500glpari"
     },
     {
       "id": "kalshi-kxnflgame-26nov15bufnyj",
@@ -637,8 +637,8 @@
           "market_id": "KXNFLGAME-26NOV15BUFNYJ-NYJ",
           "best_bid": 0.2,
           "best_ask": 0.21,
-          "best_bid_size": 300670.61,
-          "best_ask_size": 1186727.7,
+          "best_bid_size": 314023.53,
+          "best_ask_size": 1659368.36,
           "last_price": 0.21,
           "previous_price": 0.21
         },
@@ -648,18 +648,18 @@
           "market_id": "KXNFLGAME-26NOV15BUFNYJ-BUF",
           "best_bid": 0.79,
           "best_ask": 0.8,
-          "best_bid_size": 158387.48,
-          "best_ask_size": 2411424.51,
+          "best_bid_size": 457958.69,
+          "best_ask_size": 2538388.57,
           "last_price": 0.8,
           "previous_price": 0.8
         }
       ],
       "stats": {
-        "volume_24h_contracts": 316642.89,
-        "volume_total_contracts": 858261.59,
-        "open_interest_contracts": 710446.12
+        "volume_24h_contracts": 351072.21,
+        "volume_total_contracts": 894328.74,
+        "open_interest_contracts": 746345.69
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15bufnyj"
@@ -680,29 +680,29 @@
           "market_id": "KXNBAGAME-26NOV15SASUTA-SAS",
           "best_bid": 0.91,
           "best_ask": 0.92,
-          "best_bid_size": 3256.62,
-          "best_ask_size": 54903.4,
+          "best_bid_size": 3595.63,
+          "best_ask_size": 66813.93,
           "last_price": 0.92,
           "previous_price": 0.9
         },
         {
           "name": "Utah",
-          "probability": 0.095,
+          "probability": 0.085,
           "market_id": "KXNBAGAME-26NOV15SASUTA-UTA",
-          "best_bid": 0.09,
-          "best_ask": 0.1,
-          "best_bid_size": 84.01,
-          "best_ask_size": 78779.5,
-          "last_price": 0.1,
-          "previous_price": 0.12
+          "best_bid": 0.08,
+          "best_ask": 0.09,
+          "best_bid_size": 1374.55,
+          "best_ask_size": 27229.18,
+          "last_price": 0.09,
+          "previous_price": 0.11
         }
       ],
       "stats": {
-        "volume_24h_contracts": 112958.74,
-        "volume_total_contracts": 127188.2,
-        "open_interest_contracts": 107984.94
+        "volume_24h_contracts": 120224.89,
+        "volume_total_contracts": 135395.51,
+        "open_interest_contracts": 115417.63
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15sasuta"
@@ -724,7 +724,7 @@
           "best_bid": 0.65,
           "best_ask": 0.67,
           "best_bid_size": 3886.38,
-          "best_ask_size": 12328.35,
+          "best_ask_size": 12326.9,
           "last_price": 0.67,
           "previous_price": 0.65
         },
@@ -745,62 +745,62 @@
           "market_id": "KXLALIGAGAME-26NOV20ATHESP-ESP",
           "best_bid": 0.13,
           "best_ask": 0.14,
-          "best_bid_size": 22.94,
-          "best_ask_size": 9287.85,
+          "best_bid_size": 22.5,
+          "best_ask_size": 9287.76,
           "last_price": 0.14,
           "previous_price": 0.14
         }
       ],
       "stats": {
-        "volume_24h_contracts": 945.46,
-        "volume_total_contracts": 22460.1,
-        "open_interest_contracts": 13779.38
+        "volume_24h_contracts": 946.91,
+        "volume_total_contracts": 22461.55,
+        "open_interest_contracts": 13780.83
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov20athesp"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400dramaexr",
-      "title": "Drama eSports vs. ex-RUSTEC",
+      "id": "kalshi-kxcs2game-26nov150630cwsta",
+      "title": "CPH Wolves vs. STATE",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T15:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Drama eSports",
-          "probability": 0.16,
-          "market_id": "KXCS2GAME-26NOV150400DRAMAEXR-DRAMA",
-          "best_bid": 0.14,
-          "best_ask": 0.18,
-          "best_bid_size": 120.0,
-          "best_ask_size": 28.0,
-          "last_price": 0.14
+          "name": "CPH Wolves",
+          "probability": 0.225,
+          "market_id": "KXCS2GAME-26NOV150630CWSTA-CW",
+          "best_bid": 0.21,
+          "best_ask": 0.24,
+          "best_bid_size": 12.0,
+          "best_ask_size": 199.0,
+          "last_price": 0.2
         },
         {
-          "name": "ex-RUSTEC",
-          "probability": 0.835,
-          "market_id": "KXCS2GAME-26NOV150400DRAMAEXR-EXR",
-          "best_bid": 0.82,
-          "best_ask": 0.85,
+          "name": "STATE",
+          "probability": 0.795,
+          "market_id": "KXCS2GAME-26NOV150630CWSTA-STA",
+          "best_bid": 0.79,
+          "best_ask": 0.8,
           "best_bid_size": 1.0,
-          "best_ask_size": 82.14,
-          "last_price": 0.92
+          "best_ask_size": 206.62,
+          "last_price": 0.8
         }
       ],
       "stats": {
-        "volume_24h_contracts": 3528.82,
-        "volume_total_contracts": 3528.82,
-        "open_interest_contracts": 3011.8
+        "volume_24h_contracts": 1983.48,
+        "volume_total_contracts": 2087.48,
+        "open_interest_contracts": 1528.2
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400dramaexr"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150630cwsta"
     },
     {
       "id": "kalshi-kxnflgame-26nov15carno",
@@ -814,33 +814,33 @@
       "outcomes": [
         {
           "name": "New Orleans",
-          "probability": 0.535,
+          "probability": 0.525,
           "market_id": "KXNFLGAME-26NOV15CARNO-NO",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 381932.41,
-          "best_ask_size": 3514991.26,
-          "last_price": 0.54,
+          "best_bid": 0.52,
+          "best_ask": 0.53,
+          "best_bid_size": 335163.86,
+          "best_ask_size": 3277866.28,
+          "last_price": 0.53,
           "previous_price": 0.55
         },
         {
           "name": "Carolina",
-          "probability": 0.465,
+          "probability": 0.475,
           "market_id": "KXNFLGAME-26NOV15CARNO-CAR",
-          "best_bid": 0.46,
-          "best_ask": 0.47,
-          "best_bid_size": 210748.08,
-          "best_ask_size": 694484.27,
-          "last_price": 0.47,
-          "previous_price": 0.45
+          "best_bid": 0.47,
+          "best_ask": 0.48,
+          "best_bid_size": 637223.12,
+          "best_ask_size": 65632.75,
+          "last_price": 0.48,
+          "previous_price": 0.46
         }
       ],
       "stats": {
-        "volume_24h_contracts": 171166.25,
-        "volume_total_contracts": 414671.32,
-        "open_interest_contracts": 386359.29
+        "volume_24h_contracts": 229352.95,
+        "volume_total_contracts": 473538.32,
+        "open_interest_contracts": 445075.52
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15carno"
@@ -861,10 +861,10 @@
           "market_id": "KXNBAGAME-26NOV15DALBOS-DAL",
           "best_bid": 0.13,
           "best_ask": 0.14,
-          "best_bid_size": 2747.65,
-          "best_ask_size": 39510.16,
+          "best_bid_size": 4710.65,
+          "best_ask_size": 8327.88,
           "last_price": 0.14,
-          "previous_price": 0.18
+          "previous_price": 0.19
         },
         {
           "name": "Boston",
@@ -872,18 +872,18 @@
           "market_id": "KXNBAGAME-26NOV15DALBOS-BOS",
           "best_bid": 0.85,
           "best_ask": 0.86,
-          "best_bid_size": 16011.87,
-          "best_ask_size": 7152.76,
+          "best_bid_size": 17608.94,
+          "best_ask_size": 8429.0,
           "last_price": 0.86,
-          "previous_price": 0.84
+          "previous_price": 0.83
         }
       ],
       "stats": {
-        "volume_24h_contracts": 47254.4,
-        "volume_total_contracts": 59196.69,
-        "open_interest_contracts": 51521.75
+        "volume_24h_contracts": 52926.63,
+        "volume_total_contracts": 65157.12,
+        "open_interest_contracts": 57476.3
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15dalbos"
@@ -904,10 +904,10 @@
           "market_id": "KXEPLGAME-26NOV21MCIFUL-MCI",
           "best_bid": 0.69,
           "best_ask": 0.7,
-          "best_bid_size": 3766.13,
-          "best_ask_size": 6276.93,
+          "best_bid_size": 3344.37,
+          "best_ask_size": 22609.49,
           "last_price": 0.7,
-          "previous_price": 0.7
+          "previous_price": 0.68
         },
         {
           "name": "平局",
@@ -915,7 +915,7 @@
           "market_id": "KXEPLGAME-26NOV21MCIFUL-TIE",
           "best_bid": 0.17,
           "best_ask": 0.18,
-          "best_bid_size": 13672.58,
+          "best_bid_size": 13674.58,
           "best_ask_size": 14407.46,
           "last_price": 0.18,
           "previous_price": 0.17
@@ -926,62 +926,63 @@
           "market_id": "KXEPLGAME-26NOV21MCIFUL-FUL",
           "best_bid": 0.12,
           "best_ask": 0.13,
-          "best_bid_size": 12465.05,
-          "best_ask_size": 12165.95,
+          "best_bid_size": 12532.45,
+          "best_ask_size": 7685.58,
           "last_price": 0.13,
           "previous_price": 0.14
         }
       ],
       "stats": {
-        "volume_24h_contracts": 9064.66,
+        "volume_24h_contracts": 7108.64,
         "volume_total_contracts": 82486.81,
         "open_interest_contracts": 48256.33
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21mciful"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400fncfaze",
-      "title": "fnatic vs. FaZe",
+      "id": "kalshi-kxcs2game-26nov150630g2aww",
+      "title": "G2 Ares vs. WW Team",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T15:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "fnatic",
-          "probability": 0.765,
-          "market_id": "KXCS2GAME-26NOV150400FNCFAZE-FNC",
-          "best_bid": 0.76,
-          "best_ask": 0.77,
-          "best_bid_size": 39.63,
-          "best_ask_size": 234.0,
-          "last_price": 0.76
+          "name": "G2 Ares",
+          "probability": 0.29,
+          "market_id": "KXCS2GAME-26NOV150630G2AWW-G2A",
+          "best_bid": 0.28,
+          "best_ask": 0.3,
+          "best_bid_size": 152.0,
+          "best_ask_size": 126.0,
+          "last_price": 0.31,
+          "previous_price": 0.35
         },
         {
-          "name": "FaZe",
-          "probability": 0.23,
-          "market_id": "KXCS2GAME-26NOV150400FNCFAZE-FAZE",
-          "best_bid": 0.22,
-          "best_ask": 0.24,
-          "best_bid_size": 101.0,
-          "best_ask_size": 146.29,
-          "last_price": 0.24
+          "name": "WW Team",
+          "probability": 0.71,
+          "market_id": "KXCS2GAME-26NOV150630G2AWW-WW",
+          "best_bid": 0.7,
+          "best_ask": 0.72,
+          "best_bid_size": 135.0,
+          "best_ask_size": 265.06,
+          "last_price": 0.7
         }
       ],
       "stats": {
-        "volume_24h_contracts": 51666.32,
-        "volume_total_contracts": 51921.44,
-        "open_interest_contracts": 36539.7
+        "volume_24h_contracts": 3570.06,
+        "volume_total_contracts": 3760.39,
+        "open_interest_contracts": 3059.29
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400fncfaze"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150630g2aww"
     },
     {
       "id": "kalshi-kxnflgame-26nov15houcle",
@@ -999,8 +1000,8 @@
           "market_id": "KXNFLGAME-26NOV15HOUCLE-CLE",
           "best_bid": 0.32,
           "best_ask": 0.33,
-          "best_bid_size": 134643.69,
-          "best_ask_size": 13183.42,
+          "best_bid_size": 197862.84,
+          "best_ask_size": 2820.71,
           "last_price": 0.33,
           "previous_price": 0.33
         },
@@ -1010,18 +1011,18 @@
           "market_id": "KXNFLGAME-26NOV15HOUCLE-HOU",
           "best_bid": 0.67,
           "best_ask": 0.68,
-          "best_bid_size": 71121.49,
-          "best_ask_size": 1371063.21,
+          "best_bid_size": 22405.83,
+          "best_ask_size": 1637325.45,
           "last_price": 0.68,
           "previous_price": 0.68
         }
       ],
       "stats": {
-        "volume_24h_contracts": 138860.14,
-        "volume_total_contracts": 294479.99,
-        "open_interest_contracts": 265113.76
+        "volume_24h_contracts": 149954.16,
+        "volume_total_contracts": 307711.16,
+        "open_interest_contracts": 277884.47
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15houcle"
@@ -1038,13 +1039,13 @@
       "outcomes": [
         {
           "name": "New York",
-          "probability": 0.625,
+          "probability": 0.635,
           "market_id": "KXNBAGAME-26NOV15NYKTOR-NYK",
-          "best_bid": 0.62,
-          "best_ask": 0.63,
-          "best_bid_size": 282.0,
-          "best_ask_size": 4646.98,
-          "last_price": 0.63,
+          "best_bid": 0.63,
+          "best_ask": 0.64,
+          "best_bid_size": 10.9,
+          "best_ask_size": 110571.59,
+          "last_price": 0.64,
           "previous_price": 0.6
         },
         {
@@ -1053,18 +1054,18 @@
           "market_id": "KXNBAGAME-26NOV15NYKTOR-TOR",
           "best_bid": 0.37,
           "best_ask": 0.38,
-          "best_bid_size": 2303.15,
-          "best_ask_size": 2321.7,
-          "last_price": 0.37,
-          "previous_price": 0.42
+          "best_bid_size": 532.0,
+          "best_ask_size": 38364.12,
+          "last_price": 0.38,
+          "previous_price": 0.41
         }
       ],
       "stats": {
-        "volume_24h_contracts": 68419.28,
-        "volume_total_contracts": 72710.08,
-        "open_interest_contracts": 69265.23
+        "volume_24h_contracts": 69950.21,
+        "volume_total_contracts": 74441.37,
+        "open_interest_contracts": 70996.52
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15nyktor"
@@ -1118,51 +1119,51 @@
         "volume_total_contracts": 3686.59,
         "open_interest_contracts": 2909.56
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov21aladep"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400forzerpriv",
-      "title": "FORZE Reload vs. PRIVATE",
+      "id": "kalshi-kxcs2game-26nov150700100tef",
+      "title": "100 Thieves vs. Eternal Fire",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "FORZE Reload",
-          "probability": 0.69,
-          "market_id": "KXCS2GAME-26NOV150400FORZERPRIV-FORZER",
-          "best_bid": 0.68,
-          "best_ask": 0.7,
-          "best_bid_size": 61.25,
-          "best_ask_size": 49.26,
-          "last_price": 0.7
+          "name": "100 Thieves",
+          "probability": 0.565,
+          "market_id": "KXCS2GAME-26NOV150700100TEF-100T",
+          "best_bid": 0.56,
+          "best_ask": 0.57,
+          "best_bid_size": 0.02,
+          "best_ask_size": 558.48,
+          "last_price": 0.57
         },
         {
-          "name": "PRIVATE",
-          "probability": 0.295,
-          "market_id": "KXCS2GAME-26NOV150400FORZERPRIV-PRIV",
-          "best_bid": 0.29,
-          "best_ask": 0.3,
-          "best_bid_size": 34.11,
-          "best_ask_size": 20.0,
-          "last_price": 0.32
+          "name": "Eternal Fire",
+          "probability": 0.43,
+          "market_id": "KXCS2GAME-26NOV150700100TEF-EF",
+          "best_bid": 0.42,
+          "best_ask": 0.44,
+          "best_bid_size": 132.0,
+          "best_ask_size": 17.14,
+          "last_price": 0.44
         }
       ],
       "stats": {
-        "volume_24h_contracts": 11110.06,
-        "volume_total_contracts": 11110.06,
-        "open_interest_contracts": 6995.23
+        "volume_24h_contracts": 30774.86,
+        "volume_total_contracts": 30891.18,
+        "open_interest_contracts": 28455.64
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400forzerpriv"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700100tef"
     },
     {
       "id": "kalshi-kxnflgame-26nov15jacten",
@@ -1180,8 +1181,8 @@
           "market_id": "KXNFLGAME-26NOV15JACTEN-TEN",
           "best_bid": 0.16,
           "best_ask": 0.17,
-          "best_bid_size": 54379.45,
-          "best_ask_size": 1368520.31,
+          "best_bid_size": 37656.05,
+          "best_ask_size": 1935450.13,
           "last_price": 0.17,
           "previous_price": 0.17
         },
@@ -1191,18 +1192,18 @@
           "market_id": "KXNFLGAME-26NOV15JACTEN-JAC",
           "best_bid": 0.83,
           "best_ask": 0.84,
-          "best_bid_size": 208791.02,
-          "best_ask_size": 330180.3,
+          "best_bid_size": 563695.57,
+          "best_ask_size": 117364.13,
           "last_price": 0.84,
           "previous_price": 0.84
         }
       ],
       "stats": {
-        "volume_24h_contracts": 552486.42,
-        "volume_total_contracts": 918057.82,
-        "open_interest_contracts": 851430.04
+        "volume_24h_contracts": 578398.81,
+        "volume_total_contracts": 945916.91,
+        "open_interest_contracts": 879041.43
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15jacten"
@@ -1219,33 +1220,33 @@
       "outcomes": [
         {
           "name": "Houston",
-          "probability": 0.775,
+          "probability": 0.765,
           "market_id": "KXNBAGAME-26NOV15HOUWAS-HOU",
-          "best_bid": 0.77,
-          "best_ask": 0.78,
-          "best_bid_size": 1355.51,
-          "best_ask_size": 45918.96,
-          "last_price": 0.78,
-          "previous_price": 0.84
+          "best_bid": 0.76,
+          "best_ask": 0.77,
+          "best_bid_size": 94.0,
+          "best_ask_size": 128573.48,
+          "last_price": 0.77,
+          "previous_price": 0.83
         },
         {
           "name": "Washington",
-          "probability": 0.225,
+          "probability": 0.235,
           "market_id": "KXNBAGAME-26NOV15HOUWAS-WAS",
-          "best_bid": 0.22,
-          "best_ask": 0.23,
-          "best_bid_size": 617.72,
-          "best_ask_size": 3619.34,
-          "last_price": 0.23,
-          "previous_price": 0.19
+          "best_bid": 0.23,
+          "best_ask": 0.24,
+          "best_bid_size": 29139.81,
+          "best_ask_size": 2124.05,
+          "last_price": 0.24,
+          "previous_price": 0.17
         }
       ],
       "stats": {
-        "volume_24h_contracts": 12977.7,
-        "volume_total_contracts": 16989.43,
-        "open_interest_contracts": 15713.67
+        "volume_24h_contracts": 15148.17,
+        "volume_total_contracts": 19435.76,
+        "open_interest_contracts": 17677.04
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15houwas"
@@ -1267,7 +1268,7 @@
           "best_bid": 0.74,
           "best_ask": 0.76,
           "best_bid_size": 2492.46,
-          "best_ask_size": 5871.69,
+          "best_ask_size": 5471.69,
           "last_price": 0.76,
           "previous_price": 0.76
         },
@@ -1277,7 +1278,7 @@
           "market_id": "KXSERIEAGAME-26NOV21COMCAG-TIE",
           "best_bid": 0.15,
           "best_ask": 0.16,
-          "best_bid_size": 2079.56,
+          "best_bid_size": 2139.56,
           "best_ask_size": 3610.95,
           "last_price": 0.16,
           "previous_price": 0.16
@@ -1299,51 +1300,51 @@
         "volume_total_contracts": 3906.28,
         "open_interest_contracts": 3376.65
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxserieagame/serie-a-game/kxserieagame-26nov21comcag"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400htvp",
-      "title": "Hype Tech vs. Virtus.pro",
+      "id": "kalshi-kxcs2game-26nov150700inoxbrute",
+      "title": "ex-INOX Division vs. Brute",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Hype Tech",
-          "probability": 0.185,
-          "market_id": "KXCS2GAME-26NOV150400HTVP-HT",
-          "best_bid": 0.17,
-          "best_ask": 0.2,
-          "best_bid_size": 52.0,
-          "best_ask_size": 243.0,
-          "last_price": 0.21
+          "name": "ex-INOX Division",
+          "probability": 0.47,
+          "market_id": "KXCS2GAME-26NOV150700INOXBRUTE-INOX",
+          "best_bid": 0.45,
+          "best_ask": 0.49,
+          "best_bid_size": 107.0,
+          "best_ask_size": 37.45,
+          "last_price": 0.43
         },
         {
-          "name": "Virtus.pro",
-          "probability": 0.79,
-          "market_id": "KXCS2GAME-26NOV150400HTVP-VP",
-          "best_bid": 0.75,
-          "best_ask": 0.83,
-          "best_bid_size": 362.0,
-          "best_ask_size": 184.0,
-          "last_price": 0.79
+          "name": "Brute",
+          "probability": 0.505,
+          "market_id": "KXCS2GAME-26NOV150700INOXBRUTE-BRUTE",
+          "best_bid": 0.49,
+          "best_ask": 0.52,
+          "best_bid_size": 85.0,
+          "best_ask_size": 45.44,
+          "last_price": 0.53
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1834.17,
-        "volume_total_contracts": 1834.17,
-        "open_interest_contracts": 1562.74
+        "volume_24h_contracts": 3040.6,
+        "volume_total_contracts": 3258.78,
+        "open_interest_contracts": 2755.22
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400htvp"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700inoxbrute"
     },
     {
       "id": "kalshi-kxnflgame-26nov15kcatl",
@@ -1361,8 +1362,8 @@
           "market_id": "KXNFLGAME-26NOV15KCATL-ATL",
           "best_bid": 0.37,
           "best_ask": 0.38,
-          "best_bid_size": 269279.14,
-          "best_ask_size": 713726.34,
+          "best_bid_size": 449972.35,
+          "best_ask_size": 1743349.0,
           "last_price": 0.38,
           "previous_price": 0.38
         },
@@ -1372,18 +1373,18 @@
           "market_id": "KXNFLGAME-26NOV15KCATL-KC",
           "best_bid": 0.62,
           "best_ask": 0.63,
-          "best_bid_size": 57569.59,
-          "best_ask_size": 1942449.82,
+          "best_bid_size": 220281.83,
+          "best_ask_size": 2064318.11,
           "last_price": 0.63,
-          "previous_price": 0.62
+          "previous_price": 0.63
         }
       ],
       "stats": {
-        "volume_24h_contracts": 416109.77,
-        "volume_total_contracts": 719761.73,
-        "open_interest_contracts": 644167.84
+        "volume_24h_contracts": 440674.46,
+        "volume_total_contracts": 747080.48,
+        "open_interest_contracts": 670724.48
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15kcatl"
@@ -1404,29 +1405,29 @@
           "market_id": "KXNBAGAME-26NOV15ATLMIL-ATL",
           "best_bid": 0.72,
           "best_ask": 0.73,
-          "best_bid_size": 15745.67,
-          "best_ask_size": 37522.83,
+          "best_bid_size": 4841.0,
+          "best_ask_size": 35466.51,
           "last_price": 0.73,
-          "previous_price": 0.74
+          "previous_price": 0.75
         },
         {
           "name": "Milwaukee",
-          "probability": 0.27,
+          "probability": 0.275,
           "market_id": "KXNBAGAME-26NOV15ATLMIL-MIL",
-          "best_bid": 0.26,
+          "best_bid": 0.27,
           "best_ask": 0.28,
-          "best_bid_size": 10835.92,
-          "best_ask_size": 70164.77,
+          "best_bid_size": 1.0,
+          "best_ask_size": 60449.72,
           "last_price": 0.28,
           "previous_price": 0.26
         }
       ],
       "stats": {
-        "volume_24h_contracts": 20429.57,
-        "volume_total_contracts": 26995.95,
-        "open_interest_contracts": 26562.41
+        "volume_24h_contracts": 21831.89,
+        "volume_total_contracts": 28410.71,
+        "open_interest_contracts": 26923.17
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15atlmil"
@@ -1447,8 +1448,8 @@
           "market_id": "KXSERIEAGAME-26NOV21LAZLEC-LAZ",
           "best_bid": 0.7,
           "best_ask": 0.72,
-          "best_bid_size": 2345.64,
-          "best_ask_size": 2818.9,
+          "best_bid_size": 2355.64,
+          "best_ask_size": 2813.9,
           "last_price": 0.72,
           "previous_price": 0.72
         },
@@ -1476,55 +1477,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 463.2,
-        "volume_total_contracts": 3295.93,
-        "open_interest_contracts": 3240.68
+        "volume_24h_contracts": 171.2,
+        "volume_total_contracts": 3300.93,
+        "open_interest_contracts": 3245.68
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxserieagame/serie-a-game/kxserieagame-26nov21lazlec"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400mgchero",
-      "title": "magic vs. Heroic",
+      "id": "kalshi-kxcs2game-26nov150700isome",
+      "title": "Iberian Soul vs. Omega",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "magic",
-          "probability": 0.16,
-          "market_id": "KXCS2GAME-26NOV150400MGCHERO-MGC",
-          "best_bid": 0.14,
-          "best_ask": 0.18,
-          "best_bid_size": 258.0,
-          "best_ask_size": 126.94,
-          "last_price": 0.14
+          "name": "Iberian Soul",
+          "probability": 0.425,
+          "market_id": "KXCS2GAME-26NOV150700ISOME-IS",
+          "best_bid": 0.41,
+          "best_ask": 0.44,
+          "best_bid_size": 651.0,
+          "best_ask_size": 120.31,
+          "last_price": 0.45
         },
         {
-          "name": "Heroic",
-          "probability": 0.835,
-          "market_id": "KXCS2GAME-26NOV150400MGCHERO-HERO",
-          "best_bid": 0.83,
-          "best_ask": 0.84,
-          "best_bid_size": 1.0,
-          "best_ask_size": 349.0,
-          "last_price": 0.83
+          "name": "Omega",
+          "probability": 0.575,
+          "market_id": "KXCS2GAME-26NOV150700ISOME-OME",
+          "best_bid": 0.57,
+          "best_ask": 0.58,
+          "best_bid_size": 60.0,
+          "best_ask_size": 969.44,
+          "last_price": 0.58
         }
       ],
       "stats": {
-        "volume_24h_contracts": 47012.22,
-        "volume_total_contracts": 47110.58,
-        "open_interest_contracts": 38053.47
+        "volume_24h_contracts": 6675.55,
+        "volume_total_contracts": 6953.87,
+        "open_interest_contracts": 6574.72
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400mgchero"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700isome"
     },
     {
       "id": "kalshi-kxnflgame-26nov15miaind",
@@ -1542,8 +1543,8 @@
           "market_id": "KXNFLGAME-26NOV15MIAIND-IND",
           "best_bid": 0.66,
           "best_ask": 0.67,
-          "best_bid_size": 408846.55,
-          "best_ask_size": 2942937.3,
+          "best_bid_size": 409248.36,
+          "best_ask_size": 3005528.67,
           "last_price": 0.67,
           "previous_price": 0.66
         },
@@ -1553,18 +1554,18 @@
           "market_id": "KXNFLGAME-26NOV15MIAIND-MIA",
           "best_bid": 0.33,
           "best_ask": 0.34,
-          "best_bid_size": 232529.41,
-          "best_ask_size": 1919586.57,
+          "best_bid_size": 325718.38,
+          "best_ask_size": 2134088.89,
           "last_price": 0.34,
-          "previous_price": 0.34
+          "previous_price": 0.33
         }
       ],
       "stats": {
-        "volume_24h_contracts": 86475.4,
-        "volume_total_contracts": 932309.03,
-        "open_interest_contracts": 865113.05
+        "volume_24h_contracts": 99299.41,
+        "volume_total_contracts": 946763.79,
+        "open_interest_contracts": 879326.01
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15miaind"
@@ -1585,29 +1586,29 @@
           "market_id": "KXNBAGAME-26NOV15OKCSAC-OKC",
           "best_bid": 0.8,
           "best_ask": 0.81,
-          "best_bid_size": 18373.93,
-          "best_ask_size": 71833.01,
+          "best_bid_size": 18602.19,
+          "best_ask_size": 72989.97,
           "last_price": 0.81,
-          "previous_price": 0.85
+          "previous_price": 0.83
         },
         {
           "name": "Sacramento",
-          "probability": 0.195,
+          "probability": 0.19,
           "market_id": "KXNBAGAME-26NOV15OKCSAC-SAC",
-          "best_bid": 0.19,
+          "best_bid": 0.18,
           "best_ask": 0.2,
-          "best_bid_size": 7963.0,
-          "best_ask_size": 71387.82,
-          "last_price": 0.19,
-          "previous_price": 0.17
+          "best_bid_size": 15017.27,
+          "best_ask_size": 70456.88,
+          "last_price": 0.2,
+          "previous_price": 0.2
         }
       ],
       "stats": {
-        "volume_24h_contracts": 54451.53,
-        "volume_total_contracts": 57366.27,
-        "open_interest_contracts": 56528.84
+        "volume_24h_contracts": 56195.82,
+        "volume_total_contracts": 59167.63,
+        "open_interest_contracts": 57523.14
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov15okcsac"
@@ -1639,7 +1640,7 @@
           "market_id": "KXBUNDESLIGAGAME-26NOV21BMGBVB-TIE",
           "best_bid": 0.2,
           "best_ask": 0.22,
-          "best_bid_size": 2600.42,
+          "best_bid_size": 2610.42,
           "best_ask_size": 7185.8,
           "last_price": 0.22,
           "previous_price": 0.22
@@ -1657,56 +1658,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 69.27,
+        "volume_24h_contracts": 46.27,
         "volume_total_contracts": 5125.44,
         "open_interest_contracts": 4614.98
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21bmgbvb"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400mouznwal",
-      "title": "MOUZ NXT vs. Walczaki",
+      "id": "kalshi-kxcs2game-26nov150700tlrleo",
+      "title": "The Last Resort vs. Leo Team",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "MOUZ NXT",
-          "probability": 0.445,
-          "market_id": "KXCS2GAME-26NOV150400MOUZNWAL-MOUZN",
-          "best_bid": 0.44,
-          "best_ask": 0.45,
-          "best_bid_size": 30.0,
-          "best_ask_size": 52.0,
-          "last_price": 0.46,
-          "previous_price": 0.44
+          "name": "The Last Resort",
+          "probability": 0.44,
+          "market_id": "KXCS2GAME-26NOV150700TLRLEO-TLR",
+          "best_bid": 0.42,
+          "best_ask": 0.46,
+          "best_bid_size": 104.0,
+          "best_ask_size": 34.94,
+          "last_price": 0.44
         },
         {
-          "name": "Walczaki",
+          "name": "Leo Team",
           "probability": 0.535,
-          "market_id": "KXCS2GAME-26NOV150400MOUZNWAL-WAL",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 131.0,
-          "best_ask_size": 53.03,
-          "last_price": 0.54
+          "market_id": "KXCS2GAME-26NOV150700TLRLEO-LEO",
+          "best_bid": 0.52,
+          "best_ask": 0.55,
+          "best_bid_size": 43.0,
+          "best_ask_size": 9.24,
+          "last_price": 0.57
         }
       ],
       "stats": {
-        "volume_24h_contracts": 18091.04,
-        "volume_total_contracts": 18234.58,
-        "open_interest_contracts": 10084.24
+        "volume_24h_contracts": 20070.25,
+        "volume_total_contracts": 24298.78,
+        "open_interest_contracts": 17204.65
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400mouznwal"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700tlrleo"
     },
     {
       "id": "kalshi-kxnflgame-26nov15mingb",
@@ -1720,13 +1720,13 @@
       "outcomes": [
         {
           "name": "Green Bay",
-          "probability": 0.585,
+          "probability": 0.575,
           "market_id": "KXNFLGAME-26NOV15MINGB-GB",
-          "best_bid": 0.58,
-          "best_ask": 0.59,
-          "best_bid_size": 35337.12,
-          "best_ask_size": 1429187.03,
-          "last_price": 0.59,
+          "best_bid": 0.57,
+          "best_ask": 0.58,
+          "best_bid_size": 66641.69,
+          "best_ask_size": 2227038.4,
+          "last_price": 0.58,
           "previous_price": 0.59
         },
         {
@@ -1735,18 +1735,18 @@
           "market_id": "KXNFLGAME-26NOV15MINGB-MIN",
           "best_bid": 0.41,
           "best_ask": 0.42,
-          "best_bid_size": 201734.26,
-          "best_ask_size": 915492.56,
+          "best_bid_size": 569656.15,
+          "best_ask_size": 483255.61,
           "last_price": 0.42,
           "previous_price": 0.42
         }
       ],
       "stats": {
-        "volume_24h_contracts": 496444.21,
-        "volume_total_contracts": 1922574.31,
-        "open_interest_contracts": 1733650.53
+        "volume_24h_contracts": 564095.51,
+        "volume_total_contracts": 1995196.37,
+        "open_interest_contracts": 1802920.02
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15mingb"
@@ -1767,29 +1767,29 @@
           "market_id": "KXNBAGAME-26NOV16CHICLE-CHI",
           "best_bid": 0.26,
           "best_ask": 0.28,
-          "best_bid_size": 297.0,
-          "best_ask_size": 1856.4,
+          "best_bid_size": 260.21,
+          "best_ask_size": 3918.01,
           "last_price": 0.28,
           "previous_price": 0.18
         },
         {
           "name": "Cleveland",
-          "probability": 0.72,
+          "probability": 0.74,
           "market_id": "KXNBAGAME-26NOV16CHICLE-CLE",
-          "best_bid": 0.71,
-          "best_ask": 0.73,
-          "best_bid_size": 60.0,
-          "best_ask_size": 253.0,
-          "last_price": 0.73,
+          "best_bid": 0.73,
+          "best_ask": 0.75,
+          "best_bid_size": 31.0,
+          "best_ask_size": 270.0,
+          "last_price": 0.75,
           "previous_price": 0.85
         }
       ],
       "stats": {
-        "volume_24h_contracts": 8083.62,
-        "volume_total_contracts": 8456.13,
-        "open_interest_contracts": 8059.16
+        "volume_24h_contracts": 8301.71,
+        "volume_total_contracts": 8674.22,
+        "open_interest_contracts": 8197.28
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16chicle"
@@ -1822,7 +1822,7 @@
           "best_bid": 0.13,
           "best_ask": 0.14,
           "best_bid_size": 1095.55,
-          "best_ask_size": 6752.39,
+          "best_ask_size": 6876.39,
           "last_price": 0.14,
           "previous_price": 0.13
         },
@@ -1843,51 +1843,51 @@
         "volume_total_contracts": 911.95,
         "open_interest_contracts": 911.95
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21levpad"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150400tcfnavij",
-      "title": "The Chosen Few vs. NAVI Junior",
+      "id": "kalshi-kxcs2game-26nov150700unkprv",
+      "title": "33 vs. PARIVISION",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T13:00:00Z",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "The Chosen Few",
-          "probability": 0.025,
-          "market_id": "KXCS2GAME-26NOV150400TCFNAVIJ-TCF",
-          "best_bid": 0.02,
-          "best_ask": 0.03,
-          "best_bid_size": 1.0,
-          "best_ask_size": 311.0,
-          "last_price": 0.03
+          "name": "33",
+          "probability": 0.06,
+          "market_id": "KXCS2GAME-26NOV150700UNKPRV-UNK",
+          "best_bid": 0.05,
+          "best_ask": 0.07,
+          "best_bid_size": 67.34,
+          "best_ask_size": 1042.68,
+          "last_price": 0.06
         },
         {
-          "name": "NAVI Junior",
-          "probability": 0.98,
-          "market_id": "KXCS2GAME-26NOV150400TCFNAVIJ-NAVIJ",
-          "best_bid": 0.97,
-          "best_ask": 0.99,
-          "best_bid_size": 60.0,
-          "best_ask_size": 295.0,
-          "last_price": 0.98
+          "name": "PARIVISION",
+          "probability": 0.94,
+          "market_id": "KXCS2GAME-26NOV150700UNKPRV-PRV",
+          "best_bid": 0.93,
+          "best_ask": 0.95,
+          "best_bid_size": 1208.1,
+          "best_ask_size": 642.73,
+          "last_price": 0.94
         }
       ],
       "stats": {
-        "volume_24h_contracts": 7023.04,
-        "volume_total_contracts": 7023.04,
-        "open_interest_contracts": 3709.35
+        "volume_24h_contracts": 4922.15,
+        "volume_total_contracts": 4928.26,
+        "open_interest_contracts": 4881.1
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150400tcfnavij"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700unkprv"
     },
     {
       "id": "kalshi-kxwtamatch-26nov15sviand",
@@ -1905,9 +1905,9 @@
           "market_id": "KXWTAMATCH-26NOV15SVIAND-SVI",
           "best_bid": 0.28,
           "best_ask": 0.29,
-          "best_bid_size": 71.0,
-          "best_ask_size": 17464.3,
-          "last_price": 0.29
+          "best_bid_size": 41.56,
+          "best_ask_size": 23730.99,
+          "last_price": 0.28
         },
         {
           "name": "Mirra Andreeva",
@@ -1915,17 +1915,17 @@
           "market_id": "KXWTAMATCH-26NOV15SVIAND-AND",
           "best_bid": 0.72,
           "best_ask": 0.73,
-          "best_bid_size": 3203.0,
-          "best_ask_size": 30746.55,
+          "best_bid_size": 7363.0,
+          "best_ask_size": 32910.55,
           "last_price": 0.73
         }
       ],
       "stats": {
-        "volume_24h_contracts": 35518.61,
-        "volume_total_contracts": 35551.93,
-        "open_interest_contracts": 28793.54
+        "volume_24h_contracts": 37916.86,
+        "volume_total_contracts": 37916.86,
+        "open_interest_contracts": 31070.59
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxwtamatch/wta-tennis-match/kxwtamatch-26nov15sviand"
@@ -1942,33 +1942,33 @@
       "outcomes": [
         {
           "name": "Memphis",
-          "probability": 0.715,
+          "probability": 0.705,
           "market_id": "KXNBAGAME-26NOV16MEMWAS-MEM",
           "best_bid": 0.7,
-          "best_ask": 0.73,
-          "best_bid_size": 13.0,
-          "best_ask_size": 4766.45,
-          "last_price": 0.73,
+          "best_ask": 0.71,
+          "best_bid_size": 5.0,
+          "best_ask_size": 2278.44,
+          "last_price": 0.71,
           "previous_price": 0.68
         },
         {
           "name": "Washington",
-          "probability": 0.295,
+          "probability": 0.305,
           "market_id": "KXNBAGAME-26NOV16MEMWAS-WAS",
-          "best_bid": 0.28,
+          "best_bid": 0.3,
           "best_ask": 0.31,
-          "best_bid_size": 78.0,
-          "best_ask_size": 220.0,
-          "last_price": 0.3,
+          "best_bid_size": 250.29,
+          "best_ask_size": 188.0,
+          "last_price": 0.31,
           "previous_price": 0.37
         }
       ],
       "stats": {
-        "volume_24h_contracts": 955.16,
-        "volume_total_contracts": 1226.88,
-        "open_interest_contracts": 1174.45
+        "volume_24h_contracts": 956.01,
+        "volume_total_contracts": 1227.73,
+        "open_interest_contracts": 1175.3
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16memwas"
@@ -2022,51 +2022,51 @@
         "volume_total_contracts": 252.21,
         "open_interest_contracts": 252.21
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21sgetsg"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150500cutjer",
-      "title": "Team cutierover vs. Team Jerry",
+      "id": "kalshi-kxdota2game-26nov150700pxe",
+      "title": "potn9ki vs. Xipto Esports",
       "category": "esports",
-      "league": "CS2",
-      "start_time": "2026-11-15T14:00:00Z",
+      "league": "Dota 2",
+      "start_time": "2026-11-15T16:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Team cutierover",
-          "probability": 0.61,
-          "market_id": "KXCS2GAME-26NOV150500CUTJER-CUT",
-          "best_bid": 0.57,
-          "best_ask": 0.65,
-          "best_bid_size": 1.0,
-          "best_ask_size": 10.56,
-          "last_price": 0.42
+          "name": "potn9ki",
+          "probability": 0.085,
+          "market_id": "KXDOTA2GAME-26NOV150700PXE-P",
+          "best_bid": 0.08,
+          "best_ask": 0.09,
+          "best_bid_size": 0.99,
+          "best_ask_size": 219.0,
+          "last_price": 0.08
         },
         {
-          "name": "Team Jerry",
-          "probability": 0.355,
-          "market_id": "KXCS2GAME-26NOV150500CUTJER-JER",
-          "best_bid": 0.29,
-          "best_ask": 0.42,
-          "best_bid_size": 100.0,
-          "best_ask_size": 14.0,
-          "last_price": 0.59
+          "name": "Xipto Esports",
+          "probability": 0.895,
+          "market_id": "KXDOTA2GAME-26NOV150700PXE-XE",
+          "best_bid": 0.87,
+          "best_ask": 0.92,
+          "best_bid_size": 917.0,
+          "best_ask_size": 1.38,
+          "last_price": 0.92
         }
       ],
       "stats": {
-        "volume_24h_contracts": 156.85,
-        "volume_total_contracts": 156.85,
-        "open_interest_contracts": 153.85
+        "volume_24h_contracts": 99.3,
+        "volume_total_contracts": 99.3,
+        "open_interest_contracts": 99.3
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150500cutjer"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150700pxe"
     },
     {
       "id": "kalshi-kxatpmatch-26nov15shefil",
@@ -2085,7 +2085,7 @@
           "best_bid": 0.62,
           "best_ask": 0.63,
           "best_bid_size": 5018.0,
-          "best_ask_size": 52845.11,
+          "best_ask_size": 62360.8,
           "last_price": 0.63,
           "previous_price": 0.62
         },
@@ -2095,18 +2095,18 @@
           "market_id": "KXATPMATCH-26NOV15SHEFIL-FIL",
           "best_bid": 0.37,
           "best_ask": 0.38,
-          "best_bid_size": 14460.95,
-          "best_ask_size": 40493.34,
+          "best_bid_size": 14718.49,
+          "best_ask_size": 40376.13,
           "last_price": 0.38,
           "previous_price": 0.38
         }
       ],
       "stats": {
-        "volume_24h_contracts": 57428.65,
-        "volume_total_contracts": 77734.53,
-        "open_interest_contracts": 76614.13
+        "volume_24h_contracts": 59752.42,
+        "volume_total_contracts": 80297.46,
+        "open_interest_contracts": 79177.06
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov15shefil"
@@ -2123,33 +2123,33 @@
       "outcomes": [
         {
           "name": "Orlando",
-          "probability": 0.265,
+          "probability": 0.255,
           "market_id": "KXNBAGAME-26NOV16ORLBOS-ORL",
-          "best_bid": 0.26,
-          "best_ask": 0.27,
-          "best_bid_size": 36.0,
-          "best_ask_size": 3009.1,
+          "best_bid": 0.25,
+          "best_ask": 0.26,
+          "best_bid_size": 2.0,
+          "best_ask_size": 251.0,
           "last_price": 0.25,
           "previous_price": 0.24
         },
         {
           "name": "Boston",
-          "probability": 0.725,
+          "probability": 0.735,
           "market_id": "KXNBAGAME-26NOV16ORLBOS-BOS",
-          "best_bid": 0.72,
-          "best_ask": 0.73,
-          "best_bid_size": 727.56,
-          "best_ask_size": 61.0,
-          "last_price": 0.74,
+          "best_bid": 0.73,
+          "best_ask": 0.74,
+          "best_bid_size": 310.0,
+          "best_ask_size": 3124.6,
+          "last_price": 0.73,
           "previous_price": 0.75
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1626.51,
-        "volume_total_contracts": 2954.62,
-        "open_interest_contracts": 2581.32
+        "volume_24h_contracts": 1725.04,
+        "volume_total_contracts": 3053.15,
+        "open_interest_contracts": 2679.85
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16orlbos"
@@ -2203,51 +2203,51 @@
         "volume_total_contracts": 1908.29,
         "open_interest_contracts": 962.16
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21svescf"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150500worlev",
-      "title": "WorldEdit Club vs. Team leva2k",
+      "id": "kalshi-kxdota2game-26nov150800legfro",
+      "title": "LEGION vs. Froglings",
       "category": "esports",
-      "league": "CS2",
-      "start_time": "2026-11-15T14:00:00Z",
+      "league": "Dota 2",
+      "start_time": "2026-11-15T17:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "WorldEdit Club",
-          "probability": 0.705,
-          "market_id": "KXCS2GAME-26NOV150500WORLEV-WOR",
-          "best_bid": 0.63,
-          "best_ask": 0.78,
-          "best_bid_size": 111.0,
-          "best_ask_size": 15.0,
-          "last_price": 0.51
+          "name": "LEGION",
+          "probability": 0.465,
+          "market_id": "KXDOTA2GAME-26NOV150800LEGFRO-LEG",
+          "best_bid": 0.46,
+          "best_ask": 0.47,
+          "best_bid_size": 397.03,
+          "best_ask_size": 1882.51,
+          "last_price": 0.47
         },
         {
-          "name": "Team leva2k",
-          "probability": 0.25,
-          "market_id": "KXCS2GAME-26NOV150500WORLEV-LEV",
-          "best_bid": 0.2,
-          "best_ask": 0.3,
-          "best_bid_size": 20.0,
-          "best_ask_size": 1.0,
-          "last_price": 0.59
+          "name": "Froglings",
+          "probability": 0.525,
+          "market_id": "KXDOTA2GAME-26NOV150800LEGFRO-FRO",
+          "best_bid": 0.52,
+          "best_ask": 0.53,
+          "best_bid_size": 1683.01,
+          "best_ask_size": 435.0,
+          "last_price": 0.53
         }
       ],
       "stats": {
-        "volume_24h_contracts": 58.5,
-        "volume_total_contracts": 58.5,
-        "open_interest_contracts": 58.5
+        "volume_24h_contracts": 1112.82,
+        "volume_total_contracts": 1112.82,
+        "open_interest_contracts": 1072.68
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150500worlev"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150800legfro"
     },
     {
       "id": "kalshi-kxnflgame-26nov15larari",
@@ -2265,8 +2265,8 @@
           "market_id": "KXNFLGAME-26NOV15LARARI-ARI",
           "best_bid": 0.19,
           "best_ask": 0.2,
-          "best_bid_size": 132628.02,
-          "best_ask_size": 1607819.86,
+          "best_bid_size": 133093.7,
+          "best_ask_size": 2060574.46,
           "last_price": 0.2,
           "previous_price": 0.2
         },
@@ -2276,18 +2276,18 @@
           "market_id": "KXNFLGAME-26NOV15LARARI-LAR",
           "best_bid": 0.8,
           "best_ask": 0.81,
-          "best_bid_size": 204689.35,
-          "best_ask_size": 834054.3,
+          "best_bid_size": 535287.58,
+          "best_ask_size": 937277.13,
           "last_price": 0.81,
           "previous_price": 0.81
         }
       ],
       "stats": {
-        "volume_24h_contracts": 112289.53,
-        "volume_total_contracts": 404157.5,
-        "open_interest_contracts": 370684.62
+        "volume_24h_contracts": 119494.95,
+        "volume_total_contracts": 412787.74,
+        "open_interest_contracts": 378935.68
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15larari"
@@ -2308,10 +2308,10 @@
           "market_id": "KXNBAGAME-26NOV16HOUMIA-HOU",
           "best_bid": 0.52,
           "best_ask": 0.54,
-          "best_bid_size": 298.0,
-          "best_ask_size": 614.22,
-          "last_price": 0.52,
-          "previous_price": 0.56
+          "best_bid_size": 251.0,
+          "best_ask_size": 613.8,
+          "last_price": 0.54,
+          "previous_price": 0.57
         },
         {
           "name": "Miami",
@@ -2320,17 +2320,17 @@
           "best_bid": 0.45,
           "best_ask": 0.47,
           "best_bid_size": 251.0,
-          "best_ask_size": 1054.82,
+          "best_ask_size": 961.8,
           "last_price": 0.47,
           "previous_price": 0.47
         }
       ],
       "stats": {
-        "volume_24h_contracts": 4539.45,
-        "volume_total_contracts": 4888.3,
-        "open_interest_contracts": 3318.72
+        "volume_24h_contracts": 4607.35,
+        "volume_total_contracts": 4981.74,
+        "open_interest_contracts": 3412.16
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16houmia"
@@ -2384,51 +2384,50 @@
         "volume_total_contracts": 6888.04,
         "open_interest_contracts": 6825.7
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21unirbl"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150500glpari",
-      "title": "GamerLegion vs. PARIVISION",
+      "id": "kalshi-kxdota2game-26nov150800z10all",
+      "title": "Zero Tenacity vs. Team Allied",
       "category": "esports",
       "league": "Dota 2",
-      "start_time": "2026-11-15T14:00:00Z",
+      "start_time": "2026-11-15T17:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "GamerLegion",
-          "probability": 0.345,
-          "market_id": "KXDOTA2GAME-26NOV150500GLPARI-GL",
-          "best_bid": 0.33,
-          "best_ask": 0.36,
-          "best_bid_size": 80.0,
-          "best_ask_size": 65.0,
-          "last_price": 0.37
+          "name": "Zero Tenacity",
+          "probability": 0.525,
+          "market_id": "KXDOTA2GAME-26NOV150800Z10ALL-Z10",
+          "best_bid": 0.51,
+          "best_ask": 0.54,
+          "best_bid_size": 0.1,
+          "best_ask_size": 268.68
         },
         {
-          "name": "PARIVISION",
-          "probability": 0.655,
-          "market_id": "KXDOTA2GAME-26NOV150500GLPARI-PARI",
-          "best_bid": 0.64,
-          "best_ask": 0.67,
-          "best_bid_size": 50.0,
-          "best_ask_size": 134.0,
-          "last_price": 0.64
+          "name": "Team Allied",
+          "probability": 0.49,
+          "market_id": "KXDOTA2GAME-26NOV150800Z10ALL-ALL",
+          "best_bid": 0.48,
+          "best_ask": 0.5,
+          "best_bid_size": 10.01,
+          "best_ask_size": 150.01,
+          "last_price": 0.48
         }
       ],
       "stats": {
-        "volume_24h_contracts": 6637.07,
-        "volume_total_contracts": 6655.18,
-        "open_interest_contracts": 6178.7
+        "volume_24h_contracts": 570.41,
+        "volume_total_contracts": 570.41,
+        "open_interest_contracts": 552.89
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150500glpari"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150800z10all"
     },
     {
       "id": "kalshi-kxnflgame-26nov15sealv",
@@ -2446,8 +2445,8 @@
           "market_id": "KXNFLGAME-26NOV15SEALV-LV",
           "best_bid": 0.28,
           "best_ask": 0.29,
-          "best_bid_size": 151579.89,
-          "best_ask_size": 3483009.95,
+          "best_bid_size": 257170.06,
+          "best_ask_size": 3346165.05,
           "last_price": 0.29,
           "previous_price": 0.28
         },
@@ -2457,18 +2456,18 @@
           "market_id": "KXNFLGAME-26NOV15SEALV-SEA",
           "best_bid": 0.71,
           "best_ask": 0.72,
-          "best_bid_size": 394916.24,
-          "best_ask_size": 2909998.42,
+          "best_bid_size": 566649.53,
+          "best_ask_size": 3124445.69,
           "last_price": 0.72,
           "previous_price": 0.73
         }
       ],
       "stats": {
-        "volume_24h_contracts": 206322.59,
-        "volume_total_contracts": 1140156.29,
-        "open_interest_contracts": 933136.85
+        "volume_24h_contracts": 223990.48,
+        "volume_total_contracts": 1159856.92,
+        "open_interest_contracts": 951824.23
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15sealv"
@@ -2489,10 +2488,10 @@
           "market_id": "KXNBAGAME-26NOV16PHIBKN-PHI",
           "best_bid": 0.68,
           "best_ask": 0.69,
-          "best_bid_size": 259.0,
-          "best_ask_size": 1280.0,
+          "best_bid_size": 261.0,
+          "best_ask_size": 1130.0,
           "last_price": 0.69,
-          "previous_price": 0.67
+          "previous_price": 0.62
         },
         {
           "name": "Brooklyn",
@@ -2500,18 +2499,18 @@
           "market_id": "KXNBAGAME-26NOV16PHIBKN-BKN",
           "best_bid": 0.32,
           "best_ask": 0.33,
-          "best_bid_size": 3.0,
-          "best_ask_size": 735.0,
+          "best_bid_size": 36.62,
+          "best_ask_size": 759.73,
           "last_price": 0.33,
           "previous_price": 0.31
         }
       ],
       "stats": {
-        "volume_24h_contracts": 4070.48,
-        "volume_total_contracts": 7480.27,
-        "open_interest_contracts": 6001.02
+        "volume_24h_contracts": 4075.01,
+        "volume_total_contracts": 7493.54,
+        "open_interest_contracts": 6014.29
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16phibkn"
@@ -2532,7 +2531,7 @@
           "market_id": "KXEPLGAME-26NOV21AVLSUN-AVL",
           "best_bid": 0.53,
           "best_ask": 0.54,
-          "best_bid_size": 3798.58,
+          "best_bid_size": 3801.58,
           "best_ask_size": 124.0,
           "last_price": 0.54,
           "previous_price": 0.55
@@ -2561,55 +2560,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 234.68,
+        "volume_24h_contracts": 204.42,
         "volume_total_contracts": 6672.88,
         "open_interest_contracts": 5470.03
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21avlsun"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150500ic4iki",
-      "title": "Inner Circle vs. 4ikibamboni",
+      "id": "kalshi-kxcs2game-26nov150815cutbra",
+      "title": "Team cutierover vs. Team Bratishkin",
       "category": "esports",
-      "league": "Dota 2",
-      "start_time": "2026-11-15T14:00:00Z",
+      "league": "CS2",
+      "start_time": "2026-11-15T17:15:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Inner Circle",
-          "probability": 0.64,
-          "market_id": "KXDOTA2GAME-26NOV150500IC4IKI-IC",
-          "best_bid": 0.57,
-          "best_ask": 0.71,
-          "best_bid_size": 3.0,
-          "best_ask_size": 6.0,
-          "last_price": 0.7
+          "name": "Team cutierover",
+          "probability": 0.305,
+          "market_id": "KXCS2GAME-26NOV150815CUTBRA-CUT",
+          "best_bid": 0.29,
+          "best_ask": 0.32,
+          "best_bid_size": 343.0,
+          "best_ask_size": 0.1,
+          "last_price": 0.33
         },
         {
-          "name": "4ikibamboni",
-          "probability": 0.31,
-          "market_id": "KXDOTA2GAME-26NOV150500IC4IKI-4IKI",
-          "best_bid": 0.24,
-          "best_ask": 0.38,
-          "best_bid_size": 3.0,
-          "best_ask_size": 6.0,
-          "last_price": 0.31
+          "name": "Team Bratishkin",
+          "probability": 0.685,
+          "market_id": "KXCS2GAME-26NOV150815CUTBRA-BRA",
+          "best_bid": 0.67,
+          "best_ask": 0.7,
+          "best_bid_size": 441.0,
+          "best_ask_size": 0.1,
+          "last_price": 0.7
         }
       ],
       "stats": {
-        "volume_24h_contracts": 27.4,
-        "volume_total_contracts": 28.4,
-        "open_interest_contracts": 28.4
+        "volume_24h_contracts": 1215.46,
+        "volume_total_contracts": 1215.46,
+        "open_interest_contracts": 1193.02
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150500ic4iki"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150815cutbra"
     },
     {
       "id": "kalshi-kxnflgame-26nov15sfdal",
@@ -2627,8 +2626,8 @@
           "market_id": "KXNFLGAME-26NOV15SFDAL-DAL",
           "best_bid": 0.34,
           "best_ask": 0.35,
-          "best_bid_size": 175886.97,
-          "best_ask_size": 1819086.33,
+          "best_bid_size": 323663.07,
+          "best_ask_size": 2082394.93,
           "last_price": 0.35,
           "previous_price": 0.35
         },
@@ -2638,18 +2637,18 @@
           "market_id": "KXNFLGAME-26NOV15SFDAL-SF",
           "best_bid": 0.65,
           "best_ask": 0.66,
-          "best_bid_size": 146992.42,
-          "best_ask_size": 2566717.44,
+          "best_bid_size": 375605.84,
+          "best_ask_size": 2822419.62,
           "last_price": 0.66,
-          "previous_price": 0.67
+          "previous_price": 0.65
         }
       ],
       "stats": {
-        "volume_24h_contracts": 745303.89,
-        "volume_total_contracts": 1849069.72,
-        "open_interest_contracts": 1620306.47
+        "volume_24h_contracts": 774077.84,
+        "volume_total_contracts": 1889073.83,
+        "open_interest_contracts": 1659310.87
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15sfdal"
@@ -2670,8 +2669,8 @@
           "market_id": "KXNBAGAME-26NOV16GSWNOP-GSW",
           "best_bid": 0.59,
           "best_ask": 0.6,
-          "best_bid_size": 4.93,
-          "best_ask_size": 3201.04,
+          "best_bid_size": 257.28,
+          "best_ask_size": 3181.59,
           "last_price": 0.6,
           "previous_price": 0.59
         },
@@ -2682,17 +2681,17 @@
           "best_bid": 0.4,
           "best_ask": 0.41,
           "best_bid_size": 45.47,
-          "best_ask_size": 124.74,
+          "best_ask_size": 912.0,
           "last_price": 0.41,
           "previous_price": 0.42
         }
       ],
       "stats": {
-        "volume_24h_contracts": 5186.88,
-        "volume_total_contracts": 23174.95,
-        "open_interest_contracts": 17559.34
+        "volume_24h_contracts": 5202.4,
+        "volume_total_contracts": 23212.81,
+        "open_interest_contracts": 17590.72
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16gswnop"
@@ -2713,7 +2712,7 @@
           "market_id": "KXEPLGAME-26NOV21BOUNFO-BOU",
           "best_bid": 0.47,
           "best_ask": 0.48,
-          "best_bid_size": 4163.69,
+          "best_bid_size": 3889.28,
           "best_ask_size": 3902.0,
           "last_price": 0.48,
           "previous_price": 0.49
@@ -2724,8 +2723,8 @@
           "market_id": "KXEPLGAME-26NOV21BOUNFO-TIE",
           "best_bid": 0.26,
           "best_ask": 0.27,
-          "best_bid_size": 9570.91,
-          "best_ask_size": 8032.0,
+          "best_bid_size": 3409.24,
+          "best_ask_size": 8133.02,
           "last_price": 0.27,
           "previous_price": 0.27
         },
@@ -2735,63 +2734,62 @@
           "market_id": "KXEPLGAME-26NOV21BOUNFO-NFO",
           "best_bid": 0.25,
           "best_ask": 0.26,
-          "best_bid_size": 1820.49,
-          "best_ask_size": 5976.19,
-          "last_price": 0.25,
+          "best_bid_size": 2712.1,
+          "best_ask_size": 5493.71,
+          "last_price": 0.26,
           "previous_price": 0.26
         }
       ],
       "stats": {
-        "volume_24h_contracts": 865.79,
-        "volume_total_contracts": 16649.25,
-        "open_interest_contracts": 13807.62
+        "volume_24h_contracts": 963.1,
+        "volume_total_contracts": 16766.26,
+        "open_interest_contracts": 13924.63
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21bounfo"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150500synpckcp",
-      "title": "Team Synapse vs. PuckChamp",
+      "id": "kalshi-kxcs2game-26nov150815levbus",
+      "title": "Team leva2k vs. Team Buster",
       "category": "esports",
-      "league": "Dota 2",
-      "start_time": "2026-11-15T14:00:00Z",
+      "league": "CS2",
+      "start_time": "2026-11-15T17:15:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Team Synapse",
-          "probability": 0.755,
-          "market_id": "KXDOTA2GAME-26NOV150500SYNPCKCP-SYN",
-          "best_bid": 0.74,
-          "best_ask": 0.77,
-          "best_bid_size": 2.0,
-          "best_ask_size": 50.0,
-          "last_price": 0.71
+          "name": "Team leva2k",
+          "probability": 0.46,
+          "market_id": "KXCS2GAME-26NOV150815LEVBUS-LEV",
+          "best_bid": 0.45,
+          "best_ask": 0.47,
+          "best_bid_size": 0.1,
+          "best_ask_size": 578.72,
+          "last_price": 0.48
         },
         {
-          "name": "PuckChamp",
-          "probability": 0.24,
-          "market_id": "KXDOTA2GAME-26NOV150500SYNPCKCP-PCKCP",
-          "best_bid": 0.21,
-          "best_ask": 0.27,
-          "best_bid_size": 27.0,
-          "best_ask_size": 50.0,
-          "last_price": 0.24,
-          "previous_price": 0.27
+          "name": "Team Buster",
+          "probability": 0.54,
+          "market_id": "KXCS2GAME-26NOV150815LEVBUS-BUS",
+          "best_bid": 0.53,
+          "best_ask": 0.55,
+          "best_bid_size": 535.0,
+          "best_ask_size": 0.1,
+          "last_price": 0.53
         }
       ],
       "stats": {
-        "volume_24h_contracts": 3553.33,
-        "volume_total_contracts": 3581.33,
-        "open_interest_contracts": 3373.34
+        "volume_24h_contracts": 729.04,
+        "volume_total_contracts": 729.04,
+        "open_interest_contracts": 701.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150500synpckcp"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150815levbus"
     },
     {
       "id": "kalshi-kxnhlgame-26nov15edmphi",
@@ -2809,10 +2807,10 @@
           "market_id": "KXNHLGAME-26NOV15EDMPHI-PHI",
           "best_bid": 0.42,
           "best_ask": 0.43,
-          "best_bid_size": 1658.05,
-          "best_ask_size": 36968.35,
+          "best_bid_size": 1737.05,
+          "best_ask_size": 4440.21,
           "last_price": 0.43,
-          "previous_price": 0.44
+          "previous_price": 0.43
         },
         {
           "name": "Edmonton",
@@ -2820,18 +2818,18 @@
           "market_id": "KXNHLGAME-26NOV15EDMPHI-EDM",
           "best_bid": 0.57,
           "best_ask": 0.58,
-          "best_bid_size": 3531.72,
-          "best_ask_size": 74834.88,
+          "best_bid_size": 1572.39,
+          "best_ask_size": 111767.84,
           "last_price": 0.58,
           "previous_price": 0.59
         }
       ],
       "stats": {
-        "volume_24h_contracts": 22499.44,
-        "volume_total_contracts": 23648.4,
-        "open_interest_contracts": 20121.72
+        "volume_24h_contracts": 23515.59,
+        "volume_total_contracts": 24674.17,
+        "open_interest_contracts": 21147.49
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov15edmphi"
@@ -2852,29 +2850,29 @@
           "market_id": "KXNBAGAME-26NOV16PORMIN-POR",
           "best_bid": 0.44,
           "best_ask": 0.46,
-          "best_bid_size": 13.0,
-          "best_ask_size": 603.0,
+          "best_bid_size": 250.37,
+          "best_ask_size": 956.04,
           "last_price": 0.46,
           "previous_price": 0.43
         },
         {
           "name": "Minnesota",
-          "probability": 0.55,
+          "probability": 0.545,
           "market_id": "KXNBAGAME-26NOV16PORMIN-MIN",
           "best_bid": 0.54,
-          "best_ask": 0.56,
+          "best_ask": 0.55,
           "best_bid_size": 11.0,
-          "best_ask_size": 401.76,
-          "last_price": 0.56,
+          "best_ask_size": 320.48,
+          "last_price": 0.55,
           "previous_price": 0.59
         }
       ],
       "stats": {
-        "volume_24h_contracts": 5356.63,
-        "volume_total_contracts": 9711.49,
-        "open_interest_contracts": 8667.54
+        "volume_24h_contracts": 5423.11,
+        "volume_total_contracts": 9780.97,
+        "open_interest_contracts": 8737.02
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16pormin"
@@ -2896,7 +2894,7 @@
           "best_bid": 0.51,
           "best_ask": 0.52,
           "best_bid_size": 48.21,
-          "best_ask_size": 16520.06,
+          "best_ask_size": 16520.34,
           "last_price": 0.52,
           "previous_price": 0.52
         },
@@ -2906,7 +2904,7 @@
           "market_id": "KXEPLGAME-26NOV21CFCLEE-TIE",
           "best_bid": 0.24,
           "best_ask": 0.26,
-          "best_bid_size": 13635.83,
+          "best_bid_size": 13645.83,
           "best_ask_size": 16196.73,
           "last_price": 0.26,
           "previous_price": 0.26
@@ -2917,64 +2915,61 @@
           "market_id": "KXEPLGAME-26NOV21CFCLEE-LEE",
           "best_bid": 0.23,
           "best_ask": 0.24,
-          "best_bid_size": 25.72,
-          "best_ask_size": 16655.08,
+          "best_bid_size": 7231.41,
+          "best_ask_size": 16286.35,
           "last_price": 0.24,
           "previous_price": 0.24
         }
       ],
       "stats": {
-        "volume_24h_contracts": 985.04,
+        "volume_24h_contracts": 918.39,
         "volume_total_contracts": 16455.0,
         "open_interest_contracts": 13320.93
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21cfclee"
     },
     {
-      "id": "kalshi-kxvalorantgame-26nov150600lngat",
-      "title": "LNG Esports vs. A Team",
+      "id": "kalshi-kxdota2game-26nov150930iapnemiga",
+      "title": "InterActive Philippines vs. Nemiga Gaming",
       "category": "esports",
-      "league": "Valorant",
-      "start_time": "2026-11-15T15:00:00Z",
+      "league": "Dota 2",
+      "start_time": "2026-11-15T18:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "LNG Esports",
-          "probability": 0.075,
-          "market_id": "KXVALORANTGAME-26NOV150600LNGAT-LNG",
-          "best_bid": 0.07,
-          "best_ask": 0.08,
-          "best_bid_size": 3.0,
-          "best_ask_size": 1098.0,
-          "last_price": 0.08,
-          "previous_price": 0.06
+          "name": "InterActive Philippines",
+          "probability": 0.375,
+          "market_id": "KXDOTA2GAME-26NOV150930IAPNEMIGA-IAP",
+          "best_bid": 0.36,
+          "best_ask": 0.39,
+          "best_bid_size": 179.0,
+          "best_ask_size": 805.06
         },
         {
-          "name": "A Team",
-          "probability": 0.925,
-          "market_id": "KXVALORANTGAME-26NOV150600LNGAT-AT",
-          "best_bid": 0.91,
-          "best_ask": 0.94,
-          "best_bid_size": 34.26,
-          "best_ask_size": 2.0,
-          "last_price": 0.93,
-          "previous_price": 0.94
+          "name": "Nemiga Gaming",
+          "probability": 0.62,
+          "market_id": "KXDOTA2GAME-26NOV150930IAPNEMIGA-NEMIGA",
+          "best_bid": 0.61,
+          "best_ask": 0.63,
+          "best_bid_size": 61.85,
+          "best_ask_size": 1290.12,
+          "last_price": 0.61
         }
       ],
       "stats": {
-        "volume_24h_contracts": 2432.93,
-        "volume_total_contracts": 2435.93,
-        "open_interest_contracts": 2272.66
+        "volume_24h_contracts": 0.15,
+        "volume_total_contracts": 0.15,
+        "open_interest_contracts": 0.15
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxvalorantgame/valorant-game-winner/kxvalorantgame-26nov150600lngat"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150930iapnemiga"
     },
     {
       "id": "kalshi-kxnhlgame-26nov15cgyana",
@@ -2988,33 +2983,33 @@
       "outcomes": [
         {
           "name": "Anaheim",
-          "probability": 0.585,
+          "probability": 0.575,
           "market_id": "KXNHLGAME-26NOV15CGYANA-ANA",
-          "best_bid": 0.58,
-          "best_ask": 0.59,
-          "best_bid_size": 76.02,
-          "best_ask_size": 1878.0,
-          "last_price": 0.59,
+          "best_bid": 0.57,
+          "best_ask": 0.58,
+          "best_bid_size": 14555.91,
+          "best_ask_size": 5698.2,
+          "last_price": 0.58,
           "previous_price": 0.59
         },
         {
           "name": "Calgary",
-          "probability": 0.41,
+          "probability": 0.425,
           "market_id": "KXNHLGAME-26NOV15CGYANA-CGY",
-          "best_bid": 0.4,
-          "best_ask": 0.42,
-          "best_bid_size": 1326.14,
-          "best_ask_size": 4756.93,
+          "best_bid": 0.42,
+          "best_ask": 0.43,
+          "best_bid_size": 25352.88,
+          "best_ask_size": 67057.25,
           "last_price": 0.42,
           "previous_price": 0.4
         }
       ],
       "stats": {
-        "volume_24h_contracts": 4271.13,
-        "volume_total_contracts": 4678.5,
-        "open_interest_contracts": 3822.71
+        "volume_24h_contracts": 5030.57,
+        "volume_total_contracts": 5439.58,
+        "open_interest_contracts": 4583.79
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov15cgyana"
@@ -3031,33 +3026,33 @@
       "outcomes": [
         {
           "name": "Phoenix",
-          "probability": 0.205,
+          "probability": 0.215,
           "market_id": "KXNBAGAME-26NOV16PHXDEN-PHX",
-          "best_bid": 0.19,
+          "best_bid": 0.21,
           "best_ask": 0.22,
-          "best_bid_size": 1293.88,
-          "best_ask_size": 674.69,
+          "best_bid_size": 326.0,
+          "best_ask_size": 122.09,
           "last_price": 0.22,
           "previous_price": 0.25
         },
         {
           "name": "Denver",
-          "probability": 0.79,
+          "probability": 0.785,
           "market_id": "KXNBAGAME-26NOV16PHXDEN-DEN",
           "best_bid": 0.77,
-          "best_ask": 0.81,
+          "best_ask": 0.8,
           "best_bid_size": 251.0,
-          "best_ask_size": 3157.81,
+          "best_ask_size": 1764.0,
           "last_price": 0.8,
           "previous_price": 0.8
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1198.88,
-        "volume_total_contracts": 2547.7,
-        "open_interest_contracts": 2517.13
+        "volume_24h_contracts": 1303.92,
+        "volume_total_contracts": 2849.3,
+        "open_interest_contracts": 2818.73
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov16phxden"
@@ -3107,55 +3102,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 446.43,
+        "volume_24h_contracts": 417.35,
         "volume_total_contracts": 4748.44,
         "open_interest_contracts": 4051.64
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21covcry"
     },
     {
-      "id": "kalshi-kxvalorantgame-26nov150600urhyp",
-      "title": "Unsettled Resentment vs. Hyper Tide Gaming",
+      "id": "kalshi-kxcs2game-26nov151000acesmzp",
+      "title": "Team ACES vs. Metizport",
       "category": "esports",
-      "league": "Valorant",
-      "start_time": "2026-11-15T15:00:00Z",
+      "league": "CS2",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Unsettled Resentment",
-          "probability": 0.65,
-          "market_id": "KXVALORANTGAME-26NOV150600URHYP-UR",
-          "best_bid": 0.62,
-          "best_ask": 0.68,
-          "best_bid_size": 2.0,
-          "best_ask_size": 0.41,
-          "last_price": 0.68
+          "name": "Team ACES",
+          "probability": 0.425,
+          "market_id": "KXCS2GAME-26NOV151000ACESMZP-ACES",
+          "best_bid": 0.4,
+          "best_ask": 0.45,
+          "best_bid_size": 17.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.46
         },
         {
-          "name": "Hyper Tide Gaming",
-          "probability": 0.335,
-          "market_id": "KXVALORANTGAME-26NOV150600URHYP-HYP",
-          "best_bid": 0.26,
-          "best_ask": 0.41,
-          "best_bid_size": 1.0,
-          "best_ask_size": 1.0,
-          "last_price": 0.37
+          "name": "Metizport",
+          "probability": 0.57,
+          "market_id": "KXCS2GAME-26NOV151000ACESMZP-MZP",
+          "best_bid": 0.55,
+          "best_ask": 0.59,
+          "best_bid_size": 18.0,
+          "best_ask_size": 5.0,
+          "last_price": 0.6
         }
       ],
       "stats": {
-        "volume_24h_contracts": 145.83,
-        "volume_total_contracts": 145.83,
-        "open_interest_contracts": 101.03
+        "volume_24h_contracts": 695.06,
+        "volume_total_contracts": 695.06,
+        "open_interest_contracts": 695.06
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxvalorantgame/valorant-game-winner/kxvalorantgame-26nov150600urhyp"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151000acesmzp"
     },
     {
       "id": "kalshi-kxnhlgame-26nov15fladal",
@@ -3169,33 +3164,33 @@
       "outcomes": [
         {
           "name": "Dallas",
-          "probability": 0.555,
+          "probability": 0.565,
           "market_id": "KXNHLGAME-26NOV15FLADAL-DAL",
-          "best_bid": 0.55,
-          "best_ask": 0.56,
-          "best_bid_size": 466.74,
-          "best_ask_size": 8527.9,
-          "last_price": 0.56,
+          "best_bid": 0.56,
+          "best_ask": 0.57,
+          "best_bid_size": 25286.0,
+          "best_ask_size": 45798.04,
+          "last_price": 0.57,
           "previous_price": 0.56
         },
         {
           "name": "Florida",
-          "probability": 0.445,
+          "probability": 0.435,
           "market_id": "KXNHLGAME-26NOV15FLADAL-FLA",
-          "best_bid": 0.44,
-          "best_ask": 0.45,
-          "best_bid_size": 1726.89,
-          "best_ask_size": 222.16,
-          "last_price": 0.45,
+          "best_bid": 0.43,
+          "best_ask": 0.44,
+          "best_bid_size": 10659.6,
+          "best_ask_size": 69382.59,
+          "last_price": 0.44,
           "previous_price": 0.45
         }
       ],
       "stats": {
-        "volume_24h_contracts": 2433.21,
-        "volume_total_contracts": 2617.67,
-        "open_interest_contracts": 2530.06
+        "volume_24h_contracts": 2679.98,
+        "volume_total_contracts": 2882.74,
+        "open_interest_contracts": 2795.13
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov15fladal"
@@ -3237,7 +3232,7 @@
         "volume_total_contracts": 370.42,
         "open_interest_contracts": 354.68
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov17nyktor"
@@ -3261,7 +3256,7 @@
           "best_bid_size": 8095.48,
           "best_ask_size": 2800.0,
           "last_price": 0.63,
-          "previous_price": 0.64
+          "previous_price": 0.63
         },
         {
           "name": "平局",
@@ -3287,55 +3282,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 556.39,
+        "volume_24h_contracts": 497.83,
         "volume_total_contracts": 6335.65,
         "open_interest_contracts": 5812.79
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21totips"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150630cwsta",
-      "title": "CPH Wolves vs. STATE",
+      "id": "kalshi-kxcs2game-26nov151000axogls",
+      "title": "Axorfy Gaming vs. Galorys",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T15:30:00Z",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "CPH Wolves",
-          "probability": 0.375,
-          "market_id": "KXCS2GAME-26NOV150630CWSTA-CW",
-          "best_bid": 0.36,
-          "best_ask": 0.39,
-          "best_bid_size": 6.1,
-          "best_ask_size": 65.0,
-          "last_price": 0.41
+          "name": "Axorfy Gaming",
+          "probability": 0.36,
+          "market_id": "KXCS2GAME-26NOV151000AXOGLS-AXO",
+          "best_bid": 0.34,
+          "best_ask": 0.38,
+          "best_bid_size": 13.0,
+          "best_ask_size": 145.0,
+          "last_price": 0.33
         },
         {
-          "name": "STATE",
+          "name": "Galorys",
           "probability": 0.635,
-          "market_id": "KXCS2GAME-26NOV150630CWSTA-STA",
+          "market_id": "KXCS2GAME-26NOV151000AXOGLS-GLS",
           "best_bid": 0.63,
           "best_ask": 0.64,
-          "best_bid_size": 7.03,
-          "best_ask_size": 138.87,
-          "last_price": 0.64
+          "best_bid_size": 7.0,
+          "best_ask_size": 8.3,
+          "last_price": 0.66
         }
       ],
       "stats": {
-        "volume_24h_contracts": 646.85,
-        "volume_total_contracts": 646.85,
-        "open_interest_contracts": 646.85
+        "volume_24h_contracts": 396.36,
+        "volume_total_contracts": 397.26,
+        "open_interest_contracts": 395.36
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150630cwsta"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151000axogls"
     },
     {
       "id": "kalshi-kxnflgame-26nov15pitcin",
@@ -3353,8 +3348,8 @@
           "market_id": "KXNFLGAME-26NOV15PITCIN-CIN",
           "best_bid": 0.63,
           "best_ask": 0.64,
-          "best_bid_size": 168737.39,
-          "best_ask_size": 1715505.11,
+          "best_bid_size": 219195.14,
+          "best_ask_size": 1828402.66,
           "last_price": 0.64,
           "previous_price": 0.63
         },
@@ -3364,18 +3359,18 @@
           "market_id": "KXNFLGAME-26NOV15PITCIN-PIT",
           "best_bid": 0.36,
           "best_ask": 0.37,
-          "best_bid_size": 127878.88,
-          "best_ask_size": 2156132.02,
+          "best_bid_size": 121697.72,
+          "best_ask_size": 2422878.89,
           "last_price": 0.37,
           "previous_price": 0.38
         }
       ],
       "stats": {
-        "volume_24h_contracts": 151159.57,
-        "volume_total_contracts": 568355.03,
-        "open_interest_contracts": 533730.2
+        "volume_24h_contracts": 161919.31,
+        "volume_total_contracts": 581526.34,
+        "open_interest_contracts": 546798.41
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov15pitcin"
@@ -3392,33 +3387,33 @@
       "outcomes": [
         {
           "name": "Detroit",
-          "probability": 0.26,
+          "probability": 0.265,
           "market_id": "KXNBAGAME-26NOV17DETSAS-DET",
           "best_bid": 0.25,
-          "best_ask": 0.27,
-          "best_bid_size": 280.0,
-          "best_ask_size": 4.55,
+          "best_ask": 0.28,
+          "best_bid_size": 34.71,
+          "best_ask_size": 1.0,
           "last_price": 0.28,
           "previous_price": 0.28
         },
         {
           "name": "San Antonio",
-          "probability": 0.74,
+          "probability": 0.735,
           "market_id": "KXNBAGAME-26NOV17DETSAS-SAS",
           "best_bid": 0.72,
-          "best_ask": 0.76,
-          "best_bid_size": 1.0,
-          "best_ask_size": 1155.37,
+          "best_ask": 0.75,
+          "best_bid_size": 6.14,
+          "best_ask_size": 38.0,
           "last_price": 0.75,
           "previous_price": 0.7
         }
       ],
       "stats": {
-        "volume_24h_contracts": 512.16,
-        "volume_total_contracts": 1044.42,
-        "open_interest_contracts": 840.81
+        "volume_24h_contracts": 556.71,
+        "volume_total_contracts": 1088.97,
+        "open_interest_contracts": 885.36
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov17detsas"
@@ -3439,10 +3434,10 @@
           "market_id": "KXLALIGAGAME-26NOV21RVCVCF-RVC",
           "best_bid": 0.49,
           "best_ask": 0.5,
-          "best_bid_size": 4069.26,
+          "best_bid_size": 4088.51,
           "best_ask_size": 5812.0,
           "last_price": 0.51,
-          "previous_price": 0.5
+          "previous_price": 0.48
         },
         {
           "name": "平局",
@@ -3462,60 +3457,61 @@
           "best_bid": 0.22,
           "best_ask": 0.24,
           "best_bid_size": 3830.1,
-          "best_ask_size": 8849.23,
+          "best_ask_size": 8867.89,
           "last_price": 0.23,
           "previous_price": 0.25
         }
       ],
       "stats": {
-        "volume_24h_contracts": 282.93,
+        "volume_24h_contracts": 279.07,
         "volume_total_contracts": 18181.32,
         "open_interest_contracts": 16257.5
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov21rvcvcf"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150630g2aww",
-      "title": "G2 Ares vs. WW Team",
+      "id": "kalshi-kxcs2game-26nov151000baksbtf",
+      "title": "BakS eSports vs. Butterfly",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T15:30:00Z",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "G2 Ares",
-          "probability": 0.41,
-          "market_id": "KXCS2GAME-26NOV150630G2AWW-G2A",
-          "best_bid": 0.4,
-          "best_ask": 0.42,
-          "best_bid_size": 479.01,
-          "best_ask_size": 318.01,
-          "last_price": 0.39
+          "name": "BakS eSports",
+          "probability": 0.515,
+          "market_id": "KXCS2GAME-26NOV151000BAKSBTF-BAKS",
+          "best_bid": 0.51,
+          "best_ask": 0.52,
+          "best_bid_size": 22.0,
+          "best_ask_size": 538.0,
+          "last_price": 0.51
         },
         {
-          "name": "WW Team",
-          "probability": 0.59,
-          "market_id": "KXCS2GAME-26NOV150630G2AWW-WW",
-          "best_bid": 0.58,
-          "best_ask": 0.6,
-          "best_bid_size": 3.0,
-          "best_ask_size": 479.1
+          "name": "Butterfly",
+          "probability": 0.505,
+          "market_id": "KXCS2GAME-26NOV151000BAKSBTF-BTF",
+          "best_bid": 0.5,
+          "best_ask": 0.51,
+          "best_bid_size": 2.0,
+          "best_ask_size": 393.0,
+          "last_price": 0.49
         }
       ],
       "stats": {
-        "volume_24h_contracts": 438.99,
-        "volume_total_contracts": 438.99,
-        "open_interest_contracts": 329.92
+        "volume_24h_contracts": 238.72,
+        "volume_total_contracts": 238.72,
+        "open_interest_contracts": 237.72
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150630g2aww"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151000baksbtf"
     },
     {
       "id": "kalshi-kxnhlgame-26nov15nshsj",
@@ -3533,8 +3529,8 @@
           "market_id": "KXNHLGAME-26NOV15NSHSJ-SJ",
           "best_bid": 0.39,
           "best_ask": 0.4,
-          "best_bid_size": 49.2,
-          "best_ask_size": 5677.08,
+          "best_bid_size": 74.2,
+          "best_ask_size": 69169.5,
           "last_price": 0.4,
           "previous_price": 0.39
         },
@@ -3544,18 +3540,18 @@
           "market_id": "KXNHLGAME-26NOV15NSHSJ-NSH",
           "best_bid": 0.6,
           "best_ask": 0.61,
-          "best_bid_size": 199.57,
-          "best_ask_size": 31201.31,
+          "best_bid_size": 24380.17,
+          "best_ask_size": 104843.74,
           "last_price": 0.61,
           "previous_price": 0.62
         }
       ],
       "stats": {
-        "volume_24h_contracts": 11535.11,
-        "volume_total_contracts": 12390.56,
-        "open_interest_contracts": 10674.84
+        "volume_24h_contracts": 12201.61,
+        "volume_total_contracts": 13080.23,
+        "open_interest_contracts": 11364.51
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov15nshsj"
@@ -3572,14 +3568,14 @@
       "outcomes": [
         {
           "name": "Portland",
-          "probability": 0.44,
+          "probability": 0.445,
           "market_id": "KXNBAGAME-26NOV17PORMIN-POR",
           "best_bid": 0.43,
-          "best_ask": 0.45,
-          "best_bid_size": 1.0,
-          "best_ask_size": 391.0,
+          "best_ask": 0.46,
+          "best_bid_size": 19.0,
+          "best_ask_size": 36.0,
           "last_price": 0.46,
-          "previous_price": 0.66
+          "previous_price": 0.57
         },
         {
           "name": "Minnesota",
@@ -3587,18 +3583,18 @@
           "market_id": "KXNBAGAME-26NOV17PORMIN-MIN",
           "best_bid": 0.55,
           "best_ask": 0.58,
-          "best_bid_size": 29.94,
-          "best_ask_size": 635.0,
+          "best_bid_size": 10.94,
+          "best_ask_size": 2495.0,
           "last_price": 0.61,
           "previous_price": 0.7
         }
       ],
       "stats": {
-        "volume_24h_contracts": 323.1,
+        "volume_24h_contracts": 319.69,
         "volume_total_contracts": 346.92,
         "open_interest_contracts": 321.74
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov17pormin"
@@ -3630,8 +3626,8 @@
           "market_id": "KXSERIEAGAME-26NOV21PARROM-TIE",
           "best_bid": 0.15,
           "best_ask": 0.16,
-          "best_bid_size": 7808.65,
-          "best_ask_size": 3156.0,
+          "best_bid_size": 2062.32,
+          "best_ask_size": 3519.0,
           "last_price": 0.17,
           "previous_price": 0.17
         },
@@ -3652,49 +3648,51 @@
         "volume_total_contracts": 3116.58,
         "open_interest_contracts": 2750.68
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxserieagame/serie-a-game/kxserieagame-26nov21parrom"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150630ttbseye",
-      "title": "Teletubisie vs. EYEBALLERS",
+      "id": "kalshi-kxcs2game-26nov151000ducexs",
+      "title": "Ducks vs. ex-Sashi Academy",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T15:30:00Z",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Teletubisie",
-          "probability": 0.33,
-          "market_id": "KXCS2GAME-26NOV150630TTBSEYE-TTBS",
-          "best_bid": 0.29,
-          "best_ask": 0.37,
-          "best_bid_size": 1.0,
-          "best_ask_size": 3.0
+          "name": "Ducks",
+          "probability": 0.6,
+          "market_id": "KXCS2GAME-26NOV151000DUCEXS-DUC",
+          "best_bid": 0.58,
+          "best_ask": 0.62,
+          "best_bid_size": 349.0,
+          "best_ask_size": 12.0,
+          "last_price": 0.58
         },
         {
-          "name": "EYEBALLERS",
-          "probability": 0.675,
-          "market_id": "KXCS2GAME-26NOV150630TTBSEYE-EYE",
-          "best_bid": 0.63,
-          "best_ask": 0.72,
-          "best_bid_size": 3.0,
-          "best_ask_size": 19.0
+          "name": "ex-Sashi Academy",
+          "probability": 0.41,
+          "market_id": "KXCS2GAME-26NOV151000DUCEXS-EXS",
+          "best_bid": 0.4,
+          "best_ask": 0.42,
+          "best_bid_size": 1.0,
+          "best_ask_size": 476.0,
+          "last_price": 0.41
         }
       ],
       "stats": {
-        "volume_24h_contracts": 0.0,
-        "volume_total_contracts": 0.0,
-        "open_interest_contracts": 0.0
+        "volume_24h_contracts": 12.0,
+        "volume_total_contracts": 12.0,
+        "open_interest_contracts": 12.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150630ttbseye"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151000ducexs"
     },
     {
       "id": "kalshi-kxnhlgame-26nov15vanvgk",
@@ -3712,10 +3710,10 @@
           "market_id": "KXNHLGAME-26NOV15VANVGK-VGK",
           "best_bid": 0.78,
           "best_ask": 0.79,
-          "best_bid_size": 3564.11,
-          "best_ask_size": 59845.0,
+          "best_bid_size": 4297.82,
+          "best_ask_size": 103748.2,
           "last_price": 0.79,
-          "previous_price": 0.77
+          "previous_price": 0.78
         },
         {
           "name": "Vancouver",
@@ -3723,18 +3721,18 @@
           "market_id": "KXNHLGAME-26NOV15VANVGK-VAN",
           "best_bid": 0.21,
           "best_ask": 0.22,
-          "best_bid_size": 6834.0,
-          "best_ask_size": 4770.0,
+          "best_bid_size": 451.0,
+          "best_ask_size": 11768.85,
           "last_price": 0.22,
           "previous_price": 0.22
         }
       ],
       "stats": {
-        "volume_24h_contracts": 15048.03,
-        "volume_total_contracts": 16161.7,
-        "open_interest_contracts": 15466.85
+        "volume_24h_contracts": 15651.41,
+        "volume_total_contracts": 16832.19,
+        "open_interest_contracts": 16137.34
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov15vanvgk"
@@ -3776,7 +3774,7 @@
         "volume_total_contracts": 363.76,
         "open_interest_contracts": 362.76
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov17utalac"
@@ -3814,12 +3812,12 @@
         },
         {
           "name": "Stuttgart",
-          "probability": 0.525,
+          "probability": 0.53,
           "market_id": "KXBUNDESLIGAGAME-26NOV21SCHVFB-VFB",
           "best_bid": 0.52,
-          "best_ask": 0.53,
+          "best_ask": 0.54,
           "best_bid_size": 696.94,
-          "best_ask_size": 125.0,
+          "best_ask_size": 3625.5,
           "last_price": 0.54,
           "previous_price": 0.54
         }
@@ -3829,51 +3827,51 @@
         "volume_total_contracts": 305.13,
         "open_interest_contracts": 305.13
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxbundesligagame/bundesliga-game/kxbundesligagame-26nov21schvfb"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150700100tef",
-      "title": "100 Thieves vs. Eternal Fire",
+      "id": "kalshi-kxcs2game-26nov151000nxsforzer",
+      "title": "Nexus vs. FORZE Reload",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "100 Thieves",
-          "probability": 0.535,
-          "market_id": "KXCS2GAME-26NOV150700100TEF-100T",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 11954.29,
-          "best_ask_size": 515.2,
-          "last_price": 0.53
+          "name": "Nexus",
+          "probability": 0.515,
+          "market_id": "KXCS2GAME-26NOV151000NXSFORZER-NXS",
+          "best_bid": 0.51,
+          "best_ask": 0.52,
+          "best_bid_size": 318.0,
+          "best_ask_size": 1837.0,
+          "last_price": 0.5
         },
         {
-          "name": "Eternal Fire",
-          "probability": 0.48,
-          "market_id": "KXCS2GAME-26NOV150700100TEF-EF",
-          "best_bid": 0.45,
-          "best_ask": 0.51,
-          "best_bid_size": 721.21,
-          "best_ask_size": 1482.48,
-          "last_price": 0.51
+          "name": "FORZE Reload",
+          "probability": 0.475,
+          "market_id": "KXCS2GAME-26NOV151000NXSFORZER-FORZER",
+          "best_bid": 0.47,
+          "best_ask": 0.48,
+          "best_bid_size": 716.0,
+          "best_ask_size": 123.0,
+          "last_price": 0.48
         }
       ],
       "stats": {
-        "volume_24h_contracts": 19557.15,
-        "volume_total_contracts": 21865.57,
-        "open_interest_contracts": 20982.76
+        "volume_24h_contracts": 401.93,
+        "volume_total_contracts": 401.93,
+        "open_interest_contracts": 312.76
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700100tef"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151000nxsforzer"
     },
     {
       "id": "kalshi-kxatpmatch-26nov16alctia",
@@ -3892,7 +3890,7 @@
           "best_bid": 0.88,
           "best_ask": 0.89,
           "best_bid_size": 206.0,
-          "best_ask_size": 6771.36,
+          "best_ask_size": 6964.99,
           "last_price": 0.89
         },
         {
@@ -3901,17 +3899,17 @@
           "market_id": "KXATPMATCH-26NOV16ALCTIA-TIA",
           "best_bid": 0.11,
           "best_ask": 0.12,
-          "best_bid_size": 7457.8,
-          "best_ask_size": 1479.7,
+          "best_bid_size": 7455.0,
+          "best_ask_size": 1829.21,
           "last_price": 0.12
         }
       ],
       "stats": {
-        "volume_24h_contracts": 4783.9,
-        "volume_total_contracts": 4783.9,
-        "open_interest_contracts": 4738.46
+        "volume_24h_contracts": 4871.85,
+        "volume_total_contracts": 4872.96,
+        "open_interest_contracts": 4816.95
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov16alctia"
@@ -3928,33 +3926,33 @@
       "outcomes": [
         {
           "name": "Charlotte",
-          "probability": 0.17,
+          "probability": 0.235,
           "market_id": "KXNBAGAME-26NOV17CHALAL-CHA",
-          "best_bid": 0.16,
-          "best_ask": 0.18,
-          "best_bid_size": 2937.0,
-          "best_ask_size": 307.0,
-          "last_price": 0.18,
+          "best_bid": 0.23,
+          "best_ask": 0.24,
+          "best_bid_size": 11.38,
+          "best_ask_size": 5.66,
+          "last_price": 0.22,
           "previous_price": 0.15
         },
         {
           "name": "Los Angeles L",
-          "probability": 0.82,
+          "probability": 0.76,
           "market_id": "KXNBAGAME-26NOV17CHALAL-LAL",
-          "best_bid": 0.81,
-          "best_ask": 0.83,
-          "best_bid_size": 251.0,
-          "best_ask_size": 7256.0,
+          "best_bid": 0.74,
+          "best_ask": 0.78,
+          "best_bid_size": 256.66,
+          "best_ask_size": 179.92,
           "last_price": 0.84,
           "previous_price": 0.87
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1659.24,
-        "volume_total_contracts": 1824.67,
-        "open_interest_contracts": 1591.59
+        "volume_24h_contracts": 1691.09,
+        "volume_total_contracts": 1856.52,
+        "open_interest_contracts": 1614.96
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov17chalal"
@@ -3975,7 +3973,7 @@
           "market_id": "KXEPLGAME-26NOV21NEWARS-NEW",
           "best_bid": 0.15,
           "best_ask": 0.16,
-          "best_bid_size": 7489.37,
+          "best_bid_size": 7509.37,
           "best_ask_size": 626.63,
           "last_price": 0.15,
           "previous_price": 0.17
@@ -3997,61 +3995,60 @@
           "market_id": "KXEPLGAME-26NOV21NEWARS-ARS",
           "best_bid": 0.61,
           "best_ask": 0.62,
-          "best_bid_size": 6201.1,
-          "best_ask_size": 14089.41,
+          "best_bid_size": 6116.81,
+          "best_ask_size": 13846.5,
           "last_price": 0.62,
           "previous_price": 0.62
         }
       ],
       "stats": {
-        "volume_24h_contracts": 3132.57,
-        "volume_total_contracts": 61339.97,
-        "open_interest_contracts": 53304.89
+        "volume_24h_contracts": 3344.75,
+        "volume_total_contracts": 61571.39,
+        "open_interest_contracts": 53536.31
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxeplgame/english-premier-league-game/kxeplgame-26nov21newars"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150700inoxbrute",
-      "title": "ex-INOX Division vs. Brute",
+      "id": "kalshi-kxdota2game-26nov151000z10ang",
+      "title": "Zero Tenacity vs. angry birds",
       "category": "esports",
-      "league": "CS2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "league": "Dota 2",
+      "start_time": "2026-11-15T19:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "ex-INOX Division",
-          "probability": 0.435,
-          "market_id": "KXCS2GAME-26NOV150700INOXBRUTE-INOX",
-          "best_bid": 0.43,
-          "best_ask": 0.44,
-          "best_bid_size": 3.0,
-          "best_ask_size": 394.0,
-          "last_price": 0.46
+          "name": "Zero Tenacity",
+          "probability": 0.42,
+          "market_id": "KXDOTA2GAME-26NOV151000Z10ANG-Z10",
+          "best_bid": 0.38,
+          "best_ask": 0.46,
+          "best_bid_size": 34.0,
+          "best_ask_size": 493.0
         },
         {
-          "name": "Brute",
-          "probability": 0.565,
-          "market_id": "KXCS2GAME-26NOV150700INOXBRUTE-BRUTE",
-          "best_bid": 0.56,
-          "best_ask": 0.57,
-          "best_bid_size": 394.0,
-          "best_ask_size": 4.0
+          "name": "angry birds",
+          "probability": 0.575,
+          "market_id": "KXDOTA2GAME-26NOV151000Z10ANG-ANG",
+          "best_bid": 0.54,
+          "best_ask": 0.61,
+          "best_bid_size": 80.0,
+          "best_ask_size": 88.27
         }
       ],
       "stats": {
-        "volume_24h_contracts": 133.0,
-        "volume_total_contracts": 133.0,
-        "open_interest_contracts": 133.0
+        "volume_24h_contracts": 0.0,
+        "volume_total_contracts": 0.0,
+        "open_interest_contracts": 0.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700inoxbrute"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov151000z10ang"
     },
     {
       "id": "kalshi-kxatpmatch-26nov16medcob",
@@ -4070,7 +4067,7 @@
           "best_bid": 0.76,
           "best_ask": 0.77,
           "best_bid_size": 5.0,
-          "best_ask_size": 127.61,
+          "best_ask_size": 10.0,
           "last_price": 0.77
         },
         {
@@ -4085,11 +4082,11 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 885.84,
-        "volume_total_contracts": 885.84,
-        "open_interest_contracts": 885.84
+        "volume_24h_contracts": 892.85,
+        "volume_total_contracts": 892.85,
+        "open_interest_contracts": 892.85
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov16medcob"
@@ -4106,21 +4103,21 @@
       "outcomes": [
         {
           "name": "Houston",
-          "probability": 0.63,
+          "probability": 0.655,
           "market_id": "KXNBAGAME-26NOV18HOUIND-HOU",
-          "best_bid": 0.55,
-          "best_ask": 0.71,
-          "best_bid_size": 3.0,
-          "best_ask_size": 2.0,
+          "best_bid": 0.63,
+          "best_ask": 0.68,
+          "best_bid_size": 1.0,
+          "best_ask_size": 1.0,
           "last_price": 0.68,
           "previous_price": 0.89
         },
         {
           "name": "Indiana",
-          "probability": 0.385,
+          "probability": 0.35,
           "market_id": "KXNBAGAME-26NOV18HOUIND-IND",
-          "best_bid": 0.31,
-          "best_ask": 0.46,
+          "best_bid": 0.33,
+          "best_ask": 0.37,
           "best_bid_size": 1.0,
           "best_ask_size": 1.0,
           "last_price": 0.3
@@ -4131,7 +4128,7 @@
         "volume_total_contracts": 297.56,
         "open_interest_contracts": 218.65
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18houind"
@@ -4152,8 +4149,8 @@
           "market_id": "KXLALIGAGAME-26NOV21SEVRBB-SEV",
           "best_bid": 0.3,
           "best_ask": 0.31,
-          "best_bid_size": 2464.0,
-          "best_ask_size": 3198.28,
+          "best_bid_size": 4006.73,
+          "best_ask_size": 1650.0,
           "last_price": 0.31,
           "previous_price": 0.31
         },
@@ -4174,62 +4171,62 @@
           "market_id": "KXLALIGAGAME-26NOV21SEVRBB-RBB",
           "best_bid": 0.42,
           "best_ask": 0.43,
-          "best_bid_size": 4231.28,
-          "best_ask_size": 5913.77,
+          "best_bid_size": 2689.79,
+          "best_ask_size": 5895.35,
           "last_price": 0.43,
           "previous_price": 0.44
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1251.34,
-        "volume_total_contracts": 31537.93,
-        "open_interest_contracts": 29554.51
+        "volume_24h_contracts": 1273.56,
+        "volume_total_contracts": 31560.15,
+        "open_interest_contracts": 29576.73
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov21sevrbb"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150700isome",
-      "title": "Iberian Soul vs. Omega",
+      "id": "kalshi-kxcs2game-26nov151100fireold",
+      "title": "Fire Flux Esports vs. OLDBOYS-",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Iberian Soul",
-          "probability": 0.705,
-          "market_id": "KXCS2GAME-26NOV150700ISOME-IS",
-          "best_bid": 0.7,
-          "best_ask": 0.71,
-          "best_bid_size": 59.0,
-          "best_ask_size": 487.0,
-          "last_price": 0.71
+          "name": "Fire Flux Esports",
+          "probability": 0.64,
+          "market_id": "KXCS2GAME-26NOV151100FIREOLD-FIRE",
+          "best_bid": 0.63,
+          "best_ask": 0.65,
+          "best_bid_size": 117.0,
+          "best_ask_size": 4.0,
+          "last_price": 0.62
         },
         {
-          "name": "Omega",
-          "probability": 0.305,
-          "market_id": "KXCS2GAME-26NOV150700ISOME-OME",
-          "best_bid": 0.3,
-          "best_ask": 0.31,
-          "best_bid_size": 331.0,
-          "best_ask_size": 536.0,
-          "last_price": 0.29
+          "name": "OLDBOYS-",
+          "probability": 0.35,
+          "market_id": "KXCS2GAME-26NOV151100FIREOLD-OLD",
+          "best_bid": 0.33,
+          "best_ask": 0.37,
+          "best_bid_size": 329.0,
+          "best_ask_size": 41.0,
+          "last_price": 0.38
         }
       ],
       "stats": {
-        "volume_24h_contracts": 1361.95,
-        "volume_total_contracts": 1361.95,
-        "open_interest_contracts": 1329.45
+        "volume_24h_contracts": 17.0,
+        "volume_total_contracts": 17.0,
+        "open_interest_contracts": 17.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700isome"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151100fireold"
     },
     {
       "id": "kalshi-kxnhlgame-26nov16mtlnyr",
@@ -4247,8 +4244,8 @@
           "market_id": "KXNHLGAME-26NOV16MTLNYR-NYR",
           "best_bid": 0.5,
           "best_ask": 0.51,
-          "best_bid_size": 12.0,
-          "best_ask_size": 204.19,
+          "best_bid_size": 4.0,
+          "best_ask_size": 203.25,
           "last_price": 0.51,
           "previous_price": 0.52
         },
@@ -4259,24 +4256,24 @@
           "best_bid": 0.48,
           "best_ask": 0.5,
           "best_bid_size": 453.0,
-          "best_ask_size": 1283.57,
+          "best_ask_size": 1283.48,
           "last_price": 0.5,
           "previous_price": 0.49
         }
       ],
       "stats": {
-        "volume_24h_contracts": 340.28,
-        "volume_total_contracts": 500.01,
-        "open_interest_contracts": 487.71
+        "volume_24h_contracts": 339.45,
+        "volume_total_contracts": 501.04,
+        "open_interest_contracts": 488.74
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov16mtlnyr"
     },
     {
-      "id": "kalshi-kxnbagame-26nov18milmia",
-      "title": "Milwaukee vs Miami",
+      "id": "kalshi-kxnbagame-26nov18memcle",
+      "title": "Memphis vs Cleveland",
       "category": "basketball",
       "league": "NBA",
       "start_time": "2026-11-19T03:00:00Z",
@@ -4285,37 +4282,35 @@
       "competition": null,
       "outcomes": [
         {
-          "name": "Milwaukee",
-          "probability": 0.15,
-          "market_id": "KXNBAGAME-26NOV18MILMIA-MIL",
-          "best_bid": 0.1,
-          "best_ask": 0.2,
+          "name": "Memphis",
+          "probability": 0.395,
+          "market_id": "KXNBAGAME-26NOV18MEMCLE-MEM",
+          "best_bid": 0.35,
+          "best_ask": 0.44,
           "best_bid_size": 2.0,
-          "best_ask_size": 5.0,
-          "last_price": 0.36,
-          "previous_price": 0.07
+          "best_ask_size": 250.0,
+          "last_price": 0.54
         },
         {
-          "name": "Miami",
-          "probability": 0.86,
-          "market_id": "KXNBAGAME-26NOV18MILMIA-MIA",
-          "best_bid": 0.82,
-          "best_ask": 0.9,
-          "best_bid_size": 4.0,
-          "best_ask_size": 8.0,
-          "last_price": 0.85,
-          "previous_price": 0.9
+          "name": "Cleveland",
+          "probability": 0.605,
+          "market_id": "KXNBAGAME-26NOV18MEMCLE-CLE",
+          "best_bid": 0.55,
+          "best_ask": 0.66,
+          "best_bid_size": 250.0,
+          "best_ask_size": 251.0,
+          "last_price": 0.73
         }
       ],
       "stats": {
-        "volume_24h_contracts": 311.55,
-        "volume_total_contracts": 337.27,
-        "open_interest_contracts": 250.4
+        "volume_24h_contracts": 165.16,
+        "volume_total_contracts": 165.16,
+        "open_interest_contracts": 156.83
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18milmia"
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18memcle"
     },
     {
       "id": "kalshi-kxmlsgame-26nov21nephi",
@@ -4344,8 +4339,8 @@
           "market_id": "KXMLSGAME-26NOV21NEPHI-TIE",
           "best_bid": 0.26,
           "best_ask": 0.27,
-          "best_bid_size": 4.5,
-          "best_ask_size": 4355.8,
+          "best_bid_size": 5.0,
+          "best_ask_size": 4354.8,
           "last_price": 0.27,
           "previous_price": 0.26
         },
@@ -4356,61 +4351,59 @@
           "best_bid": 0.42,
           "best_ask": 0.43,
           "best_bid_size": 714.33,
-          "best_ask_size": 3212.46,
+          "best_ask_size": 3213.46,
           "last_price": 0.44,
           "previous_price": 0.45
         }
       ],
       "stats": {
-        "volume_24h_contracts": 85.03,
-        "volume_total_contracts": 3090.66,
-        "open_interest_contracts": 2846.48
+        "volume_24h_contracts": 86.03,
+        "volume_total_contracts": 3091.66,
+        "open_interest_contracts": 2847.48
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxmlsgame/major-league-soccer-game/kxmlsgame-26nov21nephi"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150700tlrleo",
-      "title": "The Last Resort vs. Leo Team",
+      "id": "kalshi-kxcs2game-26nov151100nskor",
+      "title": "Team NS vs. Team korya_mc",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "The Last Resort",
-          "probability": 0.185,
-          "market_id": "KXCS2GAME-26NOV150700TLRLEO-TLR",
-          "best_bid": 0.17,
-          "best_ask": 0.2,
-          "best_bid_size": 829.0,
-          "best_ask_size": 4160.5,
-          "last_price": 0.21
+          "name": "Team NS",
+          "probability": 0.59,
+          "market_id": "KXCS2GAME-26NOV151100NSKOR-NS",
+          "best_bid": 0.54,
+          "best_ask": 0.64,
+          "best_bid_size": 170.0,
+          "best_ask_size": 185.0
         },
         {
-          "name": "Leo Team",
-          "probability": 0.815,
-          "market_id": "KXCS2GAME-26NOV150700TLRLEO-LEO",
-          "best_bid": 0.81,
-          "best_ask": 0.82,
-          "best_bid_size": 60.0,
-          "best_ask_size": 657.0,
-          "last_price": 0.8
+          "name": "Team korya_mc",
+          "probability": 0.41,
+          "market_id": "KXCS2GAME-26NOV151100NSKOR-KOR",
+          "best_bid": 0.36,
+          "best_ask": 0.46,
+          "best_bid_size": 185.0,
+          "best_ask_size": 170.0
         }
       ],
       "stats": {
-        "volume_24h_contracts": 5570.01,
-        "volume_total_contracts": 5570.01,
-        "open_interest_contracts": 5145.59
+        "volume_24h_contracts": 0.0,
+        "volume_total_contracts": 0.0,
+        "open_interest_contracts": 0.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700tlrleo"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151100nskor"
     },
     {
       "id": "kalshi-kxnflgame-26nov16lacbal",
@@ -4424,40 +4417,40 @@
       "outcomes": [
         {
           "name": "Baltimore",
-          "probability": 0.66,
+          "probability": 0.665,
           "market_id": "KXNFLGAME-26NOV16LACBAL-BAL",
-          "best_bid": 0.65,
+          "best_bid": 0.66,
           "best_ask": 0.67,
-          "best_bid_size": 104957.64,
-          "best_ask_size": 392585.29,
+          "best_bid_size": 338568.62,
+          "best_ask_size": 494912.69,
           "last_price": 0.67,
           "previous_price": 0.67
         },
         {
           "name": "Los Angeles C",
-          "probability": 0.34,
+          "probability": 0.335,
           "market_id": "KXNFLGAME-26NOV16LACBAL-LAC",
           "best_bid": 0.33,
-          "best_ask": 0.35,
-          "best_bid_size": 109686.53,
-          "best_ask_size": 383983.34,
-          "last_price": 0.35,
-          "previous_price": 0.35
+          "best_ask": 0.34,
+          "best_bid_size": 135838.63,
+          "best_ask_size": 554721.49,
+          "last_price": 0.34,
+          "previous_price": 0.34
         }
       ],
       "stats": {
-        "volume_24h_contracts": 70277.2,
-        "volume_total_contracts": 227292.37,
-        "open_interest_contracts": 181796.85
+        "volume_24h_contracts": 72352.34,
+        "volume_total_contracts": 229912.23,
+        "open_interest_contracts": 184212.14
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnflgame/nfl-game/kxnflgame-26nov16lacbal"
     },
     {
-      "id": "kalshi-kxnbagame-26nov18phiorl",
-      "title": "Philadelphia vs Orlando",
+      "id": "kalshi-kxnbagame-26nov18milmia",
+      "title": "Milwaukee vs Miami",
       "category": "basketball",
       "league": "NBA",
       "start_time": "2026-11-19T03:00:00Z",
@@ -4466,35 +4459,37 @@
       "competition": null,
       "outcomes": [
         {
-          "name": "Philadelphia",
-          "probability": 0.61,
-          "market_id": "KXNBAGAME-26NOV18PHIORL-PHI",
-          "best_bid": 0.52,
-          "best_ask": 0.7,
-          "best_bid_size": 7.51,
-          "best_ask_size": 74.0,
-          "last_price": 0.73
+          "name": "Milwaukee",
+          "probability": 0.185,
+          "market_id": "KXNBAGAME-26NOV18MILMIA-MIL",
+          "best_bid": 0.16,
+          "best_ask": 0.21,
+          "best_bid_size": 250.0,
+          "best_ask_size": 3.54,
+          "last_price": 0.2,
+          "previous_price": 0.07
         },
         {
-          "name": "Orlando",
-          "probability": 0.395,
-          "market_id": "KXNBAGAME-26NOV18PHIORL-ORL",
-          "best_bid": 0.3,
-          "best_ask": 0.49,
-          "best_bid_size": 1.0,
-          "best_ask_size": 2.0,
-          "last_price": 0.28
+          "name": "Miami",
+          "probability": 0.8,
+          "market_id": "KXNBAGAME-26NOV18MILMIA-MIA",
+          "best_bid": 0.77,
+          "best_ask": 0.83,
+          "best_bid_size": 3.54,
+          "best_ask_size": 32.0,
+          "last_price": 0.8,
+          "previous_price": 0.9
         }
       ],
       "stats": {
-        "volume_24h_contracts": 89.67,
-        "volume_total_contracts": 89.67,
-        "open_interest_contracts": 85.43
+        "volume_24h_contracts": 321.79,
+        "volume_total_contracts": 347.51,
+        "open_interest_contracts": 252.82
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18phiorl"
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18milmia"
     },
     {
       "id": "kalshi-kxserieagame-26nov21naptor",
@@ -4543,51 +4538,49 @@
         "volume_total_contracts": 1897.01,
         "open_interest_contracts": 1050.33
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxserieagame/serie-a-game/kxserieagame-26nov21naptor"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150700unkprv",
-      "title": "33 vs. PARIVISION",
+      "id": "kalshi-kxcs2game-26nov151100pchbra",
+      "title": "Team PCH3LK1N vs. Team Bratishkin",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "33",
-          "probability": 0.17,
-          "market_id": "KXCS2GAME-26NOV150700UNKPRV-UNK",
-          "best_bid": 0.15,
-          "best_ask": 0.19,
-          "best_bid_size": 6.0,
-          "best_ask_size": 54.0,
-          "last_price": 0.2
+          "name": "Team PCH3LK1N",
+          "probability": 0.37,
+          "market_id": "KXCS2GAME-26NOV151100PCHBRA-PCH",
+          "best_bid": 0.35,
+          "best_ask": 0.39,
+          "best_bid_size": 125.0,
+          "best_ask_size": 125.0
         },
         {
-          "name": "PARIVISION",
-          "probability": 0.83,
-          "market_id": "KXCS2GAME-26NOV150700UNKPRV-PRV",
-          "best_bid": 0.81,
-          "best_ask": 0.85,
-          "best_bid_size": 46.0,
-          "best_ask_size": 192.66,
-          "last_price": 0.8
+          "name": "Team Bratishkin",
+          "probability": 0.635,
+          "market_id": "KXCS2GAME-26NOV151100PCHBRA-BRA",
+          "best_bid": 0.61,
+          "best_ask": 0.66,
+          "best_bid_size": 125.0,
+          "best_ask_size": 349.81
         }
       ],
       "stats": {
-        "volume_24h_contracts": 455.53,
-        "volume_total_contracts": 455.53,
-        "open_interest_contracts": 449.36
+        "volume_24h_contracts": 0.0,
+        "volume_total_contracts": 0.0,
+        "open_interest_contracts": 0.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150700unkprv"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151100pchbra"
     },
     {
       "id": "kalshi-kxnhlgame-26nov16vanuta",
@@ -4623,56 +4616,55 @@
         }
       ],
       "stats": {
-        "volume_24h_contracts": 2060.91,
+        "volume_24h_contracts": 2059.67,
         "volume_total_contracts": 2256.27,
         "open_interest_contracts": 2103.53
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov16vanuta"
     },
     {
-      "id": "kalshi-kxnbagame-26nov18atlokc",
-      "title": "Atlanta vs Oklahoma City",
+      "id": "kalshi-kxnbagame-26nov18phiorl",
+      "title": "Philadelphia vs Orlando",
       "category": "basketball",
       "league": "NBA",
-      "start_time": "2026-11-19T04:00:00Z",
+      "start_time": "2026-11-19T03:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Atlanta",
-          "probability": 0.42,
-          "market_id": "KXNBAGAME-26NOV18ATLOKC-ATL",
-          "best_bid": 0.33,
-          "best_ask": 0.51,
-          "best_bid_size": 1.94,
-          "best_ask_size": 20.0,
-          "last_price": 0.51
+          "name": "Philadelphia",
+          "probability": 0.585,
+          "market_id": "KXNBAGAME-26NOV18PHIORL-PHI",
+          "best_bid": 0.53,
+          "best_ask": 0.64,
+          "best_bid_size": 1.0,
+          "best_ask_size": 262.0,
+          "last_price": 0.7
         },
         {
-          "name": "Oklahoma City",
-          "probability": 0.575,
-          "market_id": "KXNBAGAME-26NOV18ATLOKC-OKC",
-          "best_bid": 0.48,
-          "best_ask": 0.67,
-          "best_bid_size": 10.0,
-          "best_ask_size": 172.0,
-          "last_price": 0.47,
-          "previous_price": 0.86
+          "name": "Orlando",
+          "probability": 0.405,
+          "market_id": "KXNBAGAME-26NOV18PHIORL-ORL",
+          "best_bid": 0.34,
+          "best_ask": 0.47,
+          "best_bid_size": 250.0,
+          "best_ask_size": 2.0,
+          "last_price": 0.28
         }
       ],
       "stats": {
-        "volume_24h_contracts": 28.1,
-        "volume_total_contracts": 33.1,
-        "open_interest_contracts": 29.77
+        "volume_24h_contracts": 96.67,
+        "volume_total_contracts": 96.67,
+        "open_interest_contracts": 92.43
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18atlokc"
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18phiorl"
     },
     {
       "id": "kalshi-kxlaligagame-26nov21rmarcc",
@@ -4690,10 +4682,10 @@
           "market_id": "KXLALIGAGAME-26NOV21RMARCC-RMA",
           "best_bid": 0.82,
           "best_ask": 0.83,
-          "best_bid_size": 1661.53,
-          "best_ask_size": 18126.31,
-          "last_price": 0.82,
-          "previous_price": 0.83
+          "best_bid_size": 2474.3,
+          "best_ask_size": 17698.09,
+          "last_price": 0.83,
+          "previous_price": 0.84
         },
         {
           "name": "平局",
@@ -4701,8 +4693,8 @@
           "market_id": "KXLALIGAGAME-26NOV21RMARCC-TIE",
           "best_bid": 0.1,
           "best_ask": 0.11,
-          "best_bid_size": 11365.1,
-          "best_ask_size": 1568.44,
+          "best_bid_size": 11388.88,
+          "best_ask_size": 1562.41,
           "last_price": 0.11,
           "previous_price": 0.1
         },
@@ -4712,61 +4704,62 @@
           "market_id": "KXLALIGAGAME-26NOV21RMARCC-RCC",
           "best_bid": 0.06,
           "best_ask": 0.07,
-          "best_bid_size": 4166.35,
-          "best_ask_size": 19658.34,
+          "best_bid_size": 1527.19,
+          "best_ask_size": 20852.91,
           "last_price": 0.07,
           "previous_price": 0.07
         }
       ],
       "stats": {
-        "volume_24h_contracts": 9514.35,
-        "volume_total_contracts": 176640.3,
-        "open_interest_contracts": 130943.25
+        "volume_24h_contracts": 10243.86,
+        "volume_total_contracts": 177521.74,
+        "open_interest_contracts": 130960.47
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov21rmarcc"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150700pxe",
-      "title": "potn9ki vs. Xipto Esports",
+      "id": "kalshi-kxdota2game-26nov151100iapsyn",
+      "title": "InterActive Philippines vs. Team Synapse",
       "category": "esports",
       "league": "Dota 2",
-      "start_time": "2026-11-15T16:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "potn9ki",
-          "probability": 0.17,
-          "market_id": "KXDOTA2GAME-26NOV150700PXE-P",
-          "best_bid": 0.14,
-          "best_ask": 0.2,
-          "best_bid_size": 735.0,
-          "best_ask_size": 1452.0
+          "name": "InterActive Philippines",
+          "probability": 0.525,
+          "market_id": "KXDOTA2GAME-26NOV151100IAPSYN-IAP",
+          "best_bid": 0.51,
+          "best_ask": 0.54,
+          "best_bid_size": 511.0,
+          "best_ask_size": 100.0,
+          "last_price": 0.52
         },
         {
-          "name": "Xipto Esports",
-          "probability": 0.83,
-          "market_id": "KXDOTA2GAME-26NOV150700PXE-XE",
-          "best_bid": 0.8,
-          "best_ask": 0.86,
-          "best_bid_size": 75.0,
-          "best_ask_size": 102.88,
-          "last_price": 0.86
+          "name": "Team Synapse",
+          "probability": 0.475,
+          "market_id": "KXDOTA2GAME-26NOV151100IAPSYN-SYN",
+          "best_bid": 0.47,
+          "best_ask": 0.48,
+          "best_bid_size": 250.0,
+          "best_ask_size": 463.0,
+          "last_price": 0.48
         }
       ],
       "stats": {
-        "volume_24h_contracts": 8.17,
-        "volume_total_contracts": 8.17,
-        "open_interest_contracts": 8.17
+        "volume_24h_contracts": 151.46,
+        "volume_total_contracts": 151.46,
+        "open_interest_contracts": 151.46
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150700pxe"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov151100iapsyn"
     },
     {
       "id": "kalshi-kxatpmatch-26nov17alccob",
@@ -4780,20 +4773,20 @@
       "outcomes": [
         {
           "name": "Carlos Alcaraz",
-          "probability": 0.86,
+          "probability": 0.855,
           "market_id": "KXATPMATCH-26NOV17ALCCOB-ALC",
           "best_bid": 0.79,
-          "best_ask": 0.93,
+          "best_ask": 0.92,
           "best_bid_size": 6.0,
-          "best_ask_size": 24.0
+          "best_ask_size": 5.0
         },
         {
           "name": "Flavio Cobolli",
-          "probability": 0.135,
+          "probability": 0.185,
           "market_id": "KXATPMATCH-26NOV17ALCCOB-COB",
-          "best_bid": 0.05,
+          "best_bid": 0.15,
           "best_ask": 0.22,
-          "best_bid_size": 212.0,
+          "best_bid_size": 40.0,
           "best_ask_size": 10.0
         }
       ],
@@ -4802,51 +4795,52 @@
         "volume_total_contracts": 0.0,
         "open_interest_contracts": 0.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov17alccob"
     },
     {
-      "id": "kalshi-kxnbagame-26nov18bosden",
-      "title": "Boston vs Denver",
+      "id": "kalshi-kxnbagame-26nov18atlokc",
+      "title": "Atlanta vs Oklahoma City",
       "category": "basketball",
       "league": "NBA",
-      "start_time": "2026-11-19T05:30:00Z",
+      "start_time": "2026-11-19T04:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Boston",
-          "probability": 0.46,
-          "market_id": "KXNBAGAME-26NOV18BOSDEN-BOS",
-          "best_bid": 0.37,
-          "best_ask": 0.55,
-          "best_bid_size": 250.0,
-          "best_ask_size": 336.0,
-          "last_price": 0.5
+          "name": "Atlanta",
+          "probability": 0.35,
+          "market_id": "KXNBAGAME-26NOV18ATLOKC-ATL",
+          "best_bid": 0.28,
+          "best_ask": 0.42,
+          "best_bid_size": 1.94,
+          "best_ask_size": 1.0,
+          "last_price": 0.51
         },
         {
-          "name": "Denver",
-          "probability": 0.535,
-          "market_id": "KXNBAGAME-26NOV18BOSDEN-DEN",
-          "best_bid": 0.46,
-          "best_ask": 0.61,
-          "best_bid_size": 110.0,
-          "best_ask_size": 161.0,
-          "last_price": 0.52
+          "name": "Oklahoma City",
+          "probability": 0.65,
+          "market_id": "KXNBAGAME-26NOV18ATLOKC-OKC",
+          "best_bid": 0.56,
+          "best_ask": 0.74,
+          "best_bid_size": 1.0,
+          "best_ask_size": 2.0,
+          "last_price": 0.47,
+          "previous_price": 0.86
         }
       ],
       "stats": {
-        "volume_24h_contracts": 301.16,
-        "volume_total_contracts": 301.16,
-        "open_interest_contracts": 263.73
+        "volume_24h_contracts": 28.1,
+        "volume_total_contracts": 33.1,
+        "open_interest_contracts": 29.77
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18bosden"
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18atlokc"
     },
     {
       "id": "kalshi-kxmlsgame-26nov21dalpor",
@@ -4887,104 +4881,140 @@
           "best_bid": 0.26,
           "best_ask": 0.27,
           "best_bid_size": 1969.16,
-          "best_ask_size": 3209.03,
+          "best_ask_size": 3207.03,
           "last_price": 0.27,
           "previous_price": 0.28
         }
       ],
       "stats": {
-        "volume_24h_contracts": 149.89,
-        "volume_total_contracts": 760.44,
-        "open_interest_contracts": 647.39
+        "volume_24h_contracts": 151.89,
+        "volume_total_contracts": 762.44,
+        "open_interest_contracts": 649.39
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxmlsgame/major-league-soccer-game/kxmlsgame-26nov21dalpor"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150800legfro",
-      "title": "LEGION vs. Froglings",
+      "id": "kalshi-kxdota2game-26nov151100koncaaur",
+      "title": "DO KONCA vs. Aurora",
       "category": "esports",
       "league": "Dota 2",
-      "start_time": "2026-11-15T17:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "LEGION",
-          "probability": 0.465,
-          "market_id": "KXDOTA2GAME-26NOV150800LEGFRO-LEG",
-          "best_bid": 0.46,
-          "best_ask": 0.47,
-          "best_bid_size": 72.02,
-          "best_ask_size": 5.5,
-          "last_price": 0.47
+          "name": "DO KONCA",
+          "probability": 0.33,
+          "market_id": "KXDOTA2GAME-26NOV151100KONCAAUR-KONCA",
+          "best_bid": 0.32,
+          "best_ask": 0.34,
+          "best_bid_size": 1262.0,
+          "best_ask_size": 701.0
         },
         {
-          "name": "Froglings",
-          "probability": 0.535,
-          "market_id": "KXDOTA2GAME-26NOV150800LEGFRO-FRO",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 20.0,
-          "best_ask_size": 839.0,
-          "last_price": 0.55
+          "name": "Aurora",
+          "probability": 0.655,
+          "market_id": "KXDOTA2GAME-26NOV151100KONCAAUR-AUR",
+          "best_bid": 0.65,
+          "best_ask": 0.66,
+          "best_bid_size": 410.04,
+          "best_ask_size": 1081.61,
+          "last_price": 0.66
         }
       ],
       "stats": {
-        "volume_24h_contracts": 459.67,
-        "volume_total_contracts": 459.67,
-        "open_interest_contracts": 457.67
+        "volume_24h_contracts": 799.9,
+        "volume_total_contracts": 807.29,
+        "open_interest_contracts": 671.29
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150800legfro"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov151100koncaaur"
     },
     {
-      "id": "kalshi-kxnhlgame-26nov17bufphi",
-      "title": "Buffalo vs Philadelphia",
+      "id": "kalshi-kxatpmatch-26nov17alcmed",
+      "title": "Alcaraz vs Medvedev",
       "category": "other",
-      "league": "NHL",
-      "start_time": "2026-11-18T03:00:00Z",
+      "league": "ATP",
+      "start_time": "2026-11-17T13:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Philadelphia",
-          "probability": 0.445,
-          "market_id": "KXNHLGAME-26NOV17BUFPHI-PHI",
-          "best_bid": 0.43,
-          "best_ask": 0.46,
-          "best_bid_size": 433.94,
-          "best_ask_size": 363.0,
-          "last_price": 0.47,
-          "previous_price": 0.46
+          "name": "Carlos Alcaraz",
+          "probability": 0.77,
+          "market_id": "KXATPMATCH-26NOV17ALCMED-ALC",
+          "best_bid": 0.67,
+          "best_ask": 0.87,
+          "best_bid_size": 1.0,
+          "best_ask_size": 10.0
         },
         {
-          "name": "Buffalo",
-          "probability": 0.545,
-          "market_id": "KXNHLGAME-26NOV17BUFPHI-BUF",
-          "best_bid": 0.53,
-          "best_ask": 0.56,
-          "best_bid_size": 51.0,
-          "best_ask_size": 124.0,
-          "last_price": 0.56,
-          "previous_price": 0.57
+          "name": "Daniil Medvedev",
+          "probability": 0.245,
+          "market_id": "KXATPMATCH-26NOV17ALCMED-MED",
+          "best_bid": 0.15,
+          "best_ask": 0.34,
+          "best_bid_size": 40.0,
+          "best_ask_size": 10.0
         }
       ],
       "stats": {
-        "volume_24h_contracts": 16.41,
-        "volume_total_contracts": 94.76,
-        "open_interest_contracts": 94.76
+        "volume_24h_contracts": 0.0,
+        "volume_total_contracts": 0.0,
+        "open_interest_contracts": 0.0
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov17bufphi"
+      "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov17alcmed"
+    },
+    {
+      "id": "kalshi-kxnbagame-26nov18bosden",
+      "title": "Boston vs Denver",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-11-19T05:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Boston",
+          "probability": 0.465,
+          "market_id": "KXNBAGAME-26NOV18BOSDEN-BOS",
+          "best_bid": 0.38,
+          "best_ask": 0.55,
+          "best_bid_size": 11.0,
+          "best_ask_size": 203.0,
+          "last_price": 0.54
+        },
+        {
+          "name": "Denver",
+          "probability": 0.535,
+          "market_id": "KXNBAGAME-26NOV18BOSDEN-DEN",
+          "best_bid": 0.47,
+          "best_ask": 0.6,
+          "best_bid_size": 110.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.52
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 312.82,
+        "volume_total_contracts": 312.82,
+        "open_interest_contracts": 275.39
+      },
+      "checked_at": "2026-11-15T12:52:33Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18bosden"
     },
     {
       "id": "kalshi-kxmlsgame-26nov21miaclb",
@@ -5002,8 +5032,8 @@
           "market_id": "KXMLSGAME-26NOV21MIACLB-MIA",
           "best_bid": 0.59,
           "best_ask": 0.6,
-          "best_bid_size": 13.87,
-          "best_ask_size": 7342.78,
+          "best_bid_size": 11.24,
+          "best_ask_size": 7580.1,
           "last_price": 0.6,
           "previous_price": 0.59
         },
@@ -5035,93 +5065,134 @@
         "volume_total_contracts": 8321.55,
         "open_interest_contracts": 6979.27
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxmlsgame/major-league-soccer-game/kxmlsgame-26nov21miaclb"
     },
     {
-      "id": "kalshi-kxdota2game-26nov150800z10all",
-      "title": "Zero Tenacity vs. Team Allied",
+      "id": "kalshi-kxdota2game-26nov151100pred",
+      "title": "potn9ki vs. Red John",
       "category": "esports",
       "league": "Dota 2",
-      "start_time": "2026-11-15T17:00:00Z",
+      "start_time": "2026-11-15T20:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Zero Tenacity",
-          "probability": 0.48,
-          "market_id": "KXDOTA2GAME-26NOV150800Z10ALL-Z10",
-          "best_bid": 0.46,
-          "best_ask": 0.5,
-          "best_bid_size": 50.06,
-          "best_ask_size": 643.0
+          "name": "potn9ki",
+          "probability": 0.53,
+          "market_id": "KXDOTA2GAME-26NOV151100PRED-P",
+          "best_bid": 0.52,
+          "best_ask": 0.54,
+          "best_bid_size": 494.0,
+          "best_ask_size": 414.0,
+          "last_price": 0.5
         },
         {
-          "name": "Team Allied",
-          "probability": 0.535,
-          "market_id": "KXDOTA2GAME-26NOV150800Z10ALL-ALL",
-          "best_bid": 0.53,
-          "best_ask": 0.54,
-          "best_bid_size": 40.0,
-          "best_ask_size": 971.68,
-          "last_price": 0.54
+          "name": "Red John",
+          "probability": 0.455,
+          "market_id": "KXDOTA2GAME-26NOV151100PRED-RED",
+          "best_bid": 0.44,
+          "best_ask": 0.47,
+          "best_bid_size": 271.0,
+          "best_ask_size": 808.0,
+          "last_price": 0.48
         }
       ],
       "stats": {
-        "volume_24h_contracts": 512.29,
-        "volume_total_contracts": 512.29,
-        "open_interest_contracts": 512.29
+        "volume_24h_contracts": 11.47,
+        "volume_total_contracts": 11.47,
+        "open_interest_contracts": 11.47
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov150800z10all"
+      "source_url": "https://kalshi.com/markets/kxdota2game/dota-2-game/kxdota2game-26nov151100pred"
     },
     {
-      "id": "kalshi-kxnhlgame-26nov17cbjnyi",
-      "title": "Columbus vs New York I",
+      "id": "kalshi-kxatpmatch-26nov17cobtia",
+      "title": "Cobolli vs Tiafoe",
       "category": "other",
-      "league": "NHL",
-      "start_time": "2026-11-18T03:00:00Z",
+      "league": "ATP",
+      "start_time": "2026-11-17T13:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "New York I",
-          "probability": 0.51,
-          "market_id": "KXNHLGAME-26NOV17CBJNYI-NYI",
-          "best_bid": 0.5,
-          "best_ask": 0.52,
-          "best_bid_size": 473.0,
-          "best_ask_size": 1052.0,
-          "last_price": 0.51,
-          "previous_price": 0.51
+          "name": "Flavio Cobolli",
+          "probability": 0.42,
+          "market_id": "KXATPMATCH-26NOV17COBTIA-COB",
+          "best_bid": 0.37,
+          "best_ask": 0.47,
+          "best_bid_size": 2.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.42
         },
         {
-          "name": "Columbus",
-          "probability": 0.485,
-          "market_id": "KXNHLGAME-26NOV17CBJNYI-CBJ",
-          "best_bid": 0.47,
-          "best_ask": 0.5,
-          "best_bid_size": 39.0,
-          "best_ask_size": 1272.0,
-          "last_price": 0.5,
-          "previous_price": 0.49
+          "name": "Frances Tiafoe",
+          "probability": 0.58,
+          "market_id": "KXATPMATCH-26NOV17COBTIA-TIA",
+          "best_bid": 0.49,
+          "best_ask": 0.67,
+          "best_bid_size": 8.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.68
         }
       ],
       "stats": {
-        "volume_24h_contracts": 262.35,
-        "volume_total_contracts": 267.54,
-        "open_interest_contracts": 265.54
+        "volume_24h_contracts": 11.14,
+        "volume_total_contracts": 11.14,
+        "open_interest_contracts": 9.14
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov17cbjnyi"
+      "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov17cobtia"
+    },
+    {
+      "id": "kalshi-kxnbagame-26nov18gswdal",
+      "title": "Golden State vs Dallas",
+      "category": "basketball",
+      "league": "NBA",
+      "start_time": "2026-11-19T05:30:00Z",
+      "time_kind": "kickoff",
+      "best_of": null,
+      "competition": null,
+      "outcomes": [
+        {
+          "name": "Golden State",
+          "probability": 0.415,
+          "market_id": "KXNBAGAME-26NOV18GSWDAL-GSW",
+          "best_bid": 0.34,
+          "best_ask": 0.49,
+          "best_bid_size": 2.0,
+          "best_ask_size": 1.0,
+          "last_price": 0.36,
+          "previous_price": 0.6
+        },
+        {
+          "name": "Dallas",
+          "probability": 0.61,
+          "market_id": "KXNBAGAME-26NOV18GSWDAL-DAL",
+          "best_bid": 0.53,
+          "best_ask": 0.69,
+          "best_bid_size": 2.0,
+          "best_ask_size": 2.0,
+          "last_price": 0.69
+        }
+      ],
+      "stats": {
+        "volume_24h_contracts": 76.79,
+        "volume_total_contracts": 80.13,
+        "open_interest_contracts": 76.74
+      },
+      "checked_at": "2026-11-15T12:52:33Z",
+      "verification": "open_match_winner_market",
+      "provider": "kalshi",
+      "source_url": "https://kalshi.com/markets/kxnbagame/nba-game/kxnbagame-26nov18gswdal"
     },
     {
       "id": "kalshi-kxserieagame-26nov22juvven",
@@ -5139,19 +5210,19 @@
           "market_id": "KXSERIEAGAME-26NOV22JUVVEN-JUV",
           "best_bid": 0.71,
           "best_ask": 0.73,
-          "best_bid_size": 917.78,
-          "best_ask_size": 2844.65,
+          "best_bid_size": 1017.78,
+          "best_ask_size": 3244.65,
           "last_price": 0.73,
           "previous_price": 0.73
         },
         {
           "name": "平局",
-          "probability": 0.165,
+          "probability": 0.175,
           "market_id": "KXSERIEAGAME-26NOV22JUVVEN-TIE",
-          "best_bid": 0.15,
+          "best_bid": 0.17,
           "best_ask": 0.18,
-          "best_bid_size": 1974.83,
-          "best_ask_size": 4189.22,
+          "best_bid_size": 969.12,
+          "best_ask_size": 4659.8,
           "last_price": 0.18,
           "previous_price": 0.18
         },
@@ -5161,8 +5232,8 @@
           "market_id": "KXSERIEAGAME-26NOV22JUVVEN-VEN",
           "best_bid": 0.1,
           "best_ask": 0.11,
-          "best_bid_size": 902.89,
-          "best_ask_size": 2885.51,
+          "best_bid_size": 1002.89,
+          "best_ask_size": 3648.51,
           "last_price": 0.11
         }
       ],
@@ -5171,91 +5242,91 @@
         "volume_total_contracts": 2480.69,
         "open_interest_contracts": 1345.49
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxserieagame/serie-a-game/kxserieagame-26nov22juvven"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150815cutbra",
-      "title": "Team cutierover vs. Team Bratishkin",
+      "id": "kalshi-kxcs2game-26nov151300exybar",
+      "title": "ex-Yawara vs. BARCA",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T17:15:00Z",
+      "start_time": "2026-11-15T22:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Team cutierover",
-          "probability": 0.34,
-          "market_id": "KXCS2GAME-26NOV150815CUTBRA-CUT",
-          "best_bid": 0.3,
-          "best_ask": 0.38,
-          "best_bid_size": 1.0,
-          "best_ask_size": 1.0
+          "name": "ex-Yawara",
+          "probability": 0.16,
+          "market_id": "KXCS2GAME-26NOV151300EXYBAR-EXY",
+          "best_bid": 0.15,
+          "best_ask": 0.17,
+          "best_bid_size": 429.0,
+          "best_ask_size": 569.34,
+          "last_price": 0.21
         },
         {
-          "name": "Team Bratishkin",
-          "probability": 0.66,
-          "market_id": "KXCS2GAME-26NOV150815CUTBRA-BRA",
-          "best_bid": 0.62,
-          "best_ask": 0.7,
-          "best_bid_size": 1.0,
-          "best_ask_size": 15.0
+          "name": "BARCA",
+          "probability": 0.84,
+          "market_id": "KXCS2GAME-26NOV151300EXYBAR-BAR",
+          "best_bid": 0.83,
+          "best_ask": 0.85,
+          "best_bid_size": 394.0,
+          "best_ask_size": 437.0,
+          "last_price": 0.83
         }
       ],
       "stats": {
-        "volume_24h_contracts": 0.0,
-        "volume_total_contracts": 0.0,
-        "open_interest_contracts": 0.0
+        "volume_24h_contracts": 257.07,
+        "volume_total_contracts": 257.07,
+        "open_interest_contracts": 249.07
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150815cutbra"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151300exybar"
     },
     {
-      "id": "kalshi-kxnhlgame-26nov17edmfla",
-      "title": "Edmonton vs Florida",
+      "id": "kalshi-kxatpmatch-26nov17shejod",
+      "title": "Shelton vs Jodar",
       "category": "other",
-      "league": "NHL",
-      "start_time": "2026-11-18T03:00:00Z",
+      "league": "ATP",
+      "start_time": "2026-11-17T13:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Florida",
-          "probability": 0.535,
-          "market_id": "KXNHLGAME-26NOV17EDMFLA-FLA",
-          "best_bid": 0.52,
-          "best_ask": 0.55,
-          "best_bid_size": 51.0,
-          "best_ask_size": 739.0,
-          "last_price": 0.55
+          "name": "Ben Shelton",
+          "probability": 0.58,
+          "market_id": "KXATPMATCH-26NOV17SHEJOD-SHE",
+          "best_bid": 0.49,
+          "best_ask": 0.67,
+          "best_bid_size": 3.0,
+          "best_ask_size": 16.0,
+          "last_price": 0.25
         },
         {
-          "name": "Edmonton",
-          "probability": 0.46,
-          "market_id": "KXNHLGAME-26NOV17EDMFLA-EDM",
-          "best_bid": 0.45,
-          "best_ask": 0.47,
-          "best_bid_size": 413.0,
-          "best_ask_size": 1070.19,
-          "last_price": 0.47,
-          "previous_price": 0.48
+          "name": "Rafael Jodar",
+          "probability": 0.435,
+          "market_id": "KXATPMATCH-26NOV17SHEJOD-JOD",
+          "best_bid": 0.41,
+          "best_ask": 0.46,
+          "best_bid_size": 5.0,
+          "best_ask_size": 2.78
         }
       ],
       "stats": {
-        "volume_24h_contracts": 165.05,
-        "volume_total_contracts": 198.84,
-        "open_interest_contracts": 198.84
+        "volume_24h_contracts": 7.78,
+        "volume_total_contracts": 7.78,
+        "open_interest_contracts": 7.78
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov17edmfla"
+      "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov17shejod"
     },
     {
       "id": "kalshi-kxlaligagame-26nov22barvil",
@@ -5273,9 +5344,9 @@
           "market_id": "KXLALIGAGAME-26NOV22BARVIL-BAR",
           "best_bid": 0.81,
           "best_ask": 0.82,
-          "best_bid_size": 203.44,
-          "best_ask_size": 856.96,
-          "last_price": 0.82,
+          "best_bid_size": 1670.02,
+          "best_ask_size": 812.38,
+          "last_price": 0.81,
           "previous_price": 0.81
         },
         {
@@ -5284,8 +5355,8 @@
           "market_id": "KXLALIGAGAME-26NOV22BARVIL-TIE",
           "best_bid": 0.1,
           "best_ask": 0.12,
-          "best_bid_size": 2504.9,
-          "best_ask_size": 2448.2,
+          "best_bid_size": 2513.9,
+          "best_ask_size": 3948.21,
           "last_price": 0.1,
           "previous_price": 0.12
         },
@@ -5295,103 +5366,102 @@
           "market_id": "KXLALIGAGAME-26NOV22BARVIL-VIL",
           "best_bid": 0.07,
           "best_ask": 0.08,
-          "best_bid_size": 1818.7,
-          "best_ask_size": 10528.06,
+          "best_bid_size": 2062.78,
+          "best_ask_size": 10504.46,
           "last_price": 0.08,
-          "previous_price": 0.09
+          "previous_price": 0.08
         }
       ],
       "stats": {
-        "volume_24h_contracts": 22393.51,
-        "volume_total_contracts": 137185.76,
-        "open_interest_contracts": 112814.19
+        "volume_24h_contracts": 22406.85,
+        "volume_total_contracts": 137292.53,
+        "open_interest_contracts": 112912.17
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
       "source_url": "https://kalshi.com/markets/kxlaligagame/la-liga-game/kxlaligagame-26nov22barvil"
     },
     {
-      "id": "kalshi-kxcs2game-26nov150815levbus",
-      "title": "Team leva2k vs. Team Buster",
+      "id": "kalshi-kxcs2game-26nov151300exzpha",
+      "title": "ex-Zero Tenacity vs. Phantom",
       "category": "esports",
       "league": "CS2",
-      "start_time": "2026-11-15T17:15:00Z",
+      "start_time": "2026-11-15T22:00:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Team leva2k",
-          "probability": 0.555,
-          "market_id": "KXCS2GAME-26NOV150815LEVBUS-LEV",
-          "best_bid": 0.53,
-          "best_ask": 0.58,
-          "best_bid_size": 423.0,
-          "best_ask_size": 230.6,
-          "last_price": 0.47
+          "name": "ex-Zero Tenacity",
+          "probability": 0.025,
+          "market_id": "KXCS2GAME-26NOV151300EXZPHA-EXZ",
+          "best_bid": 0.02,
+          "best_ask": 0.03,
+          "best_bid_size": 889.35,
+          "best_ask_size": 2207.44,
+          "last_price": 0.03
         },
         {
-          "name": "Team Buster",
-          "probability": 0.445,
-          "market_id": "KXCS2GAME-26NOV150815LEVBUS-BUS",
-          "best_bid": 0.42,
-          "best_ask": 0.47,
-          "best_bid_size": 1.0,
-          "best_ask_size": 466.72
+          "name": "Phantom",
+          "probability": 0.96,
+          "market_id": "KXCS2GAME-26NOV151300EXZPHA-PHA",
+          "best_bid": 0.95,
+          "best_ask": 0.97,
+          "best_bid_size": 765.15,
+          "best_ask_size": 100.0,
+          "last_price": 0.95
         }
       ],
       "stats": {
-        "volume_24h_contracts": 27.04,
-        "volume_total_contracts": 27.04,
-        "open_interest_contracts": 6.0
+        "volume_24h_contracts": 15782.01,
+        "volume_total_contracts": 15782.01,
+        "open_interest_contracts": 6194.32
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov150815levbus"
+      "source_url": "https://kalshi.com/markets/kxcs2game/counter-strike-2-game/kxcs2game-26nov151300exzpha"
     },
     {
-      "id": "kalshi-kxnhlgame-26nov17labos",
-      "title": "Los Angeles vs Boston",
+      "id": "kalshi-kxatpmatch-26nov17zveshe",
+      "title": "Zverev vs Shelton",
       "category": "other",
-      "league": "NHL",
-      "start_time": "2026-11-18T03:00:00Z",
+      "league": "ATP",
+      "start_time": "2026-11-17T13:30:00Z",
       "time_kind": "kickoff",
       "best_of": null,
       "competition": null,
       "outcomes": [
         {
-          "name": "Boston",
-          "probability": 0.595,
-          "market_id": "KXNHLGAME-26NOV17LABOS-BOS",
-          "best_bid": 0.59,
-          "best_ask": 0.6,
-          "best_bid_size": 191.9,
-          "best_ask_size": 90.06,
-          "last_price": 0.6,
-          "previous_price": 0.6
+          "name": "Alexander Zverev",
+          "probability": 0.535,
+          "market_id": "KXATPMATCH-26NOV17ZVESHE-ZVE",
+          "best_bid": 0.49,
+          "best_ask": 0.58,
+          "best_bid_size": 2.0,
+          "best_ask_size": 2.78
         },
         {
-          "name": "Los Angeles",
-          "probability": 0.405,
-          "market_id": "KXNHLGAME-26NOV17LABOS-LA",
-          "best_bid": 0.39,
-          "best_ask": 0.42,
-          "best_bid_size": 69.0,
-          "best_ask_size": 1332.33,
-          "last_price": 0.42
+          "name": "Ben Shelton",
+          "probability": 0.43,
+          "market_id": "KXATPMATCH-26NOV17ZVESHE-SHE",
+          "best_bid": 0.34,
+          "best_ask": 0.52,
+          "best_bid_size": 3.0,
+          "best_ask_size": 13.0,
+          "last_price": 0.52
         }
       ],
       "stats": {
-        "volume_24h_contracts": 338.69,
-        "volume_total_contracts": 523.58,
-        "open_interest_contracts": 515.48
+        "volume_24h_contracts": 2.78,
+        "volume_total_contracts": 2.78,
+        "open_interest_contracts": 2.78
       },
-      "checked_at": "2026-11-15T10:52:07Z",
+      "checked_at": "2026-11-15T12:52:33Z",
       "verification": "open_match_winner_market",
       "provider": "kalshi",
-      "source_url": "https://kalshi.com/markets/kxnhlgame/nhl-game/kxnhlgame-26nov17labos"
+      "source_url": "https://kalshi.com/markets/kxatpmatch/atp-tennis-match/kxatpmatch-26nov17zveshe"
     }
   ],
   "notes": "Kalshi is a prediction exchange. Contract volume and open interest are counts, not US dollars. Market close is not necessarily kickoff."
