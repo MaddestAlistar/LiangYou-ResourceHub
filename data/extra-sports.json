@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-20T14:11:33Z",
+  "generated_at": "2026-11-20T20:13:13Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-20T14:11:33Z"
+      "verified_at": "2026-11-20T20:13:13Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 164,
       "standings": 5,
-      "verified_at": "2026-11-20T14:11:33Z"
+      "verified_at": "2026-11-20T20:13:13Z"
     }
   ],
   "status": "ok",
@@ -118,12 +118,12 @@
       "league": "Bundesliga",
       "stage": "Regular Season",
       "start_time": "2026-11-20T19:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "FC Bayern München",
       "away": "1. FC Köln",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -136,12 +136,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-11-20T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "ES Troyes AC",
       "away": "Le Havre AC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -154,12 +154,12 @@
       "league": "La Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-20T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "live",
+      "status_detail": "IN_PLAY",
       "home": "Athletic Club",
       "away": "RCD Espanyol de Barcelona",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -3255,7 +3255,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     },
     {
@@ -3467,7 +3467,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     },
     {
@@ -3542,9 +3542,9 @@
           "team": "Athletic Club",
           "wins": 4,
           "losses": 3,
-          "draws": 4,
-          "points": 16,
-          "played": 11,
+          "draws": 5,
+          "points": 17,
+          "played": 12,
           "group": ""
         },
         {
@@ -3589,21 +3589,21 @@
         },
         {
           "rank": 12,
+          "team": "RCD Espanyol de Barcelona",
+          "wins": 3,
+          "losses": 6,
+          "draws": 4,
+          "points": 13,
+          "played": 13,
+          "group": ""
+        },
+        {
+          "rank": 13,
           "team": "Deportivo Alavés",
           "wins": 3,
           "losses": 5,
           "draws": 4,
           "points": 13,
-          "played": 12,
-          "group": ""
-        },
-        {
-          "rank": 13,
-          "team": "RCD Espanyol de Barcelona",
-          "wins": 3,
-          "losses": 6,
-          "draws": 3,
-          "points": 12,
           "played": 12,
           "group": ""
         },
@@ -3679,7 +3679,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     },
     {
@@ -3694,9 +3694,9 @@
           "team": "FC Bayern München",
           "wins": 6,
           "losses": 0,
-          "draws": 3,
-          "points": 21,
-          "played": 9,
+          "draws": 4,
+          "points": 22,
+          "played": 10,
           "group": ""
         },
         {
@@ -3821,17 +3821,17 @@
         },
         {
           "rank": 14,
-          "team": "FC Augsburg",
+          "team": "1. FC Köln",
           "wins": 2,
           "losses": 4,
-          "draws": 3,
-          "points": 9,
-          "played": 9,
+          "draws": 4,
+          "points": 10,
+          "played": 10,
           "group": ""
         },
         {
           "rank": 15,
-          "team": "1. FC Köln",
+          "team": "FC Augsburg",
           "wins": 2,
           "losses": 4,
           "draws": 3,
@@ -3871,7 +3871,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     },
     {
@@ -4083,7 +4083,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     },
     {
@@ -4235,6 +4235,16 @@
         },
         {
           "rank": 15,
+          "team": "ES Troyes AC",
+          "wins": 2,
+          "losses": 6,
+          "draws": 3,
+          "points": 9,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 16,
           "team": "Le Mans FC",
           "wins": 1,
           "losses": 4,
@@ -4244,18 +4254,8 @@
           "group": ""
         },
         {
-          "rank": 16,
-          "team": "Angers SCO",
-          "wins": 2,
-          "losses": 6,
-          "draws": 2,
-          "points": 8,
-          "played": 10,
-          "group": ""
-        },
-        {
           "rank": 17,
-          "team": "ES Troyes AC",
+          "team": "Angers SCO",
           "wins": 2,
           "losses": 6,
           "draws": 2,
@@ -4268,14 +4268,14 @@
           "team": "Le Havre AC",
           "wins": 0,
           "losses": 8,
-          "draws": 2,
-          "points": 2,
-          "played": 10,
+          "draws": 3,
+          "points": 3,
+          "played": 11,
           "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-20T14:11:33Z",
+      "verified_at": "2026-11-20T20:13:13Z",
       "status": "ok"
     }
   ],
