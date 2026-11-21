@@ -18,7 +18,11 @@ test('Ranma 2026 keeps verified Bangumi data when optional MAL/AniList records a
   const source=current.works['bangumi-637802'];
   assert.ok(source);
   assert.equal(source.title,'乱马1/2 第三季');
-  assert.ok(source.ratings.some(x=>x.source==='Bangumi'&&x.value===7.5));
+  // Bangumi's live verified score can change between catalog refreshes.
+  // Check that reconciliation preserves the recorded value, not a stale literal.
+  const verifiedBangumiScore=d.works['bangumi-637802']?.ratings?.find(x=>x.source==='Bangumi')?.value;
+  assert.ok(Number.isFinite(verifiedBangumiScore));
+  assert.ok(source.ratings.some(x=>x.source==='Bangumi'&&x.value===verifiedBangumiScore));
   // A verified provider ID can resolve to the Bangumi record without a
   // separate MAL/AniList work card. Never create a second work for that ID.
   for(const id of ['mal-63801','anilist-209872']){
@@ -50,7 +54,9 @@ test('Ranma 2026 merges additional MAL/AniList scores only with matching season 
   assert.ok(w);assert.equal(w.title,'乱马1/2 第三季');
   assert.equal(w.mal_id,63801);
   assert.equal(merged.works['mal-63801'],undefined);
-  assert.ok(w.ratings.some(x=>x.source==='Bangumi'&&x.value===7.5));
+  const verifiedBangumiScore=bangumi.ratings?.find(x=>x.source==='Bangumi')?.value;
+  assert.ok(Number.isFinite(verifiedBangumiScore));
+  assert.ok(w.ratings.some(x=>x.source==='Bangumi'&&x.value===verifiedBangumiScore));
   assert.ok(w.ratings.some(x=>x.source==='AniList'&&x.value===78));
 });
 
