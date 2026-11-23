@@ -2,24 +2,24 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-23T13:38:04Z",
+  "generated_at": "2026-11-23T20:38:16Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-23T13:38:04Z"
+      "verified_at": "2026-11-23T20:38:16Z"
     },
     {
       "tag": "football-data",
-      "status": "ok",
+      "status": "partial",
       "count": 152,
-      "standings": 5,
-      "verified_at": "2026-11-23T13:38:04Z"
+      "standings": 4,
+      "verified_at": "2026-11-23T20:38:16Z"
     }
   ],
-  "status": "ok",
+  "status": "partial",
   "events": [
     {
       "id": "football-data-555095",
@@ -3039,7 +3039,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-23T13:38:04Z",
+      "verified_at": "2026-11-23T20:38:16Z",
       "status": "ok"
     },
     {
@@ -3101,7 +3101,7 @@
         },
         {
           "rank": 6,
-          "team": "Leeds United FC",
+          "team": "Brentford FC",
           "wins": 4,
           "losses": 2,
           "draws": 5,
@@ -3111,12 +3111,12 @@
         },
         {
           "rank": 7,
-          "team": "Everton FC",
+          "team": "Leeds United FC",
           "wins": 4,
           "losses": 2,
-          "draws": 4,
-          "points": 16,
-          "played": 10,
+          "draws": 5,
+          "points": 17,
+          "played": 11,
           "group": ""
         },
         {
@@ -3131,22 +3131,22 @@
         },
         {
           "rank": 9,
+          "team": "Everton FC",
+          "wins": 4,
+          "losses": 3,
+          "draws": 4,
+          "points": 16,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 10,
           "team": "Tottenham Hotspur FC",
           "wins": 4,
           "losses": 4,
           "draws": 3,
           "points": 15,
           "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 10,
-          "team": "Brentford FC",
-          "wins": 3,
-          "losses": 2,
-          "draws": 5,
-          "points": 14,
-          "played": 10,
           "group": ""
         },
         {
@@ -3251,7 +3251,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-23T13:38:04Z",
+      "verified_at": "2026-11-23T20:38:16Z",
       "status": "ok"
     },
     {
@@ -3403,6 +3403,16 @@
         },
         {
           "rank": 15,
+          "team": "Levante UD",
+          "wins": 2,
+          "losses": 5,
+          "draws": 6,
+          "points": 12,
+          "played": 13,
+          "group": ""
+        },
+        {
+          "rank": 16,
           "team": "Rayo Vallecano de Madrid",
           "wins": 3,
           "losses": 6,
@@ -3412,7 +3422,7 @@
           "group": ""
         },
         {
-          "rank": 16,
+          "rank": 17,
           "team": "Valencia CF",
           "wins": 3,
           "losses": 7,
@@ -3422,7 +3432,7 @@
           "group": ""
         },
         {
-          "rank": 17,
+          "rank": 18,
           "team": "Getafe CF",
           "wins": 3,
           "losses": 7,
@@ -3432,23 +3442,13 @@
           "group": ""
         },
         {
-          "rank": 18,
-          "team": "Levante UD",
-          "wins": 2,
-          "losses": 5,
-          "draws": 5,
-          "points": 11,
-          "played": 12,
-          "group": ""
-        },
-        {
           "rank": 19,
           "team": "Elche CF",
           "wins": 2,
           "losses": 6,
-          "draws": 4,
-          "points": 10,
-          "played": 12,
+          "draws": 5,
+          "points": 11,
+          "played": 13,
           "group": ""
         },
         {
@@ -3463,7 +3463,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-23T13:38:04Z",
+      "verified_at": "2026-11-23T20:38:16Z",
       "status": "ok"
     },
     {
@@ -3655,7 +3655,199 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-23T13:38:04Z",
+      "verified_at": "2026-11-23T20:38:16Z",
+      "status": "ok"
+    },
+    {
+      "id": "football-data-FL1",
+      "title": "Ligue 1",
+      "provider": "football-data",
+      "sport": "football",
+      "kind": "football",
+      "groups": [
+        {
+          "rank": 1,
+          "team": "Paris Saint-Germain FC",
+          "wins": 8,
+          "losses": 1,
+          "draws": 2,
+          "points": 26,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 2,
+          "team": "Paris FC",
+          "wins": 7,
+          "losses": 2,
+          "draws": 2,
+          "points": 23,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 3,
+          "team": "Lille OSC",
+          "wins": 6,
+          "losses": 2,
+          "draws": 3,
+          "points": 21,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 4,
+          "team": "Olympique Lyonnais",
+          "wins": 6,
+          "losses": 3,
+          "draws": 2,
+          "points": 20,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 5,
+          "team": "Olympique de Marseille",
+          "wins": 6,
+          "losses": 5,
+          "draws": 0,
+          "points": 18,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 6,
+          "team": "Stade Brestois 29",
+          "wins": 5,
+          "losses": 3,
+          "draws": 3,
+          "points": 18,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 7,
+          "team": "OGC Nice",
+          "wins": 5,
+          "losses": 4,
+          "draws": 2,
+          "points": 17,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 8,
+          "team": "AS Monaco FC",
+          "wins": 4,
+          "losses": 2,
+          "draws": 5,
+          "points": 17,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 9,
+          "team": "Stade Rennais FC 1901",
+          "wins": 5,
+          "losses": 4,
+          "draws": 2,
+          "points": 17,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 10,
+          "team": "FC Lorient",
+          "wins": 4,
+          "losses": 3,
+          "draws": 4,
+          "points": 16,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 11,
+          "team": "Racing Club de Lens",
+          "wins": 4,
+          "losses": 5,
+          "draws": 2,
+          "points": 14,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 12,
+          "team": "Toulouse FC",
+          "wins": 3,
+          "losses": 3,
+          "draws": 5,
+          "points": 14,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 13,
+          "team": "Le Mans FC",
+          "wins": 2,
+          "losses": 4,
+          "draws": 5,
+          "points": 11,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 14,
+          "team": "ES Troyes AC",
+          "wins": 3,
+          "losses": 6,
+          "draws": 2,
+          "points": 11,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 15,
+          "team": "AJ Auxerre",
+          "wins": 3,
+          "losses": 6,
+          "draws": 2,
+          "points": 11,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 16,
+          "team": "RC Strasbourg Alsace",
+          "wins": 3,
+          "losses": 7,
+          "draws": 1,
+          "points": 10,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 17,
+          "team": "Angers SCO",
+          "wins": 2,
+          "losses": 7,
+          "draws": 2,
+          "points": 8,
+          "played": 11,
+          "group": ""
+        },
+        {
+          "rank": 18,
+          "team": "Le Havre AC",
+          "wins": 0,
+          "losses": 9,
+          "draws": 2,
+          "points": 2,
+          "played": 11,
+          "group": ""
+        }
+      ],
+      "prominence": 170,
+      "verified_at": "2026-11-23T20:38:16Z",
       "status": "ok"
     },
     {
@@ -3868,199 +4060,7 @@
       ],
       "prominence": 170,
       "verified_at": "2026-11-23T13:38:04Z",
-      "status": "ok"
-    },
-    {
-      "id": "football-data-FL1",
-      "title": "Ligue 1",
-      "provider": "football-data",
-      "sport": "football",
-      "kind": "football",
-      "groups": [
-        {
-          "rank": 1,
-          "team": "Paris Saint-Germain FC",
-          "wins": 8,
-          "losses": 1,
-          "draws": 2,
-          "points": 26,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 2,
-          "team": "Paris FC",
-          "wins": 7,
-          "losses": 2,
-          "draws": 2,
-          "points": 23,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 3,
-          "team": "Lille OSC",
-          "wins": 6,
-          "losses": 2,
-          "draws": 3,
-          "points": 21,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 4,
-          "team": "Olympique Lyonnais",
-          "wins": 6,
-          "losses": 3,
-          "draws": 2,
-          "points": 20,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 5,
-          "team": "Olympique de Marseille",
-          "wins": 6,
-          "losses": 5,
-          "draws": 0,
-          "points": 18,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 6,
-          "team": "Stade Brestois 29",
-          "wins": 5,
-          "losses": 3,
-          "draws": 3,
-          "points": 18,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 7,
-          "team": "OGC Nice",
-          "wins": 5,
-          "losses": 4,
-          "draws": 2,
-          "points": 17,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 8,
-          "team": "AS Monaco FC",
-          "wins": 4,
-          "losses": 2,
-          "draws": 5,
-          "points": 17,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 9,
-          "team": "Stade Rennais FC 1901",
-          "wins": 5,
-          "losses": 4,
-          "draws": 2,
-          "points": 17,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 10,
-          "team": "FC Lorient",
-          "wins": 4,
-          "losses": 3,
-          "draws": 4,
-          "points": 16,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 11,
-          "team": "Racing Club de Lens",
-          "wins": 4,
-          "losses": 5,
-          "draws": 2,
-          "points": 14,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 12,
-          "team": "Toulouse FC",
-          "wins": 3,
-          "losses": 3,
-          "draws": 5,
-          "points": 14,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 13,
-          "team": "Le Mans FC",
-          "wins": 2,
-          "losses": 4,
-          "draws": 5,
-          "points": 11,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 14,
-          "team": "ES Troyes AC",
-          "wins": 3,
-          "losses": 6,
-          "draws": 2,
-          "points": 11,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 15,
-          "team": "AJ Auxerre",
-          "wins": 3,
-          "losses": 6,
-          "draws": 2,
-          "points": 11,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 16,
-          "team": "RC Strasbourg Alsace",
-          "wins": 3,
-          "losses": 7,
-          "draws": 1,
-          "points": 10,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 17,
-          "team": "Angers SCO",
-          "wins": 2,
-          "losses": 7,
-          "draws": 2,
-          "points": 8,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 18,
-          "team": "Le Havre AC",
-          "wins": 0,
-          "losses": 9,
-          "draws": 2,
-          "points": 2,
-          "played": 11,
-          "group": ""
-        }
-      ],
-      "prominence": 170,
-      "verified_at": "2026-11-23T13:38:04Z",
-      "status": "ok"
+      "status": "stale"
     }
   ],
   "notes": "Verified third-party provider data, 6-hour refresh; provider attribution required."
