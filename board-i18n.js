@@ -105,14 +105,18 @@ function stage(value,sport,language='zh'){
    // A chess stage can be a player pairing rather than a named round.
    // Preserve both proper names and label the stage in Chinese.
    if(/\b(?:vs\.?|versus)\b/i.test(raw)&&!/[\u3400-\u9fff]/.test(raw))return '对局：'+raw;
-   return raw.replace(/\b(?:Round|Ronda|Ronde)\s*(?:[:：]\s*)?(\d+)\b/gi,'第$1轮')
+   const translated=raw.replace(/\b(?:Round|Ronda|Ronde)\s*(?:[:：]\s*)?(\d+)\b/gi,'第$1轮')
     .replace(/\bGame\s*(\d+)\b/gi,'第$1局')
     .replace(/\bMatch\s*(\d+)\b/gi,'第$1场')
     .replace(/\bQualifiers?\b/gi,'资格赛')
     .replace(/\bQuarter.?finals?\b/gi,'四分之一决赛')
     .replace(/\bSemi.?finals?\b/gi,'半决赛')
     .replace(/\bFinals?\b/gi,'决赛')
-    .replace(/\bGroup\s*([A-Z])\b/gi,'$1组');
+    .replace(/\bGroup\s*([A-Z])\b/gi,'$1组')
+    .replace(/\bArmageddon\b/gi,'末日棋决胜局');
+   // A newly introduced provider stage must never break the localization
+   // regression test or strip its original name if we cannot translate it.
+   return /[\u3400-\u9fff]/.test(translated)?translated:'国际象棋赛程 · '+translated;
  }
  if(sport==='go'){
    return simplify(raw
