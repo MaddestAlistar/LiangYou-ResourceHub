@@ -2,202 +2,34 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-25T20:43:48Z",
+  "generated_at": "2026-11-26T03:11:34Z",
   "quota_month": "2026-11",
-  "monthly_credits": 147,
+  "monthly_credits": 149,
   "monthly_cap": 210,
-  "provider_remaining": 352,
+  "provider_remaining": 350,
   "last_checked": {
-    "basketball_nba": "2026-11-25T20:43:48Z",
+    "basketball_nba": "2026-11-26T03:11:34Z",
     "soccer_epl": "2026-11-25T20:43:48Z",
-    "soccer_uefa_champs_league": "2026-11-24T22:24:51Z"
+    "soccer_uefa_champs_league": "2026-11-26T03:11:34Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 9
+      "count": 1
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "ok",
+      "status": "recent",
       "count": 19
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "recent",
+      "status": "ok",
       "count": 0
     }
   ],
   "events": [
-    {
-      "id": "odds-4f6d199bb67cf3a517a3880fd2f00b26",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Philadelphia 76ers",
-      "away": "Miami Heat",
-      "start_time": "2026-11-25T22:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Miami Heat",
-          "decimal": 1.8
-        },
-        {
-          "name": "Philadelphia 76ers",
-          "decimal": 2.06
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
-    {
-      "id": "odds-87ce247fb83685389ca8ffb21be6cd3e",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Charlotte Hornets",
-      "away": "Chicago Bulls",
-      "start_time": "2026-11-26T00:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Charlotte Hornets",
-          "decimal": 1.6
-        },
-        {
-          "name": "Chicago Bulls",
-          "decimal": 2.4
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
-    {
-      "id": "odds-f08629281f1510f47d91cc408f86a2a8",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "New York Knicks",
-      "away": "Cleveland Cavaliers",
-      "start_time": "2026-11-26T00:40:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Cleveland Cavaliers",
-          "decimal": 2.1
-        },
-        {
-          "name": "New York Knicks",
-          "decimal": 1.77
-        }
-      ],
-      "quote_at": "2026-11-25T20:43:41Z"
-    },
-    {
-      "id": "odds-07421d1675d6bc51bb5fa91f84a09eb3",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Oklahoma City Thunder",
-      "away": "Minnesota Timberwolves",
-      "start_time": "2026-11-26T00:40:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Minnesota Timberwolves",
-          "decimal": 2.05
-        },
-        {
-          "name": "Oklahoma City Thunder",
-          "decimal": 1.8
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
-    {
-      "id": "odds-9e203cbbc6d37b7b0d9c08cb89fe0b28",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Milwaukee Bucks",
-      "away": "Brooklyn Nets",
-      "start_time": "2026-11-26T01:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Brooklyn Nets",
-          "decimal": 1.99
-        },
-        {
-          "name": "Milwaukee Bucks",
-          "decimal": 1.85
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
-    {
-      "id": "odds-698d6d78acf30f4ff4e4aaf6670249ee",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Memphis Grizzlies",
-      "away": "Los Angeles Clippers",
-      "start_time": "2026-11-26T01:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Los Angeles Clippers",
-          "decimal": 3.2
-        },
-        {
-          "name": "Memphis Grizzlies",
-          "decimal": 1.37
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
-    {
-      "id": "odds-60fd73164f7b0d1848f998d922155d87",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Houston Rockets",
-      "away": "Phoenix Suns",
-      "start_time": "2026-11-26T01:40:00Z",
-      "bookmaker": "FanDuel",
-      "outcomes": [
-        {
-          "name": "Houston Rockets",
-          "decimal": 1.27
-        },
-        {
-          "name": "Phoenix Suns",
-          "decimal": 4.0
-        }
-      ],
-      "quote_at": "2026-11-25T20:43:41Z"
-    },
-    {
-      "id": "odds-e6df92326adb480e427bb7c10f445c60",
-      "provider": "the-odds-api",
-      "sport": "basketball",
-      "league": "NBA",
-      "home": "Golden State Warriors",
-      "away": "Sacramento Kings",
-      "start_time": "2026-11-26T03:10:00Z",
-      "bookmaker": "DraftKings",
-      "outcomes": [
-        {
-          "name": "Golden State Warriors",
-          "decimal": 1.38
-        },
-        {
-          "name": "Sacramento Kings",
-          "decimal": 3.17
-        }
-      ],
-      "quote_at": "2026-11-25T20:42:50Z"
-    },
     {
       "id": "odds-9aa9f220709533d70d11f85fae886771",
       "provider": "the-odds-api",
@@ -205,7 +37,7 @@
       "league": "NBA",
       "home": "Portland Trail Blazers",
       "away": "San Antonio Spurs",
-      "start_time": "2026-11-26T03:10:00Z",
+      "start_time": "2026-11-26T03:15:00Z",
       "bookmaker": "DraftKings",
       "outcomes": [
         {
@@ -217,7 +49,7 @@
           "decimal": 1.62
         }
       ],
-      "quote_at": "2026-11-25T20:42:50Z"
+      "quote_at": "2026-11-26T03:11:34Z"
     },
     {
       "id": "odds-40d95e660c301c2d8a5a7a6317017b65",
