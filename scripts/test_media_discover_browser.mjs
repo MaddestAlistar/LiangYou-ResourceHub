@@ -14,6 +14,18 @@ await context.route('**/*',async route=>{
    }
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(fixture)});
  }
+ // Keep verified editorial news, but isolate the playback fixture from live
+ // snapshot video rankings. The top-20 gallery deliberately need not retain
+ // an arbitrary low-ranked test clip when the real catalog gains new videos.
+ const snapshot=/\/data\/(media-title-news|media-title-coverage|media-extra-videos|media-douyin-verified)\.json$/.exec(requested.pathname);
+ if(snapshot){
+   const doc=JSON.parse(await fs.readFile(new URL('../data/'+snapshot[1]+'.json',import.meta.url),'utf8'));
+   if(snapshot[1]==='media-extra-videos'||snapshot[1]==='media-douyin-verified')doc.items={};
+   else for(const item of Object.values(doc.items||doc.titles||{})){
+     if(item&&typeof item==='object'){item.videos=[];item.youtubeTrailers=[];}
+   }
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(doc)});
+ }
  const acfunRequest=/^\/api\/video\/acfun\/([1-9][0-9]{3,11})$/.exec(requested.pathname);
  if(acfunRequest){
    acfunMockCalls++;
@@ -67,11 +79,11 @@ try{
       body:JSON.stringify(fake)}));
  await page.route('**/data/media-domestic-trailers.json',route=>
    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
-     schema:1,items:[{kind,title,year:Number(year),platform:'bilibili',
+     schema:1,items:[{kind,title,year:Number(year),tmdbId,verifiedByTitleId:true,platform:'bilibili',
        videoId:'BV1zprUY2EGj',name:'Matched verified domestic trailer',
        publisher:'Film distributor',verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/',
        thumbnailLocal:'./assets/media-video-covers/BV1zprUY2EGj.jpg'},
-       {kind,title,year:Number(year),platform:'acfun',videoId:'41787132',
+       {kind,title,year:Number(year),tmdbId,verifiedByTitleId:true,platform:'acfun',videoId:'41787132',
        name:'Matched AcFun public film trailer',verifiedSource:'https://www.acfun.cn/v/ac41787132'}]
    })}));
  await page.route('**/data/media-world-news.json',route=>
@@ -91,6 +103,8 @@ try{
    return d?.querySelector('.mi-trailer-card')&&
      d.querySelector('[data-mi-discover-slot="domestic"] .mi-editorial-card a')&&
      d.querySelector('.mi-international-news')&&
+     d.querySelector('[data-mi-play-cn="bilibili"][data-mi-cn-id="BV1zprUY2EGj"]')&&
+     d.querySelector('[data-mi-play-cn="acfun"][data-mi-cn-id="41787132"]')&&
      (!expectWorld||d.querySelector('[data-mi-discover-slot="international"] .mi-editorial-card a'));
  },worldName.length>=5,{timeout:25000});
  }catch(error){
@@ -123,10 +137,11 @@ try{
    'YouTube and Chinese platforms share one video grid');
  // Browser-level proof that a cached BV thumbnail is an actual decodable
  // first-party image, not just a URL written into the DOM.
- const localCover=page.locator('#media-dialog [data-mi-play-cn="bilibili"] .mi-trailer-platform-thumb').first();
+ const localCover=page.locator('#media-dialog [data-mi-play-cn="bilibili"][data-mi-cn-id="BV1zprUY2EGj"] .mi-trailer-platform-thumb').first();
  await localCover.waitFor({state:'attached',timeout:10000});
  await localCover.evaluate(img=>img.decode());
  assert.equal(await localCover.evaluate(img=>img.naturalWidth>0),true);
+ assert.match(await localCover.getAttribute('src'),/\/BV1zprUY2EGj\.jpg(?:\?|$)/,'The exact fixture cover must be used');
  await page.locator('#media-dialog [data-mi-play-cn="bilibili"][data-mi-cn-id="BV1zprUY2EGj"]').first().click();
  assert.equal(await page.locator('#media-trailer-dialog').evaluate(d=>d.open),true);
  assert.match(await page.locator('#media-trailer-stage iframe').getAttribute('src'),
@@ -209,7 +224,7 @@ try{
    await offlinePage.waitForFunction(()=>document.querySelectorAll('#media-grid .mi-card').length>=2,null,{timeout:45000});
    await offlinePage.route('**/data/media-domestic-trailers.json',route=>
      route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
-       schema:1,items:[{kind,title,year:Number(year),platform:'bilibili',
+       schema:1,items:[{kind,title,year:Number(year),tmdbId,verifiedByTitleId:true,platform:'bilibili',
          videoId:'BV1zprUY2EGj',name:'Domestic fallback trailer',
          verifiedSource:'https://www.bilibili.com/video/BV1zprUY2EGj/'}]
      })}));
