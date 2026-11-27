@@ -1,6 +1,6 @@
-import {mergeWikiCatalog,fetchWikiSupplement} from './emby-wiki-catalog.mjs?v=20261128';
+import {mergeWikiCatalog,fetchWikiSupplement} from './emby-wiki-catalog.mjs?v=20261128.tg1';
 import {NATURES} from './emby-wiki-schema.mjs?v=20261110.5';
-import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.atlas';
+import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.tg1';
 
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
@@ -201,9 +201,9 @@ if(root){
   try{
    const [feed,supplement]=await Promise.allSettled([api('/emby-wiki-feed'),fetchWikiSupplement()]);
    if(feed.status==='rejected'&&supplement.status==='rejected')throw feed.reason;
-   items=mergeWikiCatalog(feed.status==='fulfilled'?feed.value.items||[]:[],supplement.status==='fulfilled'?supplement.value:[]);
+   items=mergeWikiCatalog(feed.status==='fulfilled'?feed.value.items||[]:[],supplement.status==='fulfilled'?supplement.value.items:[]);
    loaded=true;render();
-   if(feed.status==='rejected'||supplement.status==='rejected'){
+   if(feed.status==='rejected'||supplement.status==='rejected'||supplement.value.partial){
     $('wiki-count').append(document.createTextNode(language==='en'?' · Some profiles could not load':' · 部分资料未加载，请重试'));
     $('wiki-retry').hidden=false;
    }

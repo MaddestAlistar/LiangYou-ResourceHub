@@ -1,3 +1,4 @@
+import {wikiSources} from './emby-wiki-catalog.mjs?v=20261128.tg1';
 import {NATURES,CONTENTS,QUALITIES,STATES,ROLES,COUNT_FIELDS,chinaDate,publicURL} from './emby-wiki-schema.mjs';
 export const ROOT='https://liangyou-icon-review.maddestalistar.workers.dev';
 export function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
@@ -107,14 +108,15 @@ export function details(item){const box=el('div',undefined,'wk-detail-body');
  for(const [k,v] of fields){dl.append(el('dt',k),el('dd',v))}box.append(dl);
  const links=el('div',undefined,'wk-links');for(const [k,label] of [['website','官方网站'],['channel','频道'],['group','群组'],['bot','机器人'],['evidence','统计凭证']]){if(!item[k])continue;try{const a=el('a',label+' ↗','wk-button wk-secondary');a.href=publicURL(item[k],label,['channel','group','bot'].includes(k));a.target='_blank';a.rel='noopener noreferrer nofollow';links.append(a)}catch{}}
  if(safeEvidence(item.evidenceImageUrl)){const proof=el('div',undefined,'wk-evidence-proof');proof.append(el('strong','统计凭证截图'));const link=el('a');link.href=item.evidenceImageUrl;link.target='_blank';link.rel='noopener noreferrer nofollow';const img=el('img');img.src=item.evidenceImageUrl;img.alt='统计凭证截图，点击查看原图';img.loading='lazy';link.append(img);proof.append(link);box.append(proof)}
- if(item.sourceUrl){
+ for(const source of wikiSources(item)){
   const provenance=el('p',undefined,'wk-hint');
   provenance.append(document.createTextNode('资料来源：'));
-  for(const [href,label] of [[item.sourceUrl,item.sourceName||'公开档案'],[item.sourceReference,'原始参考']]){
+  for(const [href,label] of [[source.url,source.name||'公开档案'],[source.reference,'原始参考']]){
    if(!href)continue;
    try{const link=el('a',label+' ↗');link.href=publicURL(href);link.target='_blank';link.rel='noopener noreferrer nofollow';provenance.append(link,document.createTextNode(' '))}catch{}
   }
-  if(item.retrievedAt)provenance.append(document.createTextNode('· 整理日期 '+item.retrievedAt));
+  if(source.retrievedAt)provenance.append(document.createTextNode('· 整理日期 '+source.retrievedAt));
+  if(source.note)provenance.append(document.createTextNode(' · '+source.note));
   if(item.sourceNature&&!item.nature)provenance.append(document.createTextNode(' · 来源分类：'+item.sourceNature));
   box.append(provenance);
  }
