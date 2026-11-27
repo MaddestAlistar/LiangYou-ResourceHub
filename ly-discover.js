@@ -50,7 +50,10 @@
     ['emby',async()=>{const d=await get('https://liangyou-icon-review.maddestalistar.workers.dev/emby-wiki-feed');if(!d.ok||!Array.isArray(d.items))throw Error('Wiki unavailable');for(const x of d.items){const name=x.name||x.serverName||x.title;if(name)add('emby',x.id||name,name,'#emby-wiki',[x.nature,x.description,x.summary].filter(v=>typeof v==='string').join(' · '),name);}}],
     ['free',async()=>{const d=await get('data/daily-free.json');for(const [region,v] of Object.entries(d.regions||{}))for(const x of v.items||[])add('free',region+':'+x.id,x.name,'#daily-free',[region.toUpperCase(),x.genre,x.platform].filter(Boolean).join(' · '),x.name);}],
     ['news',async()=>{const d=await get('data/tech-news-feed.json');for(const x of d.items||[])add('news',x.id,x.title,'#liangyou-tech-news',x.content);}],
-    ['media',async()=>{const d=await get('data/media-discovery-snapshot.json');for(const x of Object.values(d.mal?.items||{}))add('media',x.malId,x.title,'#media',[field(x.genres),field(x.studios)].filter(Boolean).join(' · '),x.title);}]
+    ['free',async()=>{const d=await get('data/android-free.json');for(const x of d.items||[])add('free','android:'+x.package,x.name,'#daily-free',[x.platform,x.genre].filter(Boolean).join(' · '));}],
+    ['free',async()=>{const d=await get('data/game-free.json');for(const [p,v] of Object.entries(d.platforms||{}))for(const x of v.items||[])add('free',p+':'+x.id,x.name,'#daily-free',[x.platform,x.kind].filter(Boolean).join(' · '));}],
+    ['media',async()=>{const d=await get('data/media-intel.json');const seen=new Set();for(const s of Object.values(d.sources||{}))for(const x of s.items||[]){const id=x.work_id||d.aliases?.[x.id]||x.id;if(!id||!x.title||seen.has(id))continue;seen.add(id);add('media',id,x.title,'#media',[x.original_title,x.date,field(x.profile?.genres),x.overview].filter(Boolean).join(' · '),x.title);}}],
+    ['sports',async()=>{const d=await get('data/real-sports.json');for(const x of d.events||[])if(x.home&&x.away)add('sports',x.id,x.home+' vs '+x.away,'#sports',[x.league,x.sport,x.stage,x.start_time?.slice(0,10)].filter(Boolean).join(' · '));for(const x of d.standings||[])if(x.title)add('sports','standing:'+x.id,x.title,'#sports',[x.league,x.sport].filter(Boolean).join(' · '));}]
   ];
   async function load(){
     if(loading||loaded)return;loading=true;failed=[];render();
