@@ -89,7 +89,7 @@ async function load(force=false){
  await Promise.all([...adapters.map(async a=>{
   const staged=new Map();const add=(id,title,url,desc,extra={})=>{if(id==null)return;const x=normalize({id:a.c+':'+id,title,url,desc,category:a.c,source:a.id,...extra});if(x)staged.set(x.id,x)};
   try{const updated=cut(await a.fn(add),80),items=[...staged.values()];replaceSource(a,items);cacheWrite(a,items,updated);health.set(a.id,{state:'live',count:items.length,updated,at:Date.now()})}
-  catch{const old=cacheRead(a),memory=[...entries.values()].filter(x=>x.source===a.id);const prev=health.get(a.id);if(old){replaceSource(a,old.items);health.set(a.id,{state:'cached',count:old.items.length,updated:old.updated,at:old.at})}else if(memory.length){health.set(a.id,{state:'cached',count:memory.length,updated:prev?.updated,at:prev?.at})}else health.set(a.id,{state:'failed',count:0})}
+  catch{const old=cacheRead(a),memory=[...entries.values()].filter(x=>x.source===a.id);const prev=health.get(a.id);if(old){replaceSource(a,old.items);health.set(a.id,{state:'cached',count:old.items.length,updated:old.updated,at:old.at})}else if(memory.length&&Number.isFinite(prev?.at)&&Date.now()-prev.at<=TTL){health.set(a.id,{state:'cached',count:memory.length,updated:prev?.updated,at:prev?.at})}else {replaceSource(a,[]);health.set(a.id,{state:'failed',count:0})}}
   if(dialog.open)render();
  }),jobTask]);
  loading=false;loaded=true;loadedAt=Date.now();renderHome();if(dialog.open)render();
