@@ -28,6 +28,8 @@ jobs:
           node --check media-intel.js
           node --check media-lens.js
           node --check ly-discover.js
+          node --check icon-download.mjs
+          node --test scripts/test_icon_download_zip.mjs
           node --check media-shortdrama.js
           node --check media-shortdrama-player.js
           node --test scripts/test_short_drama_player.mjs
