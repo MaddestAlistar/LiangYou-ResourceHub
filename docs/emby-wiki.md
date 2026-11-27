@@ -44,3 +44,12 @@ Retention rules (`retention`) are now mandatory for new submissions and moderati
 
 ## Additional quick choices
 The registration shortcuts also include **人脉 KK** (Connections / KK) and **积分开号** (Points registration), and the retention shortcuts also include **无需保号** (No retention requirements). Both groups now contain nine options and use an even three-column grid on normal mobile screens. Selecting "无需保号" removes conflicting retention shortcuts, while selecting another retention choice removes "无需保号"; labels are localized, underlying form submission remains free text, and no server schema change is needed.
+
+## Public directory supplement (2026-11-28)
+`assets/data/emby-atlas.json` is a reviewed, one-time snapshot of the public catalog at https://atlas.030518.xyz/. Its 94 published source rows are consolidated into 91 profiles (海豚emby, 驭龍/驭龙, and 大厨的神秘菜单/Chef’s Secret Menu are duplicates). Conflicting values in these duplicate rows are left blank. Source entry IDs, source update dates and retrieval date are retained without importing edit-history actors or user records.
+
+`emby-wiki-catalog.mjs` merges these profiles into the public directory, using exact normalized names and explicitly reviewed aliases (宸宇公益服 → 宸宇). Approved submissions take precedence; only empty descriptive fields are supplemented. Existing zero counts, statistics, dates, covers and submitter attribution remain untouched. The source provides no usable media statistics, so all imported count columns are null and statistics dates are blank. Missing operating status stays blank. Paid servers map to 公费服; 半公益服 remains unclassified in the existing category filter, with its source classification shown in the detail attribution. Untyped source links are shown as references, not guessed to be official websites or channels. Referral URLs are not copied.
+
+The snapshot uses the existing card and detail template. It has its own attribution rather than invented contributor metadata, and does not weaken the submission or moderation schema. Loading failure of either source preserves the other and exposes a retry notice. This is not an automatic synchronization job; later changes should be reviewed before updating the snapshot.
+
+Validation: `node --test scripts/test_emby_wiki_catalog.mjs scripts/test_emby_wiki.mjs` and `node scripts/validate.mjs`.

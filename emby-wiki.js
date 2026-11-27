@@ -1,5 +1,6 @@
+import {mergeWikiCatalog,fetchWikiSupplement} from './emby-wiki-catalog.mjs?v=20261128';
 import {NATURES} from './emby-wiki-schema.mjs?v=20261110.5';
-import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261112.detail1';
+import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.atlas';
 
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
@@ -57,8 +58,8 @@ if(root){
  function syncStatic(){
   $('wiki-title').textContent=language==='en'?'Emby Wiki · Server Directory':'Emby Wiki · 服务器档案';
   root.querySelector('.wk-head .wk-hint').textContent=language==='en'
-   ?'Explore server libraries and account requirements. Profiles are community-submitted and published after review.'
-   :'从片库规模到开号规则，按需了解一台服务器。资料由社区投稿，审核后收录。';
+   ?'Explore server libraries and account requirements. Profiles combine reviewed submissions with attributed public directory records.'
+   :'从片库规模到开号规则，按需了解一台服务器。资料来自已审核投稿及公开档案整理，缺失信息留空。';
   root.querySelector('.wk-head a').textContent=language==='en'?'＋ Submit a Server':'＋ 自助投稿';
   search.placeholder=language==='en'?'Search servers, libraries or account access':'搜索服务器、资源或开号方式';
   search.setAttribute('aria-label',language==='en'?'Search Emby servers':'搜索 Emby 服务器');
@@ -88,7 +89,7 @@ if(root){
  function open(item,show=true){
   activeItem=item;
   $('wiki-detail-title').textContent=item.name;
-  $('wiki-detail-meta').textContent=t(item.nature)+' · '+t(item.state);
+  $('wiki-detail-meta').textContent=[t(item.nature),t(item.state)].filter(Boolean).join(' · ');
   $('wiki-detail-content').replaceChildren(localizeDisplay(details(item)));
   if(show&&!dialog.open)dialog.showModal();
   if(show)dialog.scrollTop=0;
@@ -197,7 +198,16 @@ if(root){
   loading=true;loadError='';
   list.setAttribute('aria-busy','true');$('wiki-retry').hidden=true;
   $('wiki-count').textContent=language==='en'?'Loading server profiles…':'正在读取服务器档案…';
-  try{const data=await api('/emby-wiki-feed');items=data.items||[];loaded=true;render()}
+  try{
+   const [feed,supplement]=await Promise.allSettled([api('/emby-wiki-feed'),fetchWikiSupplement()]);
+   if(feed.status==='rejected'&&supplement.status==='rejected')throw feed.reason;
+   items=mergeWikiCatalog(feed.status==='fulfilled'?feed.value.items||[]:[],supplement.status==='fulfilled'?supplement.value:[]);
+   loaded=true;render();
+   if(feed.status==='rejected'||supplement.status==='rejected'){
+    $('wiki-count').append(document.createTextNode(language==='en'?' · Some profiles could not load':' · 部分资料未加载，请重试'));
+    $('wiki-retry').hidden=false;
+   }
+  }
   catch(e){loadError=e.message;renderError()}
   finally{loading=false;list.setAttribute('aria-busy','false')}
  }

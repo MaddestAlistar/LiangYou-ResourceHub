@@ -74,6 +74,7 @@ export function stats(item){
   {label:'不含多版本',keys:['movies','series','episodes']},
   {label:'包含多版本',keys:['moviesWithVersions','seriesWithVersions','episodesWithVersions']}
  ].filter(column=>column.keys.some(key=>item[key]!==null&&item[key]!==undefined&&item[key]!==''));
+ if(!columns.length)return box;
  if(columns.length===1)box.classList.add('wk-version-single');
  const head=el('div',undefined,'wk-version-head');
  head.append(el('span','媒体类型'));
@@ -102,10 +103,21 @@ export function details(item){const box=el('div',undefined,'wk-detail-body');
  }
  box.append(stats(item));
  const dl=el('dl');
- const fields=[['统计日期',item.statsDate],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',item.nickname+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
+ const fields=[['统计日期',item.statsDate],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',(item.nickname||'')+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
  for(const [k,v] of fields){dl.append(el('dt',k),el('dd',v))}box.append(dl);
  const links=el('div',undefined,'wk-links');for(const [k,label] of [['website','官方网站'],['channel','频道'],['group','群组'],['bot','机器人'],['evidence','统计凭证']]){if(!item[k])continue;try{const a=el('a',label+' ↗','wk-button wk-secondary');a.href=publicURL(item[k],label,['channel','group','bot'].includes(k));a.target='_blank';a.rel='noopener noreferrer nofollow';links.append(a)}catch{}}
  if(safeEvidence(item.evidenceImageUrl)){const proof=el('div',undefined,'wk-evidence-proof');proof.append(el('strong','统计凭证截图'));const link=el('a');link.href=item.evidenceImageUrl;link.target='_blank';link.rel='noopener noreferrer nofollow';const img=el('img');img.src=item.evidenceImageUrl;img.alt='统计凭证截图，点击查看原图';img.loading='lazy';link.append(img);proof.append(link);box.append(proof)}
+ if(item.sourceUrl){
+  const provenance=el('p',undefined,'wk-hint');
+  provenance.append(document.createTextNode('资料来源：'));
+  for(const [href,label] of [[item.sourceUrl,item.sourceName||'公开档案'],[item.sourceReference,'原始参考']]){
+   if(!href)continue;
+   try{const link=el('a',label+' ↗');link.href=publicURL(href);link.target='_blank';link.rel='noopener noreferrer nofollow';provenance.append(link,document.createTextNode(' '))}catch{}
+  }
+  if(item.retrievedAt)provenance.append(document.createTextNode('· 整理日期 '+item.retrievedAt));
+  if(item.sourceNature&&!item.nature)provenance.append(document.createTextNode(' · 来源分类：'+item.sourceNature));
+  box.append(provenance);
+ }
  box.append(links);return box;
 }
 export function safeCover(url){return typeof url==='string'&&/^https:\/\/raw\.githubusercontent\.com\/MaddestAlistar\/Icon-Review-Queue\/main\/emby-wiki\/covers\/wiki-[a-f0-9-]+(?:-r[a-f0-9]{12})?\.jpg$/.test(url)}
