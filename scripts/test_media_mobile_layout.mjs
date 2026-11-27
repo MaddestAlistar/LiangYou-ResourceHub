@@ -115,6 +115,10 @@ for(const width of [390,360]){
      await hub.locator('input[type=search]').fill('SenPlayer');
      const app=hub.locator('[data-lyd-id="app:senplayer"]');
      await app.waitFor({state:'visible',timeout:20000});
+     await hub.locator('input[type=search]').fill('https://github.com/MaddestAlistar/LiangYou-IconLibrary');
+     await hub.locator('[data-lyd-id="resource:icons"]').waitFor({state:'visible',timeout:20000});
+     assert.match(await hub.locator('.lyd-chips').innerText(),/GitHub/);
+     await hub.locator('input[type=search]').fill('SenPlayer');
      await app.locator('[data-lyd-action="save"]').click();
      await app.locator('[data-lyd-action="track"]').click();
      await app.locator('[data-lyd-action="detail"]').click();
@@ -126,6 +130,7 @@ for(const width of [390,360]){
      await hub.locator('[data-lyd-tab="health"]').click();
      await hub.locator('.lyd-health-state[data-state="live"]').first().waitFor({timeout:20000});
      assert.ok(await hub.locator('.lyd-health-row').count()>=10);
+     assert.equal(await hub.getByRole('button',{name:'导出脱敏诊断 JSON'}).count(),1);
      await hub.locator('[data-lyd-tab="rank"]').click();
      assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1);
      assert.ok(await hub.evaluate(d=>d.scrollWidth-d.clientWidth<=2),'Discovery dialog must fit mobile width');
