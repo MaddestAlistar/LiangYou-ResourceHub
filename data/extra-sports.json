@@ -2,21 +2,21 @@
   "schema": 1,
   "extra_sports_version": 3,
   "source_type": "supplemental_fixtures",
-  "generated_at": "2026-11-27T15:22:28Z",
+  "generated_at": "2026-11-27T22:39:48Z",
   "interval_hours": 6,
   "sources": [
     {
       "tag": "dunkapi",
       "status": "ok",
       "count": 30,
-      "verified_at": "2026-11-27T15:22:28Z"
+      "verified_at": "2026-11-27T22:39:48Z"
     },
     {
       "tag": "football-data",
       "status": "ok",
       "count": 159,
       "standings": 5,
-      "verified_at": "2026-11-27T15:22:28Z"
+      "verified_at": "2026-11-27T22:39:48Z"
     }
   ],
   "status": "ok",
@@ -46,12 +46,12 @@
       "league": "Eredivisie",
       "stage": "Regular Season",
       "start_time": "2026-11-27T19:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "FC Groningen",
       "away": "Willem II Tilburg",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 1,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -64,12 +64,12 @@
       "league": "Bundesliga",
       "stage": "Regular Season",
       "start_time": "2026-11-27T19:30:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "SV Werder Bremen",
       "away": "Borussia Mönchengladbach",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 3,
+      "score_away": 3,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -82,12 +82,12 @@
       "league": "Serie A",
       "stage": "Regular Season",
       "start_time": "2026-11-27T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Venezia FC",
       "away": "Bologna FC 1909",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 0,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -100,12 +100,12 @@
       "league": "Ligue 1",
       "stage": "Regular Season",
       "start_time": "2026-11-27T19:45:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Stade Brestois 29",
       "away": "Paris FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -118,12 +118,12 @@
       "league": "Premier League",
       "stage": "Regular Season",
       "start_time": "2026-11-27T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Nottingham Forest FC",
       "away": "Chelsea FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 3,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -136,12 +136,12 @@
       "league": "Championship",
       "stage": "Regular Season",
       "start_time": "2026-11-27T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "SCHEDULED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Southampton FC",
       "away": "Middlesbrough FC",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 2,
+      "score_away": 0,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -154,12 +154,12 @@
       "league": "La Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-27T20:00:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "Levante UD",
       "away": "Real Racing Club de Santander",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 3,
       "best_of": null,
       "winner_id": null,
       "prominence": 190,
@@ -172,12 +172,12 @@
       "league": "Primeira Liga",
       "stage": "Regular Season",
       "start_time": "2026-11-27T20:15:00Z",
-      "status": "scheduled",
-      "status_detail": "TIMED",
+      "status": "finished",
+      "status_detail": "FINISHED",
       "home": "CS Marítimo",
       "away": "CD Nacional",
-      "score_home": null,
-      "score_away": null,
+      "score_home": 1,
+      "score_away": 2,
       "best_of": null,
       "winner_id": null,
       "prominence": 130,
@@ -3165,7 +3165,7 @@
       ],
       "order_method": "win_pct",
       "prominence": 440,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     },
     {
@@ -3249,10 +3249,10 @@
           "rank": 8,
           "team": "Chelsea FC",
           "wins": 5,
-          "losses": 5,
+          "losses": 6,
           "draws": 1,
           "points": 16,
-          "played": 11,
+          "played": 12,
           "group": ""
         },
         {
@@ -3307,6 +3307,16 @@
         },
         {
           "rank": 14,
+          "team": "Nottingham Forest FC",
+          "wins": 3,
+          "losses": 6,
+          "draws": 3,
+          "points": 12,
+          "played": 12,
+          "group": ""
+        },
+        {
+          "rank": 15,
           "team": "Coventry City FC",
           "wins": 4,
           "losses": 7,
@@ -3316,7 +3326,7 @@
           "group": ""
         },
         {
-          "rank": 15,
+          "rank": 16,
           "team": "Fulham FC",
           "wins": 2,
           "losses": 4,
@@ -3326,22 +3336,12 @@
           "group": ""
         },
         {
-          "rank": 16,
+          "rank": 17,
           "team": "Ipswich Town FC",
           "wins": 3,
           "losses": 6,
           "draws": 2,
           "points": 11,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 17,
-          "team": "Nottingham Forest FC",
-          "wins": 2,
-          "losses": 6,
-          "draws": 3,
-          "points": 9,
           "played": 11,
           "group": ""
         },
@@ -3377,7 +3377,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     },
     {
@@ -3439,21 +3439,21 @@
         },
         {
           "rank": 6,
+          "team": "Real Racing Club de Santander",
+          "wins": 6,
+          "losses": 6,
+          "draws": 2,
+          "points": 20,
+          "played": 14,
+          "group": ""
+        },
+        {
+          "rank": 7,
           "team": "Sevilla FC",
           "wins": 5,
           "losses": 4,
           "draws": 4,
           "points": 19,
-          "played": 13,
-          "group": ""
-        },
-        {
-          "rank": 7,
-          "team": "Real Racing Club de Santander",
-          "wins": 5,
-          "losses": 6,
-          "draws": 2,
-          "points": 17,
           "played": 13,
           "group": ""
         },
@@ -3531,10 +3531,10 @@
           "rank": 15,
           "team": "Levante UD",
           "wins": 2,
-          "losses": 5,
+          "losses": 6,
           "draws": 6,
           "points": 12,
-          "played": 13,
+          "played": 14,
           "group": ""
         },
         {
@@ -3589,7 +3589,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     },
     {
@@ -3654,9 +3654,9 @@
           "team": "SV Werder Bremen",
           "wins": 5,
           "losses": 2,
-          "draws": 3,
-          "points": 18,
-          "played": 10,
+          "draws": 4,
+          "points": 19,
+          "played": 11,
           "group": ""
         },
         {
@@ -3774,14 +3774,14 @@
           "team": "Borussia Mönchengladbach",
           "wins": 1,
           "losses": 8,
-          "draws": 1,
-          "points": 4,
-          "played": 10,
+          "draws": 2,
+          "points": 5,
+          "played": 11,
           "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     },
     {
@@ -3863,17 +3863,17 @@
         },
         {
           "rank": 8,
-          "team": "SSC Napoli",
+          "team": "Bologna FC 1909",
           "wins": 5,
           "losses": 4,
-          "draws": 3,
-          "points": 18,
-          "played": 12,
+          "draws": 4,
+          "points": 19,
+          "played": 13,
           "group": ""
         },
         {
           "rank": 9,
-          "team": "Bologna FC 1909",
+          "team": "SSC Napoli",
           "wins": 5,
           "losses": 4,
           "draws": 3,
@@ -3973,6 +3973,16 @@
         },
         {
           "rank": 19,
+          "team": "Venezia FC",
+          "wins": 2,
+          "losses": 10,
+          "draws": 1,
+          "points": 7,
+          "played": 13,
+          "group": ""
+        },
+        {
+          "rank": 20,
           "team": "Udinese Calcio",
           "wins": 1,
           "losses": 8,
@@ -3980,20 +3990,10 @@
           "points": 6,
           "played": 12,
           "group": ""
-        },
-        {
-          "rank": 20,
-          "team": "Venezia FC",
-          "wins": 2,
-          "losses": 10,
-          "draws": 0,
-          "points": 6,
-          "played": 12,
-          "group": ""
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     },
     {
@@ -4017,14 +4017,24 @@
           "rank": 2,
           "team": "Paris FC",
           "wins": 7,
-          "losses": 2,
+          "losses": 3,
           "draws": 2,
           "points": 23,
-          "played": 11,
+          "played": 12,
           "group": ""
         },
         {
           "rank": 3,
+          "team": "Stade Brestois 29",
+          "wins": 6,
+          "losses": 3,
+          "draws": 3,
+          "points": 21,
+          "played": 12,
+          "group": ""
+        },
+        {
+          "rank": 4,
           "team": "Lille OSC",
           "wins": 6,
           "losses": 2,
@@ -4034,7 +4044,7 @@
           "group": ""
         },
         {
-          "rank": 4,
+          "rank": 5,
           "team": "Olympique Lyonnais",
           "wins": 6,
           "losses": 3,
@@ -4044,21 +4054,11 @@
           "group": ""
         },
         {
-          "rank": 5,
+          "rank": 6,
           "team": "Olympique de Marseille",
           "wins": 6,
           "losses": 5,
           "draws": 0,
-          "points": 18,
-          "played": 11,
-          "group": ""
-        },
-        {
-          "rank": 6,
-          "team": "Stade Brestois 29",
-          "wins": 5,
-          "losses": 3,
-          "draws": 3,
           "points": 18,
           "played": 11,
           "group": ""
@@ -4185,7 +4185,7 @@
         }
       ],
       "prominence": 170,
-      "verified_at": "2026-11-27T15:22:28Z",
+      "verified_at": "2026-11-27T22:39:48Z",
       "status": "ok"
     }
   ],
