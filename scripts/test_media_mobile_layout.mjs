@@ -105,6 +105,35 @@ for(const width of [390,360]){
    assert.equal(await page.locator('#media-dialog [data-mi-detail="boxoffice"]').getAttribute('aria-pressed'),'true');
    await page.locator('#media-dialog-close').click();
 
+   // Discovery regression, integrated into existing mobile browser checks.
+   if(width===390){
+     const hub=page.locator('#ly-discover');
+     await page.locator('#ly-discover-tools button').nth(1).click();
+     await hub.locator('input[type=search]').fill('SenPlayer');
+     const app=hub.locator('[data-lyd-id="app:senplayer"]');
+     await app.waitFor({state:'visible',timeout:20000});
+     await app.locator('[data-lyd-action="save"]').click();
+     await app.locator('[data-lyd-action="track"]').click();
+     await app.locator('[data-lyd-action="detail"]').click();
+     assert.match(await hub.locator('.lyd-profile').innerText(),/SenPlayer/);
+     await hub.locator('[data-lyd-tab="favorites"]').click();
+     assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1);
+     await hub.locator('[data-lyd-tab="tracks"]').click();
+     assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1);
+     await hub.locator('[data-lyd-tab="health"]').click();
+     await hub.locator('.lyd-health-state[data-state="live"]').first().waitFor({timeout:20000});
+     assert.ok(await hub.locator('.lyd-health-row').count()>=10);
+     await hub.locator('[data-lyd-tab="rank"]').click();
+     assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1);
+     assert.ok(await hub.evaluate(d=>d.scrollWidth-d.clientWidth<=2),'Discovery dialog must fit mobile width');
+     await hub.locator('.lyd-close').click();
+     await page.reload({waitUntil:'domcontentloaded'});
+     await page.locator('#ly-discover-tools button').nth(2).click();
+     assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1,'Saved resource persists after reload');
+     await hub.locator('.lyd-close').click();
+     console.log('LIANGYOU_DISCOVER_V2_OK',width);
+   }
+
  }catch(err){
    const file='/tmp/mobile-film-'+width+'.png';
    await page.screenshot({path:file,fullPage:false}).catch(()=>{});
