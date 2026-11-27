@@ -108,7 +108,10 @@ for(const width of [390,360]){
    // Discovery regression, integrated into existing mobile browser checks.
    if(width===390){
      const hub=page.locator('#ly-discover');
-     await page.locator('#ly-discover-tools button').nth(1).click();
+     assert.equal(await page.locator('#ly-discover-tools button').count(),1,'Only one top search entry');
+     assert.equal(await page.locator('main > :last-child').getAttribute('id'),'liangyou-discovery-home','Discovery belongs at the bottom');
+     assert.equal(await page.locator('#liangyou-discovery-home .lyd-home-grid').count(),0,'No duplicate large tiles');
+     await page.locator('#lyd-header-search').click();
      await hub.locator('input[type=search]').fill('SenPlayer');
      const app=hub.locator('[data-lyd-id="app:senplayer"]');
      await app.waitFor({state:'visible',timeout:20000});
@@ -128,7 +131,7 @@ for(const width of [390,360]){
      assert.ok(await hub.evaluate(d=>d.scrollWidth-d.clientWidth<=2),'Discovery dialog must fit mobile width');
      await hub.locator('.lyd-close').click();
      await page.reload({waitUntil:'domcontentloaded'});
-     await page.locator('#ly-discover-tools button').nth(2).click();
+     await page.locator('#liangyou-discovery-home [data-lyd-entry="favorites"]').click();
      assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1,'Saved resource persists after reload');
      await hub.locator('.lyd-close').click();
      console.log('LIANGYOU_DISCOVER_V2_OK',width);

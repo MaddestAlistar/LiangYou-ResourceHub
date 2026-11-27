@@ -48,9 +48,8 @@ const entries=new Map(),health=new Map();let jobs=null,jobsError=false,jobsAt=''
 const tools=N('div');tools.id='ly-discover-tools';
 const B=(txt,fn,cls)=>{const b=N('button',txt,cls);b.type='button';b.addEventListener('click',fn);return b};
 let lastTrigger=null,mode='discover',limit=30,detail=null,rankMode='app';
-const discoverBtn=B('',()=>open('discover',discoverBtn)),searchBtn=B('',()=>open('search',searchBtn)),myBtn=B('',()=>open('favorites',myBtn));
-for(const b of [discoverBtn,searchBtn,myBtn]){b.setAttribute('aria-haspopup','dialog');tools.append(b)}header.append(tools);
-const home=N('section',null,'container lyd-home');home.id='liangyou-discovery-home';main.prepend(home);
+const searchBtn=B('',()=>open('search',searchBtn));searchBtn.id='lyd-header-search';searchBtn.setAttribute('aria-haspopup','dialog');tools.append(searchBtn);header.append(tools);
+const home=N('section',null,'container lyd-home');home.id='liangyou-discovery-home';home.setAttribute('aria-labelledby','lyd-home-title');main.append(home);
 const dialog=N('dialog');dialog.id='ly-discover';dialog.setAttribute('aria-labelledby','ly-discover-title');
 const head=N('div',null,'lyd-head'),title=N('h2');title.id='ly-discover-title';const close=B('×',()=>dialog.close(),'lyd-close');head.append(title,close);
 const tabs=N('div',null,'lyd-tabs'),controls=N('div',null,'lyd-controls'),search=N('input');search.type='search';search.autocomplete='off';
@@ -97,7 +96,7 @@ async function load(force=false){
 const modes=[['discover','发现','Discover'],['search','搜索','Search'],['favorites','收藏','Saved'],['tracks','订阅','Tracking'],['history','历史','Recent'],['rank','榜单','Rankings'],['health','数据健康','Health'],['settings','设置','Settings']];
 function option(s,v,zh,eng){const o=N('option',t(zh,eng));o.value=v;s.append(o)}
 function translations(){
- discoverBtn.textContent=t('◇ 发现中心','◇ Discover');searchBtn.textContent=t('⌕ 全站搜索','⌕ Search');myBtn.textContent=t('☆ 我的良友','☆ My Hub');
+ searchBtn.textContent=t('⌕ 全站搜索','⌕ Search');
  close.setAttribute('aria-label',t('关闭','Close'));search.placeholder=t('搜索名称、标签、功能或链接…','Search names, tags, features or links…');search.setAttribute('aria-label',search.placeholder);
  const v=select.value,sv=sort.value;select.replaceChildren();sort.replaceChildren();option(select,'','全部板块','All categories');for(const c of Object.keys(cat))option(select,c,cat[c][0],cat[c][1]);select.value=v;
  option(sort,'relevance','相关度优先','Relevance');option(sort,'name','名称 A–Z','Name A–Z');option(sort,'recent','更新日期','Updated date');option(sort,'score','APP 评分','App score');sort.value=sv||'relevance';
@@ -106,11 +105,16 @@ function translations(){
 function activate(m){mode=m;limit=30;detail=null;render();if(m==='search')search.focus()}
 function open(m,trigger){lastTrigger=trigger;mode=m;detail=null;limit=30;translations();if(!dialog.open)dialog.showModal();if(m==='search')search.focus();else close.focus();load()}
 function renderHome(){
- home.replaceChildren();const top=N('div',null,'lyd-home-top'),copy=N('div');copy.append(N('small','LIANGYOU / DISCOVER'),N('h2',t('良友发现中心','Discover LiangYou')),N('p',t('在资源之间发现关联，建立自己的专属资源库。','Discover connected resources and build your personal library.')));top.append(copy,B(t('进入发现中心','Explore'),()=>open('discover',home.querySelector('button')),'lyd-primary'));home.append(top);
- const row=N('div',null,'lyd-home-grid');
- for(const [m,zh,eng,n] of [['search','聚合搜索','Search','⌕'],['favorites','我的收藏','Saved',state.favorites.length],['tracks','资源订阅','Tracking',state.tracks.length],['health','数据健康','Health','↻']]){
-  const b=B('',()=>open(m,b));b.append(N('strong',String(n)),N('span',t(zh,eng)));row.append(b);
- }home.append(row);
+ home.replaceChildren();
+ const top=N('div',null,'lyd-home-top'),copy=N('div');
+ const h=N('h2',t('良友发现中心','Discover LiangYou'));h.id='lyd-home-title';
+ copy.append(h,N('p',t('跨板块发现资源、收藏与订阅，按需使用。','Explore related resources, save and track what matters.')));
+ const entry=B(t('进入中心 ↗','Explore ↗'),()=>open('discover',entry),'lyd-primary');entry.id='lyd-home-discover';entry.setAttribute('aria-haspopup','dialog');top.append(copy,entry);home.append(top);
+ const shortcuts=N('div',null,'lyd-home-shortcuts');
+ for(const [m,zh,eng,n] of [['favorites','我的良友','My Hub',state.favorites.length],['tracks','资源订阅','Tracking',state.tracks.length],['health','数据状态','Data status',0]]){
+  const title=t(zh,eng)+(n>0?' · '+n:'');const link=B(title,()=>open(m,link));link.dataset.lydEntry=m;link.setAttribute('aria-haspopup','dialog');shortcuts.append(link);
+ }
+ home.append(shortcuts);
 }
 function record(x){if(state.privateMode)return;state.history=[x,...state.history.filter(y=>y.id!==x.id)].slice(0,100);if(Object.hasOwn(state.visits,x.id)||Object.keys(state.visits).length<500)state.visits[x.id]=Math.min(100000,(state.visits[x.id]||0)+1);save()}
 function jump(x){record(x);const u=new URL(x.url);if(u.pathname!==location.pathname)return;dialog.close();if(x.category==='media'&&x.variant){const b=document.querySelector('#media-tabs [data-mi-tab="'+x.variant+'"]');if(b&&b.getAttribute('aria-pressed')!=='true')b.click()}const id={emby:'wiki-search',media:'media-search',sports:'officialFixturesSearch'}[x.category];const input=id&&document.getElementById(id);if(input&&x.term){input.value=x.term;input.dispatchEvent(new Event('input',{bubbles:true}))}if(u.hash===location.hash)document.getElementById(u.hash.slice(1))?.scrollIntoView({block:'start'})}
