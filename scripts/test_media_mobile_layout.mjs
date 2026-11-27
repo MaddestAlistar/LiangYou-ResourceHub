@@ -135,6 +135,40 @@ for(const width of [390,360]){
      assert.equal(await hub.locator('[data-lyd-id="app:senplayer"]').count(),1,'Saved resource persists after reload');
      await hub.locator('.lyd-close').click();
      console.log('LIANGYOU_DISCOVER_V2_OK',width);
+     // Public recognition services are mocked; no private image or quota is used by CI.
+     let lensCalls=0;
+     const cors={'access-control-allow-origin':'*'};
+     await page.route('https://api.trace.moe/search?*',async route=>{
+       lensCalls++;assert.equal(route.request().method(),'POST');
+       assert.match(route.request().headers()['content-type'],/multipart\/form-data/);
+       await route.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify({error:'',result:[
+         {anilist:{id:101,isAdult:false,title:{native:'Fixture Anime',romaji:'Fixture Anime'}},episode:3,from:65,to:68,similarity:.95},
+         {anilist:{id:102,isAdult:true,title:{native:'Excluded result'}},episode:1,from:0,to:1,similarity:.99}
+       ]})});
+     });
+     await page.route('https://api.animetrace.com/v1/search',async route=>{
+       lensCalls++;assert.equal(route.request().method(),'POST');
+       await route.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify({code:0,data:[{not_confident:true,character:[{work:'Fixture Work',character:'Fixture Character'}]}]})});
+     });
+     const lens=page.locator('#ly-lens');
+     await page.locator('#ly-lens-open').click();
+     const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9r0AAAAASUVORK5CYII=','base64');
+     await lens.locator('#ly-lens-file').setInputFiles({name:'test.png',mimeType:'image/png',buffer:png});
+     assert.equal(lensCalls,0,'No upload before explicit recognition');
+     await lens.locator('#ly-lens-submit').click();
+     await lens.locator('.ly-lens-result').first().waitFor({timeout:15000});
+     assert.match(await lens.locator('#ly-lens-results').innerText(),/Fixture Anime/);
+     assert.doesNotMatch(await lens.locator('#ly-lens-results').innerText(),/Excluded result/);
+     await lens.locator('[data-lens-mode="character"]').click();
+     await lens.locator('#ly-lens-submit').click();
+     await lens.locator('.ly-lens-result').first().waitFor({timeout:15000});
+     assert.match(await lens.locator('#ly-lens-results').innerText(),/Fixture Character/);
+     assert.equal(lensCalls,2);
+     assert.ok(await lens.evaluate(d=>d.scrollWidth-d.clientWidth<=2),'Lens dialog fits mobile');
+     await lens.locator('#ly-lens-close').click();
+     assert.equal(await lens.locator('#ly-lens-file').inputValue(),'');
+     console.log('LIANGYOU_ANIME_LENS_OK',width);
+
    }
 
  }catch(err){

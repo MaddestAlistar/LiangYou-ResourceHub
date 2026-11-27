@@ -26,6 +26,7 @@ jobs:
           node --check lyx-poster.js
           node --test scripts/test_lyx_poster.mjs
           node --check media-intel.js
+          node --check media-lens.js
           node --check media-shortdrama.js
           node --check media-shortdrama-player.js
           node --test scripts/test_short_drama_player.mjs

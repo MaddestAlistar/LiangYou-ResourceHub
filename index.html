@@ -36,6 +36,7 @@
   <link rel="preload" as="style" href="./ly-discover.css?v=20261127.5" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link href="./ly-discover.css?v=20261127.5" rel="stylesheet"></noscript>
   <script src="./ly-discover.js?v=20261127.5" defer></script>
+  <script src="./media-lens.js?v=20261127.1" defer></script>
   <script src="./design.js?v=20261029.fasticons1" defer></script>
 <style>
 /* Compact responsive navigation: one row with horizontal swipe on narrow screens. */
@@ -456,6 +457,7 @@
     <section class="section container" id="media" aria-labelledby="media-title">
       <div class="mi-shell">
         <div class="mi-heading"><div><p id="media-kicker">LIANGYOU · SCREEN INTELLIGENCE</p><h2 id="media-title">影视情报中心</h2><p id="media-subtitle">今晚看什么，下一集什么时候来。</p></div><div class="mi-heading-mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="15" width="34" height="26" rx="4"/><path d="M7 23h34M8 15 38 7l3 8M14 13l6 7m3-10 6 8m3-11 6 7m-18 13 9 5-9 5Z"/></svg></div></div>
+        <div class="ly-lens-entry"><button id="ly-lens-open" type="button" aria-haspopup="dialog" hidden>◎ 动漫识图</button></div>
         <div class="mi-topline"><span class="mi-live-dot" aria-hidden="true"></span><span id="media-updated" role="status">正在读取影视情报…</span><span id="media-count"></span></div>
         <div id="media-tabs" class="mi-tabs" role="group" aria-label="影视分类"></div>
         <div id="media-library-tools" class="mi-library-tools" hidden><p id="media-library-note"></p><div><button id="media-export" type="button">导出片单</button><button id="media-import" type="button">导入片单</button><input id="media-import-file" type="file" accept="application/json,.json" hidden></div></div>
