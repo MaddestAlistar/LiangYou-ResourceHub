@@ -1,4 +1,4 @@
-import {wikiSources} from './emby-wiki-catalog.mjs?v=20261128.tg1';
+import {wikiSources,libraryView} from './emby-wiki-catalog.mjs?v=20261128.stats1';
 import {NATURES,CONTENTS,QUALITIES,STATES,ROLES,COUNT_FIELDS,chinaDate,publicURL} from './emby-wiki-schema.mjs';
 export const ROOT='https://liangyou-icon-review.maddestalistar.workers.dev';
 export function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
@@ -70,10 +70,12 @@ export function updateCountStatus(host){
   :plain&&multi?'两种统计口径均已填写完整':plain?'已完成「不含多版本」统计，包含多版本可选填':multi?'已完成「包含多版本」统计，不含多版本可选填':'请完整填写其中一列的电影和剧集数量（无该类别填 0）';
 }
 export function stats(item){
+ item=libraryView(item);
  const box=el('div',undefined,'wk-stats wk-version-stats');
  const columns=[
   {label:'不含多版本',keys:['movies','series','episodes']},
-  {label:'包含多版本',keys:['moviesWithVersions','seriesWithVersions','episodesWithVersions']}
+  {label:'包含多版本',keys:['moviesWithVersions','seriesWithVersions','episodesWithVersions']},
+  {label:'原文统计（口径未注明）',keys:['reportedMovies','reportedSeries','reportedEpisodes']}
  ].filter(column=>column.keys.some(key=>item[key]!==null&&item[key]!==undefined&&item[key]!==''));
  if(!columns.length)return box;
  if(columns.length===1)box.classList.add('wk-version-single');
@@ -91,7 +93,7 @@ export function stats(item){
  if(item.others!=null){const other=el('p','其他媒体 '+value('others')+' 项','wk-version-other');box.append(other)}
  return box;
 }
-export function details(item){const box=el('div',undefined,'wk-detail-body');
+export function details(item){item=libraryView(item);const box=el('div',undefined,'wk-detail-body');
  if(safeCover(item.coverUrl)||item.summary){
   const hero=el('div',undefined,'wk-detail-hero');
   if(safeCover(item.coverUrl)){
@@ -103,6 +105,15 @@ export function details(item){const box=el('div',undefined,'wk-detail-body');
   box.append(hero);
  }
  box.append(stats(item));
+ if(item.historicalStats){
+  const s=item.publicStats,provenance=el('p',undefined,'wk-hint');
+  provenance.append(document.createTextNode('历史统计 · '+(s.date||'统计日期未提供')+' · 非实时片库数量。来源：'));
+  for(const [href,label] of [[s.sourceUrl,s.sourceName],[s.sourceReference,'原始消息']]){
+   if(!href)continue;
+   try{const a=el('a',label+' ↗');a.href=publicURL(href);a.target='_blank';a.rel='noopener noreferrer nofollow';provenance.append(a,document.createTextNode(' '))}catch{}
+  }
+  box.append(provenance);
+ }
  const dl=el('dl');
  const fields=[['统计日期',item.statsDate],['统计口径',item.statsNote||'未提供'],['资源内容',[...(item.contents||[]),item.extraContent].filter(Boolean).join('、')],['画质与规格',[...(item.qualities||[]),item.extraQuality].filter(Boolean).join('、')||'未提供'],['开号条件',item.registration],['保号规则',item.retention||'未提供'],['费用说明',item.pricing||'未提供'],['线路与访问',item.network||'未提供'],['简介',item.summary||'未提供'],['投稿人',(item.nickname||'')+(item.role?' · '+item.role:'')],['投稿日期',item.submissionDate]];
  for(const [k,v] of fields){dl.append(el('dt',k),el('dd',v))}box.append(dl);

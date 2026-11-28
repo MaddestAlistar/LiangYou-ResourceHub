@@ -3,6 +3,16 @@ const empty=value=>value==null||value===''||(Array.isArray(value)&&value.length=
 const key=name=>String(name||'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');
 const countFields=['movies','series','episodes','moviesWithVersions','seriesWithVersions','episodesWithVersions','others'];
 const supplementalFields=['nature','state','contents','qualities','registration','summary','network','pricing','statsNote','extraContent','extraQuality','retention','website','channel','group','bot'];
+const hasCounts=item=>countFields.some(k=>!empty(item[k]));
+// Keep each public snapshot atomic: its values, method, date and source travel together.
+export function libraryView(item){
+ if(hasCounts(item)||!item.publicStats)return item;
+ const s=item.publicStats;
+ const fields=s.method==='includingVersions'?['moviesWithVersions','seriesWithVersions','episodesWithVersions']:['reportedMovies','reportedSeries','reportedEpisodes'];
+ const view={...item,statsDate:s.date||'',statsNote:s.note||'',historicalStats:true};
+ ['movies','series','episodes'].forEach((k,i)=>view[fields[i]]=s[k]??null);
+ return view;
+}
 export function wikiSources(item){
  if(Array.isArray(item.sources))return item.sources;
  return item.sourceUrl?[{name:item.sourceName||'公开档案',url:item.sourceUrl,reference:item.sourceReference||'',retrievedAt:item.retrievedAt||'',note:item.sourceNote||'',fields:supplementalFields.filter(k=>!empty(item[k]))}]:[];
@@ -25,6 +35,10 @@ export function mergeWikiCatalog(approved=[],supplement=[]){
   if(match){
    const before=wikiSources(match);
    const added=[];
+   if(!hasCounts(match)&&source.publicStats){
+    const old=match.publicStats,next=source.publicStats;
+    if(!old||(next.date&&old.date&&next.date>old.date))match.publicStats={...next};
+   }
    for(const field of supplementalFields){
     // An older/unspecified-method note must not accompany newer submitted counts.
     if(field==='statsNote'&&countFields.some(k=>!empty(match[k])))continue;
@@ -45,7 +59,7 @@ export function mergeWikiCatalog(approved=[],supplement=[]){
  return result;
 }
 export async function fetchWikiSupplement(){
- const paths=['./assets/data/emby-atlas.json?v=20261128','./assets/data/emby-telegram.json?v=20261128.tg1'];
+ const paths=['./assets/data/emby-atlas.json?v=20261128','./assets/data/emby-telegram.json?v=20261128.tg1','./assets/data/emby-statistics.json?v=20261128.stats1'];
  const results=await Promise.allSettled(paths.map(async path=>{
   const response=await fetch(new URL(path,import.meta.url),{signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error('补充资料暂时无法加载');

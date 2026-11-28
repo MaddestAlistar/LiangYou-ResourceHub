@@ -1,6 +1,6 @@
-import {mergeWikiCatalog,fetchWikiSupplement} from './emby-wiki-catalog.mjs?v=20261128.tg1';
+import {mergeWikiCatalog,fetchWikiSupplement,libraryView} from './emby-wiki-catalog.mjs?v=20261128.stats1';
 import {NATURES} from './emby-wiki-schema.mjs?v=20261110.5';
-import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.tg1';
+import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.stats1';
 
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
@@ -110,7 +110,7 @@ if(root){
    if(language==='en')fields.push(...(x.contents||[]).map(t),...(x.qualities||[]).map(t),t(x.nature),t(x.state));
    return fields.join(' ').toLowerCase().includes(q);
   });
-  filtered.sort((a,b)=>sort.value==='name'?a.name.localeCompare(b.name,'zh-CN'):(b[sort.value]||'').localeCompare(a[sort.value]||''));
+  filtered.sort((a,b)=>sort.value==='name'?a.name.localeCompare(b.name,'zh-CN'):(libraryView(b)[sort.value]||'').localeCompare(libraryView(a)[sort.value]||''));
   list.replaceChildren();
   $('wiki-count').textContent=language==='en'
    ?items.length+' servers · '+filtered.length+' matches'
@@ -132,12 +132,13 @@ if(root){
    list.append(box);
    return;
   }
-  const numberFormat=new Intl.NumberFormat(language==='en'?'en-US':'zh-CN',{notation:'compact',maximumFractionDigits:1});
+  const numberFormat=new Intl.NumberFormat(language==='en'?'en-US':'zh-CN');
   const metric=(item,plain,multi)=>{
-   const value=item[plain]??item[multi];
+   const value=[item[plain],item[multi],item[plain==='movies'?'reportedMovies':'reportedSeries']].find(v=>v!==null&&v!==undefined&&v!=='');
    return value===null||value===undefined||value===''?'—':numberFormat.format(Number(value));
   };
-  for(const x of filtered.slice(0,limit)){
+  for(const record of filtered.slice(0,limit)){
+   const x=libraryView(record);
    const card=el('article',undefined,'wk-card wk-directory-card');
    const button=el('button',undefined,'wk-directory-action');
    button.type='button';
@@ -169,9 +170,11 @@ if(root){
     counts.append(cell);
    }
    const footer=el('div',undefined,'wk-directory-footer');
-   footer.append(el('span',(language==='en'?'Stats: ':'统计 ')+(x.statsDate||'—')));
+   footer.append(el('span',(x.historicalStats?(language==='en'?'Historical: ':'历史统计 '):(language==='en'?'Stats: ':'统计 '))+(x.statsDate||'—')));
    footer.append(el('span',language==='en'?'View details ↗':'查看详情 ↗','wk-directory-link'));
-   button.append(header,badges,counts,footer);card.append(button);list.append(card);
+   button.append(header,badges,counts);
+   if(x.historicalStats)button.append(el('p',x.publicStats.method==='includingVersions'?(language==='en'?'Including versions':'包含多版本'):(language==='en'?'Counting method unspecified':'原文未注明多版本口径'),'wk-hint'));
+   button.append(footer);card.append(button);list.append(card);
   }
  }
  function renderError(){
