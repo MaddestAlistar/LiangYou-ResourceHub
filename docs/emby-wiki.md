@@ -67,3 +67,10 @@ The merge now preserves all contributing source links and the names of fields ea
 This supersedes the earlier note-only presentation: cards now show exact movie/series numbers, while details also show episode counts. Unspecified multiple-version methodology has its own **原文统计（口径未注明）** column. The explicit including-versions snapshot for 临境 Liminal EA uses the existing **包含多版本** column. Every snapshot displays its source and original statistics date, labeled historical rather than live. Unknown dates remain empty and are never replaced by retrieval dates. Youno's 7/7/7 placeholder is excluded because the source explicitly says counts are hidden.
 
 `publicStats` is an atomic object containing movies/series/episodes, method, date, note and attribution. `libraryView()` projects it for display only if no submitted count exists; even a submitted zero remains authoritative. Exact name matching keeps server editions separate. Newer dated public snapshots replace older dated snapshots as a whole, without mixing counts, dates or provenance. The existing submission form and moderation schema remain unchanged. All three static sources degrade independently with a retry notice. Tests cover zero/unknown distinctions, snapshot integrity, date handling, method projection, version separation and partial failures.
+
+### 2026-11-28 统计与图标复核
+
+- 补充 Ember、飞了个喵、CC公益、Levilde Luminia、Nebula星云、纸片人、Nayovo、茶百道 8 份历史统计，分别保存来源、日期和统计口径。已有审核投稿仍优先，未知统计日期留空。
+- 图标来自良友图标库 `LiangYou-Emby-Icons.json`，同名及人工核对别名的映射保存在 `emby-wiki-icons.mjs`。原投稿封面优先，未确认的版本不套用其他分支图标；加载失败显示名称缩写。图标库包含自有图片及其收录的外部图片地址。
+- 数量改为逐行展示，保留千分位与完整数字。卡片日期允许换行；详情统计不拆分数字，极端长度可在表格内横向滚动。
+- `node scripts/test_emby_wiki_layout.mjs` 使用本地测试数据检查 320、360、390、430、768、1280px，包含最大允许值 100,000,000 的双口径统计。

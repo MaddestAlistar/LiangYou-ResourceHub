@@ -147,3 +147,25 @@
 }
 @media(max-width:355px){#emby-wiki .wk-grid{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){#emby-wiki .wk-directory-card{transition:none}}
+
+/* Library counts must remain exact and readable, including narrow cards. */
+#emby-wiki .wk-directory-counts{grid-template-columns:minmax(0,1fr);width:100%;box-sizing:border-box;gap:8px}
+#emby-wiki .wk-directory-count{flex-direction:row;align-items:baseline;justify-content:space-between;flex-wrap:wrap;column-gap:8px}
+#emby-wiki .wk-directory-count>span{font-size:12px}
+#emby-wiki .wk-directory-count>strong{overflow:visible;text-overflow:clip;white-space:nowrap;font-size:20px}
+#emby-wiki .wk-directory-footer{flex-wrap:wrap;font-size:12px;line-height:1.5}
+#emby-wiki .wk-directory-footer>span:first-child{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:normal}
+#emby-wiki .wk-directory-nature,#emby-wiki .wk-directory-status{font-size:11px;white-space:normal}
+#emby-wiki .wk-directory-action>.wk-hint{font-size:12px;line-height:1.5;margin:0}
+.wk-version-stats{overflow-x:auto}
+.wk-version-head,.wk-version-row{grid-template-columns:minmax(80px,1fr) repeat(2,minmax(max-content,1.2fr));column-gap:12px}
+.wk-version-row strong{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}
+@media(max-width:580px){
+ #emby-wiki .wk-directory-count>strong{font-size:18px}
+ #emby-wiki .wk-directory-header{flex-direction:column}
+ #emby-wiki .wk-directory-intro h3{font-size:15px;display:block;overflow:visible}
+ #emby-wiki .wk-directory-footer{flex-direction:column;align-items:flex-start;gap:4px}
+ .wk-version-stats{padding-inline:0}
+ .wk-version-row strong{font-size:14px}
+}
+@media(max-width:380px){#emby-wiki .wk-grid{grid-template-columns:minmax(0,1fr)}#emby-wiki .wk-directory-header{flex-direction:row}}

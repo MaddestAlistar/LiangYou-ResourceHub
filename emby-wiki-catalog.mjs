@@ -59,7 +59,7 @@ export function mergeWikiCatalog(approved=[],supplement=[]){
  return result;
 }
 export async function fetchWikiSupplement(){
- const paths=['./assets/data/emby-atlas.json?v=20261128','./assets/data/emby-telegram.json?v=20261128.tg1','./assets/data/emby-statistics.json?v=20261128.stats1'];
+ const paths=['./assets/data/emby-atlas.json?v=20261128','./assets/data/emby-telegram.json?v=20261128.tg1','./assets/data/emby-statistics.json?v=20261128.refine1'];
  const results=await Promise.allSettled(paths.map(async path=>{
   const response=await fetch(new URL(path,import.meta.url),{signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error('补充资料暂时无法加载');

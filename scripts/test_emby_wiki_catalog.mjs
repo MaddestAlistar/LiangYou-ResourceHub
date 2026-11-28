@@ -71,8 +71,8 @@ test('one missing static source still returns the surviving catalog with partial
 const snapshots=JSON.parse(await readFile(new URL('../assets/data/emby-statistics.json',import.meta.url),'utf8'));
 const {libraryView}=await import('../emby-wiki-catalog.mjs');
 test('public counts are sourced snapshots; zero is data and missing dates stay missing',()=>{
- assert.equal(snapshots.items.length,51);
- assert.equal(new Set(snapshots.items.map(x=>x.name)).size,51);
+ assert.equal(snapshots.items.length,59);
+ assert.equal(new Set(snapshots.items.map(x=>x.name)).size,59);
  for(const {publicStats:s} of snapshots.items){
   assert.match(s.sourceUrl,/^https:\/\//);
   assert.ok(['unspecified','includingVersions'].includes(s.method));
@@ -121,4 +121,24 @@ test('unavailable statistics file keeps descriptions and surfaces partial failur
   const result=await fetchWikiSupplement();
   assert.equal(result.partial,true);assert.equal(result.items.length,105);
  }finally{globalThis.fetch=saved}
+});
+
+test('newly verified omissions retain exact historical counts',()=>{
+ const data=mergeWikiCatalog(mergeWikiCatalog(items,telegram.items),snapshots.items);
+ for(const [name,movies,series] of [['飞了个喵',6140,16988],['CC公益',8404,5298],['Nebula星云',6921,6198],['纸片人',655,1416],['nayovo',980,1189],['茶百道',10437,187]]){
+  const view=libraryView(data.find(x=>x.name===name));
+  assert.equal(view.reportedMovies,movies);assert.equal(view.reportedSeries,series);
+  assert.equal(view.historicalStats,true);
+ }
+});
+test('reviewed icon matches preserve editions and never use arbitrary profile image URLs',async()=>{
+ const {wikiIcon,wikiIcons}=await import('../emby-wiki-icons.mjs');
+ assert.ok(wikiIcons.length>=60);
+ assert.ok(wikiIcon({name:'宸宇'}).includes('LiangYou-IconLibrary'));
+ assert.ok(wikiIcon({name:'云海'}).includes('LiangYou-IconLibrary'));
+ assert.notEqual(wikiIcon({name:'Panda TV'}),wikiIcon({name:'panda cine'}));
+ assert.equal(wikiIcon({name:'瞬影Pro'}),'');
+ assert.equal(wikiIcon({name:'拾光Next'}),'');
+ assert.equal(wikiIcon({name:'unknown',iconUrl:'https://evil.test/icon.png'}),'');
+ for(const icon of wikiIcons){assert.match(icon.url,/^https:\/\//);assert.match(icon.url,/\.(png|jpe?g|webp)$/i)}
 });

@@ -1,4 +1,5 @@
-import {wikiSources,libraryView} from './emby-wiki-catalog.mjs?v=20261128.stats1';
+import {wikiIcon} from './emby-wiki-icons.mjs?v=20261128.refine1';
+import {wikiSources,libraryView} from './emby-wiki-catalog.mjs?v=20261128.refine1';
 import {NATURES,CONTENTS,QUALITIES,STATES,ROLES,COUNT_FIELDS,chinaDate,publicURL} from './emby-wiki-schema.mjs';
 export const ROOT='https://liangyou-icon-review.maddestalistar.workers.dev';
 export function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
@@ -94,11 +95,12 @@ export function stats(item){
  return box;
 }
 export function details(item){item=libraryView(item);const box=el('div',undefined,'wk-detail-body');
- if(safeCover(item.coverUrl)||item.summary){
+ const imageUrl=safeCover(item.coverUrl)?item.coverUrl:wikiIcon(item);
+ if(imageUrl||item.summary){
   const hero=el('div',undefined,'wk-detail-hero');
-  if(safeCover(item.coverUrl)){
+  if(imageUrl){
    const image=el('img',undefined,'wk-detail-cover');
-   image.src=item.coverUrl;image.alt=item.name+'封面';image.loading='lazy';
+   image.src=imageUrl;image.alt=item.name+'封面';image.loading='lazy';
    image.onerror=()=>image.remove();hero.append(image);
   }
   if(item.summary)hero.append(el('p',item.summary));

@@ -1,0 +1,25 @@
+name: Emby Wiki counts and layout
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'emby-wiki*'
+      - 'assets/data/emby-*.json'
+      - 'scripts/test_emby_wiki*'
+      - '.github/workflows/test-emby-wiki-layout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/test_emby_wiki_catalog.mjs scripts/test_emby_wiki.mjs
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/test_emby_wiki_layout.mjs
