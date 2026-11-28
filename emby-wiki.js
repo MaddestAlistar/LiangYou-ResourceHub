@@ -1,7 +1,7 @@
-import {wikiIcon} from './emby-wiki-icons.mjs?v=20261128.refine1';
-import {mergeWikiCatalog,fetchWikiSupplement,libraryView} from './emby-wiki-catalog.mjs?v=20261128.refine1';
+import {wikiIcon} from './emby-wiki-icons.mjs?v=20261128.refine2';
+import {mergeWikiCatalog,fetchWikiSupplement,libraryView} from './emby-wiki-catalog.mjs?v=20261128.refine2';
 import {NATURES} from './emby-wiki-schema.mjs?v=20261110.5';
-import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.refine1';
+import {el,api,stats,details,safeCover} from './emby-wiki-ui.mjs?v=20261128.refine2';
 
 const $=id=>document.getElementById(id),root=$('emby-wiki');
 if(root){
@@ -153,7 +153,9 @@ if(root){
    if(imageUrl){
     const img=el('img',undefined,'wk-directory-image');
     img.src=imageUrl;img.alt='';img.loading='lazy';img.decoding='async';
-    img.onerror=()=>img.remove();cover.append(img);
+    img.onload=()=>{initials.hidden=true};
+    img.onerror=()=>{img.remove();initials.hidden=false};cover.append(img);
+    if(img.complete&&img.naturalWidth)initials.hidden=true;
    }
    const intro=el('div',undefined,'wk-directory-intro');
    intro.append(el('h3',x.name));

@@ -19,8 +19,8 @@ export const wikiIcons=[
     "names": [
       "9527"
     ],
-    "name": "9527",
-    "url": "https://raw.githubusercontent.com/sooyaaabo/IconLibrary/main/Emby/9527Emby.png"
+    "name": "9527 Cinema",
+    "url": "https://raw.githubusercontent.com/MaddestAlistar/LiangYou-IconLibrary/main/icons/liangyou/submission-20261028061847637-3c2f982d.jpg"
   },
   {
     "names": [

@@ -1,5 +1,5 @@
-import {wikiIcon} from './emby-wiki-icons.mjs?v=20261128.refine1';
-import {wikiSources,libraryView} from './emby-wiki-catalog.mjs?v=20261128.refine1';
+import {wikiIcon} from './emby-wiki-icons.mjs?v=20261128.refine2';
+import {wikiSources,libraryView} from './emby-wiki-catalog.mjs?v=20261128.refine2';
 import {NATURES,CONTENTS,QUALITIES,STATES,ROLES,COUNT_FIELDS,chinaDate,publicURL} from './emby-wiki-schema.mjs';
 export const ROOT='https://liangyou-icon-review.maddestalistar.workers.dev';
 export function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
