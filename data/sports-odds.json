@@ -2,30 +2,30 @@
   "schema": 1,
   "source_type": "bookmaker_reference",
   "odds_schema_version": 1,
-  "generated_at": "2026-11-28T04:58:25Z",
+  "generated_at": "2026-11-28T11:43:53Z",
   "quota_month": "2026-11",
-  "monthly_credits": 161,
+  "monthly_credits": 163,
   "monthly_cap": 210,
-  "provider_remaining": 338,
+  "provider_remaining": 336,
   "last_checked": {
-    "basketball_nba": "2026-11-28T04:58:25Z",
+    "basketball_nba": "2026-11-28T11:43:53Z",
     "soccer_epl": "2026-11-28T04:58:25Z",
-    "soccer_uefa_champs_league": "2026-11-27T08:25:43Z"
+    "soccer_uefa_champs_league": "2026-11-28T11:43:53Z"
   },
   "sources": [
     {
       "tag": "the-odds-api:basketball_nba",
       "status": "ok",
-      "count": 6
+      "count": 7
     },
     {
       "tag": "the-odds-api:soccer_epl",
-      "status": "ok",
+      "status": "recent",
       "count": 19
     },
     {
       "tag": "the-odds-api:soccer_uefa_champs_league",
-      "status": "recent",
+      "status": "ok",
       "count": 0
     }
   ],
@@ -42,14 +42,14 @@
       "outcomes": [
         {
           "name": "Orlando Magic",
-          "decimal": 1.56
+          "decimal": 1.58
         },
         {
           "name": "Washington Wizards",
-          "decimal": 2.5
+          "decimal": 2.44
         }
       ],
-      "quote_at": "2026-11-28T04:58:21Z"
+      "quote_at": "2026-11-28T11:43:50Z"
     },
     {
       "id": "odds-a05c295062d5e2b8e9fa633c2797880e",
@@ -63,14 +63,14 @@
       "outcomes": [
         {
           "name": "Brooklyn Nets",
-          "decimal": 3.0
+          "decimal": 2.98
         },
         {
           "name": "Charlotte Hornets",
-          "decimal": 1.41
+          "decimal": 1.42
         }
       ],
-      "quote_at": "2026-11-28T04:58:21Z"
+      "quote_at": "2026-11-28T11:43:50Z"
     },
     {
       "id": "odds-1ef1f5b9c8c88c584772f64a0d9a9435",
@@ -84,14 +84,14 @@
       "outcomes": [
         {
           "name": "Chicago Bulls",
-          "decimal": 1.68
+          "decimal": 1.7
         },
         {
           "name": "Indiana Pacers",
-          "decimal": 2.24
+          "decimal": 2.2
         }
       ],
-      "quote_at": "2026-11-28T04:58:21Z"
+      "quote_at": "2026-11-28T11:43:50Z"
     },
     {
       "id": "odds-638cefeed67cdd691e1686e024981563",
@@ -112,7 +112,7 @@
           "decimal": 1.18
         }
       ],
-      "quote_at": "2026-11-28T04:58:21Z"
+      "quote_at": "2026-11-28T11:43:50Z"
     },
     {
       "id": "odds-c4b53c6aebbd7b81fd821526ad9503e8",
@@ -126,14 +126,14 @@
       "outcomes": [
         {
           "name": "Houston Rockets",
-          "decimal": 1.21
+          "decimal": 1.19
         },
         {
           "name": "Philadelphia 76ers",
-          "decimal": 4.8
+          "decimal": 5.0
         }
       ],
-      "quote_at": "2026-11-28T04:58:21Z"
+      "quote_at": "2026-11-28T11:43:50Z"
     },
     {
       "id": "odds-9a5909940102f54ed4492ad19236373b",
@@ -142,19 +142,40 @@
       "league": "NBA",
       "home": "Atlanta Hawks",
       "away": "Philadelphia 76ers",
-      "start_time": "2026-12-05T02:10:00Z",
+      "start_time": "2026-12-05T00:10:00Z",
       "bookmaker": "DraftKings",
       "outcomes": [
         {
           "name": "Atlanta Hawks",
-          "decimal": 2.33
+          "decimal": 2.0
         },
         {
           "name": "Philadelphia 76ers",
-          "decimal": 1.63
+          "decimal": 1.85
         }
       ],
-      "quote_at": "2026-11-28T04:57:51Z"
+      "quote_at": "2026-11-28T11:43:49Z"
+    },
+    {
+      "id": "odds-efc7c7c4a8de1f77ebb8ecd5d7282038",
+      "provider": "the-odds-api",
+      "sport": "basketball",
+      "league": "NBA",
+      "home": "Dallas Mavericks",
+      "away": "San Antonio Spurs",
+      "start_time": "2026-12-05T02:40:00Z",
+      "bookmaker": "DraftKings",
+      "outcomes": [
+        {
+          "name": "Dallas Mavericks",
+          "decimal": 3.7
+        },
+        {
+          "name": "San Antonio Spurs",
+          "decimal": 1.3
+        }
+      ],
+      "quote_at": "2026-11-28T11:43:49Z"
     },
     {
       "id": "odds-ab87184803a63f7b679f1d12b01c3271",
